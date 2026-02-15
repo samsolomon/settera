@@ -5,12 +5,14 @@
 Three projects inform Settara's design. Understanding what to borrow (and what to avoid) from each prevents reinventing solved problems.
 
 ### Zed Settings
-Zed generates its settings schema dynamically from Rust types — the types *are* the schema, no translation layer. Their "tab groups" concept is the key innovation Settara borrows: container-level scopes that reset tab indexing, enabling keyboard navigation through complex forms with near-zero boilerplate. Their insight that "the file is the organizing principle" is worth noting — Settara's schema-driven approach is philosophically similar, but the schema sits between the developer and the UI rather than being the UI itself.
+
+Zed generates its settings schema dynamically from Rust types — the types _are_ the schema, no translation layer. Their "tab groups" concept is the key innovation Settara borrows: container-level scopes that reset tab indexing, enabling keyboard navigation through complex forms with near-zero boilerplate. Their insight that "the file is the organizing principle" is worth noting — Settara's schema-driven approach is philosophically similar, but the schema sits between the developer and the UI rather than being the UI itself.
 
 **Borrow:** Tab group scoping model, keyboard-first design, search-first settings discovery.
 **Diverge:** Zed's schema is runtime-generated from types. Settara's is static/declarative JSON — a different tradeoff (portability over dynamism).
 
 ### Radix UI (Headless Patterns)
+
 Radix separates behavior from styling through a four-layer architecture: core utilities → behavioral primitives → state management → high-level components. Two patterns matter for Settara:
 
 1. **Composable parts**: `Dialog.Root`, `Dialog.Trigger`, `Dialog.Content` — consumers assemble pieces rather than configuring a monolith.
@@ -20,6 +22,7 @@ Radix separates behavior from styling through a four-layer architecture: core ut
 **Diverge:** Radix builds individual components. Settara builds a coordinated system (sidebar + content + search + keyboard nav all work together).
 
 ### shadcn/ui (Philosophy, Not Distribution)
+
 shadcn's copy-paste model (`npx shadcn add button` copies source into your project) is great for stable libraries but terrible during API stabilization — every breaking change means users manually re-apply diffs to copied files. The inspiration from shadcn is philosophical: own your code, Tailwind-based, composable, CVA for variant management, CSS variable theming.
 
 **v0.1:** `@settara/ui` ships as a traditional npm package. The API is still changing; users need version bumps, not manual diffs.
@@ -50,14 +53,14 @@ The point: **don't ship the schema package and call it done before writing a sin
 
 **Practical build order within each package:**
 
-| Order | Schema | React | UI |
-|-------|--------|-------|----|
-| 1 | TypeScript interfaces | `SettaraProvider` + context | Sidebar + page layout |
-| 2 | Schema validator | `useSettaraSetting` hook | `SettingRow` container |
-| 3 | Utility functions (traversal, flattening) | `useSettaraNavigation` | Individual controls (boolean, text, select) |
-| 4 | — | `useSettaraSearch` | Compound/list/action editors |
-| 5 | — | Keyboard navigation system | Responsive layout |
-| 6 | — | Focus management | Modals, confirm dialogs |
+| Order | Schema                                    | React                       | UI                                          |
+| ----- | ----------------------------------------- | --------------------------- | ------------------------------------------- |
+| 1     | TypeScript interfaces                     | `SettaraProvider` + context | Sidebar + page layout                       |
+| 2     | Schema validator                          | `useSettaraSetting` hook    | `SettingRow` container                      |
+| 3     | Utility functions (traversal, flattening) | `useSettaraNavigation`      | Individual controls (boolean, text, select) |
+| 4     | —                                         | `useSettaraSearch`          | Compound/list/action editors                |
+| 5     | —                                         | Keyboard navigation system  | Responsive layout                           |
+| 6     | —                                         | Focus management            | Modals, confirm dialogs                     |
 
 ---
 
@@ -117,14 +120,14 @@ The primary callback is `onChange(key: string, value: any)` — the simplest pos
   onChange={(key: string, value: any) => {
     // Called for single-value settings (always)
     // Called per-field for compound settings ONLY if onBatchChange is not provided
-    setValues(prev => ({ ...prev, [key]: value }));
+    setValues((prev) => ({ ...prev, [key]: value }));
     saveToBackend(key, value);
   }}
   onBatchChange={(changes: Array<{ key: string; value: any }>) => {
     // Optional. Called for compound settings on Save.
     // If provided, onChange is NOT called for compound fields.
     saveBatchToBackend(changes);
-    setValues(prev => {
+    setValues((prev) => {
       const next = { ...prev };
       for (const { key, value } of changes) next[key] = value;
       return next;
@@ -165,9 +168,10 @@ The "flat primitives" rule gets one exception: list-type settings store arrays. 
 
 ```typescript
 const values = {
-  "general.autoSave": true,                        // boolean — flat primitive
-  "notifications.recipients": ["a@b.com", "c@d"],  // text list — array of strings
-  "webhooks.endpoints": [                           // compound list — array of objects
+  "general.autoSave": true, // boolean — flat primitive
+  "notifications.recipients": ["a@b.com", "c@d"], // text list — array of strings
+  "webhooks.endpoints": [
+    // compound list — array of objects
     { url: "https://...", method: "POST" },
     { url: "https://...", method: "GET" },
   ],
@@ -206,8 +210,16 @@ Actions are kept in the schema (pragmatic — developers expect "Clear Cache" in
 
 ```typescript
 type SettingDefinition = ValueSetting | ActionSetting;
-type ValueSetting = BooleanSetting | TextSetting | NumberSetting | SelectSetting
-  | MultiSelectSetting | DateSetting | CompoundSetting | ListSetting | CustomSetting;
+type ValueSetting =
+  | BooleanSetting
+  | TextSetting
+  | NumberSetting
+  | SelectSetting
+  | MultiSelectSetting
+  | DateSetting
+  | CompoundSetting
+  | ListSetting
+  | CustomSetting;
 ```
 
 Generic code that operates on "settings with values" uses `ValueSetting`.
@@ -232,13 +244,14 @@ For v1, the styled layer renders dates with the native HTML date input. Accessib
 
 ### Proposed middle ground: three tiers
 
-| Tier | Mechanism | Who uses it |
-|------|-----------|-------------|
-| **Casual** | Tab through settings linearly | Everyone, no learning curve |
-| **Intermediate** | F6 to switch between sidebar ↔ content | Users who know pane-cycling conventions |
-| **Power user** | Ctrl+↓ / Ctrl+↑ to jump between section headings | Keyboard-heavy users, enterprise admins |
+| Tier             | Mechanism                                        | Who uses it                             |
+| ---------------- | ------------------------------------------------ | --------------------------------------- |
+| **Casual**       | Tab through settings linearly                    | Everyone, no learning curve             |
+| **Intermediate** | F6 to switch between sidebar ↔ content           | Users who know pane-cycling conventions |
+| **Power user**   | Ctrl+↓ / Ctrl+↑ to jump between section headings | Keyboard-heavy users, enterprise admins |
 
 Implementation details:
+
 - Tab flows linearly through all settings (no per-section groups)
 - F6 cycles between sidebar and content area
 - Section headings get `tabindex="-1"` (programmatically focusable, not in Tab order) — screen readers navigate them via heading shortcuts

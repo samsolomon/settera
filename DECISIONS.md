@@ -1,6 +1,6 @@
 # Settara — Decision Log
 
-This document tracks implementation decisions that deviate from, extend, or clarify the spec (`settara-spec.md`). It serves as a historical record of *why* choices were made, so future contributors don't re-litigate resolved questions.
+This document tracks implementation decisions that deviate from, extend, or clarify the spec (`settara-spec.md`). It serves as a historical record of _why_ choices were made, so future contributors don't re-litigate resolved questions.
 
 ---
 
@@ -57,7 +57,7 @@ These decisions were made during the implementation planning phase, before any c
 **Decision:** F6 cycles between sidebar and content. Tab flows linearly through all settings in content (no per-section groups). Ctrl+↓/↑ jumps between section headings as progressive enhancement. Modals trap focus.
 **Rationale:** Per-section tab groups create invisible walls that confuse users ("why can't I Tab to the next setting?"). Linear Tab is predictable and discoverable. Power users get Ctrl+↓/↑ for efficiency. Search is the fastest way to any specific setting.
 
-### D-008: Scoped npm packages (@settara/*)
+### D-008: Scoped npm packages (@settara/\*)
 
 **Date:** 2026-02-15
 **Spec section:** §1.2, §11

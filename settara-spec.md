@@ -16,11 +16,11 @@ Settara is an open-source, schema-driven settings framework for React applicatio
 
 Settara consists of three independent layers. Developers choose which layers they adopt.
 
-| Layer | Package | Purpose | Dependencies |
-|-------|---------|---------|--------------|
-| **Schema** | `@settara/schema` | Pure JSON/TypeScript spec for defining settings trees. Technology-agnostic. No React. | None |
-| **Headless** | `@settara/react` | React hooks and unstyled primitives that consume a schema. Handles keyboard nav, focus management, search, apply/confirm logic. | `@settara/schema`, React |
-| **Styled** | `@settara/ui` | Default styled components using Tailwind CSS and shadcn/ui patterns. Ships as an npm package for v0.1; shadcn-style CLI (`npx settara add`) planned for v1.1+. | `@settara/react`, Tailwind |
+| Layer        | Package           | Purpose                                                                                                                                                        | Dependencies               |
+| ------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **Schema**   | `@settara/schema` | Pure JSON/TypeScript spec for defining settings trees. Technology-agnostic. No React.                                                                          | None                       |
+| **Headless** | `@settara/react`  | React hooks and unstyled primitives that consume a schema. Handles keyboard nav, focus management, search, apply/confirm logic.                                | `@settara/schema`, React   |
+| **Styled**   | `@settara/ui`     | Default styled components using Tailwind CSS and shadcn/ui patterns. Ships as an npm package for v0.1; shadcn-style CLI (`npx settara add`) planned for v1.1+. | `@settara/react`, Tailwind |
 
 A developer building with their own design system uses Schema + Headless. A startup wanting settings in an afternoon uses Schema + Styled (which includes Headless).
 
@@ -39,7 +39,7 @@ interface SettaraSchema {
 
   /** Application-level metadata */
   meta?: {
-    title?: string;         // e.g., "Application Settings"
+    title?: string; // e.g., "Application Settings"
     description?: string;
   };
 
@@ -55,13 +55,13 @@ Pages define the sidebar navigation tree. Pages can nest arbitrarily deep.
 ```typescript
 interface PageDefinition {
   /** Unique dot-notation key for this page. Developer-defined. */
-  key: string;                    // e.g., "general", "network.proxy"
+  key: string; // e.g., "general", "network.proxy"
 
   /** Display title in the sidebar */
   title: string;
 
   /** Optional icon identifier (top-level pages only) */
-  icon?: string;                  // e.g., "settings", "shield", "palette"
+  icon?: string; // e.g., "settings", "shield", "palette"
 
   /** Content sections displayed on this page */
   sections?: SectionDefinition[];
@@ -84,7 +84,7 @@ Sections organize settings within a page. They render as labeled groups with opt
 ```typescript
 interface SectionDefinition {
   /** Unique key within the page */
-  key: string;                    // e.g., "generalSettings", "security"
+  key: string; // e.g., "generalSettings", "security"
 
   /** Section heading displayed above the group */
   title: string;
@@ -108,6 +108,7 @@ interface SubsectionDefinition {
 ```
 
 **Nesting constraints:**
+
 - Navigation pages can nest arbitrarily deep (sidebar tree grows)
 - Content sections within a page support exactly one level of subsections
 - A page is always a full replacement of the content area
@@ -239,13 +240,13 @@ interface BooleanSetting {
   key: string;
   title: string;
   description?: string;
-  helpText?: string;           // Extended description, shown in expandable inline block
+  helpText?: string; // Extended description, shown in expandable inline block
   type: "boolean";
   default?: boolean;
-  confirm?: ConfirmConfig;     // Optional confirmation before applying
-  dangerous?: boolean;         // Renders with warning styling
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];  // Conditional visibility
-  validation?: never;          // Booleans don't need validation
+  confirm?: ConfirmConfig; // Optional confirmation before applying
+  dangerous?: boolean; // Renders with warning styling
+  visibleWhen?: VisibilityCondition | VisibilityCondition[]; // Conditional visibility
+  validation?: never; // Booleans don't need validation
 }
 ```
 
@@ -262,7 +263,7 @@ interface TextSetting {
   type: "text";
   default?: string;
   placeholder?: string;
-  inputType?: "text" | "email" | "url" | "password";  // Maps to HTML input type
+  inputType?: "text" | "email" | "url" | "password"; // Maps to HTML input type
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
@@ -270,8 +271,8 @@ interface TextSetting {
     required?: boolean;
     minLength?: number;
     maxLength?: number;
-    pattern?: string;          // Regex pattern
-    message?: string;          // Error message when validation fails
+    pattern?: string; // Regex pattern
+    message?: string; // Error message when validation fails
   };
 }
 ```
@@ -356,7 +357,7 @@ interface DateSetting {
   description?: string;
   helpText?: string;
   type: "date";
-  default?: string;            // ISO 8601 date string
+  default?: string; // ISO 8601 date string
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
@@ -392,13 +393,20 @@ interface CompoundSetting {
   displayStyle: "modal" | "page" | "inline";
 
   /** The sub-fields within this compound setting */
-  fields: Array<TextSetting | NumberSetting | SelectSetting | MultiSelectSetting | DateSetting | BooleanSetting>;
+  fields: Array<
+    | TextSetting
+    | NumberSetting
+    | SelectSetting
+    | MultiSelectSetting
+    | DateSetting
+    | BooleanSetting
+  >;
 
   /** Cross-field validation rules */
   validation?: {
     rules?: Array<{
-      when: string;            // Field key (relative to compound)
-      require?: string;        // Another field key that becomes required
+      when: string; // Field key (relative to compound)
+      require?: string; // Another field key that becomes required
       message: string;
     }>;
   };
@@ -427,7 +435,9 @@ interface ListSetting {
   itemType: "text" | "compound";
 
   /** For compound items, define the fields per item */
-  itemFields?: Array<TextSetting | NumberSetting | SelectSetting | BooleanSetting>;
+  itemFields?: Array<
+    TextSetting | NumberSetting | SelectSetting | BooleanSetting
+  >;
 
   default?: any[];
   confirm?: ConfirmConfig;
@@ -465,7 +475,7 @@ interface ActionSetting {
   type: "action";
 
   /** Button label */
-  buttonLabel: string;         // e.g., "Edit in settings.json", "Clear Cache", "Export Data"
+  buttonLabel: string; // e.g., "Edit in settings.json", "Clear Cache", "Export Data"
 
   /**
    * What happens on click:
@@ -494,7 +504,7 @@ interface CustomSetting {
   type: "custom";
 
   /** Identifier for the custom renderer to use */
-  renderer: string;            // e.g., "color-picker", "code-editor", "file-upload"
+  renderer: string; // e.g., "color-picker", "code-editor", "file-upload"
 
   /** Arbitrary config passed to the custom renderer */
   config?: Record<string, any>;
@@ -516,12 +526,12 @@ interface CustomSetting {
 
 ### 4.1 Save Behavior
 
-| Scenario | Behavior | Dirty State? |
-|----------|----------|-------------|
-| Single-value setting (boolean, select, text, number, date) | Instant-apply on change (blur/Enter for text, immediate for others) | No |
-| Compound setting (modal or page) | Save/Cancel buttons within the modal or subpage | Scoped to modal/page only |
-| Compound setting (inline) | Scoped Save/Cancel rendered below the inline fields | Scoped to inline group only |
-| Dangerous setting | Confirmation dialog appears before apply | No |
+| Scenario                                                   | Behavior                                                            | Dirty State?                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------- |
+| Single-value setting (boolean, select, text, number, date) | Instant-apply on change (blur/Enter for text, immediate for others) | No                          |
+| Compound setting (modal or page)                           | Save/Cancel buttons within the modal or subpage                     | Scoped to modal/page only   |
+| Compound setting (inline)                                  | Scoped Save/Cancel rendered below the inline fields                 | Scoped to inline group only |
+| Dangerous setting                                          | Confirmation dialog appears before apply                            | No                          |
 
 **The main settings page never has dirty state.** All multi-field editing is scoped to a modal, subpage, or inline editing group.
 
@@ -530,16 +540,16 @@ interface CustomSetting {
 ```typescript
 interface ConfirmConfig {
   /** Title of the confirmation dialog */
-  title?: string;              // Default: "Confirm Change"
+  title?: string; // Default: "Confirm Change"
 
   /** Message body */
-  message: string;             // e.g., "This will revoke all existing API keys."
+  message: string; // e.g., "This will revoke all existing API keys."
 
   /** Label for the confirm button */
-  confirmLabel?: string;       // Default: "Confirm"
+  confirmLabel?: string; // Default: "Confirm"
 
   /** Label for the cancel button */
-  cancelLabel?: string;        // Default: "Cancel"
+  cancelLabel?: string; // Default: "Cancel"
 
   /**
    * For dangerous actions, require typing a confirmation string.
@@ -618,6 +628,7 @@ When `visibleWhen` is an array, ALL conditions must be true (implicit AND). For 
 ### 4.4 Extended Description (Help Text)
 
 Settings can include a `helpText` field for extended explanations. This renders as:
+
 - A small help icon (?) or "Learn more" link next to the short description
 - When activated, expands an inline text block below the description
 - The block stays visible until the user collapses it
@@ -630,17 +641,17 @@ Schema-level validation covers the common cases. The React layer provides a call
 
 **Built-in validators (schema-level):**
 
-| Validator | Applies to | Behavior |
-|-----------|-----------|----------|
-| `required` | All types | Value must be set / non-empty |
-| `min` / `max` | `number` | Numeric bounds |
-| `minLength` / `maxLength` | `text` | String length bounds |
-| `pattern` | `text` | Regex pattern match |
-| `minDate` / `maxDate` | `date` | Date bounds |
-| `minSelections` / `maxSelections` | `multiselect` | Selection count bounds |
-| `minItems` / `maxItems` | `list` | List length bounds |
-| `oneOf` | `select` | Validated implicitly by options array |
-| `rules` | `compound` | Cross-field dependency rules |
+| Validator                         | Applies to    | Behavior                              |
+| --------------------------------- | ------------- | ------------------------------------- |
+| `required`                        | All types     | Value must be set / non-empty         |
+| `min` / `max`                     | `number`      | Numeric bounds                        |
+| `minLength` / `maxLength`         | `text`        | String length bounds                  |
+| `pattern`                         | `text`        | Regex pattern match                   |
+| `minDate` / `maxDate`             | `date`        | Date bounds                           |
+| `minSelections` / `maxSelections` | `multiselect` | Selection count bounds                |
+| `minItems` / `maxItems`           | `list`        | List length bounds                    |
+| `oneOf`                           | `select`      | Validated implicitly by options array |
+| `rules`                           | `compound`    | Cross-field dependency rules          |
 
 Each validator supports a `message` string for the error displayed to the user.
 
@@ -655,7 +666,7 @@ Each validator supports a `message` string for the error displayed to the user.
     "integrations.apiKey": async (value) => {
       const valid = await verifyApiKey(value);
       return valid ? null : "This API key is invalid or expired.";
-    }
+    },
   }}
 />
 ```
@@ -670,40 +681,40 @@ The callback runs after schema-level validation passes. It can be synchronous or
 
 ### 5.1 Global Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `/` or `Cmd+K` | Focus the search input |
-| `Escape` | Clear search / close modal / exit subpage |
-| `Tab` / `Shift+Tab` | Move focus between interactive elements |
+| Shortcut            | Action                                    |
+| ------------------- | ----------------------------------------- |
+| `/` or `Cmd+K`      | Focus the search input                    |
+| `Escape`            | Clear search / close modal / exit subpage |
+| `Tab` / `Shift+Tab` | Move focus between interactive elements   |
 
 ### 5.2 Sidebar Navigation
 
-| Shortcut | Action |
-|----------|--------|
-| `↑` / `↓` | Move between sidebar items |
+| Shortcut       | Action                                |
+| -------------- | ------------------------------------- |
+| `↑` / `↓`      | Move between sidebar items            |
 | `Enter` or `→` | Navigate into a page / expand a group |
-| `←` | Collapse a group / navigate to parent |
-| `Home` / `End` | Jump to first / last sidebar item |
+| `←`            | Collapse a group / navigate to parent |
+| `Home` / `End` | Jump to first / last sidebar item     |
 
 ### 5.3 Settings Content
 
-| Shortcut | Action |
-|----------|--------|
-| `Tab` | Move focus to the next setting's control |
-| `Shift+Tab` | Move focus to the previous setting's control |
-| `Space` | Toggle a boolean switch |
-| `Enter` | Open a select dropdown, open a compound modal/page, activate an action button |
-| `Escape` | Close dropdown, cancel modal |
+| Shortcut    | Action                                                                        |
+| ----------- | ----------------------------------------------------------------------------- |
+| `Tab`       | Move focus to the next setting's control                                      |
+| `Shift+Tab` | Move focus to the previous setting's control                                  |
+| `Space`     | Toggle a boolean switch                                                       |
+| `Enter`     | Open a select dropdown, open a compound modal/page, activate an action button |
+| `Escape`    | Close dropdown, cancel modal                                                  |
 
 ### 5.4 Focus Model
 
 The framework uses a three-tier keyboard navigation model:
 
-| Tier | Mechanism | Who uses it |
-|------|-----------|-------------|
-| **Casual** | Tab through settings linearly | Everyone, no learning curve |
-| **Intermediate** | F6 to switch between sidebar and content | Users who know pane-cycling conventions |
-| **Power user** | Ctrl+↓ / Ctrl+↑ to jump between section headings | Keyboard-heavy users |
+| Tier             | Mechanism                                        | Who uses it                             |
+| ---------------- | ------------------------------------------------ | --------------------------------------- |
+| **Casual**       | Tab through settings linearly                    | Everyone, no learning curve             |
+| **Intermediate** | F6 to switch between sidebar and content         | Users who know pane-cycling conventions |
+| **Power user**   | Ctrl+↓ / Ctrl+↑ to jump between section headings | Keyboard-heavy users                    |
 
 Implementation details:
 
@@ -717,6 +728,7 @@ Implementation details:
 ### 5.5 Mobile
 
 Keyboard shortcuts are not relevant on mobile. Touch navigation replaces keyboard:
+
 - Sidebar becomes a drill-down navigation (tap to enter, back button to return)
 - Each page is full-screen
 - All controls use native-feeling touch targets
@@ -728,6 +740,7 @@ Keyboard shortcuts are not relevant on mobile. Touch navigation replaces keyboar
 ### 6.1 Behavior
 
 Search filters the navigation tree to show only pages/sections containing matching settings. It matches against:
+
 - Setting `title`
 - Setting `description`
 - Section `title`
@@ -762,14 +775,14 @@ function AppSettings() {
         onChange={(key: string, value: any) => {
           // Called on every setting change (instant-apply)
           // Called per-field for compound settings ONLY if onBatchChange is not provided
-          setValues(prev => ({ ...prev, [key]: value }));
+          setValues((prev) => ({ ...prev, [key]: value }));
           saveToBackend(key, value);
         }}
         onBatchChange={(changes: Array<{ key: string; value: any }>) => {
           // Optional. Called for compound settings on Save.
           // If provided, onChange is NOT called for compound fields.
           saveBatchToBackend(changes);
-          setValues(prev => {
+          setValues((prev) => {
             const next = { ...prev };
             for (const { key, value } of changes) next[key] = value;
             return next;
@@ -779,14 +792,14 @@ function AppSettings() {
           // Handlers for action-type settings
           "data.clearCache": async () => {
             await clearCache();
-          }
+          },
         }}
         onValidate={{
           // Custom validation callbacks (async supported)
           "integrations.apiKey": async (value) => {
             const valid = await verifyApiKey(value);
             return valid ? null : "Invalid API key";
-          }
+          },
         }}
       />
     </SettaraProvider>
@@ -819,11 +832,12 @@ Flat keys are simpler to work with than nested objects — no deep merge logic, 
 
 ```typescript
 const values = {
-  "general.closingBehavior": "platform_default",         // select — flat primitive
-  "notifications.smtp.host": "smtp.example.com",         // compound field — flat key
-  "notifications.smtp.port": 587,                        // compound field — flat key
-  "notifications.recipients": ["a@b.com", "b@b.com"],    // text list — array
-  "webhooks.endpoints": [                                 // compound list — array of objects
+  "general.closingBehavior": "platform_default", // select — flat primitive
+  "notifications.smtp.host": "smtp.example.com", // compound field — flat key
+  "notifications.smtp.port": 587, // compound field — flat key
+  "notifications.recipients": ["a@b.com", "b@b.com"], // text list — array
+  "webhooks.endpoints": [
+    // compound list — array of objects
     { url: "https://...", method: "POST" },
   ],
 };
@@ -848,10 +862,12 @@ const { schema, values, setValue, validate } = useSettara();
 const { query, setQuery, filteredPages } = useSettaraSearch();
 
 // Sidebar navigation state
-const { activePage, setActivePage, expandedGroups, toggleGroup } = useSettaraNavigation();
+const { activePage, setActivePage, expandedGroups, toggleGroup } =
+  useSettaraNavigation();
 
 // Individual setting state and controls
-const { value, setValue, error, isVisible } = useSettaraSetting("general.autoSave");
+const { value, setValue, error, isVisible } =
+  useSettaraSetting("general.autoSave");
 ```
 
 ### 7.4 Custom Setting Type Registration
