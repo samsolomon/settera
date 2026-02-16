@@ -99,16 +99,79 @@ describe("TextInput", () => {
     expect(input.value).toBe("Alice");
   });
 
-  it("calls onChange on every keystroke", async () => {
+  it("does not call onChange on keystroke (buffered)", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderTextInput("name", { name: "" }, onChange);
     const input = screen.getByRole("textbox");
     await user.type(input, "Hi");
-    // Controlled component with no re-render: each keystroke fires with just that char
-    expect(onChange).toHaveBeenCalledWith("name", "H");
-    expect(onChange).toHaveBeenCalledWith("name", "i");
-    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("commits on blur", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderTextInput("name", { name: "" }, onChange);
+    const input = screen.getByRole("textbox");
+    await user.type(input, "Hello");
+    await user.tab();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("name", "Hello");
+  });
+
+  it("commits on Enter", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderTextInput("name", { name: "" }, onChange);
+    const input = screen.getByRole("textbox");
+    await user.type(input, "World");
+    await user.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("name", "World");
+  });
+
+  it("external value updates sync when not focused", () => {
+    const { rerender } = render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ name: "Old" }} onChange={() => {}}>
+          <TextInput settingKey="name" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    expect(input.value).toBe("Old");
+
+    rerender(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ name: "New" }} onChange={() => {}}>
+          <TextInput settingKey="name" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    expect(input.value).toBe("New");
+  });
+
+  it("external value updates ignored when focused", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ name: "Old" }} onChange={() => {}}>
+          <TextInput settingKey="name" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, "Typing");
+
+    rerender(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ name: "External" }} onChange={() => {}}>
+          <TextInput settingKey="name" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    expect(input.value).toBe("OldTyping");
   });
 
   it("uses default value when not in values", () => {
@@ -133,6 +196,8 @@ describe("TextInput", () => {
     renderTextInput("email", { email: "test@example.com" });
     const input = screen.getByLabelText("Email Address");
     await user.clear(input);
+    // Blur to trigger commit + validation of empty required field
+    await user.tab();
     expect(input.getAttribute("aria-invalid")).toBe("true");
   });
 
@@ -172,5 +237,28 @@ describe("TextInput", () => {
     renderTextInput("website", { website: "" });
     const input = screen.getByLabelText("Website") as HTMLInputElement;
     expect(input.type).toBe("url");
+  });
+
+  it("Escape reverts input value to committed", async () => {
+    const user = userEvent.setup();
+    renderTextInput("name", { name: "Original" });
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, " changed");
+    expect(input.value).toBe("Original changed");
+    await user.keyboard("{Escape}");
+    expect(input.value).toBe("Original");
+  });
+
+  it("Escape + blur does not call onChange", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderTextInput("name", { name: "Original" }, onChange);
+    const input = screen.getByRole("textbox");
+    await user.click(input);
+    await user.type(input, " edited");
+    await user.keyboard("{Escape}");
+    await user.tab();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

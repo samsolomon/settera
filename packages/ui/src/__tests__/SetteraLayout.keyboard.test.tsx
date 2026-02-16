@@ -193,7 +193,7 @@ describe("SetteraLayout keyboard navigation", () => {
   });
 
   describe("F6 pane cycling", () => {
-    it("F6 moves focus from sidebar to content", () => {
+    it("F6 moves focus from sidebar to first card", () => {
       renderLayout();
       const sidebarBtn = getSidebarButton("General");
       sidebarBtn.focus();
@@ -202,6 +202,9 @@ describe("SetteraLayout keyboard navigation", () => {
 
       const main = screen.getByRole("main");
       expect(main.contains(document.activeElement)).toBe(true);
+      expect(
+        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+      ).toBe(true);
     });
 
     it("F6 moves focus from content to sidebar", () => {
@@ -216,7 +219,7 @@ describe("SetteraLayout keyboard navigation", () => {
       expect(sidebar.contains(document.activeElement)).toBe(true);
     });
 
-    it("Shift+F6 reverses direction", () => {
+    it("Shift+F6 moves to first card", () => {
       renderLayout();
       const sidebarBtn = getSidebarButton("General");
       sidebarBtn.focus();
@@ -225,6 +228,9 @@ describe("SetteraLayout keyboard navigation", () => {
 
       const main = screen.getByRole("main");
       expect(main.contains(document.activeElement)).toBe(true);
+      expect(
+        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+      ).toBe(true);
     });
   });
 
@@ -359,8 +365,10 @@ describe("SetteraLayout keyboard navigation", () => {
 
       const main = screen.getByRole("main");
       expect(main.contains(document.activeElement)).toBe(true);
-      // First focusable element should be the first switch button
-      expect(document.activeElement?.tagName).toBe("BUTTON");
+      // First card (setting row) should be focused
+      expect(
+        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+      ).toBe(true);
     });
 
     it("Enter on expand-only parent toggles expansion, does NOT focus content", async () => {
@@ -436,10 +444,12 @@ describe("SetteraLayout keyboard navigation", () => {
       textInput!.focus();
       expect(document.activeElement).toBe(textInput);
 
-      // First Escape — blurs input, focus moves to main
+      // First Escape — blurs input, focus moves to enclosing card
       fireKey("Escape");
       expect(document.activeElement).not.toBe(textInput);
-      expect(main.contains(document.activeElement) || document.activeElement === main).toBe(true);
+      expect(
+        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+      ).toBe(true);
 
       // Second Escape — returns to sidebar
       fireKey("Escape");

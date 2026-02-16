@@ -1,5 +1,6 @@
 import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
+import type { SaveStatus } from "../context.js";
 import { evaluateVisibility } from "../visibility.js";
 import { validateSettingValue } from "../validation.js";
 import type { SettingDefinition, ConfirmConfig } from "@settera/schema";
@@ -15,6 +16,8 @@ export interface UseSetteraSettingResult {
   isVisible: boolean;
   /** The setting definition from the schema */
   definition: SettingDefinition;
+  /** Per-setting save status (idle/saving/saved/error) */
+  saveStatus: SaveStatus;
   /** Run full validation pipeline (sync + async). Call on blur.
    *  Pass an explicit value to avoid stale-closure issues (e.g. Select onChange). */
   validate: (valueOverride?: unknown) => Promise<string | null>;
@@ -135,5 +138,7 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
     valuesCtx.values,
   );
 
-  return { value, setValue, error, isVisible, definition, validate };
+  const saveStatus: SaveStatus = valuesCtx.saveStatus[key] ?? "idle";
+
+  return { value, setValue, error, isVisible, definition, saveStatus, validate };
 }

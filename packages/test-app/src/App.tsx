@@ -15,6 +15,8 @@ export function App() {
 
   const handleChange = useCallback((key: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [key]: value }));
+    // Simulate async save to backend (returns Promise → triggers save indicator)
+    return new Promise<void>((resolve) => setTimeout(resolve, 800));
   }, []);
 
   const onAction: Record<string, () => void | Promise<void>> = {

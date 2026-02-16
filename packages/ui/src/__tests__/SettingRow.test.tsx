@@ -1,9 +1,10 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import {
   SetteraProvider,
   SetteraRenderer,
+  SetteraValuesContext,
   useSetteraSetting,
 } from "@settera/react";
 import { SettingRow } from "../components/SettingRow.js";
@@ -190,5 +191,108 @@ describe("SettingRow", () => {
   it("does not render helpText when not defined", () => {
     renderRow("toggle", { toggle: false });
     expect(screen.queryByText(/ⓘ/)).toBeNull();
+  });
+});
+
+// ---- Save status indicator ----
+
+function SetValueButton() {
+  const ctx = React.useContext(SetteraValuesContext);
+  return (
+    <button onClick={() => ctx!.setValue("toggle", true)}>save-setting</button>
+  );
+}
+
+describe("save status indicator", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows no indicator when idle", () => {
+    renderRow("toggle", { toggle: false });
+    expect(screen.queryByLabelText("Saving")).toBeNull();
+    expect(screen.queryByLabelText("Saved")).toBeNull();
+    expect(screen.queryByLabelText("Save failed")).toBeNull();
+  });
+
+  it("shows 'Saving...' during async save", async () => {
+    let resolveSave!: () => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => (resolveSave = r)),
+    );
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SettingRow settingKey="toggle">
+            <SetValueButton />
+          </SettingRow>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save-setting").click());
+    expect(screen.getByLabelText("Saving")).toBeDefined();
+    await act(async () => resolveSave());
+  });
+
+  it("shows 'Saved' after success", async () => {
+    let resolveSave!: () => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => (resolveSave = r)),
+    );
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SettingRow settingKey="toggle">
+            <SetValueButton />
+          </SettingRow>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save-setting").click());
+    await act(async () => resolveSave());
+    expect(screen.getByLabelText("Saved")).toBeDefined();
+  });
+
+  it("shows 'Save failed' after error", async () => {
+    let rejectSave!: (err: Error) => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((_r, rej) => (rejectSave = rej)),
+    );
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SettingRow settingKey="toggle">
+            <SetValueButton />
+          </SettingRow>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save-setting").click());
+    await act(async () => rejectSave(new Error("fail")));
+    expect(screen.getByLabelText("Save failed")).toBeDefined();
+  });
+
+  it("'Saved' auto-clears after 2s", async () => {
+    let resolveSave!: () => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => (resolveSave = r)),
+    );
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SettingRow settingKey="toggle">
+            <SetValueButton />
+          </SettingRow>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save-setting").click());
+    await act(async () => resolveSave());
+    expect(screen.getByLabelText("Saved")).toBeDefined();
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.queryByLabelText("Saved")).toBeNull();
   });
 });

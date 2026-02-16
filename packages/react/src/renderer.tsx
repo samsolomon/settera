@@ -2,17 +2,22 @@ import React, {
   useState,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
 } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "./context.js";
-import type { SetteraValuesContextValue, PendingConfirm } from "./context.js";
+import type {
+  SetteraValuesContextValue,
+  PendingConfirm,
+  SaveStatus,
+} from "./context.js";
 
 export interface SetteraRendererProps {
   /** Current values object (flat keys) */
   values: Record<string, unknown>;
-  /** Called on every setting change (instant-apply) */
-  onChange: (key: string, value: unknown) => void;
+  /** Called on every setting change (instant-apply). May return a Promise for async save tracking. */
+  onChange: (key: string, value: unknown) => void | Promise<void>;
   /** Optional batch change handler for compound settings */
   onBatchChange?: (changes: Array<{ key: string; value: unknown }>) => void;
   /** Handlers for action-type settings */
@@ -65,9 +70,46 @@ export function SetteraRenderer({
     });
   }, []);
 
+  // ---- Async save tracking ----
+  const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
+  const saveGenerationRef = useRef<Record<string, number>>({});
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const setValue = useCallback(
     (key: string, value: unknown) => {
-      onChange(key, value);
+      const result = onChange(key, value);
+
+      if (result instanceof Promise) {
+        const gen = (saveGenerationRef.current[key] ?? 0) + 1;
+        saveGenerationRef.current[key] = gen;
+
+        setSaveStatus((prev) => ({ ...prev, [key]: "saving" }));
+
+        result.then(
+          () => {
+            if (!mountedRef.current) return;
+            if (saveGenerationRef.current[key] !== gen) return;
+            setSaveStatus((prev) => ({ ...prev, [key]: "saved" }));
+            setTimeout(() => {
+              if (!mountedRef.current) return;
+              if (saveGenerationRef.current[key] !== gen) return;
+              setSaveStatus((prev) => ({ ...prev, [key]: "idle" }));
+            }, 2000);
+          },
+          () => {
+            if (!mountedRef.current) return;
+            if (saveGenerationRef.current[key] !== gen) return;
+            setSaveStatus((prev) => ({ ...prev, [key]: "error" }));
+          },
+        );
+      }
     },
     [onChange],
   );
@@ -102,6 +144,7 @@ export function SetteraRenderer({
       setValue,
       errors,
       setError,
+      saveStatus,
       onValidate,
       onAction,
       pendingConfirm,
@@ -113,6 +156,7 @@ export function SetteraRenderer({
       setValue,
       errors,
       setError,
+      saveStatus,
       onValidate,
       onAction,
       pendingConfirm,

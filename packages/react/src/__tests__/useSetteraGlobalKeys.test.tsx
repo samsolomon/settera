@@ -19,11 +19,13 @@ function TestHarness({
         <button tabIndex={0}>General</button>
         <button tabIndex={-1}>Advanced</button>
       </nav>
-      <main>
+      <main tabIndex={-1}>
         <input role="searchbox" type="text" aria-label="Search settings" />
-        <input type="text" aria-label="Text field" />
-        <textarea aria-label="Text area" />
-        <button>Content Button</button>
+        <div data-setting-key="testSetting" tabIndex={-1}>
+          <input type="text" aria-label="Text field" />
+          <textarea aria-label="Text area" />
+          <button>Content Button</button>
+        </div>
         <h2 id="settera-section-a" tabIndex={-1}>
           Section A
         </h2>

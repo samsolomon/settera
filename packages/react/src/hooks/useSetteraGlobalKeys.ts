@@ -74,16 +74,17 @@ export function useSetteraGlobalKeys(
       // Escape — layered priority:
       // 1. Dialog open → bail, let dialog handle it
       // 2. Search input focused → bail, let SetteraSearch handle it
-      // 3. Text/number input in content → blur it (two-phase: stay in content)
-      // 4. Focus in content area → return to sidebar
-      // 5. Search query active → clear search
+      // 3. Text/number input in content → blur, focus enclosing card
+      // 4. Control inside a card (non-text) → drill out to enclosing card
+      // 5. Focus on card or <main> → return to sidebar
+      // 6. Search query active → clear search
       if (e.key === "Escape") {
         // 1. Dialog open — let the dialog handle Escape
         if (container.querySelector('[role="dialog"], [role="alertdialog"]'))
           return;
 
         const searchInput = container.querySelector('input[role="searchbox"]');
-        const activeEl = document.activeElement;
+        const activeEl = document.activeElement as HTMLElement | null;
 
         // 2. Search input focused — let SetteraSearch handle it
         if (activeEl === searchInput) return;
@@ -92,15 +93,30 @@ export function useSetteraGlobalKeys(
         const sidebar =
           container.querySelector<HTMLElement>('nav[role="tree"]');
 
-        // 3. Text/number input in content — blur and focus main
+        // 3. Text/number input in content → blur, focus enclosing card
         if (main && activeEl && main.contains(activeEl) && isTextInput(activeEl)) {
           e.preventDefault();
           (activeEl as HTMLElement).blur();
-          main.focus();
+          const card = activeEl.closest<HTMLElement>("[data-setting-key]");
+          if (card) {
+            card.focus();
+          } else {
+            main.focus();
+          }
           return;
         }
 
-        // 4. Focus in content area — return to sidebar
+        // 4. Control inside a card (non-text) → drill out to enclosing card
+        if (main && activeEl && main.contains(activeEl)) {
+          const card = activeEl.closest<HTMLElement>("[data-setting-key]");
+          if (card && activeEl !== card) {
+            e.preventDefault();
+            card.focus();
+            return;
+          }
+        }
+
+        // 5. Focus on card or <main> → return to sidebar
         if (main && sidebar && main.contains(activeEl)) {
           e.preventDefault();
           const target =
@@ -109,7 +125,7 @@ export function useSetteraGlobalKeys(
           return;
         }
 
-        // 5. Search query active — clear search
+        // 6. Search query active — clear search
         if (searchQuery) {
           e.preventDefault();
           clearSearch();
@@ -137,21 +153,17 @@ export function useSetteraGlobalKeys(
               sidebar.querySelector<HTMLElement>('[tabindex="0"]') || sidebar;
             target.focus();
           } else {
-            // Move to main — focus first focusable element
+            // Move to main — focus first card
             const target =
-              main.querySelector<HTMLElement>(
-                'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-              ) || main;
+              main.querySelector<HTMLElement>("[data-setting-key]") || main;
             target.focus();
           }
         } else {
           // F6: forward direction
           if (isInSidebar) {
-            // Move to main — focus first focusable element
+            // Move to main — focus first card
             const target =
-              main.querySelector<HTMLElement>(
-                'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-              ) || main;
+              main.querySelector<HTMLElement>("[data-setting-key]") || main;
             target.focus();
           } else {
             // Move to sidebar — focus the button with tabIndex=0

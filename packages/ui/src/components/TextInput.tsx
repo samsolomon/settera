@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 
 export interface TextInputProps {
@@ -7,13 +7,35 @@ export interface TextInputProps {
 
 /**
  * A text input for text settings.
- * Fires onChange on every keystroke (no debounce).
- * Runs async validation on blur via validate().
+ * Buffers edits locally. Commits on blur or Enter. Reverts on Escape.
  */
 export function TextInput({ settingKey }: TextInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
+
+  const committed = typeof value === "string" ? value : "";
+  const [localValue, setLocalValue] = useState(committed);
+  const localValueRef = useRef(localValue);
+  const isFocusedRef = useRef(false);
+
+  // Sync from external value when not focused
+  useEffect(() => {
+    if (!isFocusedRef.current) {
+      const synced = typeof value === "string" ? value : "";
+      localValueRef.current = synced;
+      setLocalValue(synced);
+    }
+  }, [value]);
+
+  const commit = useCallback(() => {
+    const local = localValueRef.current;
+    const current = typeof value === "string" ? value : "";
+    if (local !== current) {
+      setValue(local);
+    }
+    validate(local);
+  }, [value, setValue, validate]);
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const isText = definition.type === "text";
@@ -27,15 +49,17 @@ export function TextInput({ settingKey }: TextInputProps) {
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(e.target.value);
+      localValueRef.current = e.target.value;
+      setLocalValue(e.target.value);
     },
-    [setValue],
+    [],
   );
 
   const handleBlur = useCallback(() => {
     setIsFocusVisible(false);
-    validate();
-  }, [validate]);
+    isFocusedRef.current = false;
+    commit();
+  }, [commit]);
 
   const pointerDownRef = useRef(false);
 
@@ -44,20 +68,35 @@ export function TextInput({ settingKey }: TextInputProps) {
   }, []);
 
   const handleFocus = useCallback(() => {
+    isFocusedRef.current = true;
     setIsFocusVisible(!pointerDownRef.current);
     pointerDownRef.current = false;
   }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        commit();
+      } else if (e.key === "Escape") {
+        const current = typeof value === "string" ? value : "";
+        localValueRef.current = current;
+        setLocalValue(current);
+      }
+    },
+    [commit, value],
+  );
 
   const hasError = error !== null;
 
   return (
     <input
       type={inputType}
-      value={typeof value === "string" ? value : ""}
+      value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
       onPointerDown={handlePointerDown}
       onFocus={handleFocus}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       maxLength={maxLength}
       aria-label={definition.title}

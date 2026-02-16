@@ -40,6 +40,8 @@ export const SetteraNavigationContext =
 
 // ---- Values Context (re-renders on setting change) ----
 
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 export interface PendingConfirm {
   key: string;
   config: ConfirmConfig;
@@ -58,6 +60,7 @@ export interface SetteraValuesContextValue {
     (value: unknown) => string | null | Promise<string | null>
   >;
   onAction?: Record<string, () => void | Promise<void>>;
+  saveStatus: Record<string, SaveStatus>;
   pendingConfirm: PendingConfirm | null;
   requestConfirm: (pending: PendingConfirm) => void;
   resolveConfirm: (confirmed: boolean) => void;

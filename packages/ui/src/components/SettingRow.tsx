@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 
 export interface SettingRowProps {
@@ -11,7 +11,31 @@ export interface SettingRowProps {
  * Hides itself when `isVisible` is false.
  */
 export function SettingRow({ settingKey, children }: SettingRowProps) {
-  const { isVisible, definition, error } = useSetteraSetting(settingKey);
+  const { isVisible, definition, error, saveStatus } =
+    useSetteraSetting(settingKey);
+  const [isFocusVisible, setIsFocusVisible] = useState(false);
+  const pointerDownRef = useRef(false);
+
+  const handlePointerDown = useCallback(() => {
+    pointerDownRef.current = true;
+  }, []);
+
+  const handleFocus = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      // Only show focus ring when the card itself is focused, not a child
+      if (e.target === e.currentTarget) {
+        setIsFocusVisible(!pointerDownRef.current);
+      }
+      pointerDownRef.current = false;
+    },
+    [],
+  );
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+    // Don't clear focus ring when focus moves to a child within the card
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsFocusVisible(false);
+  }, []);
 
   if (!isVisible) return null;
 
@@ -21,6 +45,11 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
     <div
       role="group"
       aria-label={definition.title}
+      tabIndex={-1}
+      data-setting-key={settingKey}
+      onPointerDown={handlePointerDown}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       style={{
         display: "flex",
         justifyContent: "space-between",
@@ -28,11 +57,19 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         padding: "var(--settera-row-padding, 12px 0)",
         borderBottom: "var(--settera-row-border, 1px solid #e5e7eb)",
         opacity: "var(--settera-row-opacity, 1)",
+        outline: "none",
+        boxShadow: isFocusVisible
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
+        borderRadius: "var(--settera-row-focus-radius, 6px)",
       }}
     >
       <div style={{ flex: 1, marginRight: "16px" }}>
         <div
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
             fontSize: "var(--settera-title-font-size, 14px)",
             fontWeight: "var(--settera-title-font-weight, 500)",
             color: isDangerous
@@ -41,6 +78,42 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
           }}
         >
           {definition.title}
+          {saveStatus === "saving" && (
+            <span
+              aria-label="Saving"
+              style={{
+                fontSize:
+                  "var(--settera-save-indicator-font-size, 12px)",
+                color: "var(--settera-save-saving-color, #6b7280)",
+              }}
+            >
+              Saving...
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span
+              aria-label="Saved"
+              style={{
+                fontSize:
+                  "var(--settera-save-indicator-font-size, 12px)",
+                color: "var(--settera-save-saved-color, #16a34a)",
+              }}
+            >
+              Saved
+            </span>
+          )}
+          {saveStatus === "error" && (
+            <span
+              aria-label="Save failed"
+              style={{
+                fontSize:
+                  "var(--settera-save-indicator-font-size, 12px)",
+                color: "var(--settera-save-error-color, #dc2626)",
+              }}
+            >
+              Save failed
+            </span>
+          )}
         </div>
         {"description" in definition && definition.description && (
           <div

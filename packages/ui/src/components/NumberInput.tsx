@@ -1,18 +1,55 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 
 export interface NumberInputProps {
   settingKey: string;
 }
 
+function displayString(v: unknown): string {
+  return v !== undefined && v !== null ? String(v) : "";
+}
+
 /**
  * A number input for number settings.
- * Empty string → setValue(undefined). Valid number → setValue(Number(value)). NaN → ignored.
+ * Buffers edits locally. Commits on blur or Enter. Reverts on Escape.
  */
 export function NumberInput({ settingKey }: NumberInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
+
+  const [localValue, setLocalValue] = useState(displayString(value));
+  const localValueRef = useRef(localValue);
+  const isFocusedRef = useRef(false);
+
+  // Sync from external value when not focused
+  useEffect(() => {
+    if (!isFocusedRef.current) {
+      const synced = displayString(value);
+      localValueRef.current = synced;
+      setLocalValue(synced);
+    }
+  }, [value]);
+
+  const commit = useCallback(() => {
+    const local = localValueRef.current;
+    if (local === "") {
+      const current = displayString(value);
+      if (local !== current) {
+        setValue(undefined);
+      }
+      validate(undefined);
+    } else {
+      const num = Number(local);
+      if (!Number.isNaN(num)) {
+        if (num !== value) {
+          setValue(num);
+        }
+        validate(num);
+      }
+      // NaN → skip commit entirely
+    }
+  }, [value, setValue, validate]);
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const isNumber = definition.type === "number";
@@ -28,23 +65,17 @@ export function NumberInput({ settingKey }: NumberInputProps) {
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = e.target.value;
-      if (raw === "") {
-        setValue(undefined);
-        return;
-      }
-      const num = Number(raw);
-      if (!Number.isNaN(num)) {
-        setValue(num);
-      }
+      localValueRef.current = e.target.value;
+      setLocalValue(e.target.value);
     },
-    [setValue],
+    [],
   );
 
   const handleBlur = useCallback(() => {
     setIsFocusVisible(false);
-    validate();
-  }, [validate]);
+    isFocusedRef.current = false;
+    commit();
+  }, [commit]);
 
   const pointerDownRef = useRef(false);
 
@@ -53,24 +84,35 @@ export function NumberInput({ settingKey }: NumberInputProps) {
   }, []);
 
   const handleFocus = useCallback(() => {
+    isFocusedRef.current = true;
     setIsFocusVisible(!pointerDownRef.current);
     pointerDownRef.current = false;
   }, []);
 
-  const hasError = error !== null;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        commit();
+      } else if (e.key === "Escape") {
+        const current = displayString(value);
+        localValueRef.current = current;
+        setLocalValue(current);
+      }
+    },
+    [commit, value],
+  );
 
-  // Display value: number → string, undefined/null → ""
-  const displayValue =
-    value !== undefined && value !== null ? String(value) : "";
+  const hasError = error !== null;
 
   return (
     <input
       type="number"
-      value={displayValue}
+      value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
       onPointerDown={handlePointerDown}
       onFocus={handleFocus}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       min={min}
       max={max}

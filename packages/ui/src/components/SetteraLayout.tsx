@@ -3,6 +3,7 @@ import {
   useSetteraSearch,
   useSetteraNavigation,
   useSetteraGlobalKeys,
+  useContentCardNavigation,
   isTextInput,
 } from "@settera/react";
 import { SetteraSidebar } from "./SetteraSidebar.js";
@@ -29,15 +30,15 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
 
   useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
 
-  // Register handler so sidebar Enter can focus the first control in content
+  const { onKeyDown: cardNavKeyDown } = useContentCardNavigation({ mainRef });
+
+  // Register handler so sidebar Enter can focus the first card in content
   useEffect(() => {
     return registerFocusContentHandler(() => {
       requestAnimationFrame(() => {
         const main = mainRef.current;
         if (!main) return;
-        const target = main.querySelector<HTMLElement>(
-          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
+        const target = main.querySelector<HTMLElement>("[data-setting-key]");
         if (target) {
           target.focus();
         } else {
@@ -48,7 +49,7 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
   }, [registerFocusContentHandler]);
 
   // Ctrl+ArrowDown/Up section heading jumping within <main>
-  const handleMainKeyDown = useCallback(
+  const handleSectionKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLElement>) => {
       if (!e.ctrlKey) return;
       if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -88,6 +89,17 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
     [],
   );
 
+  // Compose card navigation + section heading jumping
+  const handleComposedKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLElement>) => {
+      cardNavKeyDown(e);
+      if (!e.defaultPrevented) {
+        handleSectionKeyDown(e);
+      }
+    },
+    [cardNavKeyDown, handleSectionKeyDown],
+  );
+
   return (
     <div
       ref={containerRef}
@@ -102,7 +114,7 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
       <main
         ref={mainRef}
         tabIndex={-1}
-        onKeyDown={handleMainKeyDown}
+        onKeyDown={handleComposedKeyDown}
         style={{
           flex: 1,
           padding: "var(--settera-page-padding, 24px 32px)",

@@ -1,6 +1,6 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider } from "../provider.js";
 import { SetteraRenderer } from "../renderer.js";
@@ -106,5 +106,130 @@ describe("SetteraRenderer", () => {
     );
     expect(screen.getByTestId("has-action").textContent).toBe("yes");
     expect(screen.getByTestId("has-validate").textContent).toBe("yes");
+  });
+});
+
+// ---- Async save tracking ----
+
+function SaveStatusConsumer() {
+  const ctx = React.useContext(SetteraValuesContext);
+  if (!ctx) return <div>no context</div>;
+  return (
+    <div>
+      <span data-testid="save-status">
+        {ctx.saveStatus["toggle"] ?? "idle"}
+      </span>
+      <button onClick={() => ctx.setValue("toggle", true)}>save</button>
+    </div>
+  );
+}
+
+describe("async save tracking", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("keeps status idle for sync onChange", () => {
+    const onChange = vi.fn();
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SaveStatusConsumer />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save").click());
+    expect(screen.getByTestId("save-status").textContent).toBe("idle");
+  });
+
+  it("transitions saving → saved → idle for async onChange", async () => {
+    let resolveSave!: () => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => (resolveSave = r)),
+    );
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SaveStatusConsumer />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    act(() => screen.getByText("save").click());
+    expect(screen.getByTestId("save-status").textContent).toBe("saving");
+
+    await act(async () => resolveSave());
+    expect(screen.getByTestId("save-status").textContent).toBe("saved");
+
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.getByTestId("save-status").textContent).toBe("idle");
+  });
+
+  it("transitions to error on rejection", async () => {
+    let rejectSave!: (err: Error) => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((_r, rej) => (rejectSave = rej)),
+    );
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SaveStatusConsumer />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    act(() => screen.getByText("save").click());
+    expect(screen.getByTestId("save-status").textContent).toBe("saving");
+
+    await act(async () => rejectSave(new Error("fail")));
+    expect(screen.getByTestId("save-status").textContent).toBe("error");
+  });
+
+  it("only latest save wins (race condition)", async () => {
+    const resolvers: Array<() => void> = [];
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => resolvers.push(r)),
+    );
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SaveStatusConsumer />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    // First save
+    act(() => screen.getByText("save").click());
+    // Second save
+    act(() => screen.getByText("save").click());
+    expect(resolvers).toHaveLength(2);
+
+    // Resolve first save — should be ignored since second is newer
+    await act(async () => resolvers[0]());
+    expect(screen.getByTestId("save-status").textContent).toBe("saving");
+
+    // Resolve second save — this one takes effect
+    await act(async () => resolvers[1]());
+    expect(screen.getByTestId("save-status").textContent).toBe("saved");
+  });
+
+  it("void onChange still works (backward compatible)", () => {
+    const onChange = vi.fn(() => undefined);
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
+          <SaveStatusConsumer />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    act(() => screen.getByText("save").click());
+    expect(onChange).toHaveBeenCalled();
+    expect(screen.getByTestId("save-status").textContent).toBe("idle");
   });
 });

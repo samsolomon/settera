@@ -80,24 +80,89 @@ describe("NumberInput", () => {
     expect(input.value).toBe("8080");
   });
 
-  it("calls onChange with parsed number", async () => {
+  it("does not call onChange on keystroke (buffered)", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderNumberInput("simple", { simple: undefined }, onChange);
     const input = screen.getByRole("spinbutton");
     await user.type(input, "42");
-    // Controlled component with no re-render: each keystroke fires independently
-    expect(onChange).toHaveBeenCalledWith("simple", 4);
-    expect(onChange).toHaveBeenCalledWith("simple", 2);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("calls onChange with undefined when cleared", async () => {
+  it("commits on blur with parsed number", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderNumberInput("simple", { simple: undefined }, onChange);
+    const input = screen.getByRole("spinbutton");
+    await user.type(input, "42");
+    await user.tab();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("simple", 42);
+  });
+
+  it("commits on Enter", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderNumberInput("simple", { simple: undefined }, onChange);
+    const input = screen.getByRole("spinbutton");
+    await user.type(input, "99");
+    await user.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("simple", 99);
+  });
+
+  it("commits undefined when cleared and blurred", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderNumberInput("port", { port: 3000 }, onChange);
     const input = screen.getByRole("spinbutton");
     await user.clear(input);
+    await user.tab();
     expect(onChange).toHaveBeenCalledWith("port", undefined);
+  });
+
+  it("external value updates sync when not focused", () => {
+    const { rerender } = render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ simple: 10 }} onChange={() => {}}>
+          <NumberInput settingKey="simple" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    const input = screen.getByRole("spinbutton") as HTMLInputElement;
+    expect(input.value).toBe("10");
+
+    rerender(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ simple: 20 }} onChange={() => {}}>
+          <NumberInput settingKey="simple" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    expect(input.value).toBe("20");
+  });
+
+  it("external value updates ignored when focused", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ simple: 10 }} onChange={() => {}}>
+          <NumberInput settingKey="simple" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    const input = screen.getByRole("spinbutton") as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, "5");
+
+    rerender(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ simple: 99 }} onChange={() => {}}>
+          <NumberInput settingKey="simple" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+    expect(input.value).toBe("105");
   });
 
   it("has min/max attributes from validation", () => {
@@ -150,15 +215,39 @@ describe("NumberInput", () => {
     renderNumberInput("simple", {}, onChange);
     const input = screen.getByRole("spinbutton");
     // Typing "e" into a number input produces NaN via Number("e")
-    // The component should not call onChange for NaN values
     await user.type(input, "e");
-    // "e" alone in a number input yields empty string change event, calling setValue(undefined)
-    // Filter out the undefined calls and check no NaN-derived number was passed
+    await user.tab();
+    // Should not have called onChange with a NaN-derived number
     for (const call of onChange.mock.calls) {
       const val = call[1];
       if (typeof val === "number") {
         expect(Number.isNaN(val)).toBe(false);
       }
     }
+  });
+
+  it("Escape reverts input value to committed", async () => {
+    const user = userEvent.setup();
+    renderNumberInput("port", { port: 3000 });
+    const input = screen.getByRole("spinbutton") as HTMLInputElement;
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, "9999");
+    expect(input.value).toBe("9999");
+    await user.keyboard("{Escape}");
+    expect(input.value).toBe("3000");
+  });
+
+  it("Escape + blur does not call onChange", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderNumberInput("port", { port: 3000 }, onChange);
+    const input = screen.getByRole("spinbutton");
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, "9999");
+    await user.keyboard("{Escape}");
+    await user.tab();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
