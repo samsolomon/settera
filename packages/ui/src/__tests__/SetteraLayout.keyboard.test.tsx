@@ -203,7 +203,9 @@ describe("SetteraLayout keyboard navigation", () => {
       const main = screen.getByRole("main");
       expect(main.contains(document.activeElement)).toBe(true);
       expect(
-        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+        (document.activeElement as HTMLElement)?.hasAttribute(
+          "data-setting-key",
+        ),
       ).toBe(true);
     });
 
@@ -229,7 +231,9 @@ describe("SetteraLayout keyboard navigation", () => {
       const main = screen.getByRole("main");
       expect(main.contains(document.activeElement)).toBe(true);
       expect(
-        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+        (document.activeElement as HTMLElement)?.hasAttribute(
+          "data-setting-key",
+        ),
       ).toBe(true);
     });
   });
@@ -367,7 +371,9 @@ describe("SetteraLayout keyboard navigation", () => {
       expect(main.contains(document.activeElement)).toBe(true);
       // First card (setting row) should be focused
       expect(
-        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+        (document.activeElement as HTMLElement)?.hasAttribute(
+          "data-setting-key",
+        ),
       ).toBe(true);
     });
 
@@ -439,7 +445,8 @@ describe("SetteraLayout keyboard navigation", () => {
       const main = screen.getByRole("main");
 
       // Find and focus the text input
-      const textInput = main.querySelector<HTMLInputElement>('input[type="text"]');
+      const textInput =
+        main.querySelector<HTMLInputElement>('input[type="text"]');
       expect(textInput).not.toBeNull();
       textInput!.focus();
       expect(document.activeElement).toBe(textInput);
@@ -448,7 +455,9 @@ describe("SetteraLayout keyboard navigation", () => {
       fireKey("Escape");
       expect(document.activeElement).not.toBe(textInput);
       expect(
-        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+        (document.activeElement as HTMLElement)?.hasAttribute(
+          "data-setting-key",
+        ),
       ).toBe(true);
 
       // Second Escape — returns to sidebar
@@ -492,10 +501,7 @@ describe("SetteraLayout keyboard navigation", () => {
 
       render(
         <SetteraProvider schema={confirmSchema}>
-          <SetteraRenderer
-            values={{ resetAll: false }}
-            onChange={() => {}}
-          >
+          <SetteraRenderer values={{ resetAll: false }} onChange={() => {}}>
             <SetteraLayout />
           </SetteraRenderer>
         </SetteraProvider>,
@@ -503,7 +509,9 @@ describe("SetteraLayout keyboard navigation", () => {
 
       // Click the switch to trigger the confirm dialog
       const main = screen.getByRole("main");
-      const switchBtn = main.querySelector<HTMLElement>('button[role="switch"]');
+      const switchBtn = main.querySelector<HTMLElement>(
+        'button[role="switch"]',
+      );
       expect(switchBtn).not.toBeNull();
       await user.click(switchBtn!);
 
@@ -519,8 +527,9 @@ describe("SetteraLayout keyboard navigation", () => {
       fireKey("Escape");
 
       // Focus should NOT have moved to sidebar
-      const sidebar = screen.getByRole("tree");
-      expect(sidebar.contains(document.activeElement)).toBe(false);
+      const sidebar = document.querySelector<HTMLElement>('nav[role="tree"]');
+      expect(sidebar).not.toBeNull();
+      expect(sidebar!.contains(document.activeElement)).toBe(false);
     });
   });
 });

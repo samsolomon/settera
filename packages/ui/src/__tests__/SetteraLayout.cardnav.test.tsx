@@ -56,9 +56,7 @@ const schema: SetteraSchema = {
         {
           key: "sectionC",
           title: "Section C",
-          settings: [
-            { key: "debug", title: "Debug Mode", type: "boolean" },
-          ],
+          settings: [{ key: "debug", title: "Debug Mode", type: "boolean" }],
         },
       ],
     },
@@ -218,7 +216,7 @@ describe("SetteraLayout card navigation", () => {
       expect(document.activeElement).toBe(input);
     });
 
-    it("Enter on select card focuses the select element", () => {
+    it("Enter on select card focuses the select trigger", () => {
       renderLayout();
       const cards = getCards();
       const selectCard = cards.find(
@@ -228,7 +226,7 @@ describe("SetteraLayout card navigation", () => {
 
       fireKey("Enter");
 
-      const select = selectCard.querySelector("select");
+      const select = selectCard.querySelector('button[role="combobox"]');
       expect(document.activeElement).toBe(select);
     });
 
@@ -260,13 +258,15 @@ describe("SetteraLayout card navigation", () => {
       expect(document.activeElement).toBe(cards[0]);
     });
 
-    it("Escape from select element returns to card", () => {
+    it("Escape from select trigger returns to card", () => {
       renderLayout();
       const cards = getCards();
       const selectCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "theme",
       )!;
-      const select = selectCard.querySelector<HTMLElement>("select")!;
+      const select = selectCard.querySelector<HTMLElement>(
+        'button[role="combobox"]',
+      )!;
       select.focus();
 
       fireKey("Escape");
@@ -300,7 +300,9 @@ describe("SetteraLayout card navigation", () => {
         await new Promise((r) => requestAnimationFrame(r));
       });
       expect(
-        (document.activeElement as HTMLElement)?.hasAttribute("data-setting-key"),
+        (document.activeElement as HTMLElement)?.hasAttribute(
+          "data-setting-key",
+        ),
       ).toBe(true);
       const card = document.activeElement as HTMLElement;
 
@@ -417,9 +419,8 @@ describe("SetteraLayout card navigation", () => {
       const textCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "username",
       )!;
-      const input = textCard.querySelector<HTMLInputElement>(
-        'input[type="text"]',
-      )!;
+      const input =
+        textCard.querySelector<HTMLInputElement>('input[type="text"]')!;
       input.focus();
 
       fireKey("ArrowDown");

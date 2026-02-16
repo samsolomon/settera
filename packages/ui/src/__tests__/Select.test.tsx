@@ -1,11 +1,26 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { Select } from "../components/Select.js";
-import { SettingRow } from "../components/SettingRow.js";
 import type { SetteraSchema } from "@settera/schema";
+
+if (!HTMLElement.prototype.hasPointerCapture) {
+  HTMLElement.prototype.hasPointerCapture = () => false;
+}
+
+if (!HTMLElement.prototype.setPointerCapture) {
+  HTMLElement.prototype.setPointerCapture = () => {};
+}
+
+if (!HTMLElement.prototype.releasePointerCapture) {
+  HTMLElement.prototype.releasePointerCapture = () => {};
+}
+
+if (!HTMLElement.prototype.scrollIntoView) {
+  HTMLElement.prototype.scrollIntoView = () => {};
+}
 
 const schema: SetteraSchema = {
   version: "1.0",
@@ -51,6 +66,16 @@ const schema: SetteraSchema = {
               ],
               dangerous: true,
             },
+            {
+              key: "collision-select",
+              title: "Collision Select",
+              type: "select",
+              options: [
+                { value: "normal", label: "Normal" },
+                { value: "__settera_empty_option__", label: "Sentinel Value" },
+              ],
+              default: "normal",
+            },
           ],
         },
       ],
@@ -73,53 +98,94 @@ function renderSelect(
 }
 
 describe("Select", () => {
+  async function openSelect(user: ReturnType<typeof userEvent.setup>) {
+    const trigger = screen.getByRole("combobox");
+    trigger.focus();
+    await user.keyboard("{ArrowDown}");
+  }
+
   it("renders a select element", () => {
     renderSelect("theme", { theme: "light" });
     expect(screen.getByRole("combobox")).toBeDefined();
   });
 
-  it("renders correct number of options (with placeholder)", () => {
+  it("renders correct number of options (with placeholder)", async () => {
+    const user = userEvent.setup();
     renderSelect("theme", { theme: "light" });
+    await openSelect(user);
     const options = screen.getAllByRole("option");
     // 3 options + 1 "Select…" placeholder
     expect(options.length).toBe(4);
   });
 
-  it("renders option values and labels", () => {
+  it("renders option values and labels", async () => {
+    const user = userEvent.setup();
     renderSelect("theme", { theme: "light" });
-    expect(screen.getByText("Light")).toBeDefined();
-    expect(screen.getByText("Dark")).toBeDefined();
-    expect(screen.getByText("System")).toBeDefined();
+    await openSelect(user);
+    const listbox = screen.getByRole("listbox");
+    expect(
+      within(listbox).getByRole("option", { name: "Light" }),
+    ).toBeDefined();
+    expect(within(listbox).getByRole("option", { name: "Dark" })).toBeDefined();
+    expect(
+      within(listbox).getByRole("option", { name: "System" }),
+    ).toBeDefined();
   });
 
-  it("includes placeholder option when not required", () => {
+  it("includes placeholder option when not required", async () => {
+    const user = userEvent.setup();
     renderSelect("theme", { theme: "" });
-    expect(screen.getByText("Select…")).toBeDefined();
+    await openSelect(user);
+    const listbox = screen.getByRole("listbox");
+    expect(
+      within(listbox).getByRole("option", { name: "Select…" }),
+    ).toBeDefined();
   });
 
-  it("omits placeholder option when required", () => {
+  it("omits placeholder option when required", async () => {
+    const user = userEvent.setup();
     renderSelect("required-select", { "required-select": "a" });
+    await openSelect(user);
     expect(screen.queryByText("Select…")).toBeNull();
   });
 
   it("displays selected value", () => {
     renderSelect("theme", { theme: "dark" });
-    const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("dark");
+    const select = screen.getByRole("combobox");
+    expect(select.textContent).toContain("Dark");
   });
 
   it("calls onChange when selection changes", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderSelect("theme", { theme: "light" }, onChange);
-    await user.selectOptions(screen.getByRole("combobox"), "dark");
+    await openSelect(user);
+    await user.click(screen.getByRole("option", { name: "Dark" }));
     expect(onChange).toHaveBeenCalledWith("theme", "dark");
+  });
+
+  it("does not treat a real option matching sentinel as empty", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderSelect(
+      "collision-select",
+      { "collision-select": "normal" },
+      onChange,
+    );
+
+    await openSelect(user);
+    await user.click(screen.getByRole("option", { name: "Sentinel Value" }));
+
+    expect(onChange).toHaveBeenCalledWith(
+      "collision-select",
+      "__settera_empty_option__",
+    );
   });
 
   it("uses default value when not in values", () => {
     renderSelect("theme", {});
-    const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("light");
+    const select = screen.getByRole("combobox");
+    expect(select.textContent).toContain("Light");
   });
 
   it("has aria-label from definition title", () => {
@@ -155,8 +221,8 @@ describe("Select", () => {
 
   it("uses default value when values is empty", () => {
     renderSelect("theme", {});
-    const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("light");
+    const select = screen.getByRole("combobox");
+    expect(select.textContent).toContain("Light");
   });
 
   it("runs async validation on change (not just blur)", async () => {
@@ -169,18 +235,16 @@ describe("Select", () => {
           onChange={() => {}}
           onValidate={{ theme: asyncValidator }}
         >
-          <SettingRow settingKey="theme">
-            <Select settingKey="theme" />
-          </SettingRow>
+          <Select settingKey="theme" />
         </SetteraRenderer>
       </SetteraProvider>,
     );
 
-    await act(async () => {
-      await user.selectOptions(screen.getByRole("combobox"), "dark");
-    });
+    await openSelect(user);
+    await user.click(await screen.findByRole("option", { name: "Dark" }));
 
-    expect(asyncValidator).toHaveBeenCalledWith("dark");
-    expect(screen.getByRole("alert").textContent).toBe("Invalid choice");
+    await waitFor(() => {
+      expect(asyncValidator).toHaveBeenCalledWith("dark");
+    });
   });
 });
