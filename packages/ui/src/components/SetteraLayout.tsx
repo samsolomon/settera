@@ -118,6 +118,7 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
         style={{
           flex: 1,
           padding: "var(--settera-page-padding, 24px 32px)",
+          backgroundColor: "var(--settera-page-bg, #f9fafb)",
           overflowY: "auto",
           outline: "none",
         }}
@@ -125,6 +126,7 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
         <div
           style={{
             maxWidth: "var(--settera-content-max-width, 640px)",
+            marginInline: "auto",
           }}
         >
           {children ?? <SetteraPage />}

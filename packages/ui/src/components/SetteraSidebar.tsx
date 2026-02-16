@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useState,
 } from "react";
 import {
   SetteraSchemaContext,
@@ -283,7 +284,7 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
       onKeyDown={handleNavKeyDown}
       style={{
         width: "var(--settera-sidebar-width, 240px)",
-        backgroundColor: "var(--settera-sidebar-bg, #fafafa)",
+        backgroundColor: "var(--settera-sidebar-bg, #f3f4f6)",
         borderRight: "var(--settera-sidebar-border, 1px solid #e5e7eb)",
         fontSize: "var(--settera-sidebar-font-size, 14px)",
         padding: "var(--settera-sidebar-padding, 8px)",
@@ -293,9 +294,6 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
         gap: "var(--settera-sidebar-gap, 4px)",
       }}
     >
-      <style>{`[data-settera-nav] button:not([aria-current="page"]):hover {
-  background: var(--settera-sidebar-hover-bg, #f3f4f6);
-}`}</style>
       <SetteraSearch />
       {visiblePages.map((page) => (
         <SidebarItem
@@ -347,6 +345,7 @@ function SidebarItem({
   getTabIndex,
   setButtonRef,
 }: SidebarItemProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const flattened = isFlattenedPage(page);
   const isActive = flattened
     ? activePage === resolvePageKey(page)
@@ -380,6 +379,8 @@ function SidebarItem({
                 isFlattenedPage(page) ? resolvePageKey(page) : page.key,
               )
         }
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         aria-current={isActive ? "page" : undefined}
         tabIndex={getTabIndex(flatIndex)}
         style={{
@@ -391,8 +392,10 @@ function SidebarItem({
           border: "none",
           borderRadius: "var(--settera-sidebar-item-radius, 6px)",
           background: isActive
-            ? "var(--settera-sidebar-active-bg, #e5e7eb)"
-            : "transparent",
+            ? "var(--settera-sidebar-active-bg, #d1d5db)"
+            : isHovered
+              ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
+              : "transparent",
           color: isActive
             ? "var(--settera-sidebar-active-color, #111827)"
             : "inherit",
@@ -438,8 +441,7 @@ function SidebarItem({
           style={{
             marginLeft: "var(--settera-sidebar-sub-margin, 14px)",
             paddingLeft: "var(--settera-sidebar-sub-padding, 10px)",
-            borderLeft:
-              "var(--settera-sidebar-tree-line, 1px solid #e5e7eb)",
+            borderLeft: "var(--settera-sidebar-tree-line, 1px solid #e5e7eb)",
             display: "flex",
             flexDirection: "column",
             gap: "var(--settera-sidebar-sub-gap, 2px)",
