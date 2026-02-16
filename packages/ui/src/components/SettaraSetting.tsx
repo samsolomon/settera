@@ -6,6 +6,8 @@ import { TextInput } from "./TextInput.js";
 import { NumberInput } from "./NumberInput.js";
 import { Select } from "./Select.js";
 import { ActionButton } from "./ActionButton.js";
+import { MultiSelect } from "./MultiSelect.js";
+import { DateInput } from "./DateInput.js";
 
 export interface SettaraSettingProps {
   settingKey: string;
@@ -41,6 +43,12 @@ export function SettaraSetting({ settingKey }: SettaraSettingProps) {
       break;
     case "select":
       control = <Select settingKey={settingKey} />;
+      break;
+    case "multiselect":
+      control = <MultiSelect settingKey={settingKey} />;
+      break;
+    case "date":
+      control = <DateInput settingKey={settingKey} />;
       break;
     case "action":
       control = <ActionButton settingKey={settingKey} />;

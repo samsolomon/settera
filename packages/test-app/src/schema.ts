@@ -41,6 +41,26 @@ export const demoSchema: SettaraSchema = {
                 equals: true,
               },
             },
+            {
+              key: "general.channels",
+              title: "Notification Channels",
+              description: "Choose how you want to receive notifications.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "sms", label: "SMS" },
+                { value: "push", label: "Push Notifications" },
+                { value: "in-app", label: "In-App" },
+              ],
+              default: ["email", "in-app"],
+              visibleWhen: {
+                setting: "general.notifications",
+                equals: true,
+              },
+              validation: {
+                required: true,
+              },
+            },
           ],
         },
         {
@@ -80,6 +100,15 @@ export const demoSchema: SettaraSchema = {
               placeholder: "Tell us about yourself…",
               validation: {
                 maxLength: 200,
+              },
+            },
+            {
+              key: "profile.birthday",
+              title: "Birthday",
+              description: "Your date of birth (used for age verification).",
+              type: "date",
+              validation: {
+                maxDate: "2010-01-01",
               },
             },
           ],

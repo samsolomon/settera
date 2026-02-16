@@ -246,6 +246,167 @@ describe("validateSettingValue — select", () => {
   });
 });
 
+// ---- MultiSelect Validation ----
+
+function multiSelectDef(
+  validation?: Record<string, unknown>,
+): SettingDefinition {
+  return {
+    key: "ms",
+    title: "MultiSelect",
+    type: "multiselect",
+    options: [
+      { value: "a", label: "A" },
+      { value: "b", label: "B" },
+      { value: "c", label: "C" },
+    ],
+    validation,
+  } as SettingDefinition;
+}
+
+describe("validateSettingValue — multiselect", () => {
+  it("returns null when no validation rules", () => {
+    expect(validateSettingValue(multiSelectDef(), ["a"])).toBeNull();
+  });
+
+  it("returns error for required empty array", () => {
+    expect(validateSettingValue(multiSelectDef({ required: true }), [])).toBe(
+      "At least one selection is required",
+    );
+  });
+
+  it("returns null for required with values", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ required: true }), ["a"]),
+    ).toBeNull();
+  });
+
+  it("returns error when below minSelections", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ minSelections: 2 }), ["a"]),
+    ).toBe("Select at least 2");
+  });
+
+  it("returns null when at minSelections", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ minSelections: 2 }), ["a", "b"]),
+    ).toBeNull();
+  });
+
+  it("returns error when above maxSelections", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ maxSelections: 1 }), ["a", "b"]),
+    ).toBe("Select at most 1");
+  });
+
+  it("returns null when at maxSelections", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ maxSelections: 2 }), ["a", "b"]),
+    ).toBeNull();
+  });
+
+  it("uses custom message", () => {
+    expect(
+      validateSettingValue(
+        multiSelectDef({ required: true, message: "Pick something" }),
+        [],
+      ),
+    ).toBe("Pick something");
+  });
+
+  it("skips minSelections/maxSelections when empty and not required", () => {
+    expect(
+      validateSettingValue(
+        multiSelectDef({ minSelections: 2, maxSelections: 3 }),
+        [],
+      ),
+    ).toBeNull();
+  });
+
+  it("treats non-array value as empty", () => {
+    expect(
+      validateSettingValue(multiSelectDef({ required: true }), undefined),
+    ).toBe("At least one selection is required");
+  });
+});
+
+// ---- Date Validation ----
+
+function dateDef(validation?: Record<string, unknown>): SettingDefinition {
+  return {
+    key: "d",
+    title: "Date",
+    type: "date",
+    validation,
+  } as SettingDefinition;
+}
+
+describe("validateSettingValue — date", () => {
+  it("returns null when no validation rules", () => {
+    expect(validateSettingValue(dateDef(), "2025-01-15")).toBeNull();
+  });
+
+  it("returns error for required empty string", () => {
+    expect(validateSettingValue(dateDef({ required: true }), "")).toBe(
+      "This field is required",
+    );
+  });
+
+  it("returns null for required with value", () => {
+    expect(
+      validateSettingValue(dateDef({ required: true }), "2025-01-15"),
+    ).toBeNull();
+  });
+
+  it("returns error when before minDate", () => {
+    expect(
+      validateSettingValue(dateDef({ minDate: "2025-01-01" }), "2024-12-31"),
+    ).toBe("Date must be on or after 2025-01-01");
+  });
+
+  it("returns null when at minDate", () => {
+    expect(
+      validateSettingValue(dateDef({ minDate: "2025-01-01" }), "2025-01-01"),
+    ).toBeNull();
+  });
+
+  it("returns error when after maxDate", () => {
+    expect(
+      validateSettingValue(dateDef({ maxDate: "2025-12-31" }), "2026-01-01"),
+    ).toBe("Date must be on or before 2025-12-31");
+  });
+
+  it("returns null when at maxDate", () => {
+    expect(
+      validateSettingValue(dateDef({ maxDate: "2025-12-31" }), "2025-12-31"),
+    ).toBeNull();
+  });
+
+  it("uses custom message", () => {
+    expect(
+      validateSettingValue(
+        dateDef({ required: true, message: "Date is required" }),
+        "",
+      ),
+    ).toBe("Date is required");
+  });
+
+  it("skips minDate/maxDate when empty and not required", () => {
+    expect(
+      validateSettingValue(
+        dateDef({ minDate: "2025-01-01", maxDate: "2025-12-31" }),
+        "",
+      ),
+    ).toBeNull();
+  });
+
+  it("treats non-string value as empty", () => {
+    expect(validateSettingValue(dateDef({ required: true }), undefined)).toBe(
+      "This field is required",
+    );
+  });
+});
+
 // ---- No-validation fallback ----
 
 describe("validateSettingValue — no-validation types", () => {

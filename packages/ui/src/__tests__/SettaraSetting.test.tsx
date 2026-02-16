@@ -57,6 +57,11 @@ const schema: SettaraSchema = {
               options: [{ value: "a", label: "A" }],
             },
             {
+              key: "startDate",
+              title: "Start Date",
+              type: "date",
+            },
+            {
               key: "hidden",
               title: "Hidden Setting",
               type: "boolean",
@@ -109,12 +114,18 @@ describe("SettaraSetting", () => {
     expect(screen.getByText("Export")).toBeDefined();
   });
 
-  it("renders placeholder for unsupported types", () => {
+  it("renders MultiSelect for multiselect type", () => {
     renderSetting("tags");
-    expect(screen.getByTestId("unsupported-tags")).toBeDefined();
-    expect(screen.getByTestId("unsupported-tags").textContent).toBe(
-      "multiselect",
-    );
+    // MultiSelect renders checkboxes inside the setting row
+    expect(screen.getAllByRole("checkbox").length).toBe(1);
+  });
+
+  it("renders DateInput for date type", () => {
+    renderSetting("startDate");
+    const input = screen.getByLabelText("Start Date", {
+      selector: "input",
+    }) as HTMLInputElement;
+    expect(input.type).toBe("date");
   });
 
   it("wraps control in SettingRow with title", () => {

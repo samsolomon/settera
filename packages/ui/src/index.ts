@@ -27,6 +27,10 @@ export { Select } from "./components/Select.js";
 export type { SelectProps } from "./components/Select.js";
 export { ActionButton } from "./components/ActionButton.js";
 export type { ActionButtonProps } from "./components/ActionButton.js";
+export { MultiSelect } from "./components/MultiSelect.js";
+export type { MultiSelectProps } from "./components/MultiSelect.js";
+export { DateInput } from "./components/DateInput.js";
+export type { DateInputProps } from "./components/DateInput.js";
 
 // Search
 export { SettaraSearch } from "./components/SettaraSearch.js";

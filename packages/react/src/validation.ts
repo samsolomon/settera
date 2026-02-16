@@ -16,6 +16,10 @@ export function validateSettingValue(
       return validateNumber(definition.validation, value);
     case "select":
       return validateSelect(definition.validation, value);
+    case "multiselect":
+      return validateMultiSelect(definition.validation, value);
+    case "date":
+      return validateDate(definition.validation, value);
     default:
       return null;
   }
@@ -116,6 +120,83 @@ function validateSelect(
 
   if (validation.required && isEmpty) {
     return validation.message ?? "This field is required";
+  }
+
+  return null;
+}
+
+function validateMultiSelect(
+  validation:
+    | {
+        required?: boolean;
+        minSelections?: number;
+        maxSelections?: number;
+        message?: string;
+      }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const arr = Array.isArray(value) ? value : [];
+
+  if (validation.required && arr.length === 0) {
+    return validation.message ?? "At least one selection is required";
+  }
+
+  // Skip further checks if empty and not required
+  if (arr.length === 0) return null;
+
+  if (
+    validation.minSelections !== undefined &&
+    arr.length < validation.minSelections
+  ) {
+    return validation.message ?? `Select at least ${validation.minSelections}`;
+  }
+
+  if (
+    validation.maxSelections !== undefined &&
+    arr.length > validation.maxSelections
+  ) {
+    return validation.message ?? `Select at most ${validation.maxSelections}`;
+  }
+
+  return null;
+}
+
+function validateDate(
+  validation:
+    | {
+        required?: boolean;
+        minDate?: string;
+        maxDate?: string;
+        message?: string;
+      }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const str = typeof value === "string" ? value : "";
+  const isEmpty = str.length === 0;
+
+  if (validation.required && isEmpty) {
+    return validation.message ?? "This field is required";
+  }
+
+  // Skip further checks if empty and not required
+  if (isEmpty) return null;
+
+  if (validation.minDate !== undefined && str < validation.minDate) {
+    return (
+      validation.message ?? `Date must be on or after ${validation.minDate}`
+    );
+  }
+
+  if (validation.maxDate !== undefined && str > validation.maxDate) {
+    return (
+      validation.message ?? `Date must be on or before ${validation.maxDate}`
+    );
   }
 
   return null;
