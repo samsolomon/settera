@@ -15,6 +15,11 @@ import {
   NumberInput,
   Select,
   ActionButton,
+  SettaraSetting,
+  SettaraSection,
+  SettaraPage,
+  SettaraSidebar,
+  SettaraLayout,
 } from "../index.js";
 
 describe("@settara/ui", () => {
@@ -43,5 +48,13 @@ describe("@settara/ui", () => {
     expect(typeof NumberInput).toBe("function");
     expect(typeof Select).toBe("function");
     expect(typeof ActionButton).toBe("function");
+  });
+
+  it("exports layout components", () => {
+    expect(typeof SettaraSetting).toBe("function");
+    expect(typeof SettaraSection).toBe("function");
+    expect(typeof SettaraPage).toBe("function");
+    expect(typeof SettaraSidebar).toBe("function");
+    expect(typeof SettaraLayout).toBe("function");
   });
 });

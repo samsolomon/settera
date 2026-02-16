@@ -132,8 +132,44 @@ export const demoSchema: SettaraSchema = {
             },
           ],
         },
+      ],
+      pages: [
         {
-          key: "security",
+          key: "privacy",
+          title: "Privacy",
+          sections: [
+            {
+              key: "tracking",
+              title: "Tracking",
+              settings: [
+                {
+                  key: "privacy.analytics",
+                  title: "Usage Analytics",
+                  description:
+                    "Share anonymous usage data to help improve the app.",
+                  type: "boolean",
+                  default: true,
+                },
+                {
+                  key: "privacy.crashReports",
+                  title: "Crash Reports",
+                  description: "Automatically send crash reports.",
+                  type: "boolean",
+                  default: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      key: "security",
+      title: "Security",
+      icon: "shield",
+      sections: [
+        {
+          key: "securityMain",
           title: "Security",
           settings: [
             {
