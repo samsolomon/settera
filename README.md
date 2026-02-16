@@ -1,6 +1,8 @@
 # Settera
 
-A schema-driven settings framework for React. Define your settings in a JSON schema, and Settera renders a complete settings UI with keyboard navigation, search, validation, and responsive layout.
+Settings don't sell software. They're seldom refactored, rarely considered, and perpetually growing until they become unmanageable. Designers, engineers, PMs—nobody wants to work on settings. Yet, the quality of software can often be determined by the settings that govern it.
+
+Settera is a schema-driven settings framework. Define your settings in a schema, and Settera renders a complete settings UI—keyboard navigation, search, validation, conditional visibility, and responsive layout. Stop spending cycles planning and building settings infrastructure, and focus on your core product.
 
 ## Why Settera?
 
