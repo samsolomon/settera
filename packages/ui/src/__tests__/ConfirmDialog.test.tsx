@@ -175,9 +175,8 @@ describe("ConfirmDialog", () => {
     const onChange = vi.fn();
     renderWithDialog("experimental", { experimental: false }, onChange);
     await user.click(screen.getByTestId("toggle-experimental"));
-    const dialog = screen.getByRole("dialog");
-    // Click the backdrop (the dialog element itself, not the inner card)
-    await user.click(dialog);
+    const overlay = screen.getByTestId("settera-confirm-overlay");
+    await user.click(overlay);
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog")).toBeNull();
   });

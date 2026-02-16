@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
+import * as Switch from "@radix-ui/react-switch";
 import { useSetteraSetting } from "@settera/react";
 
 export interface BooleanSwitchProps {
@@ -17,18 +18,11 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
   const checked = Boolean(value);
   const isDangerous = "dangerous" in definition && definition.dangerous;
 
-  const handleClick = useCallback(() => {
-    setValue(!checked);
-  }, [setValue, checked]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === " ") {
-        e.preventDefault();
-        setValue(!checked);
-      }
+  const handleCheckedChange = useCallback(
+    (nextChecked: boolean) => {
+      setValue(nextChecked);
     },
-    [setValue, checked],
+    [setValue],
   );
 
   // Track keyboard-driven focus for visible focus ring.
@@ -56,12 +50,10 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
     : "var(--settera-switch-inactive-color, #d1d5db)";
 
   return (
-    <button
-      role="switch"
-      aria-checked={checked}
+    <Switch.Root
+      checked={checked}
+      onCheckedChange={handleCheckedChange}
       aria-label={definition.title}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
@@ -83,19 +75,18 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
           : "none",
       }}
     >
-      <span
+      <Switch.Thumb
         style={{
-          position: "absolute",
-          top: "2px",
-          left: checked ? "22px" : "2px",
+          display: "block",
           width: "var(--settera-switch-thumb-size, 20px)",
           height: "var(--settera-switch-thumb-size, 20px)",
           borderRadius: "50%",
           backgroundColor: "var(--settera-switch-thumb-color, white)",
-          transition: "left 0.2s",
+          transition: "transform 0.2s",
+          transform: checked ? "translateX(22px)" : "translateX(2px)",
           boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
         }}
       />
-    </button>
+    </Switch.Root>
   );
 }
