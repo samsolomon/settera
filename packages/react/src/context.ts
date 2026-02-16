@@ -31,6 +31,8 @@ export interface SetteraNavigationContextValue {
   setSearchQuery: (query: string) => void;
   matchingSettingKeys: Set<string>;
   matchingPageKeys: Set<string>;
+  requestFocusContent: () => void;
+  registerFocusContentHandler: (handler: () => void) => () => void;
 }
 
 export const SetteraNavigationContext =

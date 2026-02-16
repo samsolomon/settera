@@ -46,7 +46,42 @@ const schema: SetteraSchema = {
         {
           key: "experimental",
           title: "Experimental",
-          settings: [{ key: "debug", title: "Debug Mode", type: "boolean" }],
+          settings: [
+            { key: "debug", title: "Debug Mode", type: "boolean" },
+            { key: "apiKey", title: "API Key", type: "text" },
+          ],
+        },
+      ],
+    },
+    {
+      key: "parentOnly",
+      title: "Parent Only",
+      pages: [
+        {
+          key: "child1",
+          title: "Child One",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [
+                { key: "c1set", title: "C1 Setting", type: "boolean" },
+              ],
+            },
+          ],
+        },
+        {
+          key: "child2",
+          title: "Child Two",
+          sections: [
+            {
+              key: "s2",
+              title: "S2",
+              settings: [
+                { key: "c2set", title: "C2 Setting", type: "boolean" },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -283,6 +318,199 @@ describe("SetteraLayout keyboard navigation", () => {
 
       // Should have: Behavior (h2), Sub Behavior (h3), Appearance (h2)
       expect(headings.length).toBe(3);
+    });
+  });
+
+  describe("Arrow keys in sidebar update content", () => {
+    it("ArrowDown in sidebar updates content to show the new page", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+
+      const generalBtn = getSidebarButton("General");
+      generalBtn.focus();
+
+      // Initially General is active
+      expect(generalBtn.getAttribute("aria-current")).toBe("page");
+
+      // ArrowDown to Advanced
+      await user.keyboard("{ArrowDown}");
+
+      const advancedBtn = getSidebarButton("Advanced");
+      expect(document.activeElement).toBe(advancedBtn);
+      // Content should now show the Advanced page
+      expect(advancedBtn.getAttribute("aria-current")).toBe("page");
+    });
+  });
+
+  describe("Enter focuses content", () => {
+    it("Enter on sidebar page focuses first content control", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+
+      const generalBtn = getSidebarButton("General");
+      generalBtn.focus();
+
+      await user.keyboard("{Enter}");
+
+      // Wait for requestAnimationFrame
+      await act(async () => {
+        await new Promise((r) => requestAnimationFrame(r));
+      });
+
+      const main = screen.getByRole("main");
+      expect(main.contains(document.activeElement)).toBe(true);
+      // First focusable element should be the first switch button
+      expect(document.activeElement?.tagName).toBe("BUTTON");
+    });
+
+    it("Enter on expand-only parent toggles expansion, does NOT focus content", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+
+      const generalBtn = getSidebarButton("General");
+      generalBtn.focus();
+
+      // Navigate to Parent Only (General → Advanced → Parent Only)
+      await user.keyboard("{ArrowDown}{ArrowDown}");
+      expect(document.activeElement).toBe(getSidebarButton("Parent Only"));
+
+      // Press Enter — should expand, not focus content
+      await user.keyboard("{Enter}");
+
+      // Wait for potential requestAnimationFrame
+      await act(async () => {
+        await new Promise((r) => requestAnimationFrame(r));
+      });
+
+      // Child One should now be visible (expanded)
+      expect(screen.getByText("Child One")).toBeDefined();
+
+      // Focus should still be in sidebar
+      const sidebar = screen.getByRole("tree");
+      expect(sidebar.contains(document.activeElement)).toBe(true);
+    });
+  });
+
+  describe("Escape from content returns to sidebar", () => {
+    it("Escape from a non-input in content returns to correct sidebar item", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+
+      const advancedBtn = getSidebarButton("Advanced");
+      advancedBtn.focus();
+
+      // Navigate to Advanced and Enter to focus content
+      await user.keyboard("{Enter}");
+      await act(async () => {
+        await new Promise((r) => requestAnimationFrame(r));
+      });
+
+      const main = screen.getByRole("main");
+      expect(main.contains(document.activeElement)).toBe(true);
+
+      // Press Escape — should return to sidebar
+      fireKey("Escape");
+
+      const sidebar = screen.getByRole("tree");
+      expect(sidebar.contains(document.activeElement)).toBe(true);
+    });
+
+    it("Escape from a text input blurs it, second Escape returns to sidebar", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+
+      // Navigate to Advanced page which has a text input
+      const generalBtn = getSidebarButton("General");
+      generalBtn.focus();
+      await user.keyboard("{ArrowDown}"); // Advanced
+      await user.keyboard("{Enter}");
+      await act(async () => {
+        await new Promise((r) => requestAnimationFrame(r));
+      });
+
+      const main = screen.getByRole("main");
+
+      // Find and focus the text input
+      const textInput = main.querySelector<HTMLInputElement>('input[type="text"]');
+      expect(textInput).not.toBeNull();
+      textInput!.focus();
+      expect(document.activeElement).toBe(textInput);
+
+      // First Escape — blurs input, focus moves to main
+      fireKey("Escape");
+      expect(document.activeElement).not.toBe(textInput);
+      expect(main.contains(document.activeElement) || document.activeElement === main).toBe(true);
+
+      // Second Escape — returns to sidebar
+      fireKey("Escape");
+      const sidebar = screen.getByRole("tree");
+      expect(sidebar.contains(document.activeElement)).toBe(true);
+    });
+
+    it("Escape does not fire when dialog is open", async () => {
+      const user = userEvent.setup();
+
+      const confirmSchema: SetteraSchema = {
+        version: "1.0",
+        pages: [
+          {
+            key: "danger",
+            title: "Danger",
+            sections: [
+              {
+                key: "reset",
+                title: "Reset",
+                settings: [
+                  {
+                    key: "resetAll",
+                    title: "Reset All",
+                    type: "boolean",
+                    confirm: {
+                      title: "Are you sure?",
+                      description: "This will reset everything.",
+                      confirmLabel: "Reset",
+                      cancelLabel: "Cancel",
+                      dangerous: true,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      render(
+        <SetteraProvider schema={confirmSchema}>
+          <SetteraRenderer
+            values={{ resetAll: false }}
+            onChange={() => {}}
+          >
+            <SetteraLayout />
+          </SetteraRenderer>
+        </SetteraProvider>,
+      );
+
+      // Click the switch to trigger the confirm dialog
+      const main = screen.getByRole("main");
+      const switchBtn = main.querySelector<HTMLElement>('button[role="switch"]');
+      expect(switchBtn).not.toBeNull();
+      await user.click(switchBtn!);
+
+      // Dialog should be open
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeDefined();
+
+      // Focus something in main
+      const cancelBtn = dialog.querySelector<HTMLElement>("button");
+      if (cancelBtn) cancelBtn.focus();
+
+      // Escape should NOT return to sidebar (dialog handles it)
+      fireKey("Escape");
+
+      // Focus should NOT have moved to sidebar
+      const sidebar = screen.getByRole("tree");
+      expect(sidebar.contains(document.activeElement)).toBe(false);
     });
   });
 });

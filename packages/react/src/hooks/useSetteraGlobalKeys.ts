@@ -71,12 +71,46 @@ export function useSetteraGlobalKeys(
         return;
       }
 
-      // Escape — Clear search when there is a query.
-      // Skip if the search input itself is focused — SetteraSearch handles
-      // its own Escape so it works standalone without SetteraLayout.
+      // Escape — layered priority:
+      // 1. Dialog open → bail, let dialog handle it
+      // 2. Search input focused → bail, let SetteraSearch handle it
+      // 3. Text/number input in content → blur it (two-phase: stay in content)
+      // 4. Focus in content area → return to sidebar
+      // 5. Search query active → clear search
       if (e.key === "Escape") {
+        // 1. Dialog open — let the dialog handle Escape
+        if (container.querySelector('[role="dialog"], [role="alertdialog"]'))
+          return;
+
         const searchInput = container.querySelector('input[role="searchbox"]');
-        if (searchQuery && e.target !== searchInput) {
+        const activeEl = document.activeElement;
+
+        // 2. Search input focused — let SetteraSearch handle it
+        if (activeEl === searchInput) return;
+
+        const main = container.querySelector<HTMLElement>("main");
+        const sidebar =
+          container.querySelector<HTMLElement>('nav[role="tree"]');
+
+        // 3. Text/number input in content — blur and focus main
+        if (main && activeEl && main.contains(activeEl) && isTextInput(activeEl)) {
+          e.preventDefault();
+          (activeEl as HTMLElement).blur();
+          main.focus();
+          return;
+        }
+
+        // 4. Focus in content area — return to sidebar
+        if (main && sidebar && main.contains(activeEl)) {
+          e.preventDefault();
+          const target =
+            sidebar.querySelector<HTMLElement>('[tabindex="0"]') || sidebar;
+          target.focus();
+          return;
+        }
+
+        // 5. Search query active — clear search
+        if (searchQuery) {
           e.preventDefault();
           clearSearch();
         }

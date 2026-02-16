@@ -32,8 +32,13 @@ interface FlatItem {
  */
 export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const { activePage, setActivePage, expandedGroups, toggleGroup } =
-    useSetteraNavigation();
+  const {
+    activePage,
+    setActivePage,
+    expandedGroups,
+    toggleGroup,
+    requestFocusContent,
+  } = useSetteraNavigation();
   const { isSearching, matchingPageKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
@@ -140,7 +145,9 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
 
   const navRef = useRef<HTMLElement>(null);
 
-  // Focus button when focusedIndex changes AND nav has focus
+  // Focus button when focusedIndex changes AND nav has focus.
+  // Also navigate to the focused page so content live-updates.
+  // Uses flatItemsRef (not flatItems) to avoid firing when search results change.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -149,7 +156,22 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
     if (btn && document.activeElement !== btn) {
       btn.focus();
     }
-  }, [focusedIndex]);
+
+    // Navigate to the focused item so the content area updates
+    const item = flatItemsRef.current[focusedIndex];
+    if (item) {
+      const { page } = item;
+      const hasChildren =
+        !isFlattenedPage(page) && page.pages && page.pages.length > 0;
+      const hasSections = page.sections && page.sections.length > 0;
+
+      // Don't navigate to expand-only parents (they have no content)
+      if (hasChildren && !hasSections && !isFlattenedPage(page)) return;
+
+      const pageKey = isFlattenedPage(page) ? resolvePageKey(page) : page.key;
+      setActivePage(pageKey);
+    }
+  }, [focusedIndex, setActivePage]);
 
   // Build a key→index map for quick lookups (O(1) instead of findIndex)
   const keyToIndex = useMemo(() => {
@@ -220,12 +242,16 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
 
       if (e.key === "Enter") {
         e.preventDefault();
-        if (item.depth === 0) {
-          handlePageClick(page);
+        const isExpandOnly =
+          hasChildren &&
+          !(page.sections && page.sections.length > 0) &&
+          !isFlattenedPage(page);
+        if (isExpandOnly) {
+          // Expand-only parent — just toggle, don't focus content
+          toggleGroup(page.key);
         } else {
-          setActivePage(
-            isFlattenedPage(page) ? resolvePageKey(page) : page.key,
-          );
+          // Page already loaded via arrow-key navigation; move focus to content
+          requestFocusContent();
         }
         return;
       }
@@ -233,7 +259,7 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
       // Delegate to roving tabindex for ArrowUp/Down/Home/End
       onKeyDownRef.current(e);
     },
-    [toggleGroup, keyToIndex, setFocusedIndex, handlePageClick, setActivePage],
+    [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent],
   );
 
   // Ref callback factory for storing button refs

@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import {
   validateSchema,
   flattenSettings,
@@ -63,6 +69,21 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
       return next;
     });
   }, []);
+
+  // Focus-content signal (ref-based to avoid re-rendering all nav consumers)
+  const focusHandlerRef = useRef<(() => void) | null>(null);
+  const requestFocusContent = useCallback(() => {
+    focusHandlerRef.current?.();
+  }, []);
+  const registerFocusContentHandler = useCallback(
+    (handler: () => void) => {
+      focusHandlerRef.current = handler;
+      return () => {
+        focusHandlerRef.current = null;
+      };
+    },
+    [],
+  );
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -179,6 +200,8 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
       setSearchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      requestFocusContent,
+      registerFocusContentHandler,
     }),
     [
       activePage,
@@ -187,6 +210,8 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
       searchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      requestFocusContent,
+      registerFocusContentHandler,
     ],
   );
 

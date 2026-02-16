@@ -23,5 +23,7 @@ export function useSetteraNavigation() {
     setSearchQuery: ctx.setSearchQuery,
     matchingSettingKeys: ctx.matchingSettingKeys,
     matchingPageKeys: ctx.matchingPageKeys,
+    requestFocusContent: ctx.requestFocusContent,
+    registerFocusContentHandler: ctx.registerFocusContentHandler,
   };
 }

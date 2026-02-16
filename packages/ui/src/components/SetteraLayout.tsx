@@ -1,6 +1,7 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import {
   useSetteraSearch,
+  useSetteraNavigation,
   useSetteraGlobalKeys,
   isTextInput,
 } from "@settera/react";
@@ -20,11 +21,31 @@ export interface SetteraLayoutProps {
  */
 export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const { query: searchQuery, setQuery } = useSetteraSearch();
+  const { registerFocusContentHandler } = useSetteraNavigation();
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
 
   useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
+
+  // Register handler so sidebar Enter can focus the first control in content
+  useEffect(() => {
+    return registerFocusContentHandler(() => {
+      requestAnimationFrame(() => {
+        const main = mainRef.current;
+        if (!main) return;
+        const target = main.querySelector<HTMLElement>(
+          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (target) {
+          target.focus();
+        } else {
+          main.focus();
+        }
+      });
+    });
+  }, [registerFocusContentHandler]);
 
   // Ctrl+ArrowDown/Up section heading jumping within <main>
   const handleMainKeyDown = useCallback(
@@ -79,11 +100,14 @@ export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
     >
       <SetteraSidebar renderIcon={renderIcon} />
       <main
+        ref={mainRef}
+        tabIndex={-1}
         onKeyDown={handleMainKeyDown}
         style={{
           flex: 1,
           padding: "var(--settera-page-padding, 24px 32px)",
           overflowY: "auto",
+          outline: "none",
         }}
       >
         <div
