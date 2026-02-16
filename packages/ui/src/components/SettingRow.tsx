@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
+import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SettingRowProps {
   settingKey: string;
@@ -132,7 +133,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                 marginTop: "2px",
               }}
             >
-              {definition.description}
+              {parseDescriptionLinks(definition.description)}
             </div>
           )}
           {"helpText" in definition && definition.helpText && (
@@ -144,7 +145,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               }}
             >
               {"ⓘ "}
-              {definition.helpText}
+              {parseDescriptionLinks(definition.helpText)}
             </div>
           )}
           {error && (

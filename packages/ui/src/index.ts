@@ -34,6 +34,9 @@ export { DateInput } from "./components/DateInput.js";
 export type { DateInputProps } from "./components/DateInput.js";
 export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
+// Utilities
+export { parseDescriptionLinks } from "./utils/parseDescriptionLinks.js";
+
 // Search
 export { SetteraSearch } from "./components/SetteraSearch.js";
 

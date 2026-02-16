@@ -10,6 +10,8 @@ export const demoSchema: SetteraSchema = {
     {
       key: "general",
       title: "General",
+      description:
+        "Core application settings. See our [documentation](https://example.com/docs) for details.",
       icon: "settings",
       sections: [
         {

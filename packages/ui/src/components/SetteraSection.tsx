@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { SetteraSchemaContext, useSetteraSearch } from "@settera/react";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
+import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SetteraSectionProps {
   pageKey: string;
@@ -77,7 +78,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
             marginBottom: "8px",
           }}
         >
-          {section.description}
+          {parseDescriptionLinks(section.description)}
         </p>
       )}
       {visibleSettings.length > 0 && (
@@ -132,7 +133,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
                   marginBottom: "8px",
                 }}
               >
-                {sub.description}
+                {parseDescriptionLinks(sub.description)}
               </p>
             )}
             <div

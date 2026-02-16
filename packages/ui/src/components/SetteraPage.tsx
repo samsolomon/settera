@@ -5,6 +5,7 @@ import {
   useSetteraSearch,
 } from "@settera/react";
 import { SetteraSection } from "./SetteraSection.js";
+import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
@@ -54,6 +55,18 @@ export function SetteraPage({ pageKey }: SetteraPageProps) {
       >
         {page.title}
       </h1>
+      {page.description && (
+        <p
+          style={{
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
+            marginTop: "4px",
+            marginBottom: 0,
+          }}
+        >
+          {parseDescriptionLinks(page.description)}
+        </p>
+      )}
       {visibleSections.map((section) => (
         <SetteraSection
           key={section.key}

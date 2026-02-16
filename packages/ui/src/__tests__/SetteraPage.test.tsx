@@ -142,4 +142,40 @@ describe("SetteraPage", () => {
     expect(screen.getByText("Behavior")).toBeDefined();
     expect(screen.getByText("Profile")).toBeDefined();
   });
+
+  it("renders page description when provided", () => {
+    const schemaWithDesc: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "about",
+          title: "About",
+          description: "Learn more at [our site](https://example.com).",
+          sections: [],
+        },
+      ],
+    };
+
+    render(
+      <SetteraProvider schema={schemaWithDesc}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
+          <SetteraPage pageKey="about" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    expect(screen.getByText("About")).toBeDefined();
+    const link = screen.getByText("our site");
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("https://example.com");
+  });
+
+  it("does not render description paragraph when page has no description", () => {
+    renderPage("general");
+    // The general page in the test schema has no description
+    const h1 = screen.getByText("General");
+    const nextSibling = h1.nextElementSibling;
+    // Next element should be a section, not a <p>
+    expect(nextSibling?.tagName).not.toBe("P");
+  });
 });

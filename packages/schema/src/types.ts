@@ -23,6 +23,9 @@ export interface PageDefinition {
   /** Display title in the sidebar */
   title: string;
 
+  /** Optional description displayed below the page title */
+  description?: string;
+
   /** Optional icon identifier (top-level pages only) */
   icon?: string;
 
