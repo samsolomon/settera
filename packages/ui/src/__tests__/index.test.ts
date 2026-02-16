@@ -7,6 +7,7 @@ import {
   useSettaraSetting,
   useSettaraAction,
   useSettaraNavigation,
+  useSettaraSearch,
   evaluateVisibility,
   validateSettingValue,
   BooleanSwitch,
@@ -15,6 +16,7 @@ import {
   NumberInput,
   Select,
   ActionButton,
+  SettaraSearch,
   SettaraSetting,
   SettaraSection,
   SettaraPage,
@@ -37,6 +39,7 @@ describe("@settara/ui", () => {
     expect(typeof useSettaraSetting).toBe("function");
     expect(typeof useSettaraAction).toBe("function");
     expect(typeof useSettaraNavigation).toBe("function");
+    expect(typeof useSettaraSearch).toBe("function");
     expect(typeof evaluateVisibility).toBe("function");
     expect(typeof validateSettingValue).toBe("function");
   });
@@ -48,6 +51,10 @@ describe("@settara/ui", () => {
     expect(typeof NumberInput).toBe("function");
     expect(typeof Select).toBe("function");
     expect(typeof ActionButton).toBe("function");
+  });
+
+  it("exports SettaraSearch", () => {
+    expect(typeof SettaraSearch).toBe("function");
   });
 
   it("exports layout components", () => {

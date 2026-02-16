@@ -1,5 +1,9 @@
 import React, { useContext } from "react";
-import { SettaraSchemaContext, useSettaraNavigation } from "@settara/react";
+import {
+  SettaraSchemaContext,
+  useSettaraNavigation,
+  useSettaraSearch,
+} from "@settara/react";
 import { SettaraSection } from "./SettaraSection.js";
 
 export interface SettaraPageProps {
@@ -13,6 +17,7 @@ export interface SettaraPageProps {
 export function SettaraPage({ pageKey }: SettaraPageProps) {
   const schemaCtx = useContext(SettaraSchemaContext);
   const { activePage } = useSettaraNavigation();
+  const { isSearching, matchingSettingKeys } = useSettaraSearch();
 
   if (!schemaCtx) {
     throw new Error("SettaraPage must be used within a SettaraProvider.");
@@ -25,6 +30,19 @@ export function SettaraPage({ pageKey }: SettaraPageProps) {
     return null;
   }
 
+  // During search, only show sections that contain matching settings
+  const visibleSections = isSearching
+    ? (page.sections ?? []).filter((section) => {
+        const hasMatchingSetting = (section.settings ?? []).some((s) =>
+          matchingSettingKeys.has(s.key),
+        );
+        const hasMatchingSubsection = (section.subsections ?? []).some((sub) =>
+          sub.settings.some((s) => matchingSettingKeys.has(s.key)),
+        );
+        return hasMatchingSetting || hasMatchingSubsection;
+      })
+    : (page.sections ?? []);
+
   return (
     <div>
       <h1
@@ -36,7 +54,7 @@ export function SettaraPage({ pageKey }: SettaraPageProps) {
       >
         {page.title}
       </h1>
-      {page.sections?.map((section) => (
+      {visibleSections.map((section) => (
         <SettaraSection
           key={section.key}
           pageKey={resolvedKey}

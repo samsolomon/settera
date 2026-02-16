@@ -7,6 +7,7 @@ export {
   useSettaraSetting,
   useSettaraAction,
   useSettaraNavigation,
+  useSettaraSearch,
   evaluateVisibility,
   validateSettingValue,
 } from "@settara/react";
@@ -24,6 +25,9 @@ export { Select } from "./components/Select.js";
 export type { SelectProps } from "./components/Select.js";
 export { ActionButton } from "./components/ActionButton.js";
 export type { ActionButtonProps } from "./components/ActionButton.js";
+
+// Search
+export { SettaraSearch } from "./components/SettaraSearch.js";
 
 // Layout components
 export { SettaraSetting } from "./components/SettaraSetting.js";

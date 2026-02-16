@@ -1,7 +1,12 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import userEvent from "@testing-library/user-event";
+import {
+  SettaraProvider,
+  SettaraRenderer,
+  useSettaraSearch,
+} from "@settara/react";
 import { SettaraPage } from "../components/SettaraPage.js";
 import type { SettaraSchema } from "@settara/schema";
 
@@ -102,5 +107,39 @@ describe("SettaraPage", () => {
     renderPage("general");
     expect(screen.getByText("Auto Save")).toBeDefined();
     expect(screen.getByText("Display Name")).toBeDefined();
+  });
+
+  it("hides sections with no matches during search", async () => {
+    const user = userEvent.setup();
+
+    function SearchTrigger() {
+      const { setQuery } = useSettaraSearch();
+      return <button onClick={() => setQuery("Auto Save")}>search</button>;
+    }
+
+    render(
+      <SettaraProvider schema={schema}>
+        <SettaraRenderer values={{}} onChange={() => {}}>
+          <SearchTrigger />
+          <SettaraPage pageKey="general" />
+        </SettaraRenderer>
+      </SettaraProvider>,
+    );
+
+    // Before search, both sections visible
+    expect(screen.getByText("Behavior")).toBeDefined();
+    expect(screen.getByText("Profile")).toBeDefined();
+
+    await user.click(screen.getByText("search"));
+
+    // After search, only Behavior section should be visible
+    expect(screen.getByText("Behavior")).toBeDefined();
+    expect(screen.queryByText("Profile")).toBeNull();
+  });
+
+  it("shows all sections when not searching", () => {
+    renderPage("general");
+    expect(screen.getByText("Behavior")).toBeDefined();
+    expect(screen.getByText("Profile")).toBeDefined();
   });
 });

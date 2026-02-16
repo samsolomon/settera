@@ -34,6 +34,7 @@ export type { UseSettaraSettingResult } from "./hooks/useSettaraSetting.js";
 export { useSettaraAction } from "./hooks/useSettaraAction.js";
 export type { UseSettaraActionResult } from "./hooks/useSettaraAction.js";
 export { useSettaraNavigation } from "./hooks/useSettaraNavigation.js";
+export { useSettaraSearch } from "./hooks/useSettaraSearch.js";
 
 // Validation (pure function, useful for custom renderers)
 export { validateSettingValue } from "./validation.js";

@@ -19,5 +19,9 @@ export function useSettaraNavigation() {
     setActivePage: ctx.setActivePage,
     expandedGroups: ctx.expandedGroups,
     toggleGroup: ctx.toggleGroup,
+    searchQuery: ctx.searchQuery,
+    setSearchQuery: ctx.setSearchQuery,
+    matchingSettingKeys: ctx.matchingSettingKeys,
+    matchingPageKeys: ctx.matchingPageKeys,
   };
 }

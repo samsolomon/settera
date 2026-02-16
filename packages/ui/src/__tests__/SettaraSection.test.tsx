@@ -1,7 +1,12 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import userEvent from "@testing-library/user-event";
+import {
+  SettaraProvider,
+  SettaraRenderer,
+  useSettaraSearch,
+} from "@settara/react";
 import { SettaraSection } from "../components/SettaraSection.js";
 import type { SettaraSchema } from "@settara/schema";
 
@@ -111,5 +116,88 @@ describe("SettaraSection", () => {
   it("renders subsection settings", () => {
     renderSection("general", "withSubs");
     expect(screen.getByText("Sub Setting")).toBeDefined();
+  });
+
+  it("hides non-matching settings during search", async () => {
+    const user = userEvent.setup();
+
+    function SearchTrigger() {
+      const { setQuery } = useSettaraSearch();
+      return <button onClick={() => setQuery("Auto Save")}>search</button>;
+    }
+
+    render(
+      <SettaraProvider schema={schema}>
+        <SettaraRenderer values={{ autoSave: true }} onChange={() => {}}>
+          <SearchTrigger />
+          <SettaraSection pageKey="general" sectionKey="behavior" />
+        </SettaraRenderer>
+      </SettaraProvider>,
+    );
+
+    // Both visible before search (autoSave=true satisfies visibleWhen)
+    expect(screen.getByText("Auto Save")).toBeDefined();
+    expect(screen.getByText("Sounds")).toBeDefined();
+
+    await user.click(screen.getByText("search"));
+
+    // Only "Auto Save" matches the query
+    expect(screen.getByText("Auto Save")).toBeDefined();
+    expect(screen.queryByText("Sounds")).toBeNull();
+  });
+
+  it("hides entire section when no settings match search", async () => {
+    const user = userEvent.setup();
+
+    function SearchTrigger() {
+      const { setQuery } = useSettaraSearch();
+      return <button onClick={() => setQuery("zzz no match")}>search</button>;
+    }
+
+    render(
+      <SettaraProvider schema={schema}>
+        <SettaraRenderer values={{}} onChange={() => {}}>
+          <SearchTrigger />
+          <SettaraSection pageKey="general" sectionKey="behavior" />
+        </SettaraRenderer>
+      </SettaraProvider>,
+    );
+
+    expect(screen.getByText("Behavior")).toBeDefined();
+
+    await user.click(screen.getByText("search"));
+
+    // Entire section hidden — heading gone
+    expect(screen.queryByText("Behavior")).toBeNull();
+  });
+
+  it("filters subsection settings during search", async () => {
+    const user = userEvent.setup();
+
+    function SearchTrigger() {
+      const { setQuery } = useSettaraSearch();
+      return <button onClick={() => setQuery("Sub Setting")}>search</button>;
+    }
+
+    render(
+      <SettaraProvider schema={schema}>
+        <SettaraRenderer values={{}} onChange={() => {}}>
+          <SearchTrigger />
+          <SettaraSection pageKey="general" sectionKey="withSubs" />
+        </SettaraRenderer>
+      </SettaraProvider>,
+    );
+
+    // Before search, both top-level and subsection settings visible
+    expect(screen.getByText("Top Level")).toBeDefined();
+    expect(screen.getByText("Sub Setting")).toBeDefined();
+
+    await user.click(screen.getByText("search"));
+
+    // Only subsection setting matches
+    expect(screen.getByText("Sub Setting")).toBeDefined();
+    expect(screen.queryByText("Top Level")).toBeNull();
+    // Subsection heading still visible
+    expect(screen.getByText("Subsection One")).toBeDefined();
   });
 });

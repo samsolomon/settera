@@ -26,6 +26,10 @@ export interface SettaraNavigationContextValue {
   setActivePage: (key: string) => void;
   expandedGroups: Set<string>;
   toggleGroup: (key: string) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  matchingSettingKeys: Set<string>;
+  matchingPageKeys: Set<string>;
 }
 
 export const SettaraNavigationContext =

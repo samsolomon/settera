@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SettaraProvider, SettaraRenderer } from "@settara/react";
 import { SettaraSidebar } from "../components/SettaraSidebar.js";
 import type { SettaraSchema } from "@settara/schema";
@@ -200,5 +201,38 @@ describe("SettaraSidebar", () => {
     expect(screen.getByText("Privacy")).toBeDefined();
     const privacyBtn = screen.getByText("Privacy").closest("button")!;
     expect(privacyBtn.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("renders the search input", () => {
+    renderSidebar();
+    expect(screen.getByRole("searchbox")).toBeDefined();
+  });
+
+  it("shows all pages when not searching", () => {
+    renderSidebar();
+    expect(screen.getByText("General")).toBeDefined();
+    expect(screen.getByText("Advanced")).toBeDefined();
+    expect(screen.getByText("Parent Only")).toBeDefined();
+  });
+
+  it("filters pages during search to only matching pages", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+    await user.type(screen.getByRole("searchbox"), "Debug");
+    // "Advanced" has "Debug" setting — should be visible
+    expect(screen.getByText("Advanced")).toBeDefined();
+    // "Parent Only" has no matching settings — should be hidden
+    expect(screen.queryByText("Parent Only")).toBeNull();
+  });
+
+  it("auto-expands parents with matching children during search", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+    // Search for something in the Privacy child page
+    await user.type(screen.getByRole("searchbox"), "Tracking");
+    // General should be visible (parent of Privacy)
+    expect(screen.getByText("General")).toBeDefined();
+    // Privacy should be visible (auto-expanded)
+    expect(screen.getByText("Privacy")).toBeDefined();
   });
 });

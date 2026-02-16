@@ -7,6 +7,7 @@ import {
   useSettaraSetting,
   useSettaraAction,
   useSettaraNavigation,
+  useSettaraSearch,
   evaluateVisibility,
   validateSettingValue,
   SettaraSchemaContext,
@@ -32,6 +33,7 @@ describe("@settara/react", () => {
     expect(typeof useSettaraSetting).toBe("function");
     expect(typeof useSettaraAction).toBe("function");
     expect(typeof useSettaraNavigation).toBe("function");
+    expect(typeof useSettaraSearch).toBe("function");
   });
 
   it("exports evaluateVisibility", () => {
