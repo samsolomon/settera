@@ -42,6 +42,7 @@ export function SetteraSidebar({
   onNavigate,
   backToApp,
 }: SetteraSidebarProps) {
+  const [isBackToAppHovered, setIsBackToAppHovered] = useState(false);
   const schemaCtx = useContext(SetteraSchemaContext);
   const {
     activePage,
@@ -325,13 +326,17 @@ export function SetteraSidebar({
             <button
               type="button"
               onClick={backToApp.onClick}
+              onMouseEnter={() => setIsBackToAppHovered(true)}
+              onMouseLeave={() => setIsBackToAppHovered(false)}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
                 width: "100%",
                 border: "none",
-                background: "transparent",
+                background: isBackToAppHovered
+                  ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
+                  : "transparent",
                 borderRadius: "var(--settera-sidebar-item-radius, 6px)",
                 padding: "var(--settera-sidebar-item-padding, 8px)",
                 textAlign: "left",
@@ -339,19 +344,43 @@ export function SetteraSidebar({
                 color: "var(--settera-sidebar-back-color, #374151)",
                 cursor: "pointer",
                 fontFamily: "inherit",
+                transition: "background-color 150ms ease",
               }}
             >
-              <span aria-hidden="true">‹</span>
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                style={{
+                  flexShrink: 0,
+                  color: "var(--settera-sidebar-chevron-color, #9ca3af)",
+                }}
+              >
+                <path
+                  d="M10 4l-4 4 4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               {backToApp.label ?? "Back to app"}
             </button>
           ) : (
             <a
               href={backToApp.href}
+              onMouseEnter={() => setIsBackToAppHovered(true)}
+              onMouseLeave={() => setIsBackToAppHovered(false)}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
                 width: "100%",
+                background: isBackToAppHovered
+                  ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
+                  : "transparent",
                 borderRadius: "var(--settera-sidebar-item-radius, 6px)",
                 padding: "var(--settera-sidebar-item-padding, 8px)",
                 textAlign: "left",
@@ -360,9 +389,28 @@ export function SetteraSidebar({
                 textDecoration: "none",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
+                transition: "background-color 150ms ease",
               }}
             >
-              <span aria-hidden="true">‹</span>
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                style={{
+                  flexShrink: 0,
+                  color: "var(--settera-sidebar-chevron-color, #9ca3af)",
+                }}
+              >
+                <path
+                  d="M10 4l-4 4 4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               {backToApp.label ?? "Back to app"}
             </a>
           )}
