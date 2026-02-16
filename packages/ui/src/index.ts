@@ -50,4 +50,7 @@ export type { SetteraPageProps } from "./components/SetteraPage.js";
 export { SetteraSidebar } from "./components/SetteraSidebar.js";
 export type { SetteraSidebarProps } from "./components/SetteraSidebar.js";
 export { SetteraLayout } from "./components/SetteraLayout.js";
-export type { SetteraLayoutProps } from "./components/SetteraLayout.js";
+export type {
+  SetteraLayoutProps,
+  SetteraBackToAppConfig,
+} from "./components/SetteraLayout.js";

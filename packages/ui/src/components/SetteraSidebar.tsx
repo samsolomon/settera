@@ -18,6 +18,7 @@ import { SetteraSearch } from "./SetteraSearch.js";
 
 export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
+  onNavigate?: (pageKey: string) => void;
 }
 
 interface FlatItem {
@@ -31,7 +32,10 @@ interface FlatItem {
  * Handles active state, expand/collapse, nested pages, icon rendering,
  * and keyboard navigation (roving tabindex + arrow-key tree semantics).
  */
-export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
+export function SetteraSidebar({
+  renderIcon,
+  onNavigate,
+}: SetteraSidebarProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const {
     activePage,
@@ -73,7 +77,9 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
 
       if (isFlattenedPage(page)) {
         // Single-child parent without sections — navigate to the child
-        setActivePage(resolvePageKey(page));
+        const pageKey = resolvePageKey(page);
+        setActivePage(pageKey);
+        onNavigate?.(pageKey);
       } else if (hasChildren && !hasSections) {
         // Parent with only children — just toggle expand
         toggleGroup(page.key);
@@ -84,9 +90,18 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
       } else {
         // Leaf page — just navigate
         setActivePage(page.key);
+        onNavigate?.(page.key);
       }
     },
-    [setActivePage, toggleGroup],
+    [setActivePage, toggleGroup, onNavigate],
+  );
+
+  const handleChildClick = useCallback(
+    (key: string) => {
+      setActivePage(key);
+      onNavigate?.(key);
+    },
+    [setActivePage, onNavigate],
   );
 
   // Filter pages during search
@@ -303,7 +318,7 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
           activePage={activePage}
           expandedGroups={expandedGroups}
           onPageClick={handlePageClick}
-          onChildClick={setActivePage}
+          onChildClick={handleChildClick}
           renderIcon={renderIcon}
           isSearching={isSearching}
           matchingPageKeys={matchingPageKeys}

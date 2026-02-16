@@ -1,6 +1,6 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, act, within } from "@testing-library/react";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -34,20 +34,86 @@ const schema: SetteraSchema = {
   ],
 };
 
+const nestedSchema: SetteraSchema = {
+  version: "1.0",
+  pages: [
+    {
+      key: "general",
+      title: "General",
+      sections: [
+        {
+          key: "base",
+          title: "Base",
+          settings: [
+            { key: "general.autoSave", title: "Auto Save", type: "boolean" },
+          ],
+        },
+      ],
+      pages: [
+        {
+          key: "privacy",
+          title: "Privacy",
+          sections: [
+            {
+              key: "tracking",
+              title: "Tracking",
+              settings: [
+                {
+                  key: "privacy.analytics",
+                  title: "Usage Analytics",
+                  type: "boolean",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const DEFAULT_WIDTH = 1200;
+
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, "innerWidth", {
+    value: width,
+    writable: true,
+    configurable: true,
+  });
+  window.dispatchEvent(new Event("resize"));
+}
+
 function renderLayout(
   props: {
     renderIcon?: (name: string) => React.ReactNode;
     children?: React.ReactNode;
+    mobileBreakpoint?: number;
+    showBreadcrumbs?: boolean;
+    mobileTitle?: string;
+    backToApp?: {
+      label?: string;
+      href?: string;
+      onClick?: () => void;
+    };
   } = {},
+  customSchema: SetteraSchema = schema,
 ) {
   return render(
-    <SetteraProvider schema={schema}>
+    <SetteraProvider schema={customSchema}>
       <SetteraRenderer values={{}} onChange={() => {}}>
         <SetteraLayout {...props} />
       </SetteraRenderer>
     </SetteraProvider>,
   );
 }
+
+beforeEach(() => {
+  setViewportWidth(DEFAULT_WIDTH);
+});
+
+afterEach(() => {
+  setViewportWidth(DEFAULT_WIDTH);
+});
 
 describe("SetteraLayout", () => {
   it("renders sidebar and content area", () => {
@@ -92,5 +158,82 @@ describe("SetteraLayout", () => {
     const main = screen.getByRole("main");
     // Both should be siblings in the same flex container
     expect(nav.parentElement).toBe(main.parentElement);
+  });
+
+  it("uses mobile drawer navigation below breakpoint", () => {
+    setViewportWidth(480);
+    renderLayout({ mobileBreakpoint: 900 });
+
+    expect(screen.queryByRole("tree")).toBeNull();
+
+    act(() => {
+      screen.getByLabelText("Open navigation").click();
+    });
+
+    expect(
+      screen.getByRole("dialog", { name: "Settings navigation" }),
+    ).toBeDefined();
+    expect(screen.getByRole("tree")).toBeDefined();
+
+    act(() => {
+      screen.getByText("Advanced").click();
+    });
+
+    expect(
+      screen.queryByRole("dialog", { name: "Settings navigation" }),
+    ).toBeNull();
+  });
+
+  it("renders back-to-app button in mobile drawer and prefers onClick", () => {
+    const onBack = vi.fn();
+    setViewportWidth(480);
+    renderLayout({
+      mobileBreakpoint: 900,
+      backToApp: {
+        label: "Back to app",
+        href: "https://example.com",
+        onClick: onBack,
+      },
+    });
+
+    act(() => {
+      screen.getByLabelText("Open navigation").click();
+    });
+
+    act(() => {
+      screen.getByRole("button", { name: "Back to app" }).click();
+    });
+
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole("dialog", { name: "Settings navigation" }),
+    ).toBeNull();
+  });
+
+  it("shows breadcrumb path for nested pages on mobile", () => {
+    setViewportWidth(480);
+    renderLayout(
+      { mobileBreakpoint: 900, showBreadcrumbs: true },
+      nestedSchema,
+    );
+
+    act(() => {
+      screen.getByLabelText("Open navigation").click();
+    });
+
+    const drawer = screen.getByRole("dialog", { name: "Settings navigation" });
+
+    act(() => {
+      within(drawer).getByRole("button", { name: "General" }).click();
+    });
+
+    act(() => {
+      within(drawer).getByRole("button", { name: "Privacy" }).click();
+    });
+
+    const breadcrumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(breadcrumb.textContent).toContain("Settings");
+    expect(breadcrumb.textContent).toContain("General");
+    expect(breadcrumb.textContent).toContain("Privacy");
   });
 });
