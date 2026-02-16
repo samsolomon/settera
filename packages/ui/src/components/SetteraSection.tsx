@@ -59,13 +59,11 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
         id={`settera-section-${sectionKey}`}
         tabIndex={-1}
         style={{
-          fontSize: "var(--settera-section-title-font-size, 11px)",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--settera-section-title-color, #9ca3af)",
+          fontSize: "var(--settera-section-title-font-size, 16px)",
+          fontWeight: "var(--settera-section-title-font-weight, 600)",
+          color: "var(--settera-section-title-color, #111827)",
           marginTop: 0,
-          marginBottom: "8px",
+          marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
         }}
       >
         {section.title}
@@ -76,7 +74,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
             fontSize: "var(--settera-description-font-size, 13px)",
             color: "var(--settera-description-color, #6b7280)",
             marginTop: 0,
-            marginBottom: "12px",
+            marginBottom: "8px",
           }}
         >
           {section.description}
@@ -116,13 +114,11 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
               id={`settera-subsection-${sub.key}`}
               tabIndex={-1}
               style={{
-                fontSize: "var(--settera-section-title-font-size, 11px)",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "var(--settera-section-title-color, #9ca3af)",
+                fontSize: "var(--settera-section-title-font-size, 16px)",
+                fontWeight: "var(--settera-section-title-font-weight, 600)",
+                color: "var(--settera-section-title-color, #111827)",
                 marginTop: 0,
-                marginBottom: "8px",
+                marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
               }}
             >
               {sub.title}
@@ -133,7 +129,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
                   fontSize: "var(--settera-description-font-size, 13px)",
                   color: "var(--settera-description-color, #6b7280)",
                   marginTop: 0,
-                  marginBottom: "12px",
+                  marginBottom: "8px",
                 }}
               >
                 {sub.description}

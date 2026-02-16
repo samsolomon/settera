@@ -279,6 +279,7 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
       ref={navRef}
       role="tree"
       aria-label="Settings navigation"
+      data-settera-nav
       onKeyDown={handleNavKeyDown}
       style={{
         width: "var(--settera-sidebar-width, 240px)",
@@ -292,6 +293,9 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
         gap: "var(--settera-sidebar-gap, 4px)",
       }}
     >
+      <style>{`[data-settera-nav] button:not([aria-current="page"]):hover {
+  background: var(--settera-sidebar-hover-bg, #f3f4f6);
+}`}</style>
       <SetteraSearch />
       {visiblePages.map((page) => (
         <SidebarItem
