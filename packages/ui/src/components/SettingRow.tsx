@@ -1,5 +1,5 @@
 import React from "react";
-import { useSettaraSetting } from "@settara/react";
+import { useSetteraSetting } from "@settera/react";
 
 export interface SettingRowProps {
   settingKey: string;
@@ -11,7 +11,7 @@ export interface SettingRowProps {
  * Hides itself when `isVisible` is false.
  */
 export function SettingRow({ settingKey, children }: SettingRowProps) {
-  const { isVisible, definition, error } = useSettaraSetting(settingKey);
+  const { isVisible, definition, error } = useSetteraSetting(settingKey);
 
   if (!isVisible) return null;
 
@@ -25,19 +25,19 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        padding: "var(--settara-row-padding, 12px 0)",
-        borderBottom: "var(--settara-row-border, 1px solid #e5e7eb)",
-        opacity: "var(--settara-row-opacity, 1)",
+        padding: "var(--settera-row-padding, 12px 0)",
+        borderBottom: "var(--settera-row-border, 1px solid #e5e7eb)",
+        opacity: "var(--settera-row-opacity, 1)",
       }}
     >
       <div style={{ flex: 1, marginRight: "16px" }}>
         <div
           style={{
-            fontSize: "var(--settara-title-font-size, 14px)",
-            fontWeight: "var(--settara-title-font-weight, 500)",
+            fontSize: "var(--settera-title-font-size, 14px)",
+            fontWeight: "var(--settera-title-font-weight, 500)",
             color: isDangerous
-              ? "var(--settara-dangerous-color, #dc2626)"
-              : "var(--settara-title-color, #111827)",
+              ? "var(--settera-dangerous-color, #dc2626)"
+              : "var(--settera-title-color, #111827)",
           }}
         >
           {definition.title}
@@ -45,8 +45,8 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         {"description" in definition && definition.description && (
           <div
             style={{
-              fontSize: "var(--settara-description-font-size, 13px)",
-              color: "var(--settara-description-color, #6b7280)",
+              fontSize: "var(--settera-description-font-size, 13px)",
+              color: "var(--settera-description-color, #6b7280)",
               marginTop: "2px",
             }}
           >
@@ -56,8 +56,8 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         {"helpText" in definition && definition.helpText && (
           <div
             style={{
-              fontSize: "var(--settara-help-font-size, 12px)",
-              color: "var(--settara-help-color, #9ca3af)",
+              fontSize: "var(--settera-help-font-size, 12px)",
+              color: "var(--settera-help-color, #9ca3af)",
               marginTop: "4px",
             }}
           >
@@ -68,10 +68,10 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         {error && (
           <div
             role="alert"
-            id={`settara-error-${settingKey}`}
+            id={`settera-error-${settingKey}`}
             style={{
-              fontSize: "var(--settara-error-font-size, 13px)",
-              color: "var(--settara-error-color, #dc2626)",
+              fontSize: "var(--settera-error-font-size, 13px)",
+              color: "var(--settera-error-color, #dc2626)",
               marginTop: "4px",
             }}
           >

@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import { useSettaraGlobalKeys } from "../hooks/useSettaraGlobalKeys.js";
+import { useSetteraGlobalKeys } from "../hooks/useSetteraGlobalKeys.js";
 
 function TestHarness({
   clearSearch,
@@ -11,7 +11,7 @@ function TestHarness({
   searchQuery: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  useSettaraGlobalKeys({ containerRef, clearSearch, searchQuery });
+  useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
 
   return (
     <div ref={containerRef}>
@@ -24,7 +24,7 @@ function TestHarness({
         <input type="text" aria-label="Text field" />
         <textarea aria-label="Text area" />
         <button>Content Button</button>
-        <h2 id="settara-section-a" tabIndex={-1}>
+        <h2 id="settera-section-a" tabIndex={-1}>
           Section A
         </h2>
       </main>
@@ -55,7 +55,7 @@ function fireKey(
   return event;
 }
 
-describe("useSettaraGlobalKeys", () => {
+describe("useSetteraGlobalKeys", () => {
   describe("/ shortcut", () => {
     it("focuses search input when pressing /", () => {
       setup();

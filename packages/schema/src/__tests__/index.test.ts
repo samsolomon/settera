@@ -8,12 +8,12 @@ import {
   resolveDependencies,
 } from "../index.js";
 import type {
-  SettaraSchema,
+  SetteraSchema,
   BooleanSetting,
   SettingDefinition,
 } from "../index.js";
 
-describe("@settara/schema", () => {
+describe("@settera/schema", () => {
   it("exports SCHEMA_VERSION as 1.0", () => {
     expect(SCHEMA_VERSION).toBe("1.0");
   });
@@ -30,7 +30,7 @@ describe("@settara/schema", () => {
   });
 
   it("exports types that compile correctly", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {

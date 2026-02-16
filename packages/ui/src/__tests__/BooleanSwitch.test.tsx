@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { BooleanSwitch } from "../components/BooleanSwitch.js";
 import { ConfirmDialog } from "../components/ConfirmDialog.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -53,11 +53,11 @@ function renderSwitch(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <BooleanSwitch settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -140,12 +140,12 @@ describe("BooleanSwitch", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ confirmed: false }} onChange={onChange}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ confirmed: false }} onChange={onChange}>
           <BooleanSwitch settingKey="confirmed" />
           <ConfirmDialog />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
     await user.click(screen.getByRole("switch"));
     // onChange should not be called yet

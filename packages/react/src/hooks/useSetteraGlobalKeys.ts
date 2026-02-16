@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
 
-export interface UseSettaraGlobalKeysOptions {
+export interface UseSetteraGlobalKeysOptions {
   containerRef: RefObject<HTMLElement | null>;
   clearSearch: () => void;
   searchQuery: string;
@@ -29,15 +29,15 @@ export function isTextInput(el: EventTarget | null): boolean {
 }
 
 /**
- * Document-level keyboard shortcut handler for Settara.
+ * Document-level keyboard shortcut handler for Settera.
  *
  * - `/` — Focus the search input (blocked when typing in text inputs)
  * - `Cmd+K` / `Ctrl+K` — Focus the search input (works everywhere)
  * - `Escape` — Clear search (when search has a query)
  * - `F6` / `Shift+F6` — Cycle focus between sidebar and content panes
  */
-export function useSettaraGlobalKeys(
-  options: UseSettaraGlobalKeysOptions,
+export function useSetteraGlobalKeys(
+  options: UseSetteraGlobalKeysOptions,
 ): void {
   const { containerRef, clearSearch, searchQuery } = options;
 
@@ -72,8 +72,8 @@ export function useSettaraGlobalKeys(
       }
 
       // Escape — Clear search when there is a query.
-      // Skip if the search input itself is focused — SettaraSearch handles
-      // its own Escape so it works standalone without SettaraLayout.
+      // Skip if the search input itself is focused — SetteraSearch handles
+      // its own Escape so it works standalone without SetteraLayout.
       if (e.key === "Escape") {
         const searchInput = container.querySelector('input[role="searchbox"]');
         if (searchQuery && e.target !== searchInput) {

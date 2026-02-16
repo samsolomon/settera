@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraSidebar } from "../components/SettaraSidebar.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraSidebar } from "../components/SetteraSidebar.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -85,11 +85,11 @@ const schema: SettaraSchema = {
 
 function renderSidebar() {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}}>
-        <SettaraSidebar />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}}>
+        <SetteraSidebar />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -97,7 +97,7 @@ function getButton(name: string): HTMLButtonElement {
   return screen.getByText(name).closest("button")! as HTMLButtonElement;
 }
 
-describe("SettaraSidebar keyboard navigation", () => {
+describe("SetteraSidebar keyboard navigation", () => {
   describe("roving tabindex setup", () => {
     it("first button has tabIndex=0, others have tabIndex=-1", () => {
       renderSidebar();

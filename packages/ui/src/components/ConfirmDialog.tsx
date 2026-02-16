@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSettaraConfirm } from "@settara/react";
+import { useSetteraConfirm } from "@settera/react";
 
 /**
  * Modal confirmation dialog.
@@ -7,7 +7,7 @@ import { useSettaraConfirm } from "@settara/react";
  * Supports requireText, dangerous styling, and keyboard navigation.
  */
 export function ConfirmDialog() {
-  const { pendingConfirm, resolveConfirm } = useSettaraConfirm();
+  const { pendingConfirm, resolveConfirm } = useSetteraConfirm();
   const [inputValue, setInputValue] = useState("");
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -68,27 +68,27 @@ export function ConfirmDialog() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "var(--settara-overlay-bg, rgba(0, 0, 0, 0.5))",
-        zIndex: "var(--settara-overlay-z-index, 1000)" as unknown as number,
+        backgroundColor: "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
+        zIndex: "var(--settera-overlay-z-index, 1000)" as unknown as number,
       }}
     >
       <div
         style={{
-          backgroundColor: "var(--settara-dialog-bg, white)",
-          borderRadius: "var(--settara-dialog-border-radius, 8px)",
-          padding: "var(--settara-dialog-padding, 24px)",
-          maxWidth: "var(--settara-dialog-max-width, 420px)",
+          backgroundColor: "var(--settera-dialog-bg, white)",
+          borderRadius: "var(--settera-dialog-border-radius, 8px)",
+          padding: "var(--settera-dialog-padding, 24px)",
+          maxWidth: "var(--settera-dialog-max-width, 420px)",
           width: "100%",
           boxShadow:
-            "var(--settara-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
+            "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
         }}
       >
         <h2
           style={{
             margin: "0 0 8px 0",
-            fontSize: "var(--settara-dialog-title-font-size, 16px)",
-            fontWeight: "var(--settara-dialog-title-font-weight, 600)",
-            color: "var(--settara-dialog-title-color, #111827)",
+            fontSize: "var(--settera-dialog-title-font-size, 16px)",
+            fontWeight: "var(--settera-dialog-title-font-weight, 600)",
+            color: "var(--settera-dialog-title-color, #111827)",
           }}
         >
           {title}
@@ -96,8 +96,8 @@ export function ConfirmDialog() {
         <p
           style={{
             margin: "0 0 16px 0",
-            fontSize: "var(--settara-dialog-message-font-size, 14px)",
-            color: "var(--settara-dialog-message-color, #4b5563)",
+            fontSize: "var(--settera-dialog-message-font-size, 14px)",
+            color: "var(--settera-dialog-message-color, #4b5563)",
             lineHeight: 1.5,
           }}
         >
@@ -108,8 +108,8 @@ export function ConfirmDialog() {
             <label
               style={{
                 display: "block",
-                fontSize: "var(--settara-dialog-label-font-size, 13px)",
-                color: "var(--settara-dialog-label-color, #6b7280)",
+                fontSize: "var(--settera-dialog-label-font-size, 13px)",
+                color: "var(--settera-dialog-label-color, #6b7280)",
                 marginBottom: "4px",
               }}
             >
@@ -124,8 +124,8 @@ export function ConfirmDialog() {
                 width: "100%",
                 padding: "8px 12px",
                 fontSize: "14px",
-                border: "1px solid var(--settara-input-border-color, #d1d5db)",
-                borderRadius: "var(--settara-input-border-radius, 6px)",
+                border: "1px solid var(--settera-input-border-color, #d1d5db)",
+                borderRadius: "var(--settera-input-border-radius, 6px)",
                 outline: "none",
                 boxSizing: "border-box",
               }}
@@ -146,10 +146,10 @@ export function ConfirmDialog() {
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: 500,
-              border: "1px solid var(--settara-button-border-color, #d1d5db)",
-              borderRadius: "var(--settara-button-border-radius, 6px)",
-              backgroundColor: "var(--settara-button-secondary-bg, white)",
-              color: "var(--settara-button-secondary-color, #374151)",
+              border: "1px solid var(--settera-button-border-color, #d1d5db)",
+              borderRadius: "var(--settera-button-border-radius, 6px)",
+              backgroundColor: "var(--settera-button-secondary-bg, white)",
+              color: "var(--settera-button-secondary-color, #374151)",
               cursor: "pointer",
             }}
           >
@@ -163,13 +163,13 @@ export function ConfirmDialog() {
               fontSize: "14px",
               fontWeight: 500,
               border: "none",
-              borderRadius: "var(--settara-button-border-radius, 6px)",
+              borderRadius: "var(--settera-button-border-radius, 6px)",
               backgroundColor: dangerous
-                ? "var(--settara-button-dangerous-bg, #dc2626)"
-                : "var(--settara-button-primary-bg, #2563eb)",
+                ? "var(--settera-button-dangerous-bg, #dc2626)"
+                : "var(--settera-button-primary-bg, #2563eb)",
               color: dangerous
-                ? "var(--settara-button-dangerous-color, white)"
-                : "var(--settara-button-primary-color, white)",
+                ? "var(--settera-button-dangerous-color, white)"
+                : "var(--settera-button-primary-color, white)",
               cursor: confirmDisabled ? "not-allowed" : "pointer",
               opacity: confirmDisabled ? 0.5 : 1,
             }}

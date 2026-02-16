@@ -1,10 +1,10 @@
 import { useContext, useCallback } from "react";
-import { SettaraSchemaContext, SettaraValuesContext } from "../context.js";
+import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { evaluateVisibility } from "../visibility.js";
 import { validateSettingValue } from "../validation.js";
-import type { SettingDefinition, ConfirmConfig } from "@settara/schema";
+import type { SettingDefinition, ConfirmConfig } from "@settera/schema";
 
-export interface UseSettaraSettingResult {
+export interface UseSetteraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
   value: unknown;
   /** Set a new value for this setting */
@@ -22,17 +22,17 @@ export interface UseSettaraSettingResult {
 
 /**
  * Access and control a single setting by key.
- * Must be used within both SettaraProvider and SettaraRenderer.
+ * Must be used within both SetteraProvider and SetteraRenderer.
  */
-export function useSettaraSetting(key: string): UseSettaraSettingResult {
-  const schemaCtx = useContext(SettaraSchemaContext);
-  const valuesCtx = useContext(SettaraValuesContext);
+export function useSetteraSetting(key: string): UseSetteraSettingResult {
+  const schemaCtx = useContext(SetteraSchemaContext);
+  const valuesCtx = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
-    throw new Error("useSettaraSetting must be used within a SettaraProvider.");
+    throw new Error("useSetteraSetting must be used within a SetteraProvider.");
   }
   if (!valuesCtx) {
-    throw new Error("useSettaraSetting must be used within a SettaraRenderer.");
+    throw new Error("useSetteraSetting must be used within a SetteraRenderer.");
   }
 
   const definition = schemaCtx.getSettingByKey(key);
@@ -40,7 +40,7 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
     throw new Error(`Setting "${key}" not found in schema.`);
   }
 
-  // Value from resolved values (defaults already merged by SettaraRenderer)
+  // Value from resolved values (defaults already merged by SetteraRenderer)
   const value = valuesCtx.values[key];
 
   // Setter — runs sync validation automatically, with confirm interception

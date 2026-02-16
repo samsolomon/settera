@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { Select } from "../components/Select.js";
 import { SettingRow } from "../components/SettingRow.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -64,11 +64,11 @@ function renderSelect(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <Select settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -144,13 +144,13 @@ describe("Select", () => {
   it("applies dangerous styling", () => {
     renderSelect("dangerous-select", { "dangerous-select": "x" });
     const select = screen.getByRole("combobox");
-    expect(select.style.color).toContain("--settara-dangerous-color");
+    expect(select.style.color).toContain("--settera-dangerous-color");
   });
 
   it("does not apply dangerous styling to normal selects", () => {
     renderSelect("theme", { theme: "light" });
     const select = screen.getByRole("combobox");
-    expect(select.style.color).not.toContain("--settara-dangerous-color");
+    expect(select.style.color).not.toContain("--settera-dangerous-color");
   });
 
   it("uses default value when values is empty", () => {
@@ -163,8 +163,8 @@ describe("Select", () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Invalid choice");
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{ theme: "light" }}
           onChange={() => {}}
           onValidate={{ theme: asyncValidator }}
@@ -172,8 +172,8 @@ describe("Select", () => {
           <SettingRow settingKey="theme">
             <Select settingKey="theme" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     await act(async () => {

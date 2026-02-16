@@ -6,16 +6,16 @@ import React, {
   useMemo,
 } from "react";
 import {
-  SettaraSchemaContext,
-  useSettaraNavigation,
-  useSettaraSearch,
+  SetteraSchemaContext,
+  useSetteraNavigation,
+  useSetteraSearch,
   useRovingTabIndex,
-} from "@settara/react";
-import type { PageDefinition } from "@settara/schema";
-import { isFlattenedPage, resolvePageKey } from "@settara/schema";
-import { SettaraSearch } from "./SettaraSearch.js";
+} from "@settera/react";
+import type { PageDefinition } from "@settera/schema";
+import { isFlattenedPage, resolvePageKey } from "@settera/schema";
+import { SetteraSearch } from "./SetteraSearch.js";
 
-export interface SettaraSidebarProps {
+export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
 }
 
@@ -30,14 +30,14 @@ interface FlatItem {
  * Handles active state, expand/collapse, nested pages, icon rendering,
  * and keyboard navigation (roving tabindex + arrow-key tree semantics).
  */
-export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
-  const schemaCtx = useContext(SettaraSchemaContext);
+export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
+  const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage, setActivePage, expandedGroups, toggleGroup } =
-    useSettaraNavigation();
-  const { isSearching, matchingPageKeys } = useSettaraSearch();
+    useSetteraNavigation();
+  const { isSearching, matchingPageKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SettaraSidebar must be used within a SettaraProvider.");
+    throw new Error("SetteraSidebar must be used within a SetteraProvider.");
   }
 
   const { schema } = schemaCtx;
@@ -255,14 +255,14 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
       aria-label="Settings navigation"
       onKeyDown={handleNavKeyDown}
       style={{
-        width: "var(--settara-sidebar-width, 240px)",
-        backgroundColor: "var(--settara-sidebar-bg, #fafafa)",
-        borderRight: "var(--settara-sidebar-border, 1px solid #e5e7eb)",
-        fontSize: "var(--settara-sidebar-font-size, 14px)",
+        width: "var(--settera-sidebar-width, 240px)",
+        backgroundColor: "var(--settera-sidebar-bg, #fafafa)",
+        borderRight: "var(--settera-sidebar-border, 1px solid #e5e7eb)",
+        fontSize: "var(--settera-sidebar-font-size, 14px)",
         overflowY: "auto",
       }}
     >
-      <SettaraSearch />
+      <SetteraSearch />
       {visiblePages.map((page) => (
         <SidebarItem
           key={page.key}
@@ -353,14 +353,14 @@ function SidebarItem({
           alignItems: "center",
           gap: "8px",
           width: "100%",
-          padding: `var(--settara-sidebar-item-padding, 8px ${paddingLeft}px)`,
+          padding: `var(--settera-sidebar-item-padding, 8px ${paddingLeft}px)`,
           paddingLeft: `${paddingLeft}px`,
           border: "none",
           background: isActive
-            ? "var(--settara-sidebar-active-bg, #f3f4f6)"
+            ? "var(--settera-sidebar-active-bg, #f3f4f6)"
             : "transparent",
           color: isActive
-            ? "var(--settara-sidebar-active-color, #111827)"
+            ? "var(--settera-sidebar-active-color, #111827)"
             : "inherit",
           fontWeight: isActive ? 600 : 400,
           fontSize: "inherit",

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { validateSchema } from "../validate.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
-import type { SettaraSchema } from "../types.js";
+import type { SetteraSchema } from "../types.js";
 
-function makeMinimalSchema(overrides?: Partial<SettaraSchema>): SettaraSchema {
+function makeMinimalSchema(overrides?: Partial<SetteraSchema>): SetteraSchema {
   return {
     version: "1.0",
     pages: [
@@ -60,7 +60,7 @@ describe("validateSchema", () => {
 
   // Missing required fields
   it("rejects page without key", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [{ key: "", title: "General" }],
     };
@@ -69,7 +69,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects page without title", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [{ key: "general", title: "" }],
     };
@@ -78,7 +78,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects section without key", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -93,7 +93,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects setting without key", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -114,7 +114,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects setting without type", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -136,7 +136,7 @@ describe("validateSchema", () => {
 
   // Duplicate keys
   it("rejects duplicate setting keys across pages", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -168,7 +168,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects duplicate page keys", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         { key: "general", title: "General" },
@@ -180,7 +180,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects duplicate section keys within a page", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -199,7 +199,7 @@ describe("validateSchema", () => {
 
   // Visibility references
   it("rejects visibleWhen referencing unknown setting", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -230,7 +230,7 @@ describe("validateSchema", () => {
   });
 
   it("validates array visibleWhen references", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -262,7 +262,7 @@ describe("validateSchema", () => {
   });
 
   it("accepts valid visibleWhen references", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -292,7 +292,7 @@ describe("validateSchema", () => {
 
   // Compound field dot keys
   it("rejects compound field keys containing dots", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -328,7 +328,7 @@ describe("validateSchema", () => {
 
   // Empty options
   it("rejects select with no options", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -356,7 +356,7 @@ describe("validateSchema", () => {
   });
 
   it("rejects multiselect with no options", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -385,7 +385,7 @@ describe("validateSchema", () => {
 
   // Action-specific
   it("rejects action without buttonLabel", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -416,7 +416,7 @@ describe("validateSchema", () => {
 
   // Subsection validation
   it("validates settings inside subsections", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {

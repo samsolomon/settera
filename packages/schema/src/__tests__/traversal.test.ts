@@ -8,7 +8,7 @@ import {
   resolvePageKey,
 } from "../traversal.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
-import type { SettaraSchema } from "../types.js";
+import type { SetteraSchema } from "../types.js";
 
 describe("flattenSettings", () => {
   it("returns all settings from the reference schema", () => {
@@ -48,7 +48,7 @@ describe("flattenSettings", () => {
   });
 
   it("handles settings inside subsections", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -84,7 +84,7 @@ describe("flattenSettings", () => {
   });
 
   it("returns empty array for schema with no settings", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [{ key: "empty", title: "Empty" }],
     };
@@ -148,7 +148,7 @@ describe("resolveDependencies", () => {
   });
 
   it("returns empty map for schema with no dependencies", () => {
-    const schema: SettaraSchema = {
+    const schema: SetteraSchema = {
       version: "1.0",
       pages: [
         {

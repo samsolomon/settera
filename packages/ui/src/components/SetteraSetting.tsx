@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { SettaraSchemaContext } from "@settara/react";
+import { SetteraSchemaContext } from "@settera/react";
 import { SettingRow } from "./SettingRow.js";
 import { BooleanSwitch } from "./BooleanSwitch.js";
 import { TextInput } from "./TextInput.js";
@@ -9,7 +9,7 @@ import { ActionButton } from "./ActionButton.js";
 import { MultiSelect } from "./MultiSelect.js";
 import { DateInput } from "./DateInput.js";
 
-export interface SettaraSettingProps {
+export interface SetteraSettingProps {
   settingKey: string;
 }
 
@@ -17,11 +17,11 @@ export interface SettaraSettingProps {
  * Type-to-component dispatcher.
  * Maps a setting definition's type to the correct UI control, wrapped in SettingRow.
  */
-export function SettaraSetting({ settingKey }: SettaraSettingProps) {
-  const schemaCtx = useContext(SettaraSchemaContext);
+export function SetteraSetting({ settingKey }: SetteraSettingProps) {
+  const schemaCtx = useContext(SetteraSchemaContext);
 
   if (!schemaCtx) {
-    throw new Error("SettaraSetting must be used within a SettaraProvider.");
+    throw new Error("SetteraSetting must be used within a SetteraProvider.");
   }
 
   const definition = schemaCtx.getSettingByKey(settingKey);
@@ -58,8 +58,8 @@ export function SettaraSetting({ settingKey }: SettaraSettingProps) {
         <span
           data-testid={`unsupported-${settingKey}`}
           style={{
-            fontSize: "var(--settara-description-font-size, 13px)",
-            color: "var(--settara-description-color, #6b7280)",
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
             fontStyle: "italic",
           }}
         >

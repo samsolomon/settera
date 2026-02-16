@@ -1,19 +1,19 @@
 // Re-export essentials from react layer
 export {
   SCHEMA_VERSION,
-  SettaraProvider,
-  SettaraRenderer,
-  useSettara,
-  useSettaraSetting,
-  useSettaraAction,
-  useSettaraNavigation,
-  useSettaraSearch,
+  SetteraProvider,
+  SetteraRenderer,
+  useSettera,
+  useSetteraSetting,
+  useSetteraAction,
+  useSetteraNavigation,
+  useSetteraSearch,
   useRovingTabIndex,
-  useSettaraGlobalKeys,
-  useSettaraConfirm,
+  useSetteraGlobalKeys,
+  useSetteraConfirm,
   evaluateVisibility,
   validateSettingValue,
-} from "@settara/react";
+} from "@settera/react";
 
 // UI Components
 export { BooleanSwitch } from "./components/BooleanSwitch.js";
@@ -35,16 +35,16 @@ export type { DateInputProps } from "./components/DateInput.js";
 export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
 // Search
-export { SettaraSearch } from "./components/SettaraSearch.js";
+export { SetteraSearch } from "./components/SetteraSearch.js";
 
 // Layout components
-export { SettaraSetting } from "./components/SettaraSetting.js";
-export type { SettaraSettingProps } from "./components/SettaraSetting.js";
-export { SettaraSection } from "./components/SettaraSection.js";
-export type { SettaraSectionProps } from "./components/SettaraSection.js";
-export { SettaraPage } from "./components/SettaraPage.js";
-export type { SettaraPageProps } from "./components/SettaraPage.js";
-export { SettaraSidebar } from "./components/SettaraSidebar.js";
-export type { SettaraSidebarProps } from "./components/SettaraSidebar.js";
-export { SettaraLayout } from "./components/SettaraLayout.js";
-export type { SettaraLayoutProps } from "./components/SettaraLayout.js";
+export { SetteraSetting } from "./components/SetteraSetting.js";
+export type { SetteraSettingProps } from "./components/SetteraSetting.js";
+export { SetteraSection } from "./components/SetteraSection.js";
+export type { SetteraSectionProps } from "./components/SetteraSection.js";
+export { SetteraPage } from "./components/SetteraPage.js";
+export type { SetteraPageProps } from "./components/SetteraPage.js";
+export { SetteraSidebar } from "./components/SetteraSidebar.js";
+export type { SetteraSidebarProps } from "./components/SetteraSidebar.js";
+export { SetteraLayout } from "./components/SetteraLayout.js";
+export type { SetteraLayoutProps } from "./components/SetteraLayout.js";

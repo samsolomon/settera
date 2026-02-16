@@ -1,6 +1,6 @@
-# Settara — Decision Log
+# Settera — Decision Log
 
-This document tracks implementation decisions that deviate from, extend, or clarify the spec (`settara-spec.md`). It serves as a historical record of _why_ choices were made, so future contributors don't re-litigate resolved questions.
+This document tracks implementation decisions that deviate from, extend, or clarify the spec (`settera-spec.md`). It serves as a historical record of _why_ choices were made, so future contributors don't re-litigate resolved questions.
 
 ---
 
@@ -19,7 +19,7 @@ These decisions were made during the implementation planning phase, before any c
 
 **Date:** 2026-02-15
 **Spec section:** §1.2
-**Decision:** `@settara/ui` ships as a traditional npm package for v0.1. The shadcn-style CLI (`npx settara add`) is planned for v1.1+.
+**Decision:** `@settera/ui` ships as a traditional npm package for v0.1. The shadcn-style CLI (`npx settera add`) is planned for v1.1+.
 **Rationale:** Copy-paste distribution during API stabilization means every breaking change requires users to manually re-apply diffs. Normal npm versioning is the right distribution model until the API surface is stable.
 
 ### D-003: Compound field keys are relative
@@ -57,11 +57,11 @@ These decisions were made during the implementation planning phase, before any c
 **Decision:** F6 cycles between sidebar and content. Tab flows linearly through all settings in content (no per-section groups). Ctrl+↓/↑ jumps between section headings as progressive enhancement. Modals trap focus.
 **Rationale:** Per-section tab groups create invisible walls that confuse users ("why can't I Tab to the next setting?"). Linear Tab is predictable and discoverable. Power users get Ctrl+↓/↑ for efficiency. Search is the fastest way to any specific setting.
 
-### D-008: Scoped npm packages (@settara/\*)
+### D-008: Scoped npm packages (@settera/\*)
 
 **Date:** 2026-02-15
 **Spec section:** §1.2, §11
-**Decision:** Package names are `@settara/schema`, `@settara/react`, `@settara/ui`.
+**Decision:** Package names are `@settera/schema`, `@settera/react`, `@settera/ui`.
 **Rationale:** Scoped packages are consistent with Radix (`@radix-ui/*`), prevent name squatting, and signal a cohesive project.
 
 ### D-009: Discriminated union for setting types
@@ -85,11 +85,11 @@ These decisions were made during the implementation planning phase, before any c
 **Decision:** The styled layer renders dates with native `<input type="date">`. Custom date pickers should use the `custom` extension point.
 **Rationale:** Native date inputs are accessible, keyboard-navigable, and work on mobile. Custom date pickers are scope creep for v0.1.
 
-### D-012: SettaraRenderer is sugar over composable parts
+### D-012: SetteraRenderer is sugar over composable parts
 
 **Date:** 2026-02-15
 **Spec section:** §7.1
-**Decision:** The headless layer exposes composable primitives (`<SettaraSidebar>`, `<SettaraContent>`, `<SettaraSearch>`, `<SettaraSettingRow>`). `<SettaraRenderer>` composes them into a default layout.
+**Decision:** The headless layer exposes composable primitives (`<SetteraSidebar>`, `<SetteraContent>`, `<SetteraSearch>`, `<SetteraSettingRow>`). `<SetteraRenderer>` composes them into a default layout.
 **Rationale:** Developers who need control over layout can use the parts directly instead of fighting a monolithic component. The convenience wrapper handles the common case.
 
 ### D-013: Monorepo tooling

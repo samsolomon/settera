@@ -1,9 +1,9 @@
 import { useContext, useCallback, useState, useRef, useEffect } from "react";
-import { SettaraSchemaContext, SettaraValuesContext } from "../context.js";
+import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { evaluateVisibility } from "../visibility.js";
-import type { SettingDefinition } from "@settara/schema";
+import type { SettingDefinition } from "@settera/schema";
 
-export interface UseSettaraActionResult {
+export interface UseSetteraActionResult {
   /** The setting definition from the schema */
   definition: SettingDefinition;
   /** Whether this setting is currently visible */
@@ -16,17 +16,17 @@ export interface UseSettaraActionResult {
 
 /**
  * Access and invoke an action-type setting by key.
- * Must be used within both SettaraProvider and SettaraRenderer.
+ * Must be used within both SetteraProvider and SetteraRenderer.
  */
-export function useSettaraAction(key: string): UseSettaraActionResult {
-  const schemaCtx = useContext(SettaraSchemaContext);
-  const valuesCtx = useContext(SettaraValuesContext);
+export function useSetteraAction(key: string): UseSetteraActionResult {
+  const schemaCtx = useContext(SetteraSchemaContext);
+  const valuesCtx = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
-    throw new Error("useSettaraAction must be used within a SettaraProvider.");
+    throw new Error("useSetteraAction must be used within a SetteraProvider.");
   }
   if (!valuesCtx) {
-    throw new Error("useSettaraAction must be used within a SettaraRenderer.");
+    throw new Error("useSetteraAction must be used within a SetteraRenderer.");
   }
 
   const definition = schemaCtx.getSettingByKey(key);
@@ -58,7 +58,7 @@ export function useSettaraAction(key: string): UseSettaraActionResult {
       setIsLoading(true);
       result
         .catch((err: unknown) => {
-          console.error(`[settara] Action "${key}" failed:`, err);
+          console.error(`[settera] Action "${key}" failed:`, err);
         })
         .finally(() => {
           inFlightRef.current = false;

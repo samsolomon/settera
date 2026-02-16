@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { DateInput } from "../components/DateInput.js";
 import { SettingRow } from "../components/SettingRow.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -60,11 +60,11 @@ function renderDateInput(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <DateInput settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -124,13 +124,13 @@ describe("DateInput", () => {
   it("shows required validation error on blur", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ "required-date": "" }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ "required-date": "" }} onChange={() => {}}>
           <SettingRow settingKey="required-date">
             <DateInput settingKey="required-date" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     const input = screen.getByLabelText("Required Date", {
@@ -157,15 +157,15 @@ describe("DateInput", () => {
   it("applies dangerous styling", () => {
     renderDateInput("dangerous-date", { "dangerous-date": "2025-01-01" });
     const input = screen.getByLabelText("Dangerous Date");
-    expect(input.style.color).toContain("--settara-dangerous-color");
+    expect(input.style.color).toContain("--settera-dangerous-color");
   });
 
   it("runs async validation on blur", async () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Date not available");
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{ birthday: "2000-01-01" }}
           onChange={() => {}}
           onValidate={{ birthday: asyncValidator }}
@@ -173,8 +173,8 @@ describe("DateInput", () => {
           <SettingRow settingKey="birthday">
             <DateInput settingKey="birthday" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     await act(async () => {

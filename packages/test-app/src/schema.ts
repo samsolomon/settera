@@ -1,10 +1,10 @@
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-export const demoSchema: SettaraSchema = {
+export const demoSchema: SetteraSchema = {
   version: "1.0",
   meta: {
     title: "Demo Settings",
-    description: "A demo showcasing all core setting controls with Settara.",
+    description: "A demo showcasing all core setting controls with Settera.",
   },
   pages: [
     {

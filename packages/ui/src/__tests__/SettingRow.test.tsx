@@ -2,14 +2,14 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import {
-  SettaraProvider,
-  SettaraRenderer,
-  useSettaraSetting,
-} from "@settara/react";
+  SetteraProvider,
+  SetteraRenderer,
+  useSetteraSetting,
+} from "@settera/react";
 import { SettingRow } from "../components/SettingRow.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -70,7 +70,7 @@ const schema: SettaraSchema = {
 
 // Helper component that triggers a validation error by calling setValue with empty string
 function ErrorTrigger({ settingKey }: { settingKey: string }) {
-  const { setValue } = useSettaraSetting(settingKey);
+  const { setValue } = useSetteraSetting(settingKey);
   return (
     <button data-testid="trigger-error" onClick={() => setValue("")}>
       trigger
@@ -84,11 +84,11 @@ function renderRow(
   children: React.ReactNode = <span>control</span>,
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={() => {}}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={() => {}}>
         <SettingRow settingKey={settingKey}>{children}</SettingRow>
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -133,13 +133,13 @@ describe("SettingRow", () => {
 
   it("renders error with role='alert' when error exists", () => {
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ username: "" }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ username: "" }} onChange={() => {}}>
           <SettingRow settingKey="username">
             <ErrorTrigger settingKey="username" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     act(() => {
@@ -153,20 +153,20 @@ describe("SettingRow", () => {
 
   it("error element has correct id", () => {
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ username: "" }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ username: "" }} onChange={() => {}}>
           <SettingRow settingKey="username">
             <ErrorTrigger settingKey="username" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     act(() => {
       screen.getByTestId("trigger-error").click();
     });
     const alert = screen.getByRole("alert");
-    expect(alert.id).toBe("settara-error-username");
+    expect(alert.id).toBe("settera-error-username");
   });
 
   it("hides error when no error present", () => {

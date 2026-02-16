@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraSearch } from "../components/SettaraSearch.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraSearch } from "../components/SetteraSearch.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -25,15 +25,15 @@ const schema: SettaraSchema = {
 
 function renderSearch() {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}}>
-        <SettaraSearch />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}}>
+        <SetteraSearch />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraSearch", () => {
+describe("SetteraSearch", () => {
   it("renders a search input", () => {
     renderSearch();
     expect(screen.getByRole("searchbox")).toBeDefined();

@@ -1,30 +1,30 @@
 import React, { useRef, useCallback } from "react";
 import {
-  useSettaraSearch,
-  useSettaraGlobalKeys,
+  useSetteraSearch,
+  useSetteraGlobalKeys,
   isTextInput,
-} from "@settara/react";
-import { SettaraSidebar } from "./SettaraSidebar.js";
-import { SettaraPage } from "./SettaraPage.js";
+} from "@settera/react";
+import { SetteraSidebar } from "./SetteraSidebar.js";
+import { SetteraPage } from "./SetteraPage.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 
-export interface SettaraLayoutProps {
+export interface SetteraLayoutProps {
   renderIcon?: (iconName: string) => React.ReactNode;
   children?: React.ReactNode;
 }
 
 /**
  * Two-column layout shell: sidebar navigation + content area.
- * When children are provided, they replace the auto-rendered SettaraPage.
+ * When children are provided, they replace the auto-rendered SetteraPage.
  * Integrates global keyboard shortcuts and section heading jumping.
  */
-export function SettaraLayout({ renderIcon, children }: SettaraLayoutProps) {
+export function SetteraLayout({ renderIcon, children }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { query: searchQuery, setQuery } = useSettaraSearch();
+  const { query: searchQuery, setQuery } = useSetteraSearch();
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
 
-  useSettaraGlobalKeys({ containerRef, clearSearch, searchQuery });
+  useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
 
   // Ctrl+ArrowDown/Up section heading jumping within <main>
   const handleMainKeyDown = useCallback(
@@ -37,7 +37,7 @@ export function SettaraLayout({ renderIcon, children }: SettaraLayoutProps) {
       const main = e.currentTarget;
       const headings = Array.from(
         main.querySelectorAll<HTMLElement>(
-          'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+          'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
         ),
       );
       if (headings.length === 0) return;
@@ -77,21 +77,21 @@ export function SettaraLayout({ renderIcon, children }: SettaraLayoutProps) {
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      <SettaraSidebar renderIcon={renderIcon} />
+      <SetteraSidebar renderIcon={renderIcon} />
       <main
         onKeyDown={handleMainKeyDown}
         style={{
           flex: 1,
-          padding: "var(--settara-page-padding, 24px 32px)",
+          padding: "var(--settera-page-padding, 24px 32px)",
           overflowY: "auto",
         }}
       >
         <div
           style={{
-            maxWidth: "var(--settara-content-max-width, 640px)",
+            maxWidth: "var(--settera-content-max-width, 640px)",
           }}
         >
-          {children ?? <SettaraPage />}
+          {children ?? <SetteraPage />}
         </div>
       </main>
       <ConfirmDialog />

@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@settara/schema": "workspace:*",
-    "@settara/react": "workspace:*",
-    "@settara/ui": "workspace:*",
+    "@settera/schema": "workspace:*",
+    "@settera/react": "workspace:*",
+    "@settera/ui": "workspace:*",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

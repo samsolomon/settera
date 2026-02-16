@@ -3,14 +3,14 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
-  SettaraProvider,
-  SettaraRenderer,
-  useSettaraSearch,
-} from "@settara/react";
-import { SettaraSection } from "../components/SettaraSection.js";
-import type { SettaraSchema } from "@settara/schema";
+  SetteraProvider,
+  SetteraRenderer,
+  useSetteraSearch,
+} from "@settera/react";
+import { SetteraSection } from "../components/SetteraSection.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -72,15 +72,15 @@ function renderSection(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={() => {}}>
-        <SettaraSection pageKey={pageKey} sectionKey={sectionKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={() => {}}>
+        <SetteraSection pageKey={pageKey} sectionKey={sectionKey} />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraSection", () => {
+describe("SetteraSection", () => {
   it("renders section heading", () => {
     renderSection("general", "behavior");
     expect(screen.getByText("Behavior")).toBeDefined();
@@ -122,17 +122,17 @@ describe("SettaraSection", () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
-      const { setQuery } = useSettaraSearch();
+      const { setQuery } = useSetteraSearch();
       return <button onClick={() => setQuery("Auto Save")}>search</button>;
     }
 
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ autoSave: true }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ autoSave: true }} onChange={() => {}}>
           <SearchTrigger />
-          <SettaraSection pageKey="general" sectionKey="behavior" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+          <SetteraSection pageKey="general" sectionKey="behavior" />
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Both visible before search (autoSave=true satisfies visibleWhen)
@@ -150,17 +150,17 @@ describe("SettaraSection", () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
-      const { setQuery } = useSettaraSearch();
+      const { setQuery } = useSetteraSearch();
       return <button onClick={() => setQuery("zzz no match")}>search</button>;
     }
 
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{}} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
           <SearchTrigger />
-          <SettaraSection pageKey="general" sectionKey="behavior" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+          <SetteraSection pageKey="general" sectionKey="behavior" />
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     expect(screen.getByText("Behavior")).toBeDefined();
@@ -175,17 +175,17 @@ describe("SettaraSection", () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
-      const { setQuery } = useSettaraSearch();
+      const { setQuery } = useSetteraSearch();
       return <button onClick={() => setQuery("Sub Setting")}>search</button>;
     }
 
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{}} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
           <SearchTrigger />
-          <SettaraSection pageKey="general" sectionKey="withSubs" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+          <SetteraSection pageKey="general" sectionKey="withSubs" />
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Before search, both top-level and subsection settings visible

@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider } from "../provider.js";
-import { useSettaraNavigation } from "../hooks/useSettaraNavigation.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     { key: "general", title: "General" },
@@ -21,7 +21,7 @@ const schema: SettaraSchema = {
 
 function NavConsumer() {
   const { activePage, setActivePage, expandedGroups, toggleGroup } =
-    useSettaraNavigation();
+    useSetteraNavigation();
   return (
     <div>
       <span data-testid="active">{activePage}</span>
@@ -35,12 +35,12 @@ function NavConsumer() {
   );
 }
 
-describe("useSettaraNavigation", () => {
+describe("useSetteraNavigation", () => {
   it("returns the first page as active by default", () => {
     render(
-      <SettaraProvider schema={schema}>
+      <SetteraProvider schema={schema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("active").textContent).toBe("general");
   });
@@ -48,9 +48,9 @@ describe("useSettaraNavigation", () => {
   it("navigates to a different page", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
+      <SetteraProvider schema={schema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     await user.click(screen.getByText("go-appearance"));
     expect(screen.getByTestId("active").textContent).toBe("appearance");
@@ -59,9 +59,9 @@ describe("useSettaraNavigation", () => {
   it("navigates to a nested page", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
+      <SetteraProvider schema={schema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     await user.click(screen.getByText("go-network"));
     expect(screen.getByTestId("active").textContent).toBe("advanced.network");
@@ -70,9 +70,9 @@ describe("useSettaraNavigation", () => {
   it("toggles expanded groups", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
+      <SetteraProvider schema={schema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("expanded").textContent).toBe("");
     await user.click(screen.getByText("toggle-advanced"));
@@ -81,9 +81,9 @@ describe("useSettaraNavigation", () => {
     expect(screen.getByTestId("expanded").textContent).toBe("");
   });
 
-  it("throws when used outside SettaraProvider", () => {
+  it("throws when used outside SetteraProvider", () => {
     expect(() => {
       render(<NavConsumer />);
-    }).toThrow("useSettaraNavigation must be used within a SettaraProvider");
+    }).toThrow("useSetteraNavigation must be used within a SetteraProvider");
   });
 });

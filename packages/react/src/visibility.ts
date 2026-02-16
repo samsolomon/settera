@@ -1,4 +1,4 @@
-import type { VisibilityCondition } from "@settara/schema";
+import type { VisibilityCondition } from "@settera/schema";
 
 /**
  * Evaluate whether a setting should be visible based on its visibility conditions

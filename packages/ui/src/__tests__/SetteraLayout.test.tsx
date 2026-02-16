@@ -1,11 +1,11 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraLayout } from "../components/SettaraLayout.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraLayout } from "../components/SetteraLayout.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -41,15 +41,15 @@ function renderLayout(
   } = {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}}>
-        <SettaraLayout {...props} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}}>
+        <SetteraLayout {...props} />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraLayout", () => {
+describe("SetteraLayout", () => {
   it("renders sidebar and content area", () => {
     renderLayout();
     expect(screen.getByRole("tree")).toBeDefined();

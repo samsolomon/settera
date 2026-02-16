@@ -1,28 +1,28 @@
 import { createContext } from "react";
 import type {
-  SettaraSchema,
+  SetteraSchema,
   SettingDefinition,
   FlattenedSetting,
   PageDefinition,
   ConfirmConfig,
-} from "@settara/schema";
+} from "@settera/schema";
 
 // ---- Schema Context (never re-renders after mount) ----
 
-export interface SettaraSchemaContextValue {
-  schema: SettaraSchema;
+export interface SetteraSchemaContextValue {
+  schema: SetteraSchema;
   flatSettings: FlattenedSetting[];
   getSettingByKey: (key: string) => SettingDefinition | undefined;
   getPageByKey: (key: string) => PageDefinition | undefined;
   dependencies: Map<string, string[]>;
 }
 
-export const SettaraSchemaContext =
-  createContext<SettaraSchemaContextValue | null>(null);
+export const SetteraSchemaContext =
+  createContext<SetteraSchemaContextValue | null>(null);
 
 // ---- Navigation Context (re-renders on page change) ----
 
-export interface SettaraNavigationContextValue {
+export interface SetteraNavigationContextValue {
   activePage: string;
   setActivePage: (key: string) => void;
   expandedGroups: Set<string>;
@@ -33,8 +33,8 @@ export interface SettaraNavigationContextValue {
   matchingPageKeys: Set<string>;
 }
 
-export const SettaraNavigationContext =
-  createContext<SettaraNavigationContextValue | null>(null);
+export const SetteraNavigationContext =
+  createContext<SetteraNavigationContextValue | null>(null);
 
 // ---- Values Context (re-renders on setting change) ----
 
@@ -46,7 +46,7 @@ export interface PendingConfirm {
   onCancel: () => void;
 }
 
-export interface SettaraValuesContextValue {
+export interface SetteraValuesContextValue {
   values: Record<string, unknown>;
   setValue: (key: string, value: unknown) => void;
   errors: Record<string, string>;
@@ -61,5 +61,5 @@ export interface SettaraValuesContextValue {
   resolveConfirm: (confirmed: boolean) => void;
 }
 
-export const SettaraValuesContext =
-  createContext<SettaraValuesContextValue | null>(null);
+export const SetteraValuesContext =
+  createContext<SetteraValuesContextValue | null>(null);

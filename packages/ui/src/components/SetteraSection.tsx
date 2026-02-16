@@ -1,9 +1,9 @@
 import React, { useContext } from "react";
-import { SettaraSchemaContext, useSettaraSearch } from "@settara/react";
-import type { SectionDefinition } from "@settara/schema";
-import { SettaraSetting } from "./SettaraSetting.js";
+import { SetteraSchemaContext, useSetteraSearch } from "@settera/react";
+import type { SectionDefinition } from "@settera/schema";
+import { SetteraSetting } from "./SetteraSetting.js";
 
-export interface SettaraSectionProps {
+export interface SetteraSectionProps {
   pageKey: string;
   sectionKey: string;
 }
@@ -12,12 +12,12 @@ export interface SettaraSectionProps {
  * Renders a section heading + description + auto-rendered settings.
  * Handles subsections as nested groups.
  */
-export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
-  const schemaCtx = useContext(SettaraSchemaContext);
-  const { isSearching, matchingSettingKeys } = useSettaraSearch();
+export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
+  const schemaCtx = useContext(SetteraSchemaContext);
+  const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SettaraSection must be used within a SettaraProvider.");
+    throw new Error("SetteraSection must be used within a SetteraProvider.");
   }
 
   const page = schemaCtx.getPageByKey(pageKey);
@@ -50,20 +50,20 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
 
   return (
     <section
-      aria-labelledby={`settara-section-${sectionKey}`}
+      aria-labelledby={`settera-section-${sectionKey}`}
       style={{
-        marginTop: "var(--settara-section-margin-top, 24px)",
+        marginTop: "var(--settera-section-margin-top, 24px)",
       }}
     >
       <h2
-        id={`settara-section-${sectionKey}`}
+        id={`settera-section-${sectionKey}`}
         tabIndex={-1}
         style={{
-          fontSize: "var(--settara-section-title-font-size, 11px)",
+          fontSize: "var(--settera-section-title-font-size, 11px)",
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "0.05em",
-          color: "var(--settara-section-title-color, #9ca3af)",
+          color: "var(--settera-section-title-color, #9ca3af)",
           marginTop: 0,
           marginBottom: "8px",
         }}
@@ -73,8 +73,8 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
       {section.description && (
         <p
           style={{
-            fontSize: "var(--settara-description-font-size, 13px)",
-            color: "var(--settara-description-color, #6b7280)",
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
             marginTop: 0,
             marginBottom: "12px",
           }}
@@ -83,7 +83,7 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
         </p>
       )}
       {visibleSettings.map((setting) => (
-        <SettaraSetting key={setting.key} settingKey={setting.key} />
+        <SetteraSetting key={setting.key} settingKey={setting.key} />
       ))}
       {visibleSubsections.map((sub) => {
         const subSettings = isSearching
@@ -94,18 +94,18 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
           <div
             key={sub.key}
             role="group"
-            aria-labelledby={`settara-subsection-${sub.key}`}
-            style={{ marginTop: "var(--settara-section-margin-top, 24px)" }}
+            aria-labelledby={`settera-subsection-${sub.key}`}
+            style={{ marginTop: "var(--settera-section-margin-top, 24px)" }}
           >
             <h3
-              id={`settara-subsection-${sub.key}`}
+              id={`settera-subsection-${sub.key}`}
               tabIndex={-1}
               style={{
-                fontSize: "var(--settara-section-title-font-size, 11px)",
+                fontSize: "var(--settera-section-title-font-size, 11px)",
                 fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                color: "var(--settara-section-title-color, #9ca3af)",
+                color: "var(--settera-section-title-color, #9ca3af)",
                 marginTop: 0,
                 marginBottom: "8px",
               }}
@@ -115,8 +115,8 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
             {sub.description && (
               <p
                 style={{
-                  fontSize: "var(--settara-description-font-size, 13px)",
-                  color: "var(--settara-description-color, #6b7280)",
+                  fontSize: "var(--settera-description-font-size, 13px)",
+                  color: "var(--settera-description-color, #6b7280)",
                   marginTop: 0,
                   marginBottom: "12px",
                 }}
@@ -125,7 +125,7 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
               </p>
             )}
             {subSettings.map((setting) => (
-              <SettaraSetting key={setting.key} settingKey={setting.key} />
+              <SetteraSetting key={setting.key} settingKey={setting.key} />
             ))}
           </div>
         );

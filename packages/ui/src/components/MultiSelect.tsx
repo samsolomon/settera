@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { useSettaraSetting } from "@settara/react";
+import { useSetteraSetting } from "@settera/react";
 
 export interface MultiSelectProps {
   settingKey: string;
@@ -11,7 +11,7 @@ export interface MultiSelectProps {
  */
 export function MultiSelect({ settingKey }: MultiSelectProps) {
   const { value, setValue, error, definition, validate } =
-    useSettaraSetting(settingKey);
+    useSetteraSetting(settingKey);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
@@ -55,11 +55,11 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
     <div
       data-testid={`multiselect-${settingKey}`}
       aria-invalid={hasError}
-      aria-describedby={hasError ? `settara-error-${settingKey}` : undefined}
+      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "var(--settara-multiselect-gap, 6px)",
+        gap: "var(--settera-multiselect-gap, 6px)",
       }}
     >
       {options.map((opt, index) => {
@@ -72,11 +72,11 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "var(--settara-checkbox-gap, 8px)",
-              fontSize: "var(--settara-input-font-size, 14px)",
+              gap: "var(--settera-checkbox-gap, 8px)",
+              fontSize: "var(--settera-input-font-size, 14px)",
               color: isDangerous
-                ? "var(--settara-dangerous-color, #dc2626)"
-                : "var(--settara-input-color, #111827)",
+                ? "var(--settera-dangerous-color, #dc2626)"
+                : "var(--settera-input-color, #111827)",
               cursor: "pointer",
             }}
           >
@@ -90,9 +90,9 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
               style={{
                 outline: "none",
                 boxShadow: isFocused
-                  ? "0 0 0 2px var(--settara-focus-ring-color, #93c5fd)"
+                  ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
                   : "none",
-                borderRadius: "var(--settara-checkbox-border-radius, 3px)",
+                borderRadius: "var(--settera-checkbox-border-radius, 3px)",
                 cursor: "pointer",
               }}
             />

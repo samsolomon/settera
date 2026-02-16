@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider } from "../provider.js";
-import { SettaraRenderer } from "../renderer.js";
-import { useSettaraAction } from "../hooks/useSettaraAction.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { SetteraRenderer } from "../renderer.js";
+import { useSetteraAction } from "../hooks/useSetteraAction.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -48,7 +48,7 @@ const schema: SettaraSchema = {
 
 function ActionDisplay({ settingKey }: { settingKey: string }) {
   const { definition, isVisible, onAction, isLoading } =
-    useSettaraAction(settingKey);
+    useSetteraAction(settingKey);
   return (
     <div data-testid={`action-${settingKey}`}>
       <span data-testid={`title-${settingKey}`}>{definition.title}</span>
@@ -76,15 +76,15 @@ function renderAction(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={() => {}} onAction={onAction}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={() => {}} onAction={onAction}>
         <ActionDisplay settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("useSettaraAction", () => {
+describe("useSetteraAction", () => {
   it("returns definition with correct title", () => {
     renderAction("resetAction");
     expect(screen.getByTestId("title-resetAction").textContent).toBe(
@@ -148,10 +148,10 @@ describe("useSettaraAction", () => {
     expect(screen.getByTestId("hasHandler-resetAction").textContent).toBe("no");
   });
 
-  it("throws when used outside SettaraProvider", () => {
+  it("throws when used outside SetteraProvider", () => {
     expect(() => {
       render(<ActionDisplay settingKey="resetAction" />);
-    }).toThrow("useSettaraAction must be used within a SettaraProvider");
+    }).toThrow("useSetteraAction must be used within a SetteraProvider");
   });
 
   it("recovers loading state when async handler rejects", async () => {
@@ -170,7 +170,7 @@ describe("useSettaraAction", () => {
     // After rejection, loading should reset to idle
     expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
     expect(consoleSpy).toHaveBeenCalledWith(
-      '[settara] Action "resetAction" failed:',
+      '[settera] Action "resetAction" failed:',
       expect.any(Error),
     );
     consoleSpy.mockRestore();

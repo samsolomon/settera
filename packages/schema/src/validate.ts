@@ -1,5 +1,5 @@
 import type {
-  SettaraSchema,
+  SetteraSchema,
   PageDefinition,
   SectionDefinition,
   SettingDefinition,
@@ -8,10 +8,10 @@ import type {
 } from "./types.js";
 
 /**
- * Validates a SettaraSchema and returns an array of errors.
+ * Validates a SetteraSchema and returns an array of errors.
  * Empty array = valid schema.
  */
-export function validateSchema(schema: SettaraSchema): SchemaValidationError[] {
+export function validateSchema(schema: SetteraSchema): SchemaValidationError[] {
   const errors: SchemaValidationError[] = [];
 
   // Version check

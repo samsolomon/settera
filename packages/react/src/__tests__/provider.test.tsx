@@ -1,11 +1,11 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettaraProvider } from "../provider.js";
-import { SettaraSchemaContext, SettaraNavigationContext } from "../context.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { SetteraSchemaContext, SetteraNavigationContext } from "../context.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const minimalSchema: SettaraSchema = {
+const minimalSchema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -29,7 +29,7 @@ const minimalSchema: SettaraSchema = {
 };
 
 function SchemaConsumer() {
-  const ctx = React.useContext(SettaraSchemaContext);
+  const ctx = React.useContext(SetteraSchemaContext);
   if (!ctx) return <div>no schema</div>;
   return (
     <div>
@@ -46,7 +46,7 @@ function SchemaConsumer() {
 }
 
 function NavConsumer() {
-  const ctx = React.useContext(SettaraNavigationContext);
+  const ctx = React.useContext(SetteraNavigationContext);
   if (!ctx) return <div>no nav</div>;
   return (
     <div>
@@ -60,12 +60,12 @@ function NavConsumer() {
   );
 }
 
-describe("SettaraProvider", () => {
+describe("SetteraProvider", () => {
   it("provides schema context", () => {
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <SchemaConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("version").textContent).toBe("1.0");
     expect(screen.getByTestId("flat-count").textContent).toBe("1");
@@ -75,9 +75,9 @@ describe("SettaraProvider", () => {
 
   it("provides navigation context with first page as default", () => {
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("active-page").textContent).toBe("general");
   });
@@ -87,9 +87,9 @@ describe("SettaraProvider", () => {
       user: m.default.setup(),
     }));
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     await user.click(screen.getByText("go"));
     expect(screen.getByTestId("active-page").textContent).toBe("appearance");
@@ -100,9 +100,9 @@ describe("SettaraProvider", () => {
       user: m.default.setup(),
     }));
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("expanded").textContent).toBe("no");
     await user.click(screen.getByText("toggle"));
@@ -118,9 +118,9 @@ describe("SettaraProvider", () => {
       pages: [{ key: "p", title: "P" }],
     };
     render(
-      <SettaraProvider schema={badSchema}>
+      <SetteraProvider schema={badSchema}>
         <div>child</div>
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("INVALID_VERSION"),
@@ -131,9 +131,9 @@ describe("SettaraProvider", () => {
   it("does not warn on valid schema", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <div>child</div>
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
@@ -141,15 +141,15 @@ describe("SettaraProvider", () => {
 
   it("renders children", () => {
     render(
-      <SettaraProvider schema={minimalSchema}>
+      <SetteraProvider schema={minimalSchema}>
         <span data-testid="child">hello</span>
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("child").textContent).toBe("hello");
   });
 
   it("resolves initial activePage to child key when first page is flattened", () => {
-    const flattenedSchema: SettaraSchema = {
+    const flattenedSchema: SetteraSchema = {
       version: "1.0",
       pages: [
         {
@@ -174,9 +174,9 @@ describe("SettaraProvider", () => {
       ],
     };
     render(
-      <SettaraProvider schema={flattenedSchema}>
+      <SetteraProvider schema={flattenedSchema}>
         <NavConsumer />
-      </SettaraProvider>,
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("active-page").textContent).toBe("only-child");
   });

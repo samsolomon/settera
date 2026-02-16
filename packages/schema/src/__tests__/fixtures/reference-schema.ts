@@ -1,11 +1,11 @@
-import type { SettaraSchema } from "../../types.js";
+import type { SetteraSchema } from "../../types.js";
 
 /**
  * Reference schema fixture with ~20 settings across 3 pages.
  * Exercises: booleans, selects, text, numbers, visibility conditions,
  * dangerous settings, nested pages, compound settings, actions.
  */
-export const referenceSchema: SettaraSchema = {
+export const referenceSchema: SetteraSchema = {
   version: "1.0",
   meta: {
     title: "Application Settings",

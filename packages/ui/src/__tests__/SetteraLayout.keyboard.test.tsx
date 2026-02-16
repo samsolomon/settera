@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraLayout } from "../components/SettaraLayout.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraLayout } from "../components/SetteraLayout.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -55,11 +55,11 @@ const schema: SettaraSchema = {
 
 function renderLayout() {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}}>
-        <SettaraLayout />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}}>
+        <SetteraLayout />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -87,7 +87,7 @@ function fireKey(
   return event;
 }
 
-describe("SettaraLayout keyboard navigation", () => {
+describe("SetteraLayout keyboard navigation", () => {
   describe("/ shortcut", () => {
     it("focuses search input when pressing /", () => {
       renderLayout();
@@ -205,7 +205,7 @@ describe("SettaraLayout keyboard navigation", () => {
 
       fireKey("ArrowDown", { ctrlKey: true }, document.activeElement!);
 
-      const firstHeading = main.querySelector('h2[id^="settara-section-"]')!;
+      const firstHeading = main.querySelector('h2[id^="settera-section-"]')!;
       expect(document.activeElement).toBe(firstHeading);
     });
 
@@ -213,7 +213,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
       (headings[0] as HTMLElement).focus();
@@ -227,7 +227,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
       (headings[1] as HTMLElement).focus();
@@ -240,7 +240,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
       const lastHeading = headings[headings.length - 1] as HTMLElement;
 
@@ -253,7 +253,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
       const firstHeading = headings[0] as HTMLElement;
 
@@ -266,7 +266,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
       for (const heading of headings) {
@@ -278,7 +278,7 @@ describe("SettaraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const headings = main.querySelectorAll(
-        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+        'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
       // Should have: Behavior (h2), Sub Behavior (h3), Appearance (h2)

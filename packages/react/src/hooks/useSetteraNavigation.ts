@@ -1,16 +1,16 @@
 import { useContext } from "react";
-import { SettaraNavigationContext } from "../context.js";
+import { SetteraNavigationContext } from "../context.js";
 
 /**
  * Access sidebar navigation state and controls.
- * Must be used within a SettaraProvider.
+ * Must be used within a SetteraProvider.
  */
-export function useSettaraNavigation() {
-  const ctx = useContext(SettaraNavigationContext);
+export function useSetteraNavigation() {
+  const ctx = useContext(SetteraNavigationContext);
 
   if (!ctx) {
     throw new Error(
-      "useSettaraNavigation must be used within a SettaraProvider.",
+      "useSetteraNavigation must be used within a SetteraProvider.",
     );
   }
 

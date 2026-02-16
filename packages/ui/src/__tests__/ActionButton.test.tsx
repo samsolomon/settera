@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { ActionButton } from "../components/ActionButton.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -44,11 +44,11 @@ function renderActionButton(
   onAction?: Record<string, () => void | Promise<void>>,
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}} onAction={onAction}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}} onAction={onAction}>
         <ActionButton settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -148,12 +148,12 @@ describe("ActionButton", () => {
   it("applies dangerous styling", () => {
     renderActionButton("danger", { danger: () => {} });
     const button = screen.getByRole("button");
-    expect(button.style.color).toContain("--settara-dangerous-color");
+    expect(button.style.color).toContain("--settera-dangerous-color");
   });
 
   it("does not apply dangerous styling to normal buttons", () => {
     renderActionButton("reset", { reset: () => {} });
     const button = screen.getByRole("button");
-    expect(button.style.color).not.toContain("--settara-dangerous-color");
+    expect(button.style.color).not.toContain("--settera-dangerous-color");
   });
 });

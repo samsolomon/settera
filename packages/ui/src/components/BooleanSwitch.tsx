@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { useSettaraSetting } from "@settara/react";
+import { useSetteraSetting } from "@settera/react";
 
 export interface BooleanSwitchProps {
   settingKey: string;
@@ -11,7 +11,7 @@ export interface BooleanSwitchProps {
  * Toggles on click and Space key.
  */
 export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
-  const { value, setValue, definition } = useSettaraSetting(settingKey);
+  const { value, setValue, definition } = useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
 
   const checked = Boolean(value);
@@ -51,9 +51,9 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
 
   const trackColor = checked
     ? isDangerous
-      ? "var(--settara-switch-dangerous-color, #dc2626)"
-      : "var(--settara-switch-active-color, #2563eb)"
-    : "var(--settara-switch-inactive-color, #d1d5db)";
+      ? "var(--settera-switch-dangerous-color, #dc2626)"
+      : "var(--settera-switch-active-color, #2563eb)"
+    : "var(--settera-switch-inactive-color, #d1d5db)";
 
   return (
     <button
@@ -69,9 +69,9 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         position: "relative",
         display: "inline-flex",
         alignItems: "center",
-        width: "var(--settara-switch-width, 44px)",
-        height: "var(--settara-switch-height, 24px)",
-        borderRadius: "var(--settara-switch-border-radius, 12px)",
+        width: "var(--settera-switch-width, 44px)",
+        height: "var(--settera-switch-height, 24px)",
+        borderRadius: "var(--settera-switch-border-radius, 12px)",
         backgroundColor: trackColor,
         border: "none",
         cursor: "pointer",
@@ -79,7 +79,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         transition: "background-color 0.2s",
         outline: "none",
         boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settara-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
           : "none",
       }}
     >
@@ -88,10 +88,10 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
           position: "absolute",
           top: "2px",
           left: checked ? "22px" : "2px",
-          width: "var(--settara-switch-thumb-size, 20px)",
-          height: "var(--settara-switch-thumb-size, 20px)",
+          width: "var(--settera-switch-thumb-size, 20px)",
+          height: "var(--settera-switch-thumb-size, 20px)",
           borderRadius: "50%",
-          backgroundColor: "var(--settara-switch-thumb-color, white)",
+          backgroundColor: "var(--settera-switch-thumb-color, white)",
           transition: "left 0.2s",
           boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
         }}

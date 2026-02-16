@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 import {
-  SettaraSchemaContext,
-  useSettaraNavigation,
-  useSettaraSearch,
-} from "@settara/react";
-import { SettaraSection } from "./SettaraSection.js";
+  SetteraSchemaContext,
+  useSetteraNavigation,
+  useSetteraSearch,
+} from "@settera/react";
+import { SetteraSection } from "./SetteraSection.js";
 
-export interface SettaraPageProps {
+export interface SetteraPageProps {
   pageKey?: string;
 }
 
@@ -14,13 +14,13 @@ export interface SettaraPageProps {
  * Renders all sections for a page.
  * Defaults to the active page from navigation context, but accepts an explicit pageKey override.
  */
-export function SettaraPage({ pageKey }: SettaraPageProps) {
-  const schemaCtx = useContext(SettaraSchemaContext);
-  const { activePage } = useSettaraNavigation();
-  const { isSearching, matchingSettingKeys } = useSettaraSearch();
+export function SetteraPage({ pageKey }: SetteraPageProps) {
+  const schemaCtx = useContext(SetteraSchemaContext);
+  const { activePage } = useSetteraNavigation();
+  const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SettaraPage must be used within a SettaraProvider.");
+    throw new Error("SetteraPage must be used within a SetteraProvider.");
   }
 
   const resolvedKey = pageKey ?? activePage;
@@ -47,7 +47,7 @@ export function SettaraPage({ pageKey }: SettaraPageProps) {
     <div>
       <h1
         style={{
-          fontSize: "var(--settara-page-title-font-size, 20px)",
+          fontSize: "var(--settera-page-title-font-size, 20px)",
           fontWeight: 600,
           margin: 0,
         }}
@@ -55,7 +55,7 @@ export function SettaraPage({ pageKey }: SettaraPageProps) {
         {page.title}
       </h1>
       {visibleSections.map((section) => (
-        <SettaraSection
+        <SetteraSection
           key={section.key}
           pageKey={resolvedKey}
           sectionKey={section.key}

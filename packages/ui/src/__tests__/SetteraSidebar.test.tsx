@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraSidebar } from "../components/SettaraSidebar.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraSidebar } from "../components/SetteraSidebar.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -72,15 +72,15 @@ const schema: SettaraSchema = {
 
 function renderSidebar(renderIcon?: (iconName: string) => React.ReactNode) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={{}} onChange={() => {}}>
-        <SettaraSidebar renderIcon={renderIcon} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={{}} onChange={() => {}}>
+        <SetteraSidebar renderIcon={renderIcon} />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraSidebar", () => {
+describe("SetteraSidebar", () => {
   it("renders page list", () => {
     renderSidebar();
     expect(screen.getByText("General")).toBeDefined();

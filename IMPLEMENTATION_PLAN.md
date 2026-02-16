@@ -1,32 +1,32 @@
-# Settara Implementation Plan
+# Settera Implementation Plan
 
 ## Prior Art
 
-Three projects inform Settara's design. Understanding what to borrow (and what to avoid) from each prevents reinventing solved problems.
+Three projects inform Settera's design. Understanding what to borrow (and what to avoid) from each prevents reinventing solved problems.
 
 ### Zed Settings
 
-Zed generates its settings schema dynamically from Rust types — the types _are_ the schema, no translation layer. Their "tab groups" concept is the key innovation Settara borrows: container-level scopes that reset tab indexing, enabling keyboard navigation through complex forms with near-zero boilerplate. Their insight that "the file is the organizing principle" is worth noting — Settara's schema-driven approach is philosophically similar, but the schema sits between the developer and the UI rather than being the UI itself.
+Zed generates its settings schema dynamically from Rust types — the types _are_ the schema, no translation layer. Their "tab groups" concept is the key innovation Settera borrows: container-level scopes that reset tab indexing, enabling keyboard navigation through complex forms with near-zero boilerplate. Their insight that "the file is the organizing principle" is worth noting — Settera's schema-driven approach is philosophically similar, but the schema sits between the developer and the UI rather than being the UI itself.
 
 **Borrow:** Tab group scoping model, keyboard-first design, search-first settings discovery.
-**Diverge:** Zed's schema is runtime-generated from types. Settara's is static/declarative JSON — a different tradeoff (portability over dynamism).
+**Diverge:** Zed's schema is runtime-generated from types. Settera's is static/declarative JSON — a different tradeoff (portability over dynamism).
 
 ### Radix UI (Headless Patterns)
 
-Radix separates behavior from styling through a four-layer architecture: core utilities → behavioral primitives → state management → high-level components. Two patterns matter for Settara:
+Radix separates behavior from styling through a four-layer architecture: core utilities → behavioral primitives → state management → high-level components. Two patterns matter for Settera:
 
 1. **Composable parts**: `Dialog.Root`, `Dialog.Trigger`, `Dialog.Content` — consumers assemble pieces rather than configuring a monolith.
-2. **Roving focus**: Radix's `@radix-ui/react-roving-focus` handles keyboard navigation within component groups. Settara's focus management should study this rather than building from scratch.
+2. **Roving focus**: Radix's `@radix-ui/react-roving-focus` handles keyboard navigation within component groups. Settera's focus management should study this rather than building from scratch.
 
 **Borrow:** Part-based composition, roving focus patterns, `asChild` polymorphism for DOM flexibility.
-**Diverge:** Radix builds individual components. Settara builds a coordinated system (sidebar + content + search + keyboard nav all work together).
+**Diverge:** Radix builds individual components. Settera builds a coordinated system (sidebar + content + search + keyboard nav all work together).
 
 ### shadcn/ui (Philosophy, Not Distribution)
 
 shadcn's copy-paste model (`npx shadcn add button` copies source into your project) is great for stable libraries but terrible during API stabilization — every breaking change means users manually re-apply diffs to copied files. The inspiration from shadcn is philosophical: own your code, Tailwind-based, composable, CVA for variant management, CSS variable theming.
 
-**v0.1:** `@settara/ui` ships as a traditional npm package. The API is still changing; users need version bumps, not manual diffs.
-**Post-stabilization:** Offer `npx settara add` CLI that ejects components into the developer's project. At that point the API surface is stable enough that copy-paste ownership makes sense.
+**v0.1:** `@settera/ui` ships as a traditional npm package. The API is still changing; users need version bumps, not manual diffs.
+**Post-stabilization:** Offer `npx settera add` CLI that ejects components into the developer's project. At that point the API surface is stable enough that copy-paste ownership makes sense.
 
 **Borrow:** Tailwind + CVA styling, CSS variable theming, composable component philosophy.
 **Defer:** CLI-based copy-paste distribution until API stabilizes.
@@ -55,10 +55,10 @@ The point: **don't ship the schema package and call it done before writing a sin
 
 | Order | Schema                                    | React                       | UI                                          |
 | ----- | ----------------------------------------- | --------------------------- | ------------------------------------------- |
-| 1     | TypeScript interfaces                     | `SettaraProvider` + context | Sidebar + page layout                       |
-| 2     | Schema validator                          | `useSettaraSetting` hook    | `SettingRow` container                      |
-| 3     | Utility functions (traversal, flattening) | `useSettaraNavigation`      | Individual controls (boolean, text, select) |
-| 4     | —                                         | `useSettaraSearch`          | Compound/list/action editors                |
+| 1     | TypeScript interfaces                     | `SetteraProvider` + context | Sidebar + page layout                       |
+| 2     | Schema validator                          | `useSetteraSetting` hook    | `SettingRow` container                      |
+| 3     | Utility functions (traversal, flattening) | `useSetteraNavigation`      | Individual controls (boolean, text, select) |
+| 4     | —                                         | `useSetteraSearch`          | Compound/list/action editors                |
 | 5     | —                                         | Keyboard navigation system  | Responsive layout                           |
 | 6     | —                                         | Focus management            | Modals, confirm dialogs                     |
 
@@ -79,9 +79,9 @@ packages/
   ui/
 ```
 
-### 2. Package naming → **`@settara/schema`, `@settara/react`, `@settara/ui`**
+### 2. Package naming → **`@settera/schema`, `@settera/react`, `@settera/ui`**
 
-Scoped packages. Consistent with Radix (`@radix-ui/*`), prevents name squatting, signals a cohesive project. Register the `@settara` npm org before writing code.
+Scoped packages. Consistent with Radix (`@radix-ui/*`), prevents name squatting, signals a cohesive project. Register the `@settera` npm org before writing code.
 
 ### 3. Bundling → **tsup**
 
@@ -114,7 +114,7 @@ Documentation tooling is a bikeshed. Don't pick one until you have something to 
 The primary callback is `onChange(key: string, value: any)` — the simplest possible signature for the 90% case. For compound settings that need atomic batch saves, an optional `onBatchChange` callback is provided.
 
 ```tsx
-<SettaraRenderer
+<SetteraRenderer
   schema={schema}
   values={values}
   onChange={(key: string, value: any) => {
@@ -156,7 +156,7 @@ The spec already defines keys as "developer-defined" and independent of page str
 
 ### Styled layer ships as npm package (shadcn CLI deferred)
 
-The shadcn inspiration is about philosophy — own your code, Tailwind-based, composable — not the distribution mechanism. A copy-paste CLI during API stabilization means every breaking change requires users to manually re-apply diffs to copied source files. Ship `@settara/ui` as a normal npm package for v0.1. Plan `npx settara add` for post-stabilization.
+The shadcn inspiration is about philosophy — own your code, Tailwind-based, composable — not the distribution mechanism. A copy-paste CLI during API stabilization means every breaking change requires users to manually re-apply diffs to copied source files. Ship `@settera/ui` as a normal npm package for v0.1. Plan `npx settera add` for post-stabilization.
 
 ### Compound field keys are relative
 
@@ -200,9 +200,9 @@ visibleWhen: [
 ]
 ```
 
-### SettaraRenderer is sugar over composable parts
+### SetteraRenderer is sugar over composable parts
 
-The headless layer exposes composable primitives (`<SettaraSidebar>`, `<SettaraContent>`, `<SettaraSearch>`, `<SettaraSettingRow>`). `<SettaraRenderer>` is a convenience wrapper that composes them with a default layout. Developers who need control over layout use the parts directly.
+The headless layer exposes composable primitives (`<SetteraSidebar>`, `<SetteraContent>`, `<SetteraSearch>`, `<SetteraSettingRow>`). `<SetteraRenderer>` is a convenience wrapper that composes them with a default layout. Developers who need control over layout use the parts directly.
 
 ### Action settings use a discriminated union
 
@@ -279,7 +279,7 @@ The headless layer exposes all three behaviors as composable hooks. The styled l
 - [ ] Set up TypeScript project references (composite builds)
 - [ ] ESLint + Prettier config
 - [ ] GitHub Actions: CI pipeline (build + test + lint on PR)
-- [ ] Register `@settara` npm org
+- [ ] Register `@settera` npm org
 - [ ] Add a `packages/test-app` Vite app for manual testing during development
 
 **Exit criteria:** `pnpm build` and `pnpm test` succeed across all packages. The test app renders "hello world" and imports from all three packages.
@@ -299,7 +299,7 @@ The headless layer exposes all three behaviors as composable hooks. The styled l
   - `getSettingByKey(schema, key)` → look up a setting definition
   - `getPageByKey(schema, key)` → look up a page
   - `resolveDependencies(schema)` → dependency graph for `visibleWhen`
-- [ ] **Vertical slice:** Build a minimal `SettaraProvider` + `useSettaraSetting` hook + styled `BooleanSwitch` to validate the schema → react → ui pipeline works end-to-end
+- [ ] **Vertical slice:** Build a minimal `SetteraProvider` + `useSetteraSetting` hook + styled `BooleanSwitch` to validate the schema → react → ui pipeline works end-to-end
 - [ ] Write a reference example schema (~20 settings across 3 pages) for use in all subsequent development
 
 **Exit criteria:** A developer can define a schema with boolean/text/select settings, pass it to the vertical slice components, and see them render with working instant-apply behavior.
@@ -308,14 +308,14 @@ The headless layer exposes all three behaviors as composable hooks. The styled l
 
 **Goal:** All hooks, navigation state, search, keyboard nav. No styled components yet — test with a minimal unstyled test harness.
 
-- [ ] `SettaraProvider` — context that holds schema, values, renderers, callbacks
-- [ ] `useSettara()` — access schema, values, setValue, validate
-- [ ] `useSettaraSetting(key)` — value, setValue, error, isVisible, metadata
-- [ ] `useSettaraNavigation()` — activePage, setActivePage, expandedGroups, breadcrumbs
-- [ ] `useSettaraSearch()` — query, setQuery, filteredPages, highlighted settings
-- [ ] `useSettaraLayout()` — returns "desktop" | "mobile" based on breakpoint
-- [ ] Composable primitives: `<SettaraSidebar>`, `<SettaraContent>`, `<SettaraSearch>`, `<SettaraSettingRow>`
-- [ ] `<SettaraRenderer>` convenience wrapper that composes the primitives
+- [ ] `SetteraProvider` — context that holds schema, values, renderers, callbacks
+- [ ] `useSettera()` — access schema, values, setValue, validate
+- [ ] `useSetteraSetting(key)` — value, setValue, error, isVisible, metadata
+- [ ] `useSetteraNavigation()` — activePage, setActivePage, expandedGroups, breadcrumbs
+- [ ] `useSetteraSearch()` — query, setQuery, filteredPages, highlighted settings
+- [ ] `useSetteraLayout()` — returns "desktop" | "mobile" based on breakpoint
+- [ ] Composable primitives: `<SetteraSidebar>`, `<SetteraContent>`, `<SetteraSearch>`, `<SetteraSettingRow>`
+- [ ] `<SetteraRenderer>` convenience wrapper that composes the primitives
 - [ ] Visibility engine — evaluates `visibleWhen` conditions (equals, notEquals, oneOf, AND arrays)
 - [ ] Validation engine — schema validators first, then async callbacks; manages error state
 - [ ] onChange handler — `onChange(key, value)` + optional `onBatchChange` for compound settings
@@ -334,11 +334,11 @@ The headless layer exposes all three behaviors as composable hooks. The styled l
 
 **Goal:** Ship the styled layer for all simple setting types + layout.
 
-- [ ] `SettaraLayout` — sidebar + content area responsive container
-- [ ] `SettaraSidebar` — navigation tree with expand/collapse, active state, icons (Lucide)
-- [ ] `SettaraSearch` — search input integrated with sidebar filtering
-- [ ] `SettaraPage` — content area for a page, renders sections
-- [ ] `SettaraSection` / `SettaraSubsection` — section containers with headings
+- [ ] `SetteraLayout` — sidebar + content area responsive container
+- [ ] `SetteraSidebar` — navigation tree with expand/collapse, active state, icons (Lucide)
+- [ ] `SetteraSearch` — search input integrated with sidebar filtering
+- [ ] `SetteraPage` — content area for a page, renders sections
+- [ ] `SetteraSection` / `SetteraSubsection` — section containers with headings
 - [ ] `SettingRow` — layout container for a single setting (title, description, control)
 - [ ] Controls: `BooleanSwitch`, `TextInput`, `NumberInput`, `SelectInput`, `MultiSelect`, `DateInput` (native)
 - [ ] `HelpText` — expandable inline help
@@ -372,7 +372,7 @@ The headless layer exposes all three behaviors as composable hooks. The styled l
 
 - [ ] `examples/minimal` — simplest possible settings page (~5 settings)
 - [ ] `examples/enterprise` — complex nested settings with compounds, lists, conditional visibility, actions
-- [ ] `examples/headless` — custom-styled example using only `@settara/react`
+- [ ] `examples/headless` — custom-styled example using only `@settera/react`
 - [ ] README for each package with quick-start guide
 - [ ] API reference documentation (generated from TSDoc comments)
 - [ ] CHANGELOG, LICENSE, CONTRIBUTING

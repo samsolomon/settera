@@ -1,5 +1,5 @@
 import type {
-  SettaraSchema,
+  SetteraSchema,
   PageDefinition,
   SettingDefinition,
   FlattenedSetting,
@@ -10,7 +10,7 @@ import type {
  * Walk all pages/sections/subsections and return a flat list of settings
  * with their structural metadata.
  */
-export function flattenSettings(schema: SettaraSchema): FlattenedSetting[] {
+export function flattenSettings(schema: SetteraSchema): FlattenedSetting[] {
   const result: FlattenedSetting[] = [];
 
   function walkPages(pages: PageDefinition[], pathPrefix: string): void {
@@ -65,7 +65,7 @@ export function flattenSettings(schema: SettaraSchema): FlattenedSetting[] {
  * Find a setting definition by its key. Returns undefined if not found.
  */
 export function getSettingByKey(
-  schema: SettaraSchema,
+  schema: SetteraSchema,
   key: string,
 ): SettingDefinition | undefined {
   function searchPages(pages: PageDefinition[]): SettingDefinition | undefined {
@@ -101,7 +101,7 @@ export function getSettingByKey(
  * Find a page definition by its key. Searches recursively through nested pages.
  */
 export function getPageByKey(
-  schema: SettaraSchema,
+  schema: SetteraSchema,
   key: string,
 ): PageDefinition | undefined {
   function searchPages(pages: PageDefinition[]): PageDefinition | undefined {
@@ -143,7 +143,7 @@ export function resolvePageKey(page: PageDefinition): string {
  * Returns Map<dependentKey, controllerKeys[]>.
  */
 export function resolveDependencies(
-  schema: SettaraSchema,
+  schema: SetteraSchema,
 ): Map<string, string[]> {
   const deps = new Map<string, string[]>();
   const flattened = flattenSettings(schema);

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { SCHEMA_VERSION } from "@settara/schema";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraLayout } from "@settara/ui";
+import { SCHEMA_VERSION } from "@settera/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraLayout } from "@settera/ui";
 import { demoSchema } from "./schema.js";
 
 const iconMap: Record<string, string> = {
@@ -55,7 +55,7 @@ export function App() {
         }}
       >
         <h1 style={{ fontSize: "18px", fontWeight: 600, margin: 0 }}>
-          Settara Demo
+          Settera Demo
         </h1>
         <p
           style={{
@@ -68,20 +68,20 @@ export function App() {
         </p>
       </header>
       <div style={{ flex: 1, overflow: "hidden" }}>
-        <SettaraProvider schema={demoSchema}>
-          <SettaraRenderer
+        <SetteraProvider schema={demoSchema}>
+          <SetteraRenderer
             values={values}
             onChange={handleChange}
             onAction={onAction}
             onValidate={onValidate}
           >
-            <SettaraLayout
+            <SetteraLayout
               renderIcon={(name) => (
                 <span aria-hidden="true">{iconMap[name] ?? name}</span>
               )}
             />
-          </SettaraRenderer>
-        </SettaraProvider>
+          </SetteraRenderer>
+        </SetteraProvider>
       </div>
     </div>
   );

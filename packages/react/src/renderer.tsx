@@ -5,10 +5,10 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { SettaraSchemaContext, SettaraValuesContext } from "./context.js";
-import type { SettaraValuesContextValue, PendingConfirm } from "./context.js";
+import { SetteraSchemaContext, SetteraValuesContext } from "./context.js";
+import type { SetteraValuesContextValue, PendingConfirm } from "./context.js";
 
-export interface SettaraRendererProps {
+export interface SetteraRendererProps {
   /** Current values object (flat keys) */
   values: Record<string, unknown>;
   /** Called on every setting change (instant-apply) */
@@ -26,17 +26,17 @@ export interface SettaraRendererProps {
 }
 
 /**
- * Context bridge that provides SettaraValuesContext to children.
+ * Context bridge that provides SetteraValuesContext to children.
  * In M1, this is a thin wrapper. Auto-layout renderer comes in M2.
  */
-export function SettaraRenderer({
+export function SetteraRenderer({
   values,
   onChange,
   onAction,
   onValidate,
   children,
-}: SettaraRendererProps) {
-  const schemaCtx = useContext(SettaraSchemaContext);
+}: SetteraRendererProps) {
+  const schemaCtx = useContext(SetteraSchemaContext);
 
   // Merge schema defaults with provided values so that visibility conditions
   // and value reads resolve correctly even when the consumer hasn't set a value.
@@ -96,7 +96,7 @@ export function SettaraRenderer({
     }
   }, []);
 
-  const contextValue: SettaraValuesContextValue = useMemo(
+  const contextValue: SetteraValuesContextValue = useMemo(
     () => ({
       values: resolvedValues,
       setValue,
@@ -122,8 +122,8 @@ export function SettaraRenderer({
   );
 
   return (
-    <SettaraValuesContext.Provider value={contextValue}>
+    <SetteraValuesContext.Provider value={contextValue}>
       {children}
-    </SettaraValuesContext.Provider>
+    </SetteraValuesContext.Provider>
   );
 }

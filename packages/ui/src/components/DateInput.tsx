@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { useSettaraSetting } from "@settara/react";
+import { useSetteraSetting } from "@settera/react";
 
 export interface DateInputProps {
   settingKey: string;
@@ -11,7 +11,7 @@ export interface DateInputProps {
  */
 export function DateInput({ settingKey }: DateInputProps) {
   const { value, setValue, error, definition, validate } =
-    useSettaraSetting(settingKey);
+    useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
@@ -62,23 +62,23 @@ export function DateInput({ settingKey }: DateInputProps) {
       max={maxDate}
       aria-label={definition.title}
       aria-invalid={hasError}
-      aria-describedby={hasError ? `settara-error-${settingKey}` : undefined}
+      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
       style={{
-        fontSize: "var(--settara-input-font-size, 14px)",
-        padding: "var(--settara-input-padding, 6px 10px)",
-        borderRadius: "var(--settara-input-border-radius, 6px)",
+        fontSize: "var(--settera-input-font-size, 14px)",
+        padding: "var(--settera-input-padding, 6px 10px)",
+        borderRadius: "var(--settera-input-border-radius, 6px)",
         border: hasError
-          ? "1px solid var(--settara-error-color, #dc2626)"
-          : "var(--settara-input-border, 1px solid #d1d5db)",
+          ? "1px solid var(--settera-error-color, #dc2626)"
+          : "var(--settera-input-border, 1px solid #d1d5db)",
         outline: "none",
         boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settara-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
           : "none",
-        width: "var(--settara-input-width, 200px)",
+        width: "var(--settera-input-width, 200px)",
         color: isDangerous
-          ? "var(--settara-dangerous-color, #dc2626)"
-          : "var(--settara-input-color, #111827)",
-        backgroundColor: "var(--settara-input-bg, white)",
+          ? "var(--settera-dangerous-color, #dc2626)"
+          : "var(--settera-input-color, #111827)",
+        backgroundColor: "var(--settera-input-bg, white)",
       }}
     />
   );

@@ -2,13 +2,13 @@ import React, { useContext } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider } from "../provider.js";
-import { SettaraRenderer } from "../renderer.js";
-import { useSettaraSetting } from "../hooks/useSettaraSetting.js";
-import { SettaraValuesContext } from "../context.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { SetteraRenderer } from "../renderer.js";
+import { useSetteraSetting } from "../hooks/useSetteraSetting.js";
+import { SetteraValuesContext } from "../context.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -100,7 +100,7 @@ const schema: SettaraSchema = {
 
 function SettingDisplay({ settingKey }: { settingKey: string }) {
   const { value, setValue, error, isVisible, definition, validate } =
-    useSettaraSetting(settingKey);
+    useSetteraSetting(settingKey);
   return (
     <div data-testid={`setting-${settingKey}`}>
       <span data-testid={`value-${settingKey}`}>{String(value)}</span>
@@ -132,19 +132,19 @@ function renderWithProviders(
   },
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer
         values={values}
         onChange={onChange}
         onValidate={extra?.onValidate}
       >
         {children}
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("useSettaraSetting", () => {
+describe("useSetteraSetting", () => {
   it("returns current value from values object", () => {
     renderWithProviders(
       { autoSave: false },
@@ -215,10 +215,10 @@ describe("useSettaraSetting", () => {
     expect(screen.getByTestId("visible-dependent").textContent).toBe("visible");
   });
 
-  it("throws when used outside SettaraProvider", () => {
+  it("throws when used outside SetteraProvider", () => {
     expect(() => {
       render(<SettingDisplay settingKey="autoSave" />);
-    }).toThrow("useSettaraSetting must be used within a SettaraProvider");
+    }).toThrow("useSetteraSetting must be used within a SetteraProvider");
   });
 
   // ---- Validation tests ----
@@ -244,11 +244,11 @@ describe("useSettaraSetting", () => {
       values.username = value as string;
     });
     const { rerender } = render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={values} onChange={onChange}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={values} onChange={onChange}>
           <SettingDisplay settingKey="username" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Trigger error with empty value
@@ -260,11 +260,11 @@ describe("useSettaraSetting", () => {
     // Re-render with valid value — clicking toggle sets boolean,
     // but we can trigger a valid set by re-rendering
     rerender(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ username: "sam" }} onChange={onChange}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ username: "sam" }} onChange={onChange}>
           <SettingDisplay settingKey="username" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // After re-render, the error from the context should clear when next setValue runs.
@@ -346,7 +346,7 @@ describe("useSettaraSetting", () => {
     const onChange = vi.fn();
 
     function ConfirmResolver() {
-      const ctx = useContext(SettaraValuesContext);
+      const ctx = useContext(SetteraValuesContext);
       return (
         <button
           data-testid="resolve-confirm"
@@ -378,7 +378,7 @@ describe("useSettaraSetting", () => {
     const onChange = vi.fn();
 
     function ConfirmCanceller() {
-      const ctx = useContext(SettaraValuesContext);
+      const ctx = useContext(SetteraValuesContext);
       return (
         <button
           data-testid="cancel-confirm"

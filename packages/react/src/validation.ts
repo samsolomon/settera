@@ -1,4 +1,4 @@
-import type { SettingDefinition } from "@settara/schema";
+import type { SettingDefinition } from "@settera/schema";
 
 /**
  * Validate a setting value against the definition's validation rules.

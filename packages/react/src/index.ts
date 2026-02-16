@@ -3,55 +3,55 @@ export {
   SCHEMA_VERSION,
   isFlattenedPage,
   resolvePageKey,
-} from "@settara/schema";
+} from "@settera/schema";
 export type {
-  SettaraSchema,
+  SetteraSchema,
   SettingDefinition,
   BooleanSetting,
   VisibilityCondition,
-} from "@settara/schema";
+} from "@settera/schema";
 
 // Provider
-export { SettaraProvider } from "./provider.js";
-export type { SettaraProviderProps } from "./provider.js";
+export { SetteraProvider } from "./provider.js";
+export type { SetteraProviderProps } from "./provider.js";
 
 // Renderer
-export { SettaraRenderer } from "./renderer.js";
-export type { SettaraRendererProps } from "./renderer.js";
+export { SetteraRenderer } from "./renderer.js";
+export type { SetteraRendererProps } from "./renderer.js";
 
 // Contexts (for advanced usage)
 export {
-  SettaraSchemaContext,
-  SettaraNavigationContext,
-  SettaraValuesContext,
+  SetteraSchemaContext,
+  SetteraNavigationContext,
+  SetteraValuesContext,
 } from "./context.js";
 export type {
-  SettaraSchemaContextValue,
-  SettaraNavigationContextValue,
-  SettaraValuesContextValue,
+  SetteraSchemaContextValue,
+  SetteraNavigationContextValue,
+  SetteraValuesContextValue,
   PendingConfirm,
 } from "./context.js";
 
 // Hooks
-export { useSettara } from "./hooks/useSettara.js";
-export { useSettaraSetting } from "./hooks/useSettaraSetting.js";
-export type { UseSettaraSettingResult } from "./hooks/useSettaraSetting.js";
-export { useSettaraAction } from "./hooks/useSettaraAction.js";
-export type { UseSettaraActionResult } from "./hooks/useSettaraAction.js";
-export { useSettaraConfirm } from "./hooks/useSettaraConfirm.js";
-export type { UseSettaraConfirmResult } from "./hooks/useSettaraConfirm.js";
-export { useSettaraNavigation } from "./hooks/useSettaraNavigation.js";
-export { useSettaraSearch } from "./hooks/useSettaraSearch.js";
+export { useSettera } from "./hooks/useSettera.js";
+export { useSetteraSetting } from "./hooks/useSetteraSetting.js";
+export type { UseSetteraSettingResult } from "./hooks/useSetteraSetting.js";
+export { useSetteraAction } from "./hooks/useSetteraAction.js";
+export type { UseSetteraActionResult } from "./hooks/useSetteraAction.js";
+export { useSetteraConfirm } from "./hooks/useSetteraConfirm.js";
+export type { UseSetteraConfirmResult } from "./hooks/useSetteraConfirm.js";
+export { useSetteraNavigation } from "./hooks/useSetteraNavigation.js";
+export { useSetteraSearch } from "./hooks/useSetteraSearch.js";
 export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";
 export type {
   UseRovingTabIndexOptions,
   UseRovingTabIndexResult,
 } from "./hooks/useRovingTabIndex.js";
 export {
-  useSettaraGlobalKeys,
+  useSetteraGlobalKeys,
   isTextInput,
-} from "./hooks/useSettaraGlobalKeys.js";
-export type { UseSettaraGlobalKeysOptions } from "./hooks/useSettaraGlobalKeys.js";
+} from "./hooks/useSetteraGlobalKeys.js";
+export type { UseSetteraGlobalKeysOptions } from "./hooks/useSetteraGlobalKeys.js";
 
 // Validation (pure function, useful for custom renderers)
 export { validateSettingValue } from "./validation.js";

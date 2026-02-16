@@ -3,14 +3,14 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
-  SettaraProvider,
-  SettaraRenderer,
-  useSettaraSetting,
-} from "@settara/react";
+  SetteraProvider,
+  SetteraRenderer,
+  useSetteraSetting,
+} from "@settera/react";
 import { ConfirmDialog } from "../components/ConfirmDialog.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -67,7 +67,7 @@ const schema: SettaraSchema = {
 };
 
 function ToggleButton({ settingKey }: { settingKey: string }) {
-  const { value, setValue } = useSettaraSetting(settingKey);
+  const { value, setValue } = useSetteraSetting(settingKey);
   return (
     <button
       data-testid={`toggle-${settingKey}`}
@@ -84,12 +84,12 @@ function renderWithDialog(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <ToggleButton settingKey={settingKey} />
         <ConfirmDialog />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 

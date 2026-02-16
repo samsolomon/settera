@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { MultiSelect } from "../components/MultiSelect.js";
 import { SettingRow } from "../components/SettingRow.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -90,11 +90,11 @@ function renderMultiSelect(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <MultiSelect settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -162,16 +162,16 @@ describe("MultiSelect", () => {
   it("shows required validation error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{ "required-multi": ["a"] }}
           onChange={() => {}}
         >
           <SettingRow settingKey="required-multi">
             <MultiSelect settingKey="required-multi" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Uncheck the only selected option
@@ -187,16 +187,16 @@ describe("MultiSelect", () => {
   it("shows minSelections error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{ "min-multi": ["a", "b"] }}
           onChange={() => {}}
         >
           <SettingRow settingKey="min-multi">
             <MultiSelect settingKey="min-multi" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Uncheck one to go below minimum
@@ -210,13 +210,13 @@ describe("MultiSelect", () => {
   it("shows maxSelections error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ "max-multi": ["a"] }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ "max-multi": ["a"] }} onChange={() => {}}>
           <SettingRow settingKey="max-multi">
             <MultiSelect settingKey="max-multi" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Check another to exceed maximum
@@ -231,7 +231,7 @@ describe("MultiSelect", () => {
     renderMultiSelect("dangerous-multi", { "dangerous-multi": [] });
     const wrapper = screen.getByTestId("multiselect-dangerous-multi");
     const labels = wrapper.querySelectorAll("label");
-    expect(labels[0].style.color).toContain("--settara-dangerous-color");
+    expect(labels[0].style.color).toContain("--settera-dangerous-color");
   });
 
   it("shows focus ring on keyboard focus", async () => {
@@ -246,8 +246,8 @@ describe("MultiSelect", () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Too many selected");
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{ channels: ["email"] }}
           onChange={() => {}}
           onValidate={{ channels: asyncValidator }}
@@ -255,8 +255,8 @@ describe("MultiSelect", () => {
           <SettingRow settingKey="channels">
             <MultiSelect settingKey="channels" />
           </SettingRow>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     await act(async () => {

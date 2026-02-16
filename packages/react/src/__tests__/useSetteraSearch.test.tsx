@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider } from "../provider.js";
-import { useSettaraSearch } from "../hooks/useSettaraSearch.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -78,7 +78,7 @@ function SearchConsumer() {
     matchingSettingKeys,
     matchingPageKeys,
     isSearching,
-  } = useSettaraSearch();
+  } = useSetteraSearch();
   return (
     <div>
       <span data-testid="query">{query}</span>
@@ -101,13 +101,13 @@ function SearchConsumer() {
 
 function renderSearch() {
   return render(
-    <SettaraProvider schema={schema}>
+    <SetteraProvider schema={schema}>
       <SearchConsumer />
-    </SettaraProvider>,
+    </SetteraProvider>,
   );
 }
 
-describe("useSettaraSearch", () => {
+describe("useSetteraSearch", () => {
   it("returns empty query and isSearching=false initially", () => {
     renderSearch();
     expect(screen.getByTestId("query").textContent).toBe("");
@@ -194,9 +194,9 @@ describe("useSettaraSearch", () => {
     expect(screen.getByTestId("settingKeys").textContent).toBe("");
   });
 
-  it("throws when used outside SettaraProvider", () => {
+  it("throws when used outside SetteraProvider", () => {
     expect(() => {
       render(<SearchConsumer />);
-    }).toThrow("useSettaraSearch must be used within a SettaraProvider");
+    }).toThrow("useSetteraSearch must be used within a SetteraProvider");
   });
 });

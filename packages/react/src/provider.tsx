@@ -6,34 +6,34 @@ import {
   getPageByKey,
   resolveDependencies,
   resolvePageKey,
-} from "@settara/schema";
-import type { SettaraSchema } from "@settara/schema";
-import { SettaraSchemaContext, SettaraNavigationContext } from "./context.js";
+} from "@settera/schema";
+import type { SetteraSchema } from "@settera/schema";
+import { SetteraSchemaContext, SetteraNavigationContext } from "./context.js";
 import type {
-  SettaraSchemaContextValue,
-  SettaraNavigationContextValue,
+  SetteraSchemaContextValue,
+  SetteraNavigationContextValue,
 } from "./context.js";
 
-export interface SettaraProviderProps {
-  schema: SettaraSchema;
+export interface SetteraProviderProps {
+  schema: SetteraSchema;
   children: React.ReactNode;
 }
 
-export function SettaraProvider({ schema, children }: SettaraProviderProps) {
+export function SetteraProvider({ schema, children }: SetteraProviderProps) {
   // Validate schema on mount (warn, don't throw)
   useEffect(() => {
     const errors = validateSchema(schema);
     if (errors.length > 0) {
       for (const error of errors) {
         console.warn(
-          `[settara] Schema validation: ${error.code} at ${error.path} — ${error.message}`,
+          `[settera] Schema validation: ${error.code} at ${error.path} — ${error.message}`,
         );
       }
     }
   }, [schema]);
 
   // Memoize schema context (stable after mount)
-  const schemaContext: SettaraSchemaContextValue = useMemo(
+  const schemaContext: SetteraSchemaContextValue = useMemo(
     () => ({
       schema,
       flatSettings: flattenSettings(schema),
@@ -169,7 +169,7 @@ export function SettaraProvider({ schema, children }: SettaraProviderProps) {
     return { matchingSettingKeys: settingKeys, matchingPageKeys: pageKeys };
   }, [searchQuery, schema]);
 
-  const navigationContext: SettaraNavigationContextValue = useMemo(
+  const navigationContext: SetteraNavigationContextValue = useMemo(
     () => ({
       activePage,
       setActivePage,
@@ -191,10 +191,10 @@ export function SettaraProvider({ schema, children }: SettaraProviderProps) {
   );
 
   return (
-    <SettaraSchemaContext.Provider value={schemaContext}>
-      <SettaraNavigationContext.Provider value={navigationContext}>
+    <SetteraSchemaContext.Provider value={schemaContext}>
+      <SetteraNavigationContext.Provider value={navigationContext}>
         {children}
-      </SettaraNavigationContext.Provider>
-    </SettaraSchemaContext.Provider>
+      </SetteraNavigationContext.Provider>
+    </SetteraSchemaContext.Provider>
   );
 }

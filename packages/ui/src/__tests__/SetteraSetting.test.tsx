@@ -1,11 +1,11 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettaraSetting } from "../components/SettaraSetting.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraSetting } from "../components/SetteraSetting.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -79,15 +79,15 @@ function renderSetting(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={() => {}}>
-        <SettaraSetting settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={() => {}}>
+        <SetteraSetting settingKey={settingKey} />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraSetting", () => {
+describe("SetteraSetting", () => {
   it("renders BooleanSwitch for boolean type", () => {
     renderSetting("toggle", { toggle: false });
     expect(screen.getByRole("switch")).toBeDefined();

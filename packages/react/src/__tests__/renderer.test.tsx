@@ -2,12 +2,12 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider } from "../provider.js";
-import { SettaraRenderer } from "../renderer.js";
-import { SettaraValuesContext } from "../context.js";
-import type { SettaraSchema } from "@settara/schema";
+import { SetteraProvider } from "../provider.js";
+import { SetteraRenderer } from "../renderer.js";
+import { SetteraValuesContext } from "../context.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -25,7 +25,7 @@ const schema: SettaraSchema = {
 };
 
 function ValuesConsumer() {
-  const ctx = React.useContext(SettaraValuesContext);
+  const ctx = React.useContext(SetteraValuesContext);
   if (!ctx) return <div>no values context</div>;
   return (
     <div>
@@ -35,14 +35,14 @@ function ValuesConsumer() {
   );
 }
 
-describe("SettaraRenderer", () => {
+describe("SetteraRenderer", () => {
   it("provides values context to children", () => {
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ toggle: false }} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
           <ValuesConsumer />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("toggle-value").textContent).toBe("false");
   });
@@ -51,11 +51,11 @@ describe("SettaraRenderer", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{ toggle: false }} onChange={onChange}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
           <ValuesConsumer />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
     await user.click(screen.getByText("set-true"));
     expect(onChange).toHaveBeenCalledWith("toggle", true);
@@ -63,11 +63,11 @@ describe("SettaraRenderer", () => {
 
   it("renders children", () => {
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{}} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
           <span data-testid="child">content</span>
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("child").textContent).toBe("content");
   });
@@ -79,7 +79,7 @@ describe("SettaraRenderer", () => {
     };
 
     function ActionConsumer() {
-      const ctx = React.useContext(SettaraValuesContext);
+      const ctx = React.useContext(SetteraValuesContext);
       return (
         <div>
           <span data-testid="has-action">
@@ -93,16 +93,16 @@ describe("SettaraRenderer", () => {
     }
 
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
           values={{}}
           onChange={() => {}}
           onAction={onAction}
           onValidate={onValidate}
         >
           <ActionConsumer />
-        </SettaraRenderer>
-      </SettaraProvider>,
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
     expect(screen.getByTestId("has-action").textContent).toBe("yes");
     expect(screen.getByTestId("has-validate").textContent).toBe("yes");

@@ -1,15 +1,15 @@
 import { useContext } from "react";
-import { SettaraNavigationContext } from "../context.js";
+import { SetteraNavigationContext } from "../context.js";
 
 /**
  * Access search state and matching results.
- * Must be used within a SettaraProvider.
+ * Must be used within a SetteraProvider.
  */
-export function useSettaraSearch() {
-  const ctx = useContext(SettaraNavigationContext);
+export function useSetteraSearch() {
+  const ctx = useContext(SetteraNavigationContext);
 
   if (!ctx) {
-    throw new Error("useSettaraSearch must be used within a SettaraProvider.");
+    throw new Error("useSetteraSearch must be used within a SetteraProvider.");
   }
 
   return {

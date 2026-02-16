@@ -1,12 +1,12 @@
 import React, { useCallback } from "react";
-import { useSettaraSearch } from "@settara/react";
+import { useSetteraSearch } from "@settera/react";
 
 /**
  * Search input for filtering settings.
  * Renders a text input with clear button and Escape-to-clear.
  */
-export function SettaraSearch() {
-  const { query, setQuery } = useSettaraSearch();
+export function SetteraSearch() {
+  const { query, setQuery } = useSetteraSearch();
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -20,7 +20,7 @@ export function SettaraSearch() {
   return (
     <div
       style={{
-        margin: "var(--settara-search-margin, 8px 12px)",
+        margin: "var(--settera-search-margin, 8px 12px)",
         position: "relative",
       }}
     >
@@ -34,11 +34,11 @@ export function SettaraSearch() {
         aria-label="Search settings"
         style={{
           width: "100%",
-          padding: "var(--settara-search-input-padding, 6px 10px)",
-          border: "var(--settara-search-border, 1px solid #e5e7eb)",
-          borderRadius: "var(--settara-search-border-radius, 6px)",
-          fontSize: "var(--settara-search-font-size, 13px)",
-          backgroundColor: "var(--settara-search-bg, white)",
+          padding: "var(--settera-search-input-padding, 6px 10px)",
+          border: "var(--settera-search-border, 1px solid #e5e7eb)",
+          borderRadius: "var(--settera-search-border-radius, 6px)",
+          fontSize: "var(--settera-search-font-size, 13px)",
+          backgroundColor: "var(--settera-search-bg, white)",
           fontFamily: "inherit",
           boxSizing: "border-box",
         }}
@@ -58,7 +58,7 @@ export function SettaraSearch() {
             fontSize: "14px",
             lineHeight: 1,
             padding: "2px",
-            color: "var(--settara-search-placeholder-color, #9ca3af)",
+            color: "var(--settera-search-placeholder-color, #9ca3af)",
           }}
         >
           ×

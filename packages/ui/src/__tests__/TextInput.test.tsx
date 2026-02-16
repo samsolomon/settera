@@ -2,11 +2,11 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { TextInput } from "../components/TextInput.js";
-import type { SettaraSchema } from "@settara/schema";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -67,11 +67,11 @@ function renderTextInput(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={onChange}>
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
         <TextInput settingKey={settingKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
@@ -153,13 +153,13 @@ describe("TextInput", () => {
   it("applies dangerous styling", () => {
     renderTextInput("dangerous", { dangerous: "bad" });
     const input = screen.getByRole("textbox");
-    expect(input.style.color).toContain("--settara-dangerous-color");
+    expect(input.style.color).toContain("--settera-dangerous-color");
   });
 
   it("does not apply dangerous styling to normal inputs", () => {
     renderTextInput("name", { name: "hello" });
     const input = screen.getByRole("textbox");
-    expect(input.style.color).not.toContain("--settara-dangerous-color");
+    expect(input.style.color).not.toContain("--settera-dangerous-color");
   });
 
   it("uses inputType 'password'", () => {

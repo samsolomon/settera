@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { SettaraValuesContext } from "../context.js";
+import { SetteraValuesContext } from "../context.js";
 import type { PendingConfirm } from "../context.js";
 
-export interface UseSettaraConfirmResult {
+export interface UseSetteraConfirmResult {
   /** The currently pending confirm dialog, or null if none */
   pendingConfirm: PendingConfirm | null;
   /** Resolve the pending confirm: true = confirm, false = cancel */
@@ -13,10 +13,10 @@ export interface UseSettaraConfirmResult {
  * Access the pending confirm dialog state.
  * Used by ConfirmDialog to render and resolve the dialog.
  */
-export function useSettaraConfirm(): UseSettaraConfirmResult {
-  const ctx = useContext(SettaraValuesContext);
+export function useSetteraConfirm(): UseSetteraConfirmResult {
+  const ctx = useContext(SetteraValuesContext);
   if (!ctx) {
-    throw new Error("useSettaraConfirm must be used within a SettaraRenderer.");
+    throw new Error("useSetteraConfirm must be used within a SetteraRenderer.");
   }
   return {
     pendingConfirm: ctx.pendingConfirm,

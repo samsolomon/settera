@@ -2,7 +2,7 @@ export const SCHEMA_VERSION = "1.0";
 
 // Types
 export type {
-  SettaraSchema,
+  SetteraSchema,
   PageDefinition,
   SectionDefinition,
   SubsectionDefinition,

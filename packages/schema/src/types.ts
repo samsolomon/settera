@@ -1,6 +1,6 @@
 // ---- Schema Root ----
 
-export interface SettaraSchema {
+export interface SetteraSchema {
   /** Schema version for future compatibility */
   version: "1.0";
 

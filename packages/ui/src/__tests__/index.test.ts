@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
 import {
   SCHEMA_VERSION,
-  SettaraProvider,
-  SettaraRenderer,
-  useSettara,
-  useSettaraSetting,
-  useSettaraAction,
-  useSettaraNavigation,
-  useSettaraSearch,
+  SetteraProvider,
+  SetteraRenderer,
+  useSettera,
+  useSetteraSetting,
+  useSetteraAction,
+  useSetteraNavigation,
+  useSetteraSearch,
   useRovingTabIndex,
-  useSettaraGlobalKeys,
+  useSetteraGlobalKeys,
   evaluateVisibility,
   validateSettingValue,
   BooleanSwitch,
@@ -18,37 +18,37 @@ import {
   NumberInput,
   Select,
   ActionButton,
-  SettaraSearch,
-  SettaraSetting,
-  SettaraSection,
-  SettaraPage,
-  SettaraSidebar,
-  SettaraLayout,
+  SetteraSearch,
+  SetteraSetting,
+  SetteraSection,
+  SetteraPage,
+  SetteraSidebar,
+  SetteraLayout,
 } from "../index.js";
 
-describe("@settara/ui", () => {
+describe("@settera/ui", () => {
   it("re-exports SCHEMA_VERSION as 1.0", () => {
     expect(SCHEMA_VERSION).toBe("1.0");
   });
 
   it("re-exports react layer components", () => {
-    expect(typeof SettaraProvider).toBe("function");
-    expect(typeof SettaraRenderer).toBe("function");
+    expect(typeof SetteraProvider).toBe("function");
+    expect(typeof SetteraRenderer).toBe("function");
   });
 
   it("re-exports hooks", () => {
-    expect(typeof useSettara).toBe("function");
-    expect(typeof useSettaraSetting).toBe("function");
-    expect(typeof useSettaraAction).toBe("function");
-    expect(typeof useSettaraNavigation).toBe("function");
-    expect(typeof useSettaraSearch).toBe("function");
+    expect(typeof useSettera).toBe("function");
+    expect(typeof useSetteraSetting).toBe("function");
+    expect(typeof useSetteraAction).toBe("function");
+    expect(typeof useSetteraNavigation).toBe("function");
+    expect(typeof useSetteraSearch).toBe("function");
     expect(typeof evaluateVisibility).toBe("function");
     expect(typeof validateSettingValue).toBe("function");
   });
 
   it("re-exports keyboard navigation hooks", () => {
     expect(typeof useRovingTabIndex).toBe("function");
-    expect(typeof useSettaraGlobalKeys).toBe("function");
+    expect(typeof useSetteraGlobalKeys).toBe("function");
   });
 
   it("exports UI components", () => {
@@ -60,15 +60,15 @@ describe("@settara/ui", () => {
     expect(typeof ActionButton).toBe("function");
   });
 
-  it("exports SettaraSearch", () => {
-    expect(typeof SettaraSearch).toBe("function");
+  it("exports SetteraSearch", () => {
+    expect(typeof SetteraSearch).toBe("function");
   });
 
   it("exports layout components", () => {
-    expect(typeof SettaraSetting).toBe("function");
-    expect(typeof SettaraSection).toBe("function");
-    expect(typeof SettaraPage).toBe("function");
-    expect(typeof SettaraSidebar).toBe("function");
-    expect(typeof SettaraLayout).toBe("function");
+    expect(typeof SetteraSetting).toBe("function");
+    expect(typeof SetteraSection).toBe("function");
+    expect(typeof SetteraPage).toBe("function");
+    expect(typeof SetteraSidebar).toBe("function");
+    expect(typeof SetteraLayout).toBe("function");
   });
 });

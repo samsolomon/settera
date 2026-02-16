@@ -3,14 +3,14 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
-  SettaraProvider,
-  SettaraRenderer,
-  useSettaraSearch,
-} from "@settara/react";
-import { SettaraPage } from "../components/SettaraPage.js";
-import type { SettaraSchema } from "@settara/schema";
+  SetteraProvider,
+  SetteraRenderer,
+  useSetteraSearch,
+} from "@settera/react";
+import { SetteraPage } from "../components/SetteraPage.js";
+import type { SetteraSchema } from "@settera/schema";
 
-const schema: SettaraSchema = {
+const schema: SetteraSchema = {
   version: "1.0",
   pages: [
     {
@@ -64,15 +64,15 @@ const schema: SettaraSchema = {
 
 function renderPage(pageKey?: string, values: Record<string, unknown> = {}) {
   return render(
-    <SettaraProvider schema={schema}>
-      <SettaraRenderer values={values} onChange={() => {}}>
-        <SettaraPage pageKey={pageKey} />
-      </SettaraRenderer>
-    </SettaraProvider>,
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={() => {}}>
+        <SetteraPage pageKey={pageKey} />
+      </SetteraRenderer>
+    </SetteraProvider>,
   );
 }
 
-describe("SettaraPage", () => {
+describe("SetteraPage", () => {
   it("renders the page title", () => {
     renderPage("general");
     expect(screen.getByText("General")).toBeDefined();
@@ -113,17 +113,17 @@ describe("SettaraPage", () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
-      const { setQuery } = useSettaraSearch();
+      const { setQuery } = useSetteraSearch();
       return <button onClick={() => setQuery("Auto Save")}>search</button>;
     }
 
     render(
-      <SettaraProvider schema={schema}>
-        <SettaraRenderer values={{}} onChange={() => {}}>
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
           <SearchTrigger />
-          <SettaraPage pageKey="general" />
-        </SettaraRenderer>
-      </SettaraProvider>,
+          <SetteraPage pageKey="general" />
+        </SetteraRenderer>
+      </SetteraProvider>,
     );
 
     // Before search, both sections visible

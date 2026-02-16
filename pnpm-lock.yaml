@@ -38,7 +38,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@settara/schema':
+      '@settera/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -75,13 +75,13 @@ importers:
 
   packages/test-app:
     dependencies:
-      '@settara/react':
+      '@settera/react':
         specifier: workspace:*
         version: link:../react
-      '@settara/schema':
+      '@settera/schema':
         specifier: workspace:*
         version: link:../schema
-      '@settara/ui':
+      '@settera/ui':
         specifier: workspace:*
         version: link:../ui
       react:
@@ -106,10 +106,10 @@ importers:
 
   packages/ui:
     dependencies:
-      '@settara/react':
+      '@settera/react':
         specifier: workspace:*
         version: link:../react
-      '@settara/schema':
+      '@settera/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:

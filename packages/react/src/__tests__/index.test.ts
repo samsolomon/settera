@@ -1,46 +1,46 @@
 import { describe, it, expect } from "vitest";
 import {
   SCHEMA_VERSION,
-  SettaraProvider,
-  SettaraRenderer,
-  useSettara,
-  useSettaraSetting,
-  useSettaraAction,
-  useSettaraNavigation,
-  useSettaraSearch,
+  SetteraProvider,
+  SetteraRenderer,
+  useSettera,
+  useSetteraSetting,
+  useSetteraAction,
+  useSetteraNavigation,
+  useSetteraSearch,
   useRovingTabIndex,
-  useSettaraGlobalKeys,
+  useSetteraGlobalKeys,
   evaluateVisibility,
   validateSettingValue,
-  SettaraSchemaContext,
-  SettaraNavigationContext,
-  SettaraValuesContext,
+  SetteraSchemaContext,
+  SetteraNavigationContext,
+  SetteraValuesContext,
 } from "../index.js";
 
-describe("@settara/react", () => {
+describe("@settera/react", () => {
   it("re-exports SCHEMA_VERSION as 1.0", () => {
     expect(SCHEMA_VERSION).toBe("1.0");
   });
 
-  it("exports SettaraProvider", () => {
-    expect(typeof SettaraProvider).toBe("function");
+  it("exports SetteraProvider", () => {
+    expect(typeof SetteraProvider).toBe("function");
   });
 
-  it("exports SettaraRenderer", () => {
-    expect(typeof SettaraRenderer).toBe("function");
+  it("exports SetteraRenderer", () => {
+    expect(typeof SetteraRenderer).toBe("function");
   });
 
   it("exports hooks", () => {
-    expect(typeof useSettara).toBe("function");
-    expect(typeof useSettaraSetting).toBe("function");
-    expect(typeof useSettaraAction).toBe("function");
-    expect(typeof useSettaraNavigation).toBe("function");
-    expect(typeof useSettaraSearch).toBe("function");
+    expect(typeof useSettera).toBe("function");
+    expect(typeof useSetteraSetting).toBe("function");
+    expect(typeof useSetteraAction).toBe("function");
+    expect(typeof useSetteraNavigation).toBe("function");
+    expect(typeof useSetteraSearch).toBe("function");
   });
 
   it("exports keyboard navigation hooks", () => {
     expect(typeof useRovingTabIndex).toBe("function");
-    expect(typeof useSettaraGlobalKeys).toBe("function");
+    expect(typeof useSetteraGlobalKeys).toBe("function");
   });
 
   it("exports evaluateVisibility", () => {
@@ -52,8 +52,8 @@ describe("@settara/react", () => {
   });
 
   it("exports contexts", () => {
-    expect(SettaraSchemaContext).toBeDefined();
-    expect(SettaraNavigationContext).toBeDefined();
-    expect(SettaraValuesContext).toBeDefined();
+    expect(SetteraSchemaContext).toBeDefined();
+    expect(SetteraNavigationContext).toBeDefined();
+    expect(SetteraValuesContext).toBeDefined();
   });
 });
