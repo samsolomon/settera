@@ -285,7 +285,11 @@ export function SetteraSidebar({ renderIcon }: SetteraSidebarProps) {
         backgroundColor: "var(--settera-sidebar-bg, #fafafa)",
         borderRight: "var(--settera-sidebar-border, 1px solid #e5e7eb)",
         fontSize: "var(--settera-sidebar-font-size, 14px)",
+        padding: "var(--settera-sidebar-padding, 8px)",
         overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--settera-sidebar-gap, 4px)",
       }}
     >
       <SetteraSearch />
@@ -349,7 +353,7 @@ function SidebarItem({
     ? hasChildren &&
       page.pages!.some((child) => matchingPageKeys.has(child.key))
     : expandedGroups.has(page.key);
-  const paddingLeft = depth === 0 ? 16 : 12;
+  const paddingLeft = depth === 0 ? 8 : 8;
 
   // During search, filter children to only matching pages
   const visibleChildren = hasChildren
@@ -377,18 +381,18 @@ function SidebarItem({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "8px",
+          gap: "var(--settera-sidebar-item-gap, 8px)",
           width: "100%",
-          padding: `var(--settera-sidebar-item-padding, 8px ${paddingLeft}px)`,
-          paddingLeft: `${paddingLeft}px`,
+          padding: `var(--settera-sidebar-item-padding, 8px)`,
           border: "none",
+          borderRadius: "var(--settera-sidebar-item-radius, 6px)",
           background: isActive
-            ? "var(--settera-sidebar-active-bg, #f3f4f6)"
+            ? "var(--settera-sidebar-active-bg, #e5e7eb)"
             : "transparent",
           color: isActive
             ? "var(--settera-sidebar-active-color, #111827)"
             : "inherit",
-          fontWeight: isActive ? 600 : 400,
+          fontWeight: 400,
           fontSize: "inherit",
           textAlign: "left",
           cursor: "pointer",
@@ -428,9 +432,15 @@ function SidebarItem({
         <div
           role="group"
           style={{
-            marginLeft: `${paddingLeft + 8}px`,
+            marginLeft: "var(--settera-sidebar-sub-margin, 14px)",
+            paddingLeft: "var(--settera-sidebar-sub-padding, 10px)",
             borderLeft:
               "var(--settera-sidebar-tree-line, 1px solid #e5e7eb)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--settera-sidebar-sub-gap, 2px)",
+            paddingTop: "2px",
+            paddingBottom: "2px",
           }}
         >
           {visibleChildren.map((child) => (

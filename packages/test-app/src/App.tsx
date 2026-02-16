@@ -4,12 +4,6 @@ import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "@settera/ui";
 import { demoSchema } from "./schema.js";
 
-const iconMap: Record<string, string> = {
-  settings: "\u2699\ufe0f",
-  shield: "\ud83d\udee1\ufe0f",
-  zap: "\u26a1",
-};
-
 export function App() {
   const [values, setValues] = useState<Record<string, unknown>>({});
 
@@ -77,11 +71,7 @@ export function App() {
             onAction={onAction}
             onValidate={onValidate}
           >
-            <SetteraLayout
-              renderIcon={(name) => (
-                <span aria-hidden="true">{iconMap[name] ?? name}</span>
-              )}
-            />
+            <SetteraLayout />
           </SetteraRenderer>
         </SetteraProvider>
       </div>

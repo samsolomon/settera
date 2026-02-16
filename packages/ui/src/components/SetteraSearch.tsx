@@ -20,7 +20,7 @@ export function SetteraSearch() {
   return (
     <div
       style={{
-        margin: "var(--settera-search-margin, 8px 12px)",
+        margin: "var(--settera-search-margin, 0 0 4px 0)",
         position: "relative",
       }}
     >
