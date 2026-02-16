@@ -57,6 +57,7 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
     >
       <h2
         id={`settara-section-${sectionKey}`}
+        tabIndex={-1}
         style={{
           fontSize: "var(--settara-section-title-font-size, 11px)",
           fontWeight: 600,
@@ -98,6 +99,7 @@ export function SettaraSection({ pageKey, sectionKey }: SettaraSectionProps) {
           >
             <h3
               id={`settara-subsection-${sub.key}`}
+              tabIndex={-1}
               style={{
                 fontSize: "var(--settara-section-title-font-size, 11px)",
                 fontWeight: 600,

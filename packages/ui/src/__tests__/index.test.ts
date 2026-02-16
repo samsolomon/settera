@@ -8,6 +8,8 @@ import {
   useSettaraAction,
   useSettaraNavigation,
   useSettaraSearch,
+  useRovingTabIndex,
+  useSettaraGlobalKeys,
   evaluateVisibility,
   validateSettingValue,
   BooleanSwitch,
@@ -42,6 +44,11 @@ describe("@settara/ui", () => {
     expect(typeof useSettaraSearch).toBe("function");
     expect(typeof evaluateVisibility).toBe("function");
     expect(typeof validateSettingValue).toBe("function");
+  });
+
+  it("re-exports keyboard navigation hooks", () => {
+    expect(typeof useRovingTabIndex).toBe("function");
+    expect(typeof useSettaraGlobalKeys).toBe("function");
   });
 
   it("exports UI components", () => {

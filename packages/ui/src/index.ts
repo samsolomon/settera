@@ -8,6 +8,8 @@ export {
   useSettaraAction,
   useSettaraNavigation,
   useSettaraSearch,
+  useRovingTabIndex,
+  useSettaraGlobalKeys,
   evaluateVisibility,
   validateSettingValue,
 } from "@settara/react";

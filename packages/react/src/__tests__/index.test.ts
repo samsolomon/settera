@@ -8,6 +8,8 @@ import {
   useSettaraAction,
   useSettaraNavigation,
   useSettaraSearch,
+  useRovingTabIndex,
+  useSettaraGlobalKeys,
   evaluateVisibility,
   validateSettingValue,
   SettaraSchemaContext,
@@ -34,6 +36,11 @@ describe("@settara/react", () => {
     expect(typeof useSettaraAction).toBe("function");
     expect(typeof useSettaraNavigation).toBe("function");
     expect(typeof useSettaraSearch).toBe("function");
+  });
+
+  it("exports keyboard navigation hooks", () => {
+    expect(typeof useRovingTabIndex).toBe("function");
+    expect(typeof useSettaraGlobalKeys).toBe("function");
   });
 
   it("exports evaluateVisibility", () => {

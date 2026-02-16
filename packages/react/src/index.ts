@@ -35,6 +35,16 @@ export { useSettaraAction } from "./hooks/useSettaraAction.js";
 export type { UseSettaraActionResult } from "./hooks/useSettaraAction.js";
 export { useSettaraNavigation } from "./hooks/useSettaraNavigation.js";
 export { useSettaraSearch } from "./hooks/useSettaraSearch.js";
+export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";
+export type {
+  UseRovingTabIndexOptions,
+  UseRovingTabIndexResult,
+} from "./hooks/useRovingTabIndex.js";
+export {
+  useSettaraGlobalKeys,
+  isTextInput,
+} from "./hooks/useSettaraGlobalKeys.js";
+export type { UseSettaraGlobalKeysOptions } from "./hooks/useSettaraGlobalKeys.js";
 
 // Validation (pure function, useful for custom renderers)
 export { validateSettingValue } from "./validation.js";

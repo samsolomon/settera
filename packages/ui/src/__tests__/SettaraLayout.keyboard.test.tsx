@@ -1,0 +1,288 @@
+import React from "react";
+import { describe, it, expect } from "vitest";
+import { render, screen, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { SettaraLayout } from "../components/SettaraLayout.js";
+import type { SettaraSchema } from "@settara/schema";
+
+const schema: SettaraSchema = {
+  version: "1.0",
+  pages: [
+    {
+      key: "general",
+      title: "General",
+      icon: "settings",
+      sections: [
+        {
+          key: "behavior",
+          title: "Behavior",
+          settings: [{ key: "autoSave", title: "Auto Save", type: "boolean" }],
+          subsections: [
+            {
+              key: "subBehavior",
+              title: "Sub Behavior",
+              settings: [
+                {
+                  key: "subSetting",
+                  title: "Sub Setting",
+                  type: "boolean",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          key: "appearance",
+          title: "Appearance",
+          settings: [{ key: "theme", title: "Theme", type: "boolean" }],
+        },
+      ],
+    },
+    {
+      key: "advanced",
+      title: "Advanced",
+      sections: [
+        {
+          key: "experimental",
+          title: "Experimental",
+          settings: [{ key: "debug", title: "Debug Mode", type: "boolean" }],
+        },
+      ],
+    },
+  ],
+};
+
+function renderLayout() {
+  return render(
+    <SettaraProvider schema={schema}>
+      <SettaraRenderer values={{}} onChange={() => {}}>
+        <SettaraLayout />
+      </SettaraRenderer>
+    </SettaraProvider>,
+  );
+}
+
+/** Get a sidebar button by text (scoped to nav[role="tree"]) */
+function getSidebarButton(name: string): HTMLButtonElement {
+  const nav = screen.getByRole("tree");
+  const buttons = Array.from(nav.querySelectorAll("button"));
+  const match = buttons.find((b) => b.textContent?.trim() === name);
+  if (!match) throw new Error(`Sidebar button "${name}" not found`);
+  return match;
+}
+
+function fireKey(
+  key: string,
+  opts: Partial<KeyboardEventInit> = {},
+  target?: Element,
+) {
+  const event = new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...opts,
+  });
+  (target ?? document.activeElement ?? document.body).dispatchEvent(event);
+  return event;
+}
+
+describe("SettaraLayout keyboard navigation", () => {
+  describe("/ shortcut", () => {
+    it("focuses search input when pressing /", () => {
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox");
+      const sidebarBtn = getSidebarButton("General");
+      sidebarBtn.focus();
+
+      fireKey("/");
+      expect(document.activeElement).toBe(searchInput);
+    });
+
+    it("does not fire / when focused on search input itself", () => {
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox") as HTMLInputElement;
+      searchInput.focus();
+
+      fireKey("/", {}, searchInput);
+      expect(document.activeElement).toBe(searchInput);
+    });
+  });
+
+  describe("Cmd+K shortcut", () => {
+    it("focuses search input on Cmd+K", () => {
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox");
+      const btn = getSidebarButton("General");
+      btn.focus();
+
+      fireKey("k", { metaKey: true });
+      expect(document.activeElement).toBe(searchInput);
+    });
+
+    it("works from content area", () => {
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox");
+      const main = screen.getByRole("main");
+      const heading = main.querySelector("h2")!;
+      heading.focus();
+
+      fireKey("k", { metaKey: true }, heading);
+      expect(document.activeElement).toBe(searchInput);
+    });
+  });
+
+  describe("Escape shortcut", () => {
+    it("clears search when query is active", async () => {
+      const user = userEvent.setup();
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox") as HTMLInputElement;
+
+      await user.type(searchInput, "Debug");
+      expect(searchInput.value).toBe("Debug");
+
+      act(() => {
+        fireKey("Escape");
+      });
+      expect(searchInput.value).toBe("");
+    });
+
+    it("does not clear search when query is empty", () => {
+      renderLayout();
+      const searchInput = screen.getByRole("searchbox") as HTMLInputElement;
+      expect(searchInput.value).toBe("");
+
+      fireKey("Escape");
+      expect(searchInput.value).toBe("");
+    });
+  });
+
+  describe("F6 pane cycling", () => {
+    it("F6 moves focus from sidebar to content", () => {
+      renderLayout();
+      const sidebarBtn = getSidebarButton("General");
+      sidebarBtn.focus();
+
+      fireKey("F6");
+
+      const main = screen.getByRole("main");
+      expect(main.contains(document.activeElement)).toBe(true);
+    });
+
+    it("F6 moves focus from content to sidebar", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const heading = main.querySelector("h2")!;
+      heading.focus();
+
+      fireKey("F6", {}, heading);
+
+      const sidebar = screen.getByRole("tree");
+      expect(sidebar.contains(document.activeElement)).toBe(true);
+    });
+
+    it("Shift+F6 reverses direction", () => {
+      renderLayout();
+      const sidebarBtn = getSidebarButton("General");
+      sidebarBtn.focus();
+
+      fireKey("F6", { shiftKey: true });
+
+      const main = screen.getByRole("main");
+      expect(main.contains(document.activeElement)).toBe(true);
+    });
+  });
+
+  describe("Ctrl+Arrow section heading jumping", () => {
+    it("Ctrl+ArrowDown focuses the first section heading", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      // Focus a switch button in main
+      const switchBtn = main.querySelector('button[role="switch"]');
+      if (switchBtn) {
+        (switchBtn as HTMLElement).focus();
+      }
+
+      fireKey("ArrowDown", { ctrlKey: true }, document.activeElement!);
+
+      const firstHeading = main.querySelector('h2[id^="settara-section-"]')!;
+      expect(document.activeElement).toBe(firstHeading);
+    });
+
+    it("Ctrl+ArrowDown cycles through section headings", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+
+      (headings[0] as HTMLElement).focus();
+      expect(document.activeElement).toBe(headings[0]);
+
+      fireKey("ArrowDown", { ctrlKey: true }, headings[0]);
+      expect(document.activeElement).toBe(headings[1]);
+    });
+
+    it("Ctrl+ArrowUp moves to previous section heading", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+
+      (headings[1] as HTMLElement).focus();
+
+      fireKey("ArrowUp", { ctrlKey: true }, headings[1]);
+      expect(document.activeElement).toBe(headings[0]);
+    });
+
+    it("Ctrl+ArrowDown wraps from last to first heading", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+      const lastHeading = headings[headings.length - 1] as HTMLElement;
+
+      lastHeading.focus();
+      fireKey("ArrowDown", { ctrlKey: true }, lastHeading);
+      expect(document.activeElement).toBe(headings[0]);
+    });
+
+    it("Ctrl+ArrowUp wraps from first to last heading", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+      const firstHeading = headings[0] as HTMLElement;
+
+      firstHeading.focus();
+      fireKey("ArrowUp", { ctrlKey: true }, firstHeading);
+      expect(document.activeElement).toBe(headings[headings.length - 1]);
+    });
+
+    it("section headings have tabIndex={-1} for programmatic focus", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+
+      for (const heading of headings) {
+        expect((heading as HTMLElement).tabIndex).toBe(-1);
+      }
+    });
+
+    it("includes subsection headings in navigation", () => {
+      renderLayout();
+      const main = screen.getByRole("main");
+      const headings = main.querySelectorAll(
+        'h2[id^="settara-section-"], h3[id^="settara-subsection-"]',
+      );
+
+      // Should have: Behavior (h2), Sub Behavior (h3), Appearance (h2)
+      expect(headings.length).toBe(3);
+    });
+  });
+});

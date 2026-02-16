@@ -1,8 +1,15 @@
-import React, { useContext, useEffect, useCallback, useRef } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   SettaraSchemaContext,
   useSettaraNavigation,
   useSettaraSearch,
+  useRovingTabIndex,
 } from "@settara/react";
 import type { PageDefinition } from "@settara/schema";
 import { SettaraSearch } from "./SettaraSearch.js";
@@ -11,9 +18,16 @@ export interface SettaraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
 }
 
+interface FlatItem {
+  page: PageDefinition;
+  depth: number;
+  parentKey: string | null;
+}
+
 /**
  * Navigation tree rendered from schema.pages.
- * Handles active state, expand/collapse, nested pages, and icon rendering.
+ * Handles active state, expand/collapse, nested pages, icon rendering,
+ * and keyboard navigation (roving tabindex + arrow-key tree semantics).
  */
 export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
   const schemaCtx = useContext(SettaraSchemaContext);
@@ -66,17 +80,172 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
   );
 
   // Filter pages during search
-  const filterPages = (pages: PageDefinition[]): PageDefinition[] => {
-    if (!isSearching) return pages;
-    return pages.filter((page) => matchingPageKeys.has(page.key));
-  };
+  const filterPages = useCallback(
+    (pages: PageDefinition[]): PageDefinition[] => {
+      if (!isSearching) return pages;
+      return pages.filter((page) => matchingPageKeys.has(page.key));
+    },
+    [isSearching, matchingPageKeys],
+  );
 
   const visiblePages = filterPages(schema.pages);
 
+  // --- Keyboard navigation ---
+
+  // Build flat list of visible items (respecting expand/collapse + search filter)
+  const flatItems = useMemo(() => {
+    const items: FlatItem[] = [];
+
+    function walk(
+      pages: PageDefinition[],
+      depth: number,
+      parentKey: string | null,
+    ) {
+      for (const page of pages) {
+        // During search, skip non-matching pages
+        if (isSearching && !matchingPageKeys.has(page.key)) continue;
+        items.push({ page, depth, parentKey });
+
+        const hasChildren = page.pages && page.pages.length > 0;
+        if (hasChildren) {
+          const isExpanded = isSearching
+            ? page.pages!.some((child) => matchingPageKeys.has(child.key))
+            : expandedGroups.has(page.key);
+          if (isExpanded) {
+            const children = isSearching
+              ? page.pages!.filter((child) => matchingPageKeys.has(child.key))
+              : page.pages!;
+            walk(children, depth + 1, page.key);
+          }
+        }
+      }
+    }
+
+    walk(schema.pages, 0, null);
+    return items;
+  }, [schema.pages, expandedGroups, isSearching, matchingPageKeys]);
+
+  const { focusedIndex, setFocusedIndex, getTabIndex, onKeyDown } =
+    useRovingTabIndex({
+      itemCount: flatItems.length,
+    });
+
+  // Ref map for button elements (keyed by flat index)
+  const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+
+  const navRef = useRef<HTMLElement>(null);
+
+  // Focus button when focusedIndex changes AND nav has focus
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    if (!nav.contains(document.activeElement)) return;
+    const btn = buttonRefs.current.get(focusedIndex);
+    if (btn && document.activeElement !== btn) {
+      btn.focus();
+    }
+  }, [focusedIndex]);
+
+  // Build a key→index map for quick lookups (O(1) instead of findIndex)
+  const keyToIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    flatItems.forEach((item, i) => map.set(item.page.key, i));
+    return map;
+  }, [flatItems]);
+
+  // Refs for values that change frequently, so handleNavKeyDown stays stable
+  const focusedIndexRef = useRef(focusedIndex);
+  focusedIndexRef.current = focusedIndex;
+  const flatItemsRef = useRef(flatItems);
+  flatItemsRef.current = flatItems;
+  const onKeyDownRef = useRef(onKeyDown);
+  onKeyDownRef.current = onKeyDown;
+
+  // Tree keyboard handler: wraps roving tabindex with ArrowRight/Left/Enter.
+  // Reads focusedIndex/flatItems/onKeyDown from refs so the callback is stable.
+  const handleNavKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const currentFlatItems = flatItemsRef.current;
+      const currentIndex = focusedIndexRef.current;
+      const item = currentFlatItems[currentIndex];
+      if (!item) {
+        onKeyDownRef.current(e);
+        return;
+      }
+
+      const { page, parentKey } = item;
+      const hasChildren = page.pages && page.pages.length > 0;
+      const isExpanded = hasChildren && expandedGroupsRef.current.has(page.key);
+
+      if (e.key === "ArrowRight") {
+        if (hasChildren && !isExpanded) {
+          // Expand collapsed group
+          e.preventDefault();
+          toggleGroup(page.key);
+        } else if (hasChildren && isExpanded) {
+          // Move to first child
+          e.preventDefault();
+          const firstChildKey = page.pages![0]?.key;
+          if (firstChildKey) {
+            const childIndex = keyToIndex.get(firstChildKey);
+            if (childIndex !== undefined) {
+              setFocusedIndex(childIndex);
+            }
+          }
+        }
+        return;
+      }
+
+      if (e.key === "ArrowLeft") {
+        if (hasChildren && isExpanded) {
+          // Collapse expanded group
+          e.preventDefault();
+          toggleGroup(page.key);
+        } else if (parentKey) {
+          // Move to parent
+          e.preventDefault();
+          const parentIndex = keyToIndex.get(parentKey);
+          if (parentIndex !== undefined) {
+            setFocusedIndex(parentIndex);
+          }
+        }
+        return;
+      }
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (item.depth === 0) {
+          handlePageClick(page);
+        } else {
+          setActivePage(page.key);
+        }
+        return;
+      }
+
+      // Delegate to roving tabindex for ArrowUp/Down/Home/End
+      onKeyDownRef.current(e);
+    },
+    [toggleGroup, keyToIndex, setFocusedIndex, handlePageClick, setActivePage],
+  );
+
+  // Ref callback factory for storing button refs
+  const setButtonRef = useCallback(
+    (index: number, el: HTMLButtonElement | null) => {
+      if (el) {
+        buttonRefs.current.set(index, el);
+      } else {
+        buttonRefs.current.delete(index);
+      }
+    },
+    [],
+  );
+
   return (
     <nav
+      ref={navRef}
       role="tree"
       aria-label="Settings navigation"
+      onKeyDown={handleNavKeyDown}
       style={{
         width: "var(--settara-sidebar-width, 240px)",
         backgroundColor: "var(--settara-sidebar-bg, #fafafa)",
@@ -98,6 +267,9 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
           renderIcon={renderIcon}
           isSearching={isSearching}
           matchingPageKeys={matchingPageKeys}
+          keyToIndex={keyToIndex}
+          getTabIndex={getTabIndex}
+          setButtonRef={setButtonRef}
         />
       ))}
     </nav>
@@ -114,6 +286,9 @@ interface SidebarItemProps {
   renderIcon?: (iconName: string) => React.ReactNode;
   isSearching: boolean;
   matchingPageKeys: Set<string>;
+  keyToIndex: Map<string, number>;
+  getTabIndex: (index: number) => 0 | -1;
+  setButtonRef: (index: number, el: HTMLButtonElement | null) => void;
 }
 
 function SidebarItem({
@@ -126,6 +301,9 @@ function SidebarItem({
   renderIcon,
   isSearching,
   matchingPageKeys,
+  keyToIndex,
+  getTabIndex,
+  setButtonRef,
 }: SidebarItemProps) {
   const isActive = activePage === page.key;
   const hasChildren = page.pages && page.pages.length > 0;
@@ -143,13 +321,18 @@ function SidebarItem({
       : page.pages!
     : [];
 
+  // O(1) lookup via the key→index map instead of O(n) findIndex
+  const flatIndex = keyToIndex.get(page.key) ?? -1;
+
   return (
     <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined}>
       <button
+        ref={(el) => setButtonRef(flatIndex, el)}
         onClick={() =>
           depth === 0 ? onPageClick(page) : onChildClick(page.key)
         }
         aria-current={isActive ? "page" : undefined}
+        tabIndex={getTabIndex(flatIndex)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -190,6 +373,9 @@ function SidebarItem({
               renderIcon={renderIcon}
               isSearching={isSearching}
               matchingPageKeys={matchingPageKeys}
+              keyToIndex={keyToIndex}
+              getTabIndex={getTabIndex}
+              setButtonRef={setButtonRef}
             />
           ))}
         </div>
