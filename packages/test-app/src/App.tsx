@@ -71,7 +71,12 @@ export function App() {
             onAction={onAction}
             onValidate={onValidate}
           >
-            <SetteraLayout />
+            <SetteraLayout
+              backToApp={{
+                label: "Back to app",
+                href: "/",
+              }}
+            />
           </SetteraRenderer>
         </SetteraProvider>
       </div>

@@ -352,12 +352,6 @@ export function SetteraLayout({
     [closeMobileNav, isMobileNavOpen],
   );
 
-  const handleBackToAppClick = useCallback(() => {
-    if (!backToApp?.onClick) return;
-    backToApp.onClick();
-    closeMobileNav();
-  }, [backToApp, closeMobileNav]);
-
   const content = (
     <main
       ref={mainRef}
@@ -392,6 +386,17 @@ export function SetteraLayout({
     ? "none"
     : "opacity 180ms ease";
 
+  const mobileBackToApp = useMemo(() => {
+    if (!backToApp) return undefined;
+    return {
+      ...backToApp,
+      onClick: () => {
+        backToApp.onClick?.();
+        closeMobileNav();
+      },
+    };
+  }, [backToApp, closeMobileNav]);
+
   return (
     <div
       ref={containerRef}
@@ -404,7 +409,9 @@ export function SetteraLayout({
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      {!isMobile && <SetteraSidebar renderIcon={renderIcon} />}
+      {!isMobile && (
+        <SetteraSidebar renderIcon={renderIcon} backToApp={backToApp} />
+      )}
 
       {isMobile && (
         <header
@@ -577,54 +584,6 @@ export function SetteraLayout({
               pointerEvents: overlayIsVisible ? "auto" : "none",
             }}
           >
-            {backToApp && (
-              <div
-                style={{
-                  padding:
-                    "calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px 10px",
-                  borderBottom: "1px solid #e5e7eb",
-                }}
-              >
-                {backToApp.onClick ? (
-                  <button
-                    type="button"
-                    onClick={handleBackToAppClick}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      border: "none",
-                      background: "transparent",
-                      padding: "8px 6px",
-                      fontSize: "16px",
-                      color: "#111827",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span aria-hidden="true">‹</span>
-                    {backToApp.label ?? "Back to app"}
-                  </button>
-                ) : (
-                  <a
-                    href={backToApp.href}
-                    onClick={closeMobileNav}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      textDecoration: "none",
-                      padding: "8px 6px",
-                      fontSize: "16px",
-                      color: "#111827",
-                    }}
-                  >
-                    <span aria-hidden="true">‹</span>
-                    {backToApp.label ?? "Back to app"}
-                  </a>
-                )}
-              </div>
-            )}
-
             <div
               style={{
                 display: "flex",
@@ -640,6 +599,7 @@ export function SetteraLayout({
               <SetteraSidebar
                 renderIcon={renderIcon}
                 onNavigate={closeMobileNav}
+                backToApp={mobileBackToApp}
               />
             </div>
           </div>

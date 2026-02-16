@@ -19,6 +19,11 @@ import { SetteraSearch } from "./SetteraSearch.js";
 export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
   onNavigate?: (pageKey: string) => void;
+  backToApp?: {
+    label?: string;
+    href?: string;
+    onClick?: () => void;
+  };
 }
 
 interface FlatItem {
@@ -35,6 +40,7 @@ interface FlatItem {
 export function SetteraSidebar({
   renderIcon,
   onNavigate,
+  backToApp,
 }: SetteraSidebarProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const {
@@ -309,6 +315,59 @@ export function SetteraSidebar({
         gap: "var(--settera-sidebar-gap, 4px)",
       }}
     >
+      {backToApp && (
+        <div
+          style={{
+            marginBottom: "var(--settera-sidebar-back-margin-bottom, 2px)",
+          }}
+        >
+          {backToApp.onClick ? (
+            <button
+              type="button"
+              onClick={backToApp.onClick}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                width: "100%",
+                border: "none",
+                background: "transparent",
+                borderRadius: "var(--settera-sidebar-item-radius, 6px)",
+                padding: "var(--settera-sidebar-item-padding, 8px)",
+                textAlign: "left",
+                fontSize: "inherit",
+                color: "var(--settera-sidebar-back-color, #374151)",
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              <span aria-hidden="true">‹</span>
+              {backToApp.label ?? "Back to app"}
+            </button>
+          ) : (
+            <a
+              href={backToApp.href}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                width: "100%",
+                borderRadius: "var(--settera-sidebar-item-radius, 6px)",
+                padding: "var(--settera-sidebar-item-padding, 8px)",
+                textAlign: "left",
+                fontSize: "inherit",
+                color: "var(--settera-sidebar-back-color, #374151)",
+                textDecoration: "none",
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
+            >
+              <span aria-hidden="true">‹</span>
+              {backToApp.label ?? "Back to app"}
+            </a>
+          )}
+        </div>
+      )}
       <SetteraSearch />
       {visiblePages.map((page) => (
         <SidebarItem

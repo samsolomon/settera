@@ -219,6 +219,24 @@ describe("SetteraLayout", () => {
     ).toBeNull();
   });
 
+  it("renders back-to-app control above sidebar search", () => {
+    renderLayout({
+      backToApp: {
+        label: "Back to app",
+        href: "https://example.com",
+      },
+    });
+
+    const backLink = screen.getByRole("link", { name: "Back to app" });
+    const searchbox = screen.getByRole("searchbox", {
+      name: "Search settings",
+    });
+    expect(
+      backLink.compareDocumentPosition(searchbox) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("shows breadcrumb path for nested pages on mobile", () => {
     setViewportWidth(480);
     renderLayout(
