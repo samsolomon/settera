@@ -1,5 +1,36 @@
-export const SCHEMA_VERSION = "0.0.0";
+export const SCHEMA_VERSION = "1.0";
 
-export function greet(name: string): string {
-  return `Hello, ${name}! (schema v${SCHEMA_VERSION})`;
-}
+// Types
+export type {
+  SettaraSchema,
+  PageDefinition,
+  SectionDefinition,
+  SubsectionDefinition,
+  SettingDefinition,
+  ValueSetting,
+  BooleanSetting,
+  TextSetting,
+  NumberSetting,
+  SelectSetting,
+  MultiSelectSetting,
+  DateSetting,
+  CompoundSetting,
+  ListSetting,
+  ActionSetting,
+  CustomSetting,
+  ConfirmConfig,
+  VisibilityCondition,
+  SchemaValidationError,
+  FlattenedSetting,
+} from "./types.js";
+
+// Validation
+export { validateSchema } from "./validate.js";
+
+// Traversal
+export {
+  flattenSettings,
+  getSettingByKey,
+  getPageByKey,
+  resolveDependencies,
+} from "./traversal.js";
