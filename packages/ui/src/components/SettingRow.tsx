@@ -7,11 +7,11 @@ export interface SettingRowProps {
 }
 
 /**
- * Wraps a setting control with title, description, and visibility logic.
+ * Wraps a setting control with title, description, error display, and visibility logic.
  * Hides itself when `isVisible` is false.
  */
 export function SettingRow({ settingKey, children }: SettingRowProps) {
-  const { isVisible, definition } = useSettaraSetting(settingKey);
+  const { isVisible, definition, error } = useSettaraSetting(settingKey);
 
   if (!isVisible) return null;
 
@@ -24,7 +24,7 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
       style={{
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: "flex-start",
         padding: "var(--settara-row-padding, 12px 0)",
         borderBottom: "var(--settara-row-border, 1px solid #e5e7eb)",
         opacity: "var(--settara-row-opacity, 1)",
@@ -53,8 +53,21 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
             {definition.description}
           </div>
         )}
+        {error && (
+          <div
+            role="alert"
+            id={`settara-error-${settingKey}`}
+            style={{
+              fontSize: "var(--settara-error-font-size, 13px)",
+              color: "var(--settara-error-color, #dc2626)",
+              marginTop: "4px",
+            }}
+          >
+            {error}
+          </div>
+        )}
       </div>
-      <div>{children}</div>
+      <div style={{ paddingTop: "2px" }}>{children}</div>
     </div>
   );
 }

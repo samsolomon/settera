@@ -5,10 +5,16 @@ import {
   SettaraRenderer,
   useSettara,
   useSettaraSetting,
+  useSettaraAction,
   useSettaraNavigation,
   evaluateVisibility,
+  validateSettingValue,
   BooleanSwitch,
   SettingRow,
+  TextInput,
+  NumberInput,
+  Select,
+  ActionButton,
 } from "../index.js";
 
 describe("@settara/ui", () => {
@@ -24,12 +30,18 @@ describe("@settara/ui", () => {
   it("re-exports hooks", () => {
     expect(typeof useSettara).toBe("function");
     expect(typeof useSettaraSetting).toBe("function");
+    expect(typeof useSettaraAction).toBe("function");
     expect(typeof useSettaraNavigation).toBe("function");
     expect(typeof evaluateVisibility).toBe("function");
+    expect(typeof validateSettingValue).toBe("function");
   });
 
   it("exports UI components", () => {
     expect(typeof BooleanSwitch).toBe("function");
     expect(typeof SettingRow).toBe("function");
+    expect(typeof TextInput).toBe("function");
+    expect(typeof NumberInput).toBe("function");
+    expect(typeof Select).toBe("function");
+    expect(typeof ActionButton).toBe("function");
   });
 });

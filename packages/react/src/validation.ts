@@ -1,0 +1,122 @@
+import type { SettingDefinition } from "@settara/schema";
+
+/**
+ * Validate a setting value against the definition's validation rules.
+ * Returns an error message string, or null if valid.
+ * Pure function — no React dependencies.
+ */
+export function validateSettingValue(
+  definition: SettingDefinition,
+  value: unknown,
+): string | null {
+  switch (definition.type) {
+    case "text":
+      return validateText(definition.validation, value);
+    case "number":
+      return validateNumber(definition.validation, value);
+    case "select":
+      return validateSelect(definition.validation, value);
+    default:
+      return null;
+  }
+}
+
+function validateText(
+  validation:
+    | {
+        required?: boolean;
+        minLength?: number;
+        maxLength?: number;
+        pattern?: string;
+        message?: string;
+      }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const str = typeof value === "string" ? value : "";
+  const isEmpty = str.length === 0;
+
+  if (validation.required && isEmpty) {
+    return validation.message ?? "This field is required";
+  }
+
+  // Skip further checks if empty and not required
+  if (isEmpty) return null;
+
+  if (validation.minLength !== undefined && str.length < validation.minLength) {
+    return (
+      validation.message ??
+      `Must be at least ${validation.minLength} characters`
+    );
+  }
+
+  if (validation.maxLength !== undefined && str.length > validation.maxLength) {
+    return (
+      validation.message ?? `Must be at most ${validation.maxLength} characters`
+    );
+  }
+
+  if (validation.pattern !== undefined) {
+    try {
+      const regex = new RegExp(validation.pattern);
+      if (!regex.test(str)) {
+        return validation.message ?? "Invalid format";
+      }
+    } catch {
+      return validation.message ?? "Invalid validation pattern";
+    }
+  }
+
+  return null;
+}
+
+function validateNumber(
+  validation:
+    | { required?: boolean; min?: number; max?: number; message?: string }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const isEmpty = value === undefined || value === null || value === "";
+
+  if (validation.required && isEmpty) {
+    return validation.message ?? "This field is required";
+  }
+
+  // Skip further checks if empty and not required
+  if (isEmpty) return null;
+
+  const num = typeof value === "number" ? value : Number(value);
+
+  if (Number.isNaN(num)) {
+    return validation.message ?? "Must be a number";
+  }
+
+  if (validation.min !== undefined && num < validation.min) {
+    return validation.message ?? `Must be at least ${validation.min}`;
+  }
+
+  if (validation.max !== undefined && num > validation.max) {
+    return validation.message ?? `Must be at most ${validation.max}`;
+  }
+
+  return null;
+}
+
+function validateSelect(
+  validation: { required?: boolean; message?: string } | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const isEmpty = value === undefined || value === null || value === "";
+
+  if (validation.required && isEmpty) {
+    return validation.message ?? "This field is required";
+  }
+
+  return null;
+}

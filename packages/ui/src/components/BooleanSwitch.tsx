@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useSettaraSetting } from "@settara/react";
 
 export interface BooleanSwitchProps {
@@ -32,14 +32,17 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
   );
 
   // Track keyboard-driven focus for visible focus ring.
-  // Mouse clicks call onPointerDown before onFocus, so we can distinguish.
+  // onPointerDown fires before onFocus for mouse clicks, so we use a ref
+  // to reliably distinguish pointer focus from keyboard focus.
+  const pointerDownRef = useRef(false);
+
   const handlePointerDown = useCallback(() => {
-    setIsFocusVisible(false);
+    pointerDownRef.current = true;
   }, []);
 
   const handleFocus = useCallback(() => {
-    // If pointer didn't fire first, this is keyboard focus
-    setIsFocusVisible(true);
+    setIsFocusVisible(!pointerDownRef.current);
+    pointerDownRef.current = false;
   }, []);
 
   const handleBlur = useCallback(() => {

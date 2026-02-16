@@ -5,8 +5,10 @@ import {
   SettaraRenderer,
   useSettara,
   useSettaraSetting,
+  useSettaraAction,
   useSettaraNavigation,
   evaluateVisibility,
+  validateSettingValue,
   SettaraSchemaContext,
   SettaraNavigationContext,
   SettaraValuesContext,
@@ -28,11 +30,16 @@ describe("@settara/react", () => {
   it("exports hooks", () => {
     expect(typeof useSettara).toBe("function");
     expect(typeof useSettaraSetting).toBe("function");
+    expect(typeof useSettaraAction).toBe("function");
     expect(typeof useSettaraNavigation).toBe("function");
   });
 
   it("exports evaluateVisibility", () => {
     expect(typeof evaluateVisibility).toBe("function");
+  });
+
+  it("exports validateSettingValue", () => {
+    expect(typeof validateSettingValue).toBe("function");
   });
 
   it("exports contexts", () => {

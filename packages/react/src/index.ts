@@ -31,7 +31,12 @@ export type {
 export { useSettara } from "./hooks/useSettara.js";
 export { useSettaraSetting } from "./hooks/useSettaraSetting.js";
 export type { UseSettaraSettingResult } from "./hooks/useSettaraSetting.js";
+export { useSettaraAction } from "./hooks/useSettaraAction.js";
+export type { UseSettaraActionResult } from "./hooks/useSettaraAction.js";
 export { useSettaraNavigation } from "./hooks/useSettaraNavigation.js";
+
+// Validation (pure function, useful for custom renderers)
+export { validateSettingValue } from "./validation.js";
 
 // Visibility (pure function, useful for custom renderers)
 export { evaluateVisibility } from "./visibility.js";

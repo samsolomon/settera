@@ -4,7 +4,7 @@ export const demoSchema: SettaraSchema = {
   version: "1.0",
   meta: {
     title: "Demo Settings",
-    description: "A demo showcasing boolean settings with Settara.",
+    description: "A demo showcasing all core setting controls with Settara.",
   },
   pages: [
     {
@@ -44,6 +44,95 @@ export const demoSchema: SettaraSchema = {
           ],
         },
         {
+          key: "profile",
+          title: "Profile",
+          settings: [
+            {
+              key: "profile.displayName",
+              title: "Display Name",
+              description: "Your name as shown to other users.",
+              type: "text",
+              placeholder: "Enter your name",
+              validation: {
+                required: true,
+                minLength: 2,
+                maxLength: 50,
+              },
+            },
+            {
+              key: "profile.email",
+              title: "Email Address",
+              description: "Used for account recovery and notifications.",
+              type: "text",
+              inputType: "email",
+              placeholder: "you@example.com",
+              validation: {
+                required: true,
+                pattern: "^[^@]+@[^@]+\\.[^@]+$",
+                message: "Please enter a valid email address",
+              },
+            },
+            {
+              key: "profile.bio",
+              title: "Bio",
+              description: "A short description about yourself.",
+              type: "text",
+              placeholder: "Tell us about yourself…",
+              validation: {
+                maxLength: 200,
+              },
+            },
+          ],
+        },
+        {
+          key: "appearance",
+          title: "Appearance",
+          settings: [
+            {
+              key: "appearance.theme",
+              title: "Theme",
+              description: "Choose the visual theme for the application.",
+              type: "select",
+              options: [
+                { value: "light", label: "Light" },
+                { value: "dark", label: "Dark" },
+                { value: "system", label: "System" },
+              ],
+              default: "system",
+            },
+            {
+              key: "appearance.fontSize",
+              title: "Font Size",
+              description: "Base font size in pixels.",
+              type: "number",
+              placeholder: "14",
+              default: 14,
+              validation: {
+                required: true,
+                min: 10,
+                max: 24,
+              },
+            },
+            {
+              key: "appearance.language",
+              title: "Language",
+              description: "Display language for the interface.",
+              type: "select",
+              options: [
+                { value: "en", label: "English" },
+                { value: "es", label: "Spanish" },
+                { value: "fr", label: "French" },
+                { value: "de", label: "German" },
+                { value: "ja", label: "Japanese" },
+              ],
+              default: "en",
+              validation: {
+                required: true,
+              },
+            },
+          ],
+        },
+        {
           key: "security",
           title: "Security",
           settings: [
@@ -78,6 +167,19 @@ export const demoSchema: SettaraSchema = {
               visibleWhen: {
                 setting: "security.ssoEnabled",
                 equals: true,
+              },
+            },
+            {
+              key: "security.sessionTimeout",
+              title: "Session Timeout",
+              description: "Minutes of inactivity before auto-logout.",
+              type: "number",
+              placeholder: "30",
+              default: 30,
+              validation: {
+                required: true,
+                min: 5,
+                max: 1440,
               },
             },
           ],
@@ -124,6 +226,38 @@ export const demoSchema: SettaraSchema = {
               description: "Receive beta updates before general release.",
               type: "boolean",
               default: false,
+              dangerous: true,
+            },
+          ],
+        },
+        {
+          key: "actions",
+          title: "Data Management",
+          settings: [
+            {
+              key: "actions.export",
+              title: "Export Data",
+              description: "Download all your data as a JSON file.",
+              type: "action",
+              buttonLabel: "Export",
+              actionType: "callback",
+            },
+            {
+              key: "actions.clearCache",
+              title: "Clear Cache",
+              description: "Remove cached data to free up space.",
+              type: "action",
+              buttonLabel: "Clear Cache",
+              actionType: "callback",
+            },
+            {
+              key: "actions.deleteAccount",
+              title: "Delete Account",
+              description:
+                "Permanently delete your account and all associated data. This action cannot be undone.",
+              type: "action",
+              buttonLabel: "Delete Account",
+              actionType: "callback",
               dangerous: true,
             },
           ],

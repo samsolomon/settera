@@ -1,7 +1,14 @@
 import { useState, useCallback } from "react";
 import { SCHEMA_VERSION } from "@settara/schema";
 import { SettaraProvider, SettaraRenderer } from "@settara/react";
-import { SettingRow, BooleanSwitch } from "@settara/ui";
+import {
+  SettingRow,
+  BooleanSwitch,
+  TextInput,
+  NumberInput,
+  Select,
+  ActionButton,
+} from "@settara/ui";
 import { demoSchema } from "./schema.js";
 
 export function App() {
@@ -10,6 +17,35 @@ export function App() {
   const handleChange = useCallback((key: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [key]: value }));
   }, []);
+
+  const onAction: Record<string, () => void | Promise<void>> = {
+    "actions.export": async () => {
+      // Simulate async export
+      await new Promise((r) => setTimeout(r, 1500));
+      alert("Data exported!");
+    },
+    "actions.clearCache": () => {
+      alert("Cache cleared!");
+    },
+    "actions.deleteAccount": async () => {
+      await new Promise((r) => setTimeout(r, 2000));
+      alert("Account deleted (just kidding).");
+    },
+  };
+
+  const onValidate: Record<
+    string,
+    (value: unknown) => string | null | Promise<string | null>
+  > = {
+    "profile.email": async (value) => {
+      // Simulate async validation (e.g., checking if email is taken)
+      await new Promise((r) => setTimeout(r, 500));
+      if (value === "taken@example.com") {
+        return "This email is already in use";
+      }
+      return null;
+    },
+  };
 
   return (
     <div
@@ -37,11 +73,16 @@ export function App() {
           marginBottom: "32px",
         }}
       >
-        Schema v{SCHEMA_VERSION} — Boolean settings vertical slice
+        Schema v{SCHEMA_VERSION} — All core controls
       </p>
 
       <SettaraProvider schema={demoSchema}>
-        <SettaraRenderer values={values} onChange={handleChange}>
+        <SettaraRenderer
+          values={values}
+          onChange={handleChange}
+          onAction={onAction}
+          onValidate={onValidate}
+        >
           {/* General > Behavior */}
           <SectionHeading>Behavior</SectionHeading>
           <SettingRow settingKey="general.autoSave">
@@ -54,13 +95,43 @@ export function App() {
             <BooleanSwitch settingKey="general.sounds" />
           </SettingRow>
 
+          {/* General > Profile */}
+          <SectionHeading>Profile</SectionHeading>
+          <SettingRow settingKey="profile.displayName">
+            <TextInput settingKey="profile.displayName" />
+          </SettingRow>
+          <SettingRow settingKey="profile.email">
+            <TextInput settingKey="profile.email" />
+          </SettingRow>
+          <SettingRow settingKey="profile.bio">
+            <TextInput settingKey="profile.bio" />
+          </SettingRow>
+
+          {/* General > Appearance */}
+          <SectionHeading>Appearance</SectionHeading>
+          <SettingRow settingKey="appearance.theme">
+            <Select settingKey="appearance.theme" />
+          </SettingRow>
+          <SettingRow settingKey="appearance.fontSize">
+            <NumberInput settingKey="appearance.fontSize" />
+          </SettingRow>
+          <SettingRow settingKey="appearance.language">
+            <Select settingKey="appearance.language" />
+          </SettingRow>
+
           {/* General > Security */}
           <SectionHeading>Security</SectionHeading>
           <SettingRow settingKey="security.ssoEnabled">
             <BooleanSwitch settingKey="security.ssoEnabled" />
           </SettingRow>
+          <SettingRow settingKey="security.ssoProvider">
+            <Select settingKey="security.ssoProvider" />
+          </SettingRow>
           <SettingRow settingKey="security.mfa">
             <BooleanSwitch settingKey="security.mfa" />
+          </SettingRow>
+          <SettingRow settingKey="security.sessionTimeout">
+            <NumberInput settingKey="security.sessionTimeout" />
           </SettingRow>
 
           {/* Advanced > Experimental */}
@@ -73,6 +144,18 @@ export function App() {
           </SettingRow>
           <SettingRow settingKey="advanced.betaUpdates">
             <BooleanSwitch settingKey="advanced.betaUpdates" />
+          </SettingRow>
+
+          {/* Advanced > Data Management */}
+          <SectionHeading>Data Management</SectionHeading>
+          <SettingRow settingKey="actions.export">
+            <ActionButton settingKey="actions.export" />
+          </SettingRow>
+          <SettingRow settingKey="actions.clearCache">
+            <ActionButton settingKey="actions.clearCache" />
+          </SettingRow>
+          <SettingRow settingKey="actions.deleteAccount">
+            <ActionButton settingKey="actions.deleteAccount" />
           </SettingRow>
         </SettaraRenderer>
       </SettaraProvider>

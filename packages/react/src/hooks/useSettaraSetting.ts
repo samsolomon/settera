@@ -1,7 +1,8 @@
 import { useContext, useCallback } from "react";
 import { SettaraSchemaContext, SettaraValuesContext } from "../context.js";
 import { evaluateVisibility } from "../visibility.js";
-import type { SettingDefinition, VisibilityCondition } from "@settara/schema";
+import { validateSettingValue } from "../validation.js";
+import type { SettingDefinition } from "@settara/schema";
 
 export interface UseSettaraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
@@ -14,6 +15,9 @@ export interface UseSettaraSettingResult {
   isVisible: boolean;
   /** The setting definition from the schema */
   definition: SettingDefinition;
+  /** Run full validation pipeline (sync + async). Call on blur.
+   *  Pass an explicit value to avoid stale-closure issues (e.g. Select onChange). */
+  validate: (valueOverride?: unknown) => Promise<string | null>;
 }
 
 /**
@@ -39,13 +43,51 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
   // Value from resolved values (defaults already merged by SettaraRenderer)
   const value = valuesCtx.values[key];
 
-  // Setter — depend on the stable setValue function, not the whole context object
+  // Setter — runs sync validation automatically
   const contextSetValue = valuesCtx.setValue;
+  const contextSetError = valuesCtx.setError;
   const setValue = useCallback(
     (newValue: unknown) => {
+      const syncError = validateSettingValue(definition, newValue);
+      contextSetError(key, syncError);
       contextSetValue(key, newValue);
     },
-    [contextSetValue, key],
+    [contextSetValue, contextSetError, key, definition],
+  );
+
+  // Full validation pipeline: sync + async (for blur).
+  // NOTE: Without valueOverride, validate() reads from the values closure which
+  // may be stale if called synchronously after setValue (React state hasn't
+  // flushed yet). Components should either call validate() on blur (TextInput,
+  // NumberInput) or pass the new value explicitly via valueOverride (Select).
+  const onValidate = valuesCtx.onValidate;
+  const validate = useCallback(
+    async (valueOverride?: unknown): Promise<string | null> => {
+      // Use explicit value when provided (avoids stale-closure after setValue)
+      const currentValue =
+        valueOverride !== undefined ? valueOverride : valuesCtx.values[key];
+      const syncError = validateSettingValue(definition, currentValue);
+      if (syncError) {
+        contextSetError(key, syncError);
+        return syncError;
+      }
+
+      // Sync passed — clear any previous error
+      contextSetError(key, null);
+
+      // Run async validation if provided
+      const asyncValidator = onValidate?.[key];
+      if (asyncValidator) {
+        const asyncError = await asyncValidator(currentValue);
+        if (asyncError) {
+          contextSetError(key, asyncError);
+          return asyncError;
+        }
+      }
+
+      return null;
+    },
+    [valuesCtx.values, definition, key, contextSetError, onValidate],
   );
 
   // Error
@@ -53,14 +95,10 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
 
   // Visibility — resolved values include defaults, so visibility works
   // correctly even when the consumer hasn't explicitly set a value.
-  const visibleWhen =
-    "visibleWhen" in definition
-      ? (definition.visibleWhen as
-          | VisibilityCondition
-          | VisibilityCondition[]
-          | undefined)
-      : undefined;
-  const isVisible = evaluateVisibility(visibleWhen, valuesCtx.values);
+  const isVisible = evaluateVisibility(
+    definition.visibleWhen,
+    valuesCtx.values,
+  );
 
-  return { value, setValue, error, isVisible, definition };
+  return { value, setValue, error, isVisible, definition, validate };
 }

@@ -1,0 +1,159 @@
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { SettaraProvider, SettaraRenderer } from "@settara/react";
+import { ActionButton } from "../components/ActionButton.js";
+import type { SettaraSchema } from "@settara/schema";
+
+const schema: SettaraSchema = {
+  version: "1.0",
+  pages: [
+    {
+      key: "general",
+      title: "General",
+      sections: [
+        {
+          key: "main",
+          title: "Main",
+          settings: [
+            {
+              key: "reset",
+              title: "Reset Data",
+              type: "action",
+              buttonLabel: "Reset All Data",
+              actionType: "callback",
+            },
+            {
+              key: "danger",
+              title: "Delete Account",
+              type: "action",
+              buttonLabel: "Delete",
+              actionType: "callback",
+              dangerous: true,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+function renderActionButton(
+  settingKey: string,
+  onAction?: Record<string, () => void | Promise<void>>,
+) {
+  return render(
+    <SettaraProvider schema={schema}>
+      <SettaraRenderer values={{}} onChange={() => {}} onAction={onAction}>
+        <ActionButton settingKey={settingKey} />
+      </SettaraRenderer>
+    </SettaraProvider>,
+  );
+}
+
+describe("ActionButton", () => {
+  it("renders a button element", () => {
+    renderActionButton("reset", { reset: () => {} });
+    expect(screen.getByRole("button")).toBeDefined();
+  });
+
+  it("displays buttonLabel text", () => {
+    renderActionButton("reset", { reset: () => {} });
+    expect(screen.getByText("Reset All Data")).toBeDefined();
+  });
+
+  it("calls handler on click", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    renderActionButton("reset", { reset: handler });
+    await user.click(screen.getByRole("button"));
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("tracks loading state for async handler", async () => {
+    let resolve: () => void;
+    const handler = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        }),
+    );
+    renderActionButton("reset", { reset: handler });
+
+    const button = screen.getByRole("button");
+    expect(button.getAttribute("aria-busy")).toBe("false");
+
+    await act(async () => {
+      button.click();
+    });
+
+    expect(button.getAttribute("aria-busy")).toBe("true");
+    expect(screen.getByText("Loading…")).toBeDefined();
+
+    await act(async () => {
+      resolve!();
+    });
+
+    expect(button.getAttribute("aria-busy")).toBe("false");
+    expect(screen.getByText("Reset All Data")).toBeDefined();
+  });
+
+  it("is disabled when no handler provided", () => {
+    renderActionButton("reset");
+    const button = screen.getByRole("button") as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+  });
+
+  it("is disabled while loading", async () => {
+    let resolve: () => void;
+    const handler = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        }),
+    );
+    renderActionButton("reset", { reset: handler });
+
+    await act(async () => {
+      screen.getByRole("button").click();
+    });
+
+    const button = screen.getByRole("button") as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+
+    await act(async () => {
+      resolve!();
+    });
+  });
+
+  it("has aria-label from definition title", () => {
+    renderActionButton("reset", { reset: () => {} });
+    expect(screen.getByLabelText("Reset Data")).toBeDefined();
+  });
+
+  it("has aria-busy='false' when idle", () => {
+    renderActionButton("reset", { reset: () => {} });
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false");
+  });
+
+  it("shows focus ring on keyboard focus", async () => {
+    const user = userEvent.setup();
+    renderActionButton("reset", { reset: () => {} });
+    await user.tab();
+    const button = screen.getByRole("button");
+    expect(button.style.boxShadow).toContain("0 0 0 2px");
+  });
+
+  it("applies dangerous styling", () => {
+    renderActionButton("danger", { danger: () => {} });
+    const button = screen.getByRole("button");
+    expect(button.style.color).toContain("--settara-dangerous-color");
+  });
+
+  it("does not apply dangerous styling to normal buttons", () => {
+    renderActionButton("reset", { reset: () => {} });
+    const button = screen.getByRole("button");
+    expect(button.style.color).not.toContain("--settara-dangerous-color");
+  });
+});
