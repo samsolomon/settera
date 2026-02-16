@@ -102,7 +102,7 @@ function renderLayout() {
 function getSidebarButton(name: string): HTMLButtonElement {
   const nav = screen.getByRole("tree");
   const buttons = Array.from(nav.querySelectorAll("button"));
-  const match = buttons.find((b) => b.textContent?.trim() === name);
+  const match = buttons.find((b) => b.textContent?.includes(name));
   if (!match) throw new Error(`Sidebar button "${name}" not found`);
   return match;
 }

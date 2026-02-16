@@ -349,7 +349,7 @@ function SidebarItem({
     ? hasChildren &&
       page.pages!.some((child) => matchingPageKeys.has(child.key))
     : expandedGroups.has(page.key);
-  const paddingLeft = depth === 0 ? 16 : 16 + depth * 24;
+  const paddingLeft = depth === 0 ? 16 : 12;
 
   // During search, filter children to only matching pages
   const visibleChildren = hasChildren
@@ -399,9 +399,40 @@ function SidebarItem({
           <span aria-hidden="true">{renderIcon(page.icon)}</span>
         )}
         {page.title}
+        {hasChildren && (
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            style={{
+              marginLeft: "auto",
+              flexShrink: 0,
+              color: "var(--settera-sidebar-chevron-color, #9ca3af)",
+              transition: "transform 150ms ease",
+              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+            }}
+          >
+            <path
+              d="M6 4l4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
       {hasChildren && isExpanded && (
-        <div role="group">
+        <div
+          role="group"
+          style={{
+            marginLeft: `${paddingLeft + 8}px`,
+            borderLeft:
+              "var(--settera-sidebar-tree-line, 1px solid #e5e7eb)",
+          }}
+        >
           {visibleChildren.map((child) => (
             <SidebarItem
               key={child.key}
