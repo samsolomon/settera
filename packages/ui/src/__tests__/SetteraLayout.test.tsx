@@ -83,6 +83,11 @@ function setViewportWidth(width: number) {
   window.dispatchEvent(new Event("resize"));
 }
 
+function setLocationSearch(search: string) {
+  const suffix = search.length > 0 ? `/${search}` : "/";
+  window.history.replaceState({}, "", suffix);
+}
+
 function renderLayout(
   props: {
     renderIcon?: (name: string) => React.ReactNode;
@@ -90,6 +95,8 @@ function renderLayout(
     mobileBreakpoint?: number;
     showBreadcrumbs?: boolean;
     mobileTitle?: string;
+    syncActivePageWithUrl?: boolean;
+    activePageQueryParam?: string;
     backToApp?: {
       label?: string;
       href?: string;
@@ -109,10 +116,12 @@ function renderLayout(
 
 beforeEach(() => {
   setViewportWidth(DEFAULT_WIDTH);
+  setLocationSearch("");
 });
 
 afterEach(() => {
   setViewportWidth(DEFAULT_WIDTH);
+  setLocationSearch("");
 });
 
 describe("SetteraLayout", () => {
@@ -235,5 +244,24 @@ describe("SetteraLayout", () => {
     expect(breadcrumb.textContent).toContain("Settings");
     expect(breadcrumb.textContent).toContain("General");
     expect(breadcrumb.textContent).toContain("Privacy");
+  });
+
+  it("syncs active page to URL query param", () => {
+    renderLayout({ activePageQueryParam: "settingsPage" });
+
+    act(() => {
+      screen.getByText("Advanced").click();
+    });
+
+    const params = new URL(window.location.href).searchParams;
+    expect(params.get("settingsPage")).toBe("advanced");
+  });
+
+  it("hydrates active page from URL query param", () => {
+    setLocationSearch("?settingsPage=advanced");
+    renderLayout({ activePageQueryParam: "settingsPage" });
+
+    expect(screen.getByText("Experimental")).toBeDefined();
+    expect(screen.getByText("Debug Mode")).toBeDefined();
   });
 });

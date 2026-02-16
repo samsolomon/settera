@@ -33,6 +33,8 @@ export interface SetteraLayoutProps {
   showBreadcrumbs?: boolean;
   mobileTitle?: string;
   backToApp?: SetteraBackToAppConfig;
+  syncActivePageWithUrl?: boolean;
+  activePageQueryParam?: string;
 }
 
 interface BreadcrumbItem {
@@ -56,6 +58,19 @@ function findPagePathByKey(
   return null;
 }
 
+function collectPageKeys(
+  pages: PageDefinition[],
+  acc = new Set<string>(),
+): Set<string> {
+  for (const page of pages) {
+    acc.add(page.key);
+    if (page.pages && page.pages.length > 0) {
+      collectPageKeys(page.pages, acc);
+    }
+  }
+  return acc;
+}
+
 /**
  * Two-column layout shell: sidebar navigation + content area.
  * Switches to a mobile drawer navigation below mobileBreakpoint.
@@ -67,11 +82,14 @@ export function SetteraLayout({
   showBreadcrumbs = true,
   mobileTitle,
   backToApp,
+  syncActivePageWithUrl = true,
+  activePageQueryParam = "setteraPage",
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const didInitUrlSyncRef = useRef(false);
   const mobileDrawerId = useId();
   const schemaCtx = useContext(SetteraSchemaContext);
   const { query: searchQuery, setQuery } = useSetteraSearch();
@@ -81,6 +99,7 @@ export function SetteraLayout({
     if (typeof window === "undefined") return false;
     return window.innerWidth < mobileBreakpoint;
   });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
@@ -100,6 +119,64 @@ export function SetteraLayout({
     const path = findPagePathByKey(schemaCtx.schema.pages, activePage) ?? [];
     return path.map((page) => ({ key: page.key, title: page.title }));
   }, [schemaCtx, activePage]);
+
+  const validPageKeys = useMemo(() => {
+    if (!schemaCtx) return new Set<string>();
+    return collectPageKeys(schemaCtx.schema.pages);
+  }, [schemaCtx]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!syncActivePageWithUrl || !validPageKeys.has(activePage)) return;
+    if (!didInitUrlSyncRef.current) return;
+
+    const url = new URL(window.location.href);
+    const fromUrl = url.searchParams.get(activePageQueryParam);
+    if (fromUrl === activePage) return;
+    url.searchParams.set(activePageQueryParam, activePage);
+    window.history.replaceState(window.history.state, "", url);
+  }, [activePage, activePageQueryParam, syncActivePageWithUrl, validPageKeys]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!syncActivePageWithUrl) return;
+
+    const readFromUrl = () => {
+      const key = new URL(window.location.href).searchParams.get(
+        activePageQueryParam,
+      );
+      if (key && validPageKeys.has(key) && key !== activePage) {
+        setActivePage(key);
+      }
+    };
+
+    readFromUrl();
+    didInitUrlSyncRef.current = true;
+    window.addEventListener("popstate", readFromUrl);
+    return () => window.removeEventListener("popstate", readFromUrl);
+  }, [
+    activePage,
+    activePageQueryParam,
+    setActivePage,
+    syncActivePageWithUrl,
+    validPageKeys,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setPrefersReducedMotion(media.matches);
+
+    onChange();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   // Keep isMobile in sync with viewport width.
   useEffect(() => {
@@ -237,6 +314,7 @@ export function SetteraLayout({
 
   const handleDrawerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!isMobileNavOpen) return;
       if (e.key === "Escape") {
         e.preventDefault();
         closeMobileNav();
@@ -271,7 +349,7 @@ export function SetteraLayout({
         last.focus();
       }
     },
-    [closeMobileNav],
+    [closeMobileNav, isMobileNavOpen],
   );
 
   const handleBackToAppClick = useCallback(() => {
@@ -305,6 +383,14 @@ export function SetteraLayout({
       </div>
     </main>
   );
+
+  const overlayIsVisible = isMobile && isMobileNavOpen;
+  const drawerTransition = prefersReducedMotion
+    ? "none"
+    : "transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1)";
+  const overlayTransition = prefersReducedMotion
+    ? "none"
+    : "opacity 180ms ease";
 
   return (
     <div
@@ -444,16 +530,19 @@ export function SetteraLayout({
 
       {content}
 
-      {isMobile && isMobileNavOpen && (
+      {isMobile && (
         <>
           <div
             role="presentation"
-            onClick={closeMobileNav}
+            onClick={overlayIsVisible ? closeMobileNav : undefined}
             style={{
               position: "fixed",
               inset: 0,
               backgroundColor:
                 "var(--settera-mobile-overlay-bg, rgba(17, 24, 39, 0.45))",
+              opacity: overlayIsVisible ? 1 : 0,
+              transition: overlayTransition,
+              pointerEvents: overlayIsVisible ? "auto" : "none",
               zIndex: 20,
             }}
           />
@@ -462,6 +551,7 @@ export function SetteraLayout({
             ref={mobileDrawerRef}
             role="dialog"
             aria-modal="true"
+            aria-hidden={!overlayIsVisible}
             aria-label="Settings navigation"
             tabIndex={-1}
             onKeyDown={handleDrawerKeyDown}
@@ -480,6 +570,11 @@ export function SetteraLayout({
                 "var(--settera-mobile-drawer-border, 1px solid #d1d5db)",
               boxShadow: "0 16px 40px rgba(0, 0, 0, 0.18)",
               overflow: "hidden",
+              transform: overlayIsVisible
+                ? "translateX(0)"
+                : "translateX(-100%)",
+              transition: drawerTransition,
+              pointerEvents: overlayIsVisible ? "auto" : "none",
             }}
           >
             {backToApp && (
