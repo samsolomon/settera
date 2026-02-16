@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act, within, waitFor } from "@testing-library/react";
+import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { Select } from "../components/Select.js";
@@ -100,8 +100,8 @@ function renderSelect(
 describe("Select", () => {
   async function openSelect(user: ReturnType<typeof userEvent.setup>) {
     const trigger = screen.getByRole("combobox");
-    trigger.focus();
-    await user.keyboard("{ArrowDown}");
+    await user.click(trigger);
+    await screen.findByRole("listbox");
   }
 
   it("renders a select element", () => {

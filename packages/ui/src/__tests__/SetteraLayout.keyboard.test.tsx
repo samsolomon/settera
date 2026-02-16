@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
@@ -112,14 +112,19 @@ function fireKey(
   opts: Partial<KeyboardEventInit> = {},
   target?: Element,
 ) {
-  const event = new KeyboardEvent("keydown", {
+  return fireEvent.keyDown(target ?? document.activeElement ?? document.body, {
     key,
     bubbles: true,
     cancelable: true,
     ...opts,
   });
-  (target ?? document.activeElement ?? document.body).dispatchEvent(event);
-  return event;
+}
+
+function focusElement(element: HTMLElement | null) {
+  if (!element) return;
+  act(() => {
+    element.focus();
+  });
 }
 
 describe("SetteraLayout keyboard navigation", () => {
@@ -128,7 +133,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
       const searchInput = screen.getByRole("searchbox");
       const sidebarBtn = getSidebarButton("General");
-      sidebarBtn.focus();
+      focusElement(sidebarBtn);
 
       fireKey("/");
       expect(document.activeElement).toBe(searchInput);
@@ -137,7 +142,7 @@ describe("SetteraLayout keyboard navigation", () => {
     it("does not fire / when focused on search input itself", () => {
       renderLayout();
       const searchInput = screen.getByRole("searchbox") as HTMLInputElement;
-      searchInput.focus();
+      focusElement(searchInput);
 
       fireKey("/", {}, searchInput);
       expect(document.activeElement).toBe(searchInput);
@@ -149,7 +154,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
       const searchInput = screen.getByRole("searchbox");
       const btn = getSidebarButton("General");
-      btn.focus();
+      focusElement(btn);
 
       fireKey("k", { metaKey: true });
       expect(document.activeElement).toBe(searchInput);
@@ -160,7 +165,7 @@ describe("SetteraLayout keyboard navigation", () => {
       const searchInput = screen.getByRole("searchbox");
       const main = screen.getByRole("main");
       const heading = main.querySelector("h2")!;
-      heading.focus();
+      focusElement(heading as HTMLElement);
 
       fireKey("k", { metaKey: true }, heading);
       expect(document.activeElement).toBe(searchInput);
@@ -196,7 +201,7 @@ describe("SetteraLayout keyboard navigation", () => {
     it("F6 moves focus from sidebar to first card", () => {
       renderLayout();
       const sidebarBtn = getSidebarButton("General");
-      sidebarBtn.focus();
+      focusElement(sidebarBtn);
 
       fireKey("F6");
 
@@ -213,7 +218,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
       const main = screen.getByRole("main");
       const heading = main.querySelector("h2")!;
-      heading.focus();
+      focusElement(heading as HTMLElement);
 
       fireKey("F6", {}, heading);
 
@@ -224,7 +229,7 @@ describe("SetteraLayout keyboard navigation", () => {
     it("Shift+F6 moves to first card", () => {
       renderLayout();
       const sidebarBtn = getSidebarButton("General");
-      sidebarBtn.focus();
+      focusElement(sidebarBtn);
 
       fireKey("F6", { shiftKey: true });
 
@@ -245,7 +250,7 @@ describe("SetteraLayout keyboard navigation", () => {
       // Focus a switch button in main
       const switchBtn = main.querySelector('button[role="switch"]');
       if (switchBtn) {
-        (switchBtn as HTMLElement).focus();
+        focusElement(switchBtn as HTMLElement);
       }
 
       fireKey("ArrowDown", { ctrlKey: true }, document.activeElement!);
@@ -261,7 +266,7 @@ describe("SetteraLayout keyboard navigation", () => {
         'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
-      (headings[0] as HTMLElement).focus();
+      focusElement(headings[0] as HTMLElement);
       expect(document.activeElement).toBe(headings[0]);
 
       fireKey("ArrowDown", { ctrlKey: true }, headings[0]);
@@ -275,7 +280,7 @@ describe("SetteraLayout keyboard navigation", () => {
         'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
       );
 
-      (headings[1] as HTMLElement).focus();
+      focusElement(headings[1] as HTMLElement);
 
       fireKey("ArrowUp", { ctrlKey: true }, headings[1]);
       expect(document.activeElement).toBe(headings[0]);
@@ -289,7 +294,7 @@ describe("SetteraLayout keyboard navigation", () => {
       );
       const lastHeading = headings[headings.length - 1] as HTMLElement;
 
-      lastHeading.focus();
+      focusElement(lastHeading);
       fireKey("ArrowDown", { ctrlKey: true }, lastHeading);
       expect(document.activeElement).toBe(headings[0]);
     });
@@ -302,7 +307,7 @@ describe("SetteraLayout keyboard navigation", () => {
       );
       const firstHeading = headings[0] as HTMLElement;
 
-      firstHeading.focus();
+      focusElement(firstHeading);
       fireKey("ArrowUp", { ctrlKey: true }, firstHeading);
       expect(document.activeElement).toBe(headings[headings.length - 1]);
     });
@@ -337,7 +342,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
 
       const generalBtn = getSidebarButton("General");
-      generalBtn.focus();
+      focusElement(generalBtn);
 
       // Initially General is active
       expect(generalBtn.getAttribute("aria-current")).toBe("page");
@@ -358,7 +363,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
 
       const generalBtn = getSidebarButton("General");
-      generalBtn.focus();
+      focusElement(generalBtn);
 
       await user.keyboard("{Enter}");
 
@@ -382,7 +387,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
 
       const generalBtn = getSidebarButton("General");
-      generalBtn.focus();
+      focusElement(generalBtn);
 
       // Navigate to Parent Only (General → Advanced → Parent Only)
       await user.keyboard("{ArrowDown}{ArrowDown}");
@@ -411,7 +416,7 @@ describe("SetteraLayout keyboard navigation", () => {
       renderLayout();
 
       const advancedBtn = getSidebarButton("Advanced");
-      advancedBtn.focus();
+      focusElement(advancedBtn);
 
       // Navigate to Advanced and Enter to focus content
       await user.keyboard("{Enter}");
@@ -435,7 +440,7 @@ describe("SetteraLayout keyboard navigation", () => {
 
       // Navigate to Advanced page which has a text input
       const generalBtn = getSidebarButton("General");
-      generalBtn.focus();
+      focusElement(generalBtn);
       await user.keyboard("{ArrowDown}"); // Advanced
       await user.keyboard("{Enter}");
       await act(async () => {
@@ -448,7 +453,7 @@ describe("SetteraLayout keyboard navigation", () => {
       const textInput =
         main.querySelector<HTMLInputElement>('input[type="text"]');
       expect(textInput).not.toBeNull();
-      textInput!.focus();
+      focusElement(textInput);
       expect(document.activeElement).toBe(textInput);
 
       // First Escape — blurs input, focus moves to enclosing card
@@ -521,7 +526,7 @@ describe("SetteraLayout keyboard navigation", () => {
 
       // Focus something in main
       const cancelBtn = dialog.querySelector<HTMLElement>("button");
-      if (cancelBtn) cancelBtn.focus();
+      focusElement(cancelBtn);
 
       // Escape should NOT return to sidebar (dialog handles it)
       fireKey("Escape");

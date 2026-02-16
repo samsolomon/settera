@@ -100,7 +100,7 @@ describe("BooleanSwitch", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderSwitch("toggle", { toggle: true }, onChange);
-    screen.getByRole("switch").focus();
+    await user.tab();
     await user.keyboard(" ");
     expect(onChange).toHaveBeenCalledWith("toggle", false);
   });

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
@@ -96,14 +96,12 @@ function fireKey(
   opts: Partial<KeyboardEventInit> = {},
   target?: Element,
 ) {
-  const event = new KeyboardEvent("keydown", {
+  return fireEvent.keyDown(target ?? document.activeElement ?? document.body, {
     key,
     bubbles: true,
     cancelable: true,
     ...opts,
   });
-  (target ?? document.activeElement ?? document.body).dispatchEvent(event);
-  return event;
 }
 
 function getCards(): HTMLElement[] {
@@ -111,10 +109,16 @@ function getCards(): HTMLElement[] {
   return Array.from(main.querySelectorAll<HTMLElement>("[data-setting-key]"));
 }
 
+function focusElement(element: HTMLElement) {
+  act(() => {
+    element.focus();
+  });
+}
+
 function focusFirstCard() {
   const cards = getCards();
   expect(cards.length).toBeGreaterThan(0);
-  cards[0].focus();
+  focusElement(cards[0]);
   expect(document.activeElement).toBe(cards[0]);
   return cards;
 }
@@ -132,7 +136,7 @@ describe("SetteraLayout card navigation", () => {
     it("ArrowUp moves to previous card", () => {
       renderLayout();
       const cards = getCards();
-      cards[1].focus();
+      focusElement(cards[1]);
 
       fireKey("ArrowUp");
       expect(document.activeElement).toBe(cards[0]);
@@ -142,7 +146,7 @@ describe("SetteraLayout card navigation", () => {
       renderLayout();
       const cards = getCards();
       const lastCard = cards[cards.length - 1];
-      lastCard.focus();
+      focusElement(lastCard);
 
       fireKey("ArrowDown");
       // Should stay on last card
@@ -163,7 +167,7 @@ describe("SetteraLayout card navigation", () => {
       const cards = getCards();
       // autoSave and username are in sectionA, theme is in sectionB
       // Card 1 = username (index 1), Card 2 = theme (index 2)
-      cards[1].focus();
+      focusElement(cards[1]);
 
       fireKey("ArrowDown");
       expect(document.activeElement).toBe(cards[2]);
@@ -175,7 +179,7 @@ describe("SetteraLayout card navigation", () => {
     it("Home jumps to first card", () => {
       renderLayout();
       const cards = getCards();
-      cards[2].focus();
+      focusElement(cards[2]);
 
       fireKey("Home");
       expect(document.activeElement).toBe(cards[0]);
@@ -208,7 +212,7 @@ describe("SetteraLayout card navigation", () => {
       const textCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "username",
       )!;
-      textCard.focus();
+      focusElement(textCard);
 
       fireKey("Enter");
 
@@ -222,7 +226,7 @@ describe("SetteraLayout card navigation", () => {
       const selectCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "theme",
       )!;
-      selectCard.focus();
+      focusElement(selectCard);
 
       fireKey("Enter");
 
@@ -236,7 +240,7 @@ describe("SetteraLayout card navigation", () => {
       const msCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "features",
       )!;
-      msCard.focus();
+      focusElement(msCard);
 
       fireKey("Enter");
 
@@ -252,7 +256,7 @@ describe("SetteraLayout card navigation", () => {
       const switchBtn = cards[0].querySelector<HTMLElement>(
         'button[role="switch"]',
       )!;
-      switchBtn.focus();
+      focusElement(switchBtn);
 
       fireKey("Escape");
       expect(document.activeElement).toBe(cards[0]);
@@ -267,7 +271,7 @@ describe("SetteraLayout card navigation", () => {
       const select = selectCard.querySelector<HTMLElement>(
         'button[role="combobox"]',
       )!;
-      select.focus();
+      focusElement(select);
 
       fireKey("Escape");
       expect(document.activeElement).toBe(selectCard);
@@ -292,7 +296,7 @@ describe("SetteraLayout card navigation", () => {
       const generalBtn = sidebar.querySelector<HTMLElement>(
         'button[aria-current="page"]',
       )!;
-      generalBtn.focus();
+      focusElement(generalBtn);
 
       // Enter → first card
       await user.keyboard("{Enter}");
@@ -328,7 +332,7 @@ describe("SetteraLayout card navigation", () => {
       const msCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "features",
       )!;
-      msCard.focus();
+      focusElement(msCard);
 
       // Enter to drill in
       fireKey("Enter");
@@ -369,7 +373,7 @@ describe("SetteraLayout card navigation", () => {
       const msCard = cards.find(
         (c) => c.getAttribute("data-setting-key") === "features",
       )!;
-      msCard.focus();
+      focusElement(msCard);
       fireKey("Enter");
 
       const checkbox = msCard.querySelector<HTMLInputElement>(
@@ -389,7 +393,7 @@ describe("SetteraLayout card navigation", () => {
       const switchBtn = cards[0].querySelector<HTMLElement>(
         'button[role="switch"]',
       )!;
-      switchBtn.focus();
+      focusElement(switchBtn);
 
       fireKey("Home");
       expect(document.activeElement).toBe(switchBtn);
@@ -404,7 +408,7 @@ describe("SetteraLayout card navigation", () => {
       const switchBtn = cards[0].querySelector<HTMLElement>(
         'button[role="switch"]',
       )!;
-      switchBtn.focus();
+      focusElement(switchBtn);
 
       fireKey("Enter");
       // Should stay on the switch (not re-drill or navigate)
@@ -421,7 +425,7 @@ describe("SetteraLayout card navigation", () => {
       )!;
       const input =
         textCard.querySelector<HTMLInputElement>('input[type="text"]')!;
-      input.focus();
+      focusElement(input);
 
       fireKey("ArrowDown");
       // Should stay on the input (browser default)

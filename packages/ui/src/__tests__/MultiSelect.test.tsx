@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { MultiSelect } from "../components/MultiSelect.js";
@@ -175,9 +175,7 @@ describe("MultiSelect", () => {
     );
 
     // Uncheck the only selected option
-    await act(async () => {
-      await user.click(screen.getByText("Option A"));
-    });
+    await user.click(screen.getByText("Option A"));
 
     expect(screen.getByRole("alert").textContent).toBe(
       "At least one selection is required",
@@ -200,9 +198,7 @@ describe("MultiSelect", () => {
     );
 
     // Uncheck one to go below minimum
-    await act(async () => {
-      await user.click(screen.getByText("Option A"));
-    });
+    await user.click(screen.getByText("Option A"));
 
     expect(screen.getByRole("alert").textContent).toBe("Select at least 2");
   });
@@ -220,9 +216,7 @@ describe("MultiSelect", () => {
     );
 
     // Check another to exceed maximum
-    await act(async () => {
-      await user.click(screen.getByText("Option B"));
-    });
+    await user.click(screen.getByText("Option B"));
 
     expect(screen.getByRole("alert").textContent).toBe("Select at most 1");
   });
@@ -259,11 +253,11 @@ describe("MultiSelect", () => {
       </SetteraProvider>,
     );
 
-    await act(async () => {
-      await user.click(screen.getByText("SMS"));
-    });
+    await user.click(screen.getByText("SMS"));
 
-    expect(asyncValidator).toHaveBeenCalledWith(["email", "sms"]);
+    await waitFor(() => {
+      expect(asyncValidator).toHaveBeenCalledWith(["email", "sms"]);
+    });
     expect(screen.getByRole("alert").textContent).toBe("Too many selected");
   });
 });

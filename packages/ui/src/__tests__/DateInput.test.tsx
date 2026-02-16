@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { DateInput } from "../components/DateInput.js";
@@ -136,10 +136,8 @@ describe("DateInput", () => {
     const input = screen.getByLabelText("Required Date", {
       selector: "input",
     });
-    await act(async () => {
-      await user.click(input);
-      await user.tab();
-    });
+    await user.click(input);
+    await user.tab();
 
     expect(screen.getByRole("alert").textContent).toBe(
       "This field is required",
@@ -177,14 +175,12 @@ describe("DateInput", () => {
       </SetteraProvider>,
     );
 
-    await act(async () => {
-      await user.click(
-        screen.getByLabelText("Birthday", { selector: "input" }),
-      );
-      await user.tab();
-    });
+    await user.click(screen.getByLabelText("Birthday", { selector: "input" }));
+    await user.tab();
 
-    expect(asyncValidator).toHaveBeenCalledWith("2000-01-01");
+    await waitFor(() => {
+      expect(asyncValidator).toHaveBeenCalledWith("2000-01-01");
+    });
     expect(screen.getByRole("alert").textContent).toBe("Date not available");
   });
 });

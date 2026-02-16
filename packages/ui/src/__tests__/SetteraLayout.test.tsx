@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, act, within } from "@testing-library/react";
+import { render, screen, act, within, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -73,19 +74,32 @@ const nestedSchema: SetteraSchema = {
 };
 
 const DEFAULT_WIDTH = 1200;
+let rafQueue: FrameRequestCallback[] = [];
 
 function setViewportWidth(width: number) {
-  Object.defineProperty(window, "innerWidth", {
-    value: width,
-    writable: true,
-    configurable: true,
+  act(() => {
+    Object.defineProperty(window, "innerWidth", {
+      value: width,
+      writable: true,
+      configurable: true,
+    });
+    window.dispatchEvent(new Event("resize"));
   });
-  window.dispatchEvent(new Event("resize"));
 }
 
 function setLocationSearch(search: string) {
   const suffix = search.length > 0 ? `/${search}` : "/";
   window.history.replaceState({}, "", suffix);
+}
+
+async function flushRaf() {
+  await act(async () => {
+    while (rafQueue.length > 0) {
+      const callbacks = rafQueue;
+      rafQueue = [];
+      callbacks.forEach((cb) => cb(performance.now()));
+    }
+  });
 }
 
 function renderLayout(
@@ -115,11 +129,23 @@ function renderLayout(
 }
 
 beforeEach(() => {
+  rafQueue = [];
+  vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+    rafQueue.push(cb);
+    return rafQueue.length;
+  });
+  vi.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+    const index = Number(id) - 1;
+    if (index >= 0 && index < rafQueue.length) {
+      rafQueue.splice(index, 1);
+    }
+  });
   setViewportWidth(DEFAULT_WIDTH);
   setLocationSearch("");
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   setViewportWidth(DEFAULT_WIDTH);
   setLocationSearch("");
 });
@@ -138,13 +164,14 @@ describe("SetteraLayout", () => {
     expect(screen.getByText("Auto Save")).toBeDefined();
   });
 
-  it("switches content on sidebar click", () => {
+  it("switches content on sidebar click", async () => {
+    const user = userEvent.setup();
     renderLayout();
-    act(() => {
-      screen.getByText("Advanced").click();
+    await user.click(screen.getByText("Advanced"));
+    await waitFor(() => {
+      expect(screen.getByText("Experimental")).toBeDefined();
+      expect(screen.getByText("Debug Mode")).toBeDefined();
     });
-    expect(screen.getByText("Experimental")).toBeDefined();
-    expect(screen.getByText("Debug Mode")).toBeDefined();
   });
 
   it("renders children instead of auto-rendered page when provided", () => {
@@ -169,31 +196,33 @@ describe("SetteraLayout", () => {
     expect(nav.parentElement).toBe(main.parentElement);
   });
 
-  it("uses mobile drawer navigation below breakpoint", () => {
+  it("uses mobile drawer navigation below breakpoint", async () => {
+    const user = userEvent.setup();
     setViewportWidth(480);
     renderLayout({ mobileBreakpoint: 900 });
 
     expect(screen.queryByRole("tree")).toBeNull();
 
-    act(() => {
-      screen.getByLabelText("Open navigation").click();
-    });
+    await user.click(screen.getByLabelText("Open navigation"));
+    await flushRaf();
 
     expect(
       screen.getByRole("dialog", { name: "Settings navigation" }),
     ).toBeDefined();
     expect(screen.getByRole("tree")).toBeDefined();
 
-    act(() => {
-      screen.getByText("Advanced").click();
-    });
+    await user.click(screen.getByText("Advanced"));
+    await flushRaf();
 
-    expect(
-      screen.queryByRole("dialog", { name: "Settings navigation" }),
-    ).toBeNull();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Settings navigation" }),
+      ).toBeNull();
+    });
   });
 
-  it("renders back-to-app button in mobile drawer and prefers onClick", () => {
+  it("renders back-to-app button in mobile drawer and prefers onClick", async () => {
+    const user = userEvent.setup();
     const onBack = vi.fn();
     setViewportWidth(480);
     renderLayout({
@@ -205,21 +234,22 @@ describe("SetteraLayout", () => {
       },
     });
 
-    act(() => {
-      screen.getByLabelText("Open navigation").click();
-    });
+    await user.click(screen.getByLabelText("Open navigation"));
+    await flushRaf();
 
-    act(() => {
-      screen.getByRole("button", { name: "Back to app" }).click();
-    });
+    await user.click(screen.getByRole("button", { name: "Back to app" }));
+    await flushRaf();
 
     expect(onBack).toHaveBeenCalledTimes(1);
-    expect(
-      screen.queryByRole("dialog", { name: "Settings navigation" }),
-    ).toBeNull();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Settings navigation" }),
+      ).toBeNull();
+    });
   });
 
-  it("keeps back-to-app as a link in mobile drawer when only href is provided", () => {
+  it("keeps back-to-app as a link in mobile drawer when only href is provided", async () => {
+    const user = userEvent.setup();
     setViewportWidth(480);
     renderLayout({
       mobileBreakpoint: 900,
@@ -229,9 +259,8 @@ describe("SetteraLayout", () => {
       },
     });
 
-    act(() => {
-      screen.getByLabelText("Open navigation").click();
-    });
+    await user.click(screen.getByLabelText("Open navigation"));
+    await flushRaf();
 
     const backLink = screen.getByRole("link", { name: "Back to app" });
     expect(backLink.getAttribute("href")).toBe("https://example.com/app");
@@ -255,26 +284,24 @@ describe("SetteraLayout", () => {
     ).toBeTruthy();
   });
 
-  it("shows breadcrumb path for nested pages on mobile", () => {
+  it("shows breadcrumb path for nested pages on mobile", async () => {
+    const user = userEvent.setup();
     setViewportWidth(480);
     renderLayout(
       { mobileBreakpoint: 900, showBreadcrumbs: true },
       nestedSchema,
     );
 
-    act(() => {
-      screen.getByLabelText("Open navigation").click();
-    });
+    await user.click(screen.getByLabelText("Open navigation"));
+    await flushRaf();
 
     const drawer = screen.getByRole("dialog", { name: "Settings navigation" });
 
-    act(() => {
-      within(drawer).getByRole("button", { name: "General" }).click();
-    });
+    await user.click(within(drawer).getByRole("button", { name: "General" }));
+    await flushRaf();
 
-    act(() => {
-      within(drawer).getByRole("button", { name: "Privacy" }).click();
-    });
+    await user.click(within(drawer).getByRole("button", { name: "Privacy" }));
+    await flushRaf();
 
     const breadcrumb = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(breadcrumb.textContent).toContain("Settings");
@@ -282,22 +309,23 @@ describe("SetteraLayout", () => {
     expect(breadcrumb.textContent).toContain("Privacy");
   });
 
-  it("syncs active page to URL query param", () => {
+  it("syncs active page to URL query param", async () => {
+    const user = userEvent.setup();
     renderLayout({ activePageQueryParam: "settingsPage" });
 
-    act(() => {
-      screen.getByText("Advanced").click();
+    await user.click(screen.getByText("Advanced"));
+    await waitFor(() => {
+      const params = new URL(window.location.href).searchParams;
+      expect(params.get("settingsPage")).toBe("advanced");
     });
-
-    const params = new URL(window.location.href).searchParams;
-    expect(params.get("settingsPage")).toBe("advanced");
   });
 
-  it("hydrates active page from URL query param", () => {
+  it("hydrates active page from URL query param", async () => {
     setLocationSearch("?settingsPage=advanced");
     renderLayout({ activePageQueryParam: "settingsPage" });
-
-    expect(screen.getByText("Experimental")).toBeDefined();
-    expect(screen.getByText("Debug Mode")).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText("Experimental")).toBeDefined();
+      expect(screen.getByText("Debug Mode")).toBeDefined();
+    });
   });
 });
