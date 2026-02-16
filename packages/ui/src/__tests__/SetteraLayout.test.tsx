@@ -219,6 +219,24 @@ describe("SetteraLayout", () => {
     ).toBeNull();
   });
 
+  it("keeps back-to-app as a link in mobile drawer when only href is provided", () => {
+    setViewportWidth(480);
+    renderLayout({
+      mobileBreakpoint: 900,
+      backToApp: {
+        label: "Back to app",
+        href: "https://example.com/app",
+      },
+    });
+
+    act(() => {
+      screen.getByLabelText("Open navigation").click();
+    });
+
+    const backLink = screen.getByRole("link", { name: "Back to app" });
+    expect(backLink.getAttribute("href")).toBe("https://example.com/app");
+  });
+
   it("renders back-to-app control above sidebar search", () => {
     renderLayout({
       backToApp: {

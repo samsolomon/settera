@@ -388,6 +388,10 @@ export function SetteraLayout({
 
   const mobileBackToApp = useMemo(() => {
     if (!backToApp) return undefined;
+    if (!backToApp.onClick) {
+      return backToApp;
+    }
+
     return {
       ...backToApp,
       onClick: () => {
