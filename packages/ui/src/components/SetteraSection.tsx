@@ -82,9 +82,25 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
           {section.description}
         </p>
       )}
-      {visibleSettings.map((setting) => (
-        <SetteraSetting key={setting.key} settingKey={setting.key} />
-      ))}
+      {visibleSettings.length > 0 && (
+        <div
+          style={{
+            border: "var(--settera-card-border, 1px solid #e5e7eb)",
+            borderRadius: "var(--settera-card-border-radius, 10px)",
+            backgroundColor: "var(--settera-card-bg, white)",
+            padding: "var(--settera-card-padding, 0 16px)",
+            overflow: "hidden",
+          }}
+        >
+          {visibleSettings.map((setting, i) => (
+            <SetteraSetting
+              key={setting.key}
+              settingKey={setting.key}
+              isLast={i === visibleSettings.length - 1}
+            />
+          ))}
+        </div>
+      )}
       {visibleSubsections.map((sub) => {
         const subSettings = isSearching
           ? sub.settings.filter((s) => matchingSettingKeys.has(s.key))
@@ -124,9 +140,23 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
                 {sub.description}
               </p>
             )}
-            {subSettings.map((setting) => (
-              <SetteraSetting key={setting.key} settingKey={setting.key} />
-            ))}
+            <div
+              style={{
+                border: "var(--settera-card-border, 1px solid #e5e7eb)",
+                borderRadius: "var(--settera-card-border-radius, 10px)",
+                backgroundColor: "var(--settera-card-bg, white)",
+                padding: "var(--settera-card-padding, 0 16px)",
+                overflow: "hidden",
+              }}
+            >
+              {subSettings.map((setting, i) => (
+                <SetteraSetting
+                  key={setting.key}
+                  settingKey={setting.key}
+                  isLast={i === subSettings.length - 1}
+                />
+              ))}
+            </div>
           </div>
         );
       })}

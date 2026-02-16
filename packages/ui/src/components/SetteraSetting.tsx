@@ -11,13 +11,15 @@ import { DateInput } from "./DateInput.js";
 
 export interface SetteraSettingProps {
   settingKey: string;
+  /** When true, suppresses the bottom border (last item in a card). */
+  isLast?: boolean;
 }
 
 /**
  * Type-to-component dispatcher.
  * Maps a setting definition's type to the correct UI control, wrapped in SettingRow.
  */
-export function SetteraSetting({ settingKey }: SetteraSettingProps) {
+export function SetteraSetting({ settingKey, isLast }: SetteraSettingProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
 
   if (!schemaCtx) {
@@ -69,5 +71,9 @@ export function SetteraSetting({ settingKey }: SetteraSettingProps) {
       break;
   }
 
-  return <SettingRow settingKey={settingKey}>{control}</SettingRow>;
+  return (
+    <SettingRow settingKey={settingKey} isLast={isLast}>
+      {control}
+    </SettingRow>
+  );
 }

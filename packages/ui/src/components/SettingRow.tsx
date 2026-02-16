@@ -3,6 +3,8 @@ import { useSetteraSetting } from "@settera/react";
 
 export interface SettingRowProps {
   settingKey: string;
+  /** When true, suppresses the bottom border (last item in a card). */
+  isLast?: boolean;
   children: React.ReactNode;
 }
 
@@ -10,7 +12,7 @@ export interface SettingRowProps {
  * Wraps a setting control with title, description, error display, and visibility logic.
  * Hides itself when `isVisible` is false.
  */
-export function SettingRow({ settingKey, children }: SettingRowProps) {
+export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
@@ -55,7 +57,9 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
         justifyContent: "space-between",
         alignItems: "flex-start",
         padding: "var(--settera-row-padding, 12px 0)",
-        borderBottom: "var(--settera-row-border, 1px solid #e5e7eb)",
+        borderBottom: isLast
+          ? "none"
+          : "var(--settera-row-border, 1px solid #e5e7eb)",
         opacity: "var(--settera-row-opacity, 1)",
         outline: "none",
         boxShadow: isFocusVisible
