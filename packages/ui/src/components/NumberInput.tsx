@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
+import { ControlInput } from "./ControlPrimitives.js";
 
 export interface NumberInputProps {
   settingKey: string;
@@ -51,7 +52,8 @@ export function NumberInput({ settingKey }: NumberInputProps) {
     }
   }, [value, setValue, validate]);
 
-  const isDangerous = "dangerous" in definition && definition.dangerous;
+  const isDangerous =
+    "dangerous" in definition && Boolean(definition.dangerous);
   const isNumber = definition.type === "number";
   const placeholder = isNumber ? definition.placeholder : undefined;
   const min =
@@ -63,13 +65,10 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       ? definition.validation.max
       : undefined;
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      localValueRef.current = e.target.value;
-      setLocalValue(e.target.value);
-    },
-    [],
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    localValueRef.current = e.target.value;
+    setLocalValue(e.target.value);
+  }, []);
 
   const handleBlur = useCallback(() => {
     setIsFocusVisible(false);
@@ -105,7 +104,7 @@ export function NumberInput({ settingKey }: NumberInputProps) {
   const hasError = error !== null;
 
   return (
-    <input
+    <ControlInput
       type="number"
       value={localValue}
       onChange={handleChange}
@@ -119,23 +118,9 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      style={{
-        fontSize: "var(--settera-input-font-size, 14px)",
-        padding: "var(--settera-input-padding, 6px 10px)",
-        borderRadius: "var(--settera-input-border-radius, 6px)",
-        border: hasError
-          ? "1px solid var(--settera-error-color, #dc2626)"
-          : "var(--settera-input-border, 1px solid #d1d5db)",
-        outline: "none",
-        boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
-        width: "var(--settera-input-width, 200px)",
-        color: isDangerous
-          ? "var(--settera-dangerous-color, #dc2626)"
-          : "var(--settera-input-color, #111827)",
-        backgroundColor: "var(--settera-input-bg, white)",
-      }}
+      hasError={hasError}
+      isDangerous={isDangerous}
+      isFocusVisible={isFocusVisible}
     />
   );
 }

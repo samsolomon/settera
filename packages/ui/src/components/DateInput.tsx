@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
+import { ControlInput } from "./ControlPrimitives.js";
 
 export interface DateInputProps {
   settingKey: string;
@@ -14,7 +15,8 @@ export function DateInput({ settingKey }: DateInputProps) {
     useSetteraSetting(settingKey);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
 
-  const isDangerous = "dangerous" in definition && definition.dangerous;
+  const isDangerous =
+    "dangerous" in definition && Boolean(definition.dangerous);
   const isDate = definition.type === "date";
   const minDate =
     isDate && definition.validation?.minDate
@@ -51,7 +53,7 @@ export function DateInput({ settingKey }: DateInputProps) {
   const hasError = error !== null;
 
   return (
-    <input
+    <ControlInput
       type="date"
       value={typeof value === "string" ? value : ""}
       onChange={handleChange}
@@ -63,23 +65,9 @@ export function DateInput({ settingKey }: DateInputProps) {
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      style={{
-        fontSize: "var(--settera-input-font-size, 14px)",
-        padding: "var(--settera-input-padding, 6px 10px)",
-        borderRadius: "var(--settera-input-border-radius, 6px)",
-        border: hasError
-          ? "1px solid var(--settera-error-color, #dc2626)"
-          : "var(--settera-input-border, 1px solid #d1d5db)",
-        outline: "none",
-        boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
-        width: "var(--settera-input-width, 200px)",
-        color: isDangerous
-          ? "var(--settera-dangerous-color, #dc2626)"
-          : "var(--settera-input-color, #111827)",
-        backgroundColor: "var(--settera-input-bg, white)",
-      }}
+      hasError={hasError}
+      isDangerous={isDangerous}
+      isFocusVisible={isFocusVisible}
     />
   );
 }
