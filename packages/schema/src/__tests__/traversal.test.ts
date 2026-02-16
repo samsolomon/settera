@@ -4,6 +4,8 @@ import {
   getSettingByKey,
   getPageByKey,
   resolveDependencies,
+  isFlattenedPage,
+  resolvePageKey,
 } from "../traversal.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
 import type { SettaraSchema } from "../types.js";
@@ -164,5 +166,105 @@ describe("resolveDependencies", () => {
     };
     const deps = resolveDependencies(schema);
     expect(deps.size).toBe(0);
+  });
+});
+
+describe("isFlattenedPage", () => {
+  it("returns true for one child and no sections", () => {
+    expect(
+      isFlattenedPage({
+        key: "parent",
+        title: "Parent",
+        pages: [{ key: "child", title: "Child" }],
+      }),
+    ).toBe(true);
+  });
+
+  it("returns true for one child and empty sections array", () => {
+    expect(
+      isFlattenedPage({
+        key: "parent",
+        title: "Parent",
+        sections: [],
+        pages: [{ key: "child", title: "Child" }],
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false when page has sections", () => {
+    expect(
+      isFlattenedPage({
+        key: "parent",
+        title: "Parent",
+        sections: [{ key: "s", title: "S", settings: [] }],
+        pages: [{ key: "child", title: "Child" }],
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false for multiple children", () => {
+    expect(
+      isFlattenedPage({
+        key: "parent",
+        title: "Parent",
+        pages: [
+          { key: "c1", title: "C1" },
+          { key: "c2", title: "C2" },
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false for a leaf page (no children)", () => {
+    expect(isFlattenedPage({ key: "leaf", title: "Leaf" })).toBe(false);
+  });
+});
+
+describe("resolvePageKey", () => {
+  it("returns own key for non-flatten page", () => {
+    expect(
+      resolvePageKey({
+        key: "leaf",
+        title: "Leaf",
+        sections: [{ key: "s", title: "S", settings: [] }],
+      }),
+    ).toBe("leaf");
+  });
+
+  it("returns child key for flattened page", () => {
+    expect(
+      resolvePageKey({
+        key: "parent",
+        title: "Parent",
+        pages: [{ key: "child", title: "Child" }],
+      }),
+    ).toBe("child");
+  });
+
+  it("resolves recursively through nested flattened pages", () => {
+    expect(
+      resolvePageKey({
+        key: "grandparent",
+        title: "GP",
+        pages: [
+          {
+            key: "parent",
+            title: "P",
+            pages: [{ key: "leaf", title: "Leaf" }],
+          },
+        ],
+      }),
+    ).toBe("leaf");
+  });
+
+  it("stops at a page with sections even if it has one child", () => {
+    expect(
+      resolvePageKey({
+        key: "parent",
+        title: "Parent",
+        sections: [{ key: "s", title: "S", settings: [] }],
+        pages: [{ key: "child", title: "Child" }],
+      }),
+    ).toBe("parent");
   });
 });

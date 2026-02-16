@@ -33,4 +33,6 @@ export {
   getSettingByKey,
   getPageByKey,
   resolveDependencies,
+  isFlattenedPage,
+  resolvePageKey,
 } from "./traversal.js";

@@ -4,6 +4,7 @@ import type {
   SettingDefinition,
   FlattenedSetting,
   PageDefinition,
+  ConfirmConfig,
 } from "@settara/schema";
 
 // ---- Schema Context (never re-renders after mount) ----
@@ -37,6 +38,14 @@ export const SettaraNavigationContext =
 
 // ---- Values Context (re-renders on setting change) ----
 
+export interface PendingConfirm {
+  key: string;
+  config: ConfirmConfig;
+  dangerous: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
 export interface SettaraValuesContextValue {
   values: Record<string, unknown>;
   setValue: (key: string, value: unknown) => void;
@@ -47,6 +56,9 @@ export interface SettaraValuesContextValue {
     (value: unknown) => string | null | Promise<string | null>
   >;
   onAction?: Record<string, () => void | Promise<void>>;
+  pendingConfirm: PendingConfirm | null;
+  requestConfirm: (pending: PendingConfirm) => void;
+  resolveConfirm: (confirmed: boolean) => void;
 }
 
 export const SettaraValuesContext =

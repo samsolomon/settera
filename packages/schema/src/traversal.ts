@@ -119,6 +119,26 @@ export function getPageByKey(
 }
 
 /**
+ * A page is "flattened" when it has exactly one child page and no sections
+ * of its own. In the sidebar, it renders as a leaf that navigates directly
+ * to its single child's content.
+ */
+export function isFlattenedPage(page: PageDefinition): boolean {
+  return (
+    page.pages?.length === 1 && (!page.sections || page.sections.length === 0)
+  );
+}
+
+/**
+ * Resolve through flattened pages to find the leaf key that should be used
+ * as the activePage. Recurses when the single child is itself flattened.
+ */
+export function resolvePageKey(page: PageDefinition): string {
+  if (isFlattenedPage(page)) return resolvePageKey(page.pages![0]);
+  return page.key;
+}
+
+/**
  * Build a dependency map from visibleWhen conditions.
  * Returns Map<dependentKey, controllerKeys[]>.
  */

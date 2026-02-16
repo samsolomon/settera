@@ -46,6 +46,21 @@ const schema: SettaraSchema = {
               type: "text",
               validation: { required: true },
             },
+            {
+              key: "withHelp",
+              title: "With Help",
+              description: "This has a description.",
+              helpText: "This is additional help text.",
+              type: "boolean",
+              default: false,
+            },
+            {
+              key: "helpOnly",
+              title: "Help Only",
+              helpText: "Help without description.",
+              type: "boolean",
+              default: false,
+            },
           ],
         },
       ],
@@ -157,5 +172,23 @@ describe("SettingRow", () => {
   it("hides error when no error present", () => {
     renderRow("username", { username: "valid" });
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  // ---- HelpText tests ----
+
+  it("renders helpText when defined", () => {
+    renderRow("withHelp", { withHelp: false });
+    expect(screen.getByText(/This is additional help text/)).toBeDefined();
+  });
+
+  it("renders helpText with info prefix", () => {
+    renderRow("withHelp", { withHelp: false });
+    const helpEl = screen.getByText(/This is additional help text/);
+    expect(helpEl.textContent).toContain("ⓘ");
+  });
+
+  it("does not render helpText when not defined", () => {
+    renderRow("toggle", { toggle: false });
+    expect(screen.queryByText(/ⓘ/)).toBeNull();
   });
 });

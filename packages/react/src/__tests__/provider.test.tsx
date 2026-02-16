@@ -147,4 +147,37 @@ describe("SettaraProvider", () => {
     );
     expect(screen.getByTestId("child").textContent).toBe("hello");
   });
+
+  it("resolves initial activePage to child key when first page is flattened", () => {
+    const flattenedSchema: SettaraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "parent",
+          title: "Parent",
+          pages: [
+            {
+              key: "only-child",
+              title: "Only Child",
+              sections: [
+                {
+                  key: "s1",
+                  title: "S1",
+                  settings: [
+                    { key: "setting1", title: "Setting 1", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    render(
+      <SettaraProvider schema={flattenedSchema}>
+        <NavConsumer />
+      </SettaraProvider>,
+    );
+    expect(screen.getByTestId("active-page").textContent).toBe("only-child");
+  });
 });

@@ -12,6 +12,7 @@ import {
   useRovingTabIndex,
 } from "@settara/react";
 import type { PageDefinition } from "@settara/schema";
+import { isFlattenedPage, resolvePageKey } from "@settara/schema";
 import { SettaraSearch } from "./SettaraSearch.js";
 
 export interface SettaraSidebarProps {
@@ -50,7 +51,7 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
   // Auto-expand parent when a child page is active
   useEffect(() => {
     for (const page of schema.pages) {
-      if (page.pages) {
+      if (page.pages && !isFlattenedPage(page)) {
         const isChildActive = page.pages.some((c) => c.key === activePage);
         if (isChildActive && !expandedGroupsRef.current.has(page.key)) {
           toggleGroup(page.key);
@@ -64,7 +65,10 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
       const hasChildren = page.pages && page.pages.length > 0;
       const hasSections = page.sections && page.sections.length > 0;
 
-      if (hasChildren && !hasSections) {
+      if (isFlattenedPage(page)) {
+        // Single-child parent without sections — navigate to the child
+        setActivePage(resolvePageKey(page));
+      } else if (hasChildren && !hasSections) {
         // Parent with only children — just toggle expand
         toggleGroup(page.key);
       } else if (hasChildren && hasSections) {
@@ -106,7 +110,8 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
         if (isSearching && !matchingPageKeys.has(page.key)) continue;
         items.push({ page, depth, parentKey });
 
-        const hasChildren = page.pages && page.pages.length > 0;
+        const flattened = isFlattenedPage(page);
+        const hasChildren = !flattened && page.pages && page.pages.length > 0;
         if (hasChildren) {
           const isExpanded = isSearching
             ? page.pages!.some((child) => matchingPageKeys.has(child.key))
@@ -174,7 +179,8 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
       }
 
       const { page, parentKey } = item;
-      const hasChildren = page.pages && page.pages.length > 0;
+      const hasChildren =
+        !isFlattenedPage(page) && page.pages && page.pages.length > 0;
       const isExpanded = hasChildren && expandedGroupsRef.current.has(page.key);
 
       if (e.key === "ArrowRight") {
@@ -217,7 +223,9 @@ export function SettaraSidebar({ renderIcon }: SettaraSidebarProps) {
         if (item.depth === 0) {
           handlePageClick(page);
         } else {
-          setActivePage(page.key);
+          setActivePage(
+            isFlattenedPage(page) ? resolvePageKey(page) : page.key,
+          );
         }
         return;
       }
@@ -305,8 +313,11 @@ function SidebarItem({
   getTabIndex,
   setButtonRef,
 }: SidebarItemProps) {
-  const isActive = activePage === page.key;
-  const hasChildren = page.pages && page.pages.length > 0;
+  const flattened = isFlattenedPage(page);
+  const isActive = flattened
+    ? activePage === resolvePageKey(page)
+    : activePage === page.key;
+  const hasChildren = !flattened && page.pages && page.pages.length > 0;
   // Auto-expand parents with matching children during search
   const isExpanded = isSearching
     ? hasChildren &&
@@ -329,7 +340,11 @@ function SidebarItem({
       <button
         ref={(el) => setButtonRef(flatIndex, el)}
         onClick={() =>
-          depth === 0 ? onPageClick(page) : onChildClick(page.key)
+          depth === 0
+            ? onPageClick(page)
+            : onChildClick(
+                isFlattenedPage(page) ? resolvePageKey(page) : page.key,
+              )
         }
         aria-current={isActive ? "page" : undefined}
         tabIndex={getTabIndex(flatIndex)}

@@ -5,6 +5,7 @@ import {
   getSettingByKey,
   getPageByKey,
   resolveDependencies,
+  resolvePageKey,
 } from "@settara/schema";
 import type { SettaraSchema } from "@settara/schema";
 import { SettaraSchemaContext, SettaraNavigationContext } from "./context.js";
@@ -45,7 +46,7 @@ export function SettaraProvider({ schema, children }: SettaraProviderProps) {
 
   // Navigation state
   const [activePage, setActivePage] = useState<string>(
-    schema.pages[0]?.key ?? "",
+    schema.pages[0] ? resolvePageKey(schema.pages[0]) : "",
   );
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     () => new Set(),

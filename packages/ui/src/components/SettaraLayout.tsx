@@ -6,6 +6,7 @@ import {
 } from "@settara/react";
 import { SettaraSidebar } from "./SettaraSidebar.js";
 import { SettaraPage } from "./SettaraPage.js";
+import { ConfirmDialog } from "./ConfirmDialog.js";
 
 export interface SettaraLayoutProps {
   renderIcon?: (iconName: string) => React.ReactNode;
@@ -93,6 +94,7 @@ export function SettaraLayout({ renderIcon, children }: SettaraLayoutProps) {
           {children ?? <SettaraPage />}
         </div>
       </main>
+      <ConfirmDialog />
     </div>
   );
 }

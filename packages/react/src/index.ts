@@ -1,5 +1,9 @@
 // Re-export schema essentials
-export { SCHEMA_VERSION } from "@settara/schema";
+export {
+  SCHEMA_VERSION,
+  isFlattenedPage,
+  resolvePageKey,
+} from "@settara/schema";
 export type {
   SettaraSchema,
   SettingDefinition,
@@ -25,6 +29,7 @@ export type {
   SettaraSchemaContextValue,
   SettaraNavigationContextValue,
   SettaraValuesContextValue,
+  PendingConfirm,
 } from "./context.js";
 
 // Hooks
@@ -33,6 +38,8 @@ export { useSettaraSetting } from "./hooks/useSettaraSetting.js";
 export type { UseSettaraSettingResult } from "./hooks/useSettaraSetting.js";
 export { useSettaraAction } from "./hooks/useSettaraAction.js";
 export type { UseSettaraActionResult } from "./hooks/useSettaraAction.js";
+export { useSettaraConfirm } from "./hooks/useSettaraConfirm.js";
+export type { UseSettaraConfirmResult } from "./hooks/useSettaraConfirm.js";
 export { useSettaraNavigation } from "./hooks/useSettaraNavigation.js";
 export { useSettaraSearch } from "./hooks/useSettaraSearch.js";
 export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";

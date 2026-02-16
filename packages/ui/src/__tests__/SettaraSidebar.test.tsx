@@ -172,17 +172,25 @@ describe("SettaraSidebar", () => {
     expect(screen.queryByTestId("icon-settings")).toBeNull();
   });
 
-  it("parent without sections only toggles expand (no navigate)", () => {
+  it("flattened parent navigates to child on click", () => {
     renderSidebar();
-    // parentOnly has no sections, only children
+    // parentOnly has one child, no sections — should be flattened
     act(() => {
       screen.getByText("Parent Only").click();
     });
-    // Should NOT be active (no sections to show)
+    // Should be active (navigates to child's content)
     const parentBtn = screen.getByText("Parent Only").closest("button")!;
-    expect(parentBtn.getAttribute("aria-current")).not.toBe("page");
-    // But children should be visible
-    expect(screen.getByText("Child One")).toBeDefined();
+    expect(parentBtn.getAttribute("aria-current")).toBe("page");
+    // Child should NOT appear as a separate sidebar item
+    expect(screen.queryByText("Child One")).toBeNull();
+  });
+
+  it("flattened parent has no aria-expanded", () => {
+    renderSidebar();
+    const parentItem = screen
+      .getByText("Parent Only")
+      .closest("[role='treeitem']")!;
+    expect(parentItem.getAttribute("aria-expanded")).toBeNull();
   });
 
   it("auto-expands parent when child is active via programmatic navigation", () => {
@@ -234,5 +242,16 @@ describe("SettaraSidebar", () => {
     expect(screen.getByText("General")).toBeDefined();
     // Privacy should be visible (auto-expanded)
     expect(screen.getByText("Privacy")).toBeDefined();
+  });
+
+  it("flattened parent visible during search when child matches, child NOT visible", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+    // Search for the child's setting title
+    await user.type(screen.getByRole("searchbox"), "C1 Setting");
+    // Parent Only should be visible (its child has a matching setting)
+    expect(screen.getByText("Parent Only")).toBeDefined();
+    // But Child One should NOT appear as a separate item
+    expect(screen.queryByText("Child One")).toBeNull();
   });
 });

@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettaraProvider } from "../provider.js";
 import { SettaraRenderer } from "../renderer.js";
 import { useSettaraSetting } from "../hooks/useSettaraSetting.js";
+import { SettaraValuesContext } from "../context.js";
 import type { SettaraSchema } from "@settara/schema";
 
 const schema: SettaraSchema = {
@@ -64,6 +65,28 @@ const schema: SettaraSchema = {
               key: "asyncField",
               title: "Async Field",
               type: "text",
+              validation: {
+                required: true,
+              },
+            },
+            {
+              key: "confirmed",
+              title: "Confirmed",
+              type: "boolean",
+              default: false,
+              dangerous: true,
+              confirm: {
+                title: "Are you sure?",
+                message: "This enables a confirmed feature.",
+              },
+            },
+            {
+              key: "confirmedText",
+              title: "Confirmed Text",
+              type: "text",
+              confirm: {
+                message: "Confirm text change",
+              },
               validation: {
                 required: true,
               },
@@ -302,5 +325,118 @@ describe("useSettaraSetting", () => {
 
     expect(asyncValidator).toHaveBeenCalledWith("valid");
     expect(screen.getByTestId("error-asyncField").textContent).toBe("");
+  });
+
+  // ---- Confirm interception tests ----
+
+  it("defers setValue when definition has confirm config", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithProviders(
+      { confirmed: false },
+      onChange,
+      <SettingDisplay settingKey="confirmed" />,
+    );
+    await user.click(screen.getByText("toggle"));
+    // onChange should NOT have been called — value deferred
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("applies value when confirm is resolved", async () => {
+    const onChange = vi.fn();
+
+    function ConfirmResolver() {
+      const ctx = useContext(SettaraValuesContext);
+      return (
+        <button
+          data-testid="resolve-confirm"
+          onClick={() => ctx?.resolveConfirm(true)}
+        >
+          confirm
+        </button>
+      );
+    }
+
+    const user = userEvent.setup();
+    renderWithProviders(
+      { confirmed: false },
+      onChange,
+      <>
+        <SettingDisplay settingKey="confirmed" />
+        <ConfirmResolver />
+      </>,
+    );
+
+    await user.click(screen.getByText("toggle"));
+    expect(onChange).not.toHaveBeenCalled();
+
+    await user.click(screen.getByTestId("resolve-confirm"));
+    expect(onChange).toHaveBeenCalledWith("confirmed", true);
+  });
+
+  it("does not apply value when confirm is cancelled", async () => {
+    const onChange = vi.fn();
+
+    function ConfirmCanceller() {
+      const ctx = useContext(SettaraValuesContext);
+      return (
+        <button
+          data-testid="cancel-confirm"
+          onClick={() => ctx?.resolveConfirm(false)}
+        >
+          cancel
+        </button>
+      );
+    }
+
+    const user = userEvent.setup();
+    renderWithProviders(
+      { confirmed: false },
+      onChange,
+      <>
+        <SettingDisplay settingKey="confirmed" />
+        <ConfirmCanceller />
+      </>,
+    );
+
+    await user.click(screen.getByText("toggle"));
+    await user.click(screen.getByTestId("cancel-confirm"));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("suppresses validate() while confirm is pending for the same key", async () => {
+    const onChange = vi.fn();
+
+    renderWithProviders(
+      { confirmedText: "" },
+      onChange,
+      <SettingDisplay settingKey="confirmedText" />,
+    );
+
+    // Trigger confirm by setting empty value (which would fail required validation)
+    await act(async () => {
+      screen.getByTestId("clear-confirmedText").click();
+    });
+
+    // validate() should be suppressed while confirm is pending
+    await act(async () => {
+      screen.getByTestId("validate-confirmedText").click();
+    });
+
+    // Error should not be set because validate is suppressed
+    expect(screen.getByTestId("error-confirmedText").textContent).toBe("");
+  });
+
+  it("applies setValue immediately when no confirm config", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithProviders(
+      { autoSave: true },
+      onChange,
+      <SettingDisplay settingKey="autoSave" />,
+    );
+    await user.click(screen.getByText("toggle"));
+    // Should apply immediately since no confirm
+    expect(onChange).toHaveBeenCalledWith("autoSave", false);
   });
 });

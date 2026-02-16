@@ -1,6 +1,12 @@
-import React, { useState, useCallback, useContext, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+} from "react";
 import { SettaraSchemaContext, SettaraValuesContext } from "./context.js";
-import type { SettaraValuesContextValue } from "./context.js";
+import type { SettaraValuesContextValue, PendingConfirm } from "./context.js";
 
 export interface SettaraRendererProps {
   /** Current values object (flat keys) */
@@ -66,6 +72,30 @@ export function SettaraRenderer({
     [onChange],
   );
 
+  // ---- Confirm dialog state ----
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
+    null,
+  );
+  const pendingConfirmRef = useRef<PendingConfirm | null>(null);
+  pendingConfirmRef.current = pendingConfirm;
+
+  const requestConfirm = useCallback((pending: PendingConfirm) => {
+    const prev = pendingConfirmRef.current;
+    if (prev) prev.onCancel();
+    setPendingConfirm(pending);
+  }, []);
+
+  const resolveConfirm = useCallback((confirmed: boolean) => {
+    const prev = pendingConfirmRef.current;
+    if (!prev) return;
+    setPendingConfirm(null);
+    if (confirmed) {
+      prev.onConfirm();
+    } else {
+      prev.onCancel();
+    }
+  }, []);
+
   const contextValue: SettaraValuesContextValue = useMemo(
     () => ({
       values: resolvedValues,
@@ -74,8 +104,21 @@ export function SettaraRenderer({
       setError,
       onValidate,
       onAction,
+      pendingConfirm,
+      requestConfirm,
+      resolveConfirm,
     }),
-    [resolvedValues, setValue, errors, setError, onValidate, onAction],
+    [
+      resolvedValues,
+      setValue,
+      errors,
+      setError,
+      onValidate,
+      onAction,
+      pendingConfirm,
+      requestConfirm,
+      resolveConfirm,
+    ],
   );
 
   return (

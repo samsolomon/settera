@@ -10,6 +10,7 @@ export {
   useSettaraSearch,
   useRovingTabIndex,
   useSettaraGlobalKeys,
+  useSettaraConfirm,
   evaluateVisibility,
   validateSettingValue,
 } from "@settara/react";
@@ -31,6 +32,7 @@ export { MultiSelect } from "./components/MultiSelect.js";
 export type { MultiSelectProps } from "./components/MultiSelect.js";
 export { DateInput } from "./components/DateInput.js";
 export type { DateInputProps } from "./components/DateInput.js";
+export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
 // Search
 export { SettaraSearch } from "./components/SettaraSearch.js";

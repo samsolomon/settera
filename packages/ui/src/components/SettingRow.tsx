@@ -53,6 +53,18 @@ export function SettingRow({ settingKey, children }: SettingRowProps) {
             {definition.description}
           </div>
         )}
+        {"helpText" in definition && definition.helpText && (
+          <div
+            style={{
+              fontSize: "var(--settara-help-font-size, 12px)",
+              color: "var(--settara-help-color, #9ca3af)",
+              marginTop: "4px",
+            }}
+          >
+            {"ⓘ "}
+            {definition.helpText}
+          </div>
+        )}
         {error && (
           <div
             role="alert"

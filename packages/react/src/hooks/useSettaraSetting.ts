@@ -2,7 +2,7 @@ import { useContext, useCallback } from "react";
 import { SettaraSchemaContext, SettaraValuesContext } from "../context.js";
 import { evaluateVisibility } from "../visibility.js";
 import { validateSettingValue } from "../validation.js";
-import type { SettingDefinition } from "@settara/schema";
+import type { SettingDefinition, ConfirmConfig } from "@settara/schema";
 
 export interface UseSettaraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
@@ -43,16 +43,38 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
   // Value from resolved values (defaults already merged by SettaraRenderer)
   const value = valuesCtx.values[key];
 
-  // Setter — runs sync validation automatically
+  // Setter — runs sync validation automatically, with confirm interception
   const contextSetValue = valuesCtx.setValue;
   const contextSetError = valuesCtx.setError;
+  const requestConfirm = valuesCtx.requestConfirm;
   const setValue = useCallback(
     (newValue: unknown) => {
-      const syncError = validateSettingValue(definition, newValue);
-      contextSetError(key, syncError);
-      contextSetValue(key, newValue);
+      const confirmConfig =
+        "confirm" in definition
+          ? (definition.confirm as ConfirmConfig | undefined)
+          : undefined;
+
+      const applyValue = () => {
+        const syncError = validateSettingValue(definition, newValue);
+        contextSetError(key, syncError);
+        contextSetValue(key, newValue);
+      };
+
+      if (confirmConfig) {
+        const dangerous =
+          "dangerous" in definition && (definition.dangerous as boolean);
+        requestConfirm({
+          key,
+          config: confirmConfig,
+          dangerous: !!dangerous,
+          onConfirm: applyValue,
+          onCancel: () => {},
+        });
+      } else {
+        applyValue();
+      }
     },
-    [contextSetValue, contextSetError, key, definition],
+    [contextSetValue, contextSetError, key, definition, requestConfirm],
   );
 
   // Full validation pipeline: sync + async (for blur).
@@ -60,9 +82,15 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
   // may be stale if called synchronously after setValue (React state hasn't
   // flushed yet). Components should either call validate() on blur (TextInput,
   // NumberInput) or pass the new value explicitly via valueOverride (Select).
+  // Suppressed when a confirm dialog is pending for this key to avoid showing
+  // validation errors for an uncommitted value.
   const onValidate = valuesCtx.onValidate;
+  const pendingConfirm = valuesCtx.pendingConfirm;
   const validate = useCallback(
     async (valueOverride?: unknown): Promise<string | null> => {
+      // Suppress validation while confirm is pending for this key
+      if (pendingConfirm?.key === key) return null;
+
       // Use explicit value when provided (avoids stale-closure after setValue)
       const currentValue =
         valueOverride !== undefined ? valueOverride : valuesCtx.values[key];
@@ -87,7 +115,14 @@ export function useSettaraSetting(key: string): UseSettaraSettingResult {
 
       return null;
     },
-    [valuesCtx.values, definition, key, contextSetError, onValidate],
+    [
+      valuesCtx.values,
+      definition,
+      key,
+      contextSetError,
+      onValidate,
+      pendingConfirm,
+    ],
   );
 
   // Error

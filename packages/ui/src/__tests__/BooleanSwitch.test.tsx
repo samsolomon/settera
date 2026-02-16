@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettaraProvider, SettaraRenderer } from "@settara/react";
 import { BooleanSwitch } from "../components/BooleanSwitch.js";
+import { ConfirmDialog } from "../components/ConfirmDialog.js";
 import type { SettaraSchema } from "@settara/schema";
 
 const schema: SettaraSchema = {
@@ -28,6 +29,16 @@ const schema: SettaraSchema = {
               title: "Dangerous Toggle",
               type: "boolean",
               dangerous: true,
+            },
+            {
+              key: "confirmed",
+              title: "Confirmed Toggle",
+              type: "boolean",
+              default: false,
+              confirm: {
+                title: "Confirm Toggle",
+                message: "Are you sure you want to toggle?",
+              },
             },
           ],
         },
@@ -123,5 +134,26 @@ describe("BooleanSwitch", () => {
     await user.tab();
     const switchEl = screen.getByRole("switch");
     expect(switchEl.style.boxShadow).toContain("0 0 0 2px");
+  });
+
+  it("defers toggle when confirm is configured, applies on confirm", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SettaraProvider schema={schema}>
+        <SettaraRenderer values={{ confirmed: false }} onChange={onChange}>
+          <BooleanSwitch settingKey="confirmed" />
+          <ConfirmDialog />
+        </SettaraRenderer>
+      </SettaraProvider>,
+    );
+    await user.click(screen.getByRole("switch"));
+    // onChange should not be called yet
+    expect(onChange).not.toHaveBeenCalled();
+    // Confirm dialog should appear
+    expect(screen.getByRole("dialog")).toBeDefined();
+    // Click confirm
+    await user.click(screen.getByText("Confirm"));
+    expect(onChange).toHaveBeenCalledWith("confirmed", true);
   });
 });
