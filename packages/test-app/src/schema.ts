@@ -497,6 +497,79 @@ export const demoSchema: SetteraSchema = {
               },
             },
             {
+              key: "actions.inviteTeam",
+              title: "Invite Team (Modal Demo)",
+              description:
+                "Comprehensive modal action example with mixed field types.",
+              type: "action",
+              buttonLabel: "Invite Team",
+              actionType: "modal",
+              modal: {
+                title: "Invite team members",
+                description:
+                  "Draft values in this modal are only submitted when you click Send invites.",
+                submitLabel: "Send invites",
+                fields: [
+                  {
+                    key: "message",
+                    title: "Welcome Message",
+                    type: "text",
+                    placeholder: "Welcome to the workspace",
+                    default: "Welcome aboard!",
+                  },
+                  {
+                    key: "seatCount",
+                    title: "Seat Count",
+                    type: "number",
+                    default: 3,
+                  },
+                  {
+                    key: "sendOn",
+                    title: "Send On",
+                    type: "date",
+                  },
+                  {
+                    key: "channels",
+                    title: "Invite Channels",
+                    type: "multiselect",
+                    options: [
+                      { value: "email", label: "Email" },
+                      { value: "slack", label: "Slack" },
+                      { value: "sms", label: "SMS" },
+                    ],
+                    default: ["email"],
+                  },
+                  {
+                    key: "owner",
+                    title: "Owner",
+                    type: "compound",
+                    displayStyle: "inline",
+                    fields: [
+                      {
+                        key: "name",
+                        title: "Owner Name",
+                        type: "text",
+                        default: "",
+                      },
+                      {
+                        key: "notify",
+                        title: "Notify Owner",
+                        type: "boolean",
+                        default: true,
+                      },
+                    ],
+                  },
+                  {
+                    key: "emails",
+                    title: "Invite Emails",
+                    type: "repeatable",
+                    itemType: "text",
+                    default: ["new-user@example.com"],
+                  },
+                ],
+              },
+            },
+            {
               key: "actions.clearCache",
               title: "Clear Cache",
               description: "Remove cached data to free up space.",

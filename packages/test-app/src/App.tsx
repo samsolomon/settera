@@ -542,6 +542,16 @@ export function App() {
       "actions.clearCache": () => {
         alert("Cache cleared!");
       },
+      "actions.inviteTeam": async (payload) => {
+        await new Promise((r) => setTimeout(r, 1200));
+        const data =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+        alert(
+          `Invites queued (${String(data.seatCount ?? 0)} seats, ${Array.isArray(data.emails) ? data.emails.length : 0} email targets).`,
+        );
+      },
       "actions.deleteAccount": async () => {
         await new Promise((r) => setTimeout(r, 2000));
         alert("Account deleted (just kidding).");
