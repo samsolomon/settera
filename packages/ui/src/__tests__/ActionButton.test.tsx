@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { ActionButton } from "../components/ActionButton.js";
@@ -240,6 +240,33 @@ describe("ActionButton", () => {
       screen.getByRole("dialog", { name: "Invite teammate" }),
     ).toBeDefined();
     expect(screen.getByLabelText("Email")).toBeDefined();
+    expect(document.activeElement).toBe(screen.getByLabelText("Email"));
+  });
+
+  it("returns focus to trigger when modal closes", async () => {
+    const user = userEvent.setup();
+    renderActionButton("invite", { invite: () => {} });
+
+    const trigger = screen.getByRole("button", { name: "Invite User" });
+    await user.click(trigger);
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(trigger).toBe(document.activeElement);
+  });
+
+  it("closes modal on Escape when idle", async () => {
+    const user = userEvent.setup();
+    renderActionButton("invite", { invite: () => {} });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    expect(
+      screen.getByRole("dialog", { name: "Invite teammate" }),
+    ).toBeDefined();
+
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("dialog", { name: "Invite teammate" }),
+    ).toBeNull();
   });
 
   it("does not call modal action handler before submit", async () => {
@@ -342,6 +369,17 @@ describe("ActionButton", () => {
 
     await user.click(loadingSubmit);
     expect(handler).toHaveBeenCalledTimes(1);
+
+    fireEvent.pointerDown(document.body);
+    fireEvent.pointerUp(document.body);
+    expect(
+      screen.getByRole("dialog", { name: "Invite teammate" }),
+    ).toBeDefined();
+
+    await user.keyboard("{Escape}");
+    expect(
+      screen.getByRole("dialog", { name: "Invite teammate" }),
+    ).toBeDefined();
 
     await act(async () => {
       resolve!();

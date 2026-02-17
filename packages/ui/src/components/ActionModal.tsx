@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { ActionSetting } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
@@ -20,6 +20,7 @@ export function ActionModal({
   onSubmit,
 }: ActionModalProps) {
   const modalConfig = definition.modal;
+  const contentRef = useRef<HTMLDivElement>(null);
   const { draftValues, setField } = useActionModalDraft(
     modalConfig?.fields,
     modalConfig?.initialValues,
@@ -46,13 +47,31 @@ export function ActionModal({
           }}
         />
         <Dialog.Content
+          ref={contentRef}
           aria-label={modalConfig.title ?? definition.title}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            const firstControl = contentRef.current?.querySelector<HTMLElement>(
+              "input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])",
+            );
+            firstControl?.focus();
+          }}
           onEscapeKeyDown={(e) => {
             if (isLoading) {
               e.preventDefault();
               return;
             }
             e.stopPropagation();
+          }}
+          onPointerDownOutside={(e) => {
+            if (isLoading) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (isLoading) {
+              e.preventDefault();
+            }
           }}
           style={{
             position: "fixed",

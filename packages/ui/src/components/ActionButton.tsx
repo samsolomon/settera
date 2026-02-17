@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ActionSetting } from "@settera/schema";
 import { useSetteraAction } from "@settera/react";
 import { ControlButton } from "./ControlPrimitives.js";
@@ -17,6 +17,8 @@ export interface ActionButtonProps {
 export function ActionButton({ settingKey }: ActionButtonProps) {
   const { definition, onAction, isLoading } = useSetteraAction(settingKey);
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const wasModalOpenRef = useRef(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmittingModal, setIsSubmittingModal] = useState(false);
 
@@ -45,9 +47,17 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
     }
   }, [isLoading, isSubmittingModal]);
 
+  useEffect(() => {
+    if (wasModalOpenRef.current && !isModalOpen) {
+      triggerRef.current?.focus();
+    }
+    wasModalOpenRef.current = isModalOpen;
+  }, [isModalOpen]);
+
   return (
     <>
       <ControlButton
+        ref={triggerRef}
         type="button"
         onClick={() => {
           if (isModalAction) {
