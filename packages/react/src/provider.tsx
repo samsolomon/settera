@@ -12,6 +12,7 @@ import {
   getPageByKey,
   resolveDependencies,
   resolvePageKey,
+  walkSchema,
 } from "@settera/schema";
 import type { SetteraSchema } from "@settera/schema";
 import { SetteraSchemaContext, SetteraNavigationContext } from "./context.js";
@@ -98,94 +99,69 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
 
     const q = searchQuery.toLowerCase();
 
-    // Walk pages for page/section title matches
-    const walkPages = (pages: typeof schema.pages) => {
-      for (const page of pages) {
-        const pageMatches = page.title?.toLowerCase().includes(q) ?? false;
+    // Track which pages/sections matched by title so we can bulk-include their settings
+    const matchedPages = new Set<string>();
+    const matchedSections = new Set<string>();
+    // Pre-collect setting keys from matching subsections (checked in onSection)
+    const subsectionMatchedSettings = new Set<string>();
+    // Build child→parent map for page propagation
+    const parentMap = new Map<string, string>();
 
-        if (pageMatches) {
-          // Page title matches — include all settings on this page
-          pageKeys.add(page.key);
-          for (const section of page.sections ?? []) {
-            for (const setting of section.settings ?? []) {
-              settingKeys.add(setting.key);
-            }
-            for (const sub of section.subsections ?? []) {
-              for (const setting of sub.settings) {
-                settingKeys.add(setting.key);
-              }
-            }
-          }
-        } else {
-          // Check section titles and individual settings
-          let pageHasMatch = false;
-
-          for (const section of page.sections ?? []) {
-            const sectionMatches = section.title?.toLowerCase().includes(q) ?? false;
-
-            if (sectionMatches) {
-              // Section title matches — include all settings in this section
-              pageHasMatch = true;
-              for (const setting of section.settings ?? []) {
-                settingKeys.add(setting.key);
-              }
-              for (const sub of section.subsections ?? []) {
-                for (const setting of sub.settings) {
-                  settingKeys.add(setting.key);
-                }
-              }
-            } else {
-              // Check individual settings
-              for (const setting of section.settings ?? []) {
-                const titleMatch = setting.title?.toLowerCase().includes(q) ?? false;
-                const descMatch =
-                  setting.description?.toLowerCase().includes(q) ?? false;
-                if (titleMatch || descMatch) {
-                  settingKeys.add(setting.key);
-                  pageHasMatch = true;
-                }
-              }
-              for (const sub of section.subsections ?? []) {
-                const subMatches = sub.title.toLowerCase().includes(q);
-                if (subMatches) {
-                  pageHasMatch = true;
-                  for (const setting of sub.settings) {
-                    settingKeys.add(setting.key);
-                  }
-                } else {
-                  for (const setting of sub.settings) {
-                    const titleMatch = setting.title?.toLowerCase().includes(q) ?? false;
-                    const descMatch =
-                      setting.description?.toLowerCase().includes(q) ?? false;
-                    if (titleMatch || descMatch) {
-                      settingKeys.add(setting.key);
-                      pageHasMatch = true;
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          if (pageHasMatch) {
-            pageKeys.add(page.key);
-          }
-        }
-
-        // Recurse into child pages
+    walkSchema(schema, {
+      onPage(page) {
+        // Record parent→child relationships for propagation
         if (page.pages) {
-          walkPages(page.pages);
-          // If any child matched, include the parent in matchingPageKeys
           for (const child of page.pages) {
-            if (pageKeys.has(child.key)) {
-              pageKeys.add(page.key);
+            parentMap.set(child.key, page.key);
+          }
+        }
+        if (page.title?.toLowerCase().includes(q)) {
+          matchedPages.add(page.key);
+          pageKeys.add(page.key);
+        }
+      },
+      onSection(section, ctx) {
+        if (section.title?.toLowerCase().includes(q)) {
+          matchedSections.add(`${ctx.pageKey}:${section.key}`);
+        }
+        // Check subsection titles and pre-collect their setting keys
+        if (section.subsections) {
+          for (const sub of section.subsections) {
+            if (sub.title.toLowerCase().includes(q)) {
+              for (const setting of sub.settings) {
+                subsectionMatchedSettings.add(setting.key);
+              }
             }
           }
         }
-      }
-    };
+      },
+      onSetting(setting, ctx) {
+        const pageMatched = matchedPages.has(ctx.pageKey);
+        const sectionMatched = matchedSections.has(
+          `${ctx.pageKey}:${ctx.sectionKey}`,
+        );
+        const subMatched = subsectionMatchedSettings.has(setting.key);
+        const titleMatch =
+          setting.title?.toLowerCase().includes(q) ?? false;
+        const descMatch =
+          setting.description?.toLowerCase().includes(q) ?? false;
 
-    walkPages(schema.pages);
+        if (pageMatched || sectionMatched || subMatched || titleMatch || descMatch) {
+          settingKeys.add(setting.key);
+          pageKeys.add(ctx.pageKey);
+        }
+      },
+    });
+
+    // Propagate: if a child page matched, include all ancestor pages
+    for (const key of [...pageKeys]) {
+      let current = key;
+      while (parentMap.has(current)) {
+        const parent = parentMap.get(current)!;
+        pageKeys.add(parent);
+        current = parent;
+      }
+    }
 
     return { matchingSettingKeys: settingKeys, matchingPageKeys: pageKeys };
   }, [searchQuery, schema]);

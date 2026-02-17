@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting } from "@settera/react";
 import type {
-  RepeatableSetting,
+  RepeatableFieldDefinition,
   TextSetting,
   SelectSetting,
   BooleanSetting,
@@ -28,9 +28,7 @@ function toObjectArray(value: unknown): Record<string, unknown>[] {
   );
 }
 
-type RepeatableCompoundField = NonNullable<
-  RepeatableSetting["itemFields"]
->[number];
+type RepeatableCompoundField = RepeatableFieldDefinition;
 
 function buildCompoundDefaultItem(
   fields: RepeatableCompoundField[] | undefined,

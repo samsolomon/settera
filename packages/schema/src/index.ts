@@ -15,11 +15,15 @@ export type {
   MultiSelectSetting,
   DateSetting,
   CompoundSetting,
+  CompoundFieldDefinition,
   RepeatableSetting,
+  RepeatableFieldDefinition,
   ActionSetting,
+  ModalActionFieldSetting,
   CustomSetting,
   ConfirmConfig,
   VisibilityCondition,
+  VisibilityValue,
   SchemaValidationError,
   FlattenedSetting,
 } from "./types.js";
@@ -29,6 +33,7 @@ export { validateSchema } from "./validate.js";
 
 // Traversal
 export {
+  walkSchema,
   flattenSettings,
   getSettingByKey,
   getPageByKey,
@@ -36,3 +41,5 @@ export {
   isFlattenedPage,
   resolvePageKey,
 } from "./traversal.js";
+
+export type { SchemaWalkContext, SchemaVisitor } from "./traversal.js";

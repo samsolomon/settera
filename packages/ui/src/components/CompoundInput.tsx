@@ -2,7 +2,7 @@ import React, { useMemo, useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraSetting } from "@settera/react";
 import type {
-  CompoundSetting,
+  CompoundFieldDefinition,
   BooleanSetting,
   SelectSetting,
   MultiSelectSetting,
@@ -13,7 +13,7 @@ export interface CompoundInputProps {
   settingKey: string;
 }
 
-type CompoundField = CompoundSetting["fields"][number];
+type CompoundField = CompoundFieldDefinition;
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -248,7 +248,7 @@ function CompoundFields({
   updateField,
 }: {
   settingKey: string;
-  fields: CompoundSetting["fields"];
+  fields: CompoundFieldDefinition[];
   getFieldValue: (field: CompoundField) => unknown;
   updateField: (fieldKey: string, nextFieldValue: unknown) => void;
 }) {

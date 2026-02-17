@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  walkSchema,
   flattenSettings,
   getSettingByKey,
   getPageByKey,
@@ -9,6 +10,7 @@ import {
 } from "../traversal.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
 import type { SetteraSchema } from "../types.js";
+import type { SchemaWalkContext } from "../traversal.js";
 
 describe("flattenSettings", () => {
   it("returns all settings from the reference schema", () => {
@@ -266,5 +268,185 @@ describe("resolvePageKey", () => {
         pages: [{ key: "child", title: "Child" }],
       }),
     ).toBe("parent");
+  });
+});
+
+describe("walkSchema", () => {
+  it("visits all pages, sections, and settings", () => {
+    const pages: string[] = [];
+    const sections: string[] = [];
+    const settings: string[] = [];
+
+    walkSchema(referenceSchema, {
+      onPage(page) {
+        pages.push(page.key);
+      },
+      onSection(section) {
+        sections.push(section.key);
+      },
+      onSetting(setting) {
+        settings.push(setting.key);
+      },
+    });
+
+    expect(pages).toContain("general");
+    expect(pages).toContain("general.privacy");
+    expect(pages).toContain("appearance");
+    expect(pages).toContain("advanced");
+
+    expect(sections).toContain("behavior");
+    expect(sections).toContain("security");
+    expect(sections).toContain("theme");
+    expect(sections).toContain("editor");
+
+    expect(settings).toContain("general.autoSave");
+    expect(settings).toContain("privacy.telemetry");
+    expect(settings).toContain("editor.fontSize");
+    expect(settings).toContain("advanced.clearCache");
+  });
+
+  it("provides correct context for pages", () => {
+    const contexts: Array<{ key: string; ctx: SchemaWalkContext }> = [];
+
+    walkSchema(referenceSchema, {
+      onPage(page, ctx) {
+        contexts.push({ key: page.key, ctx: { ...ctx } });
+      },
+    });
+
+    const general = contexts.find((c) => c.key === "general");
+    expect(general?.ctx.depth).toBe(0);
+    expect(general?.ctx.pageKey).toBe("general");
+    expect(general?.ctx.sectionKey).toBe("");
+
+    const privacy = contexts.find((c) => c.key === "general.privacy");
+    expect(privacy?.ctx.depth).toBe(1);
+    expect(privacy?.ctx.pageKey).toBe("general.privacy");
+  });
+
+  it("provides correct context for sections", () => {
+    const contexts: Array<{ key: string; ctx: SchemaWalkContext }> = [];
+
+    walkSchema(referenceSchema, {
+      onSection(section, ctx) {
+        contexts.push({ key: section.key, ctx: { ...ctx } });
+      },
+    });
+
+    const behavior = contexts.find((c) => c.key === "behavior");
+    expect(behavior?.ctx.pageKey).toBe("general");
+    expect(behavior?.ctx.sectionKey).toBe("behavior");
+    expect(behavior?.ctx.depth).toBe(0);
+  });
+
+  it("provides correct context for settings", () => {
+    const contexts: Array<{ key: string; ctx: SchemaWalkContext }> = [];
+
+    walkSchema(referenceSchema, {
+      onSetting(setting, ctx) {
+        contexts.push({ key: setting.key, ctx: { ...ctx } });
+      },
+    });
+
+    const autoSave = contexts.find((c) => c.key === "general.autoSave");
+    expect(autoSave?.ctx.pageKey).toBe("general");
+    expect(autoSave?.ctx.sectionKey).toBe("behavior");
+    expect(autoSave?.ctx.path).toBe("pages[0].sections[0].settings[0]");
+
+    const telemetry = contexts.find((c) => c.key === "privacy.telemetry");
+    expect(telemetry?.ctx.pageKey).toBe("general.privacy");
+    expect(telemetry?.ctx.depth).toBe(1);
+  });
+
+  it("stops walk when onPage returns false", () => {
+    const pages: string[] = [];
+
+    walkSchema(referenceSchema, {
+      onPage(page) {
+        pages.push(page.key);
+        if (page.key === "general") return false;
+      },
+    });
+
+    expect(pages).toEqual(["general"]);
+  });
+
+  it("stops walk when onSection returns false", () => {
+    const sections: string[] = [];
+
+    walkSchema(referenceSchema, {
+      onSection(section) {
+        sections.push(section.key);
+        if (section.key === "security") return false;
+      },
+    });
+
+    expect(sections).toEqual(["behavior", "security"]);
+  });
+
+  it("stops walk when onSetting returns false", () => {
+    const settings: string[] = [];
+
+    walkSchema(referenceSchema, {
+      onSetting(setting) {
+        settings.push(setting.key);
+        if (setting.key === "general.autoSave") return false;
+      },
+    });
+
+    expect(settings).toEqual(["general.autoSave"]);
+  });
+
+  it("visits settings inside subsections", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [{ key: "direct", title: "Direct", type: "boolean" }],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "nested", title: "Nested", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const settings: string[] = [];
+    walkSchema(schema, {
+      onSetting(setting) {
+        settings.push(setting.key);
+      },
+    });
+
+    expect(settings).toEqual(["direct", "nested"]);
+  });
+
+  it("handles empty schema gracefully", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [],
+    };
+
+    const visited: string[] = [];
+    walkSchema(schema, {
+      onPage(page) {
+        visited.push(page.key);
+      },
+    });
+
+    expect(visited).toEqual([]);
   });
 });

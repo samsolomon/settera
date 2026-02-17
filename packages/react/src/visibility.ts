@@ -1,4 +1,4 @@
-import type { VisibilityCondition } from "@settera/schema";
+import type { VisibilityCondition, VisibilityValue } from "@settera/schema";
 
 /**
  * Evaluate whether a setting should be visible based on its visibility conditions
@@ -39,7 +39,7 @@ function evaluateCondition(
 
   // oneOf check
   if ("oneOf" in condition && condition.oneOf !== undefined) {
-    return condition.oneOf.includes(value);
+    return condition.oneOf.includes(value as VisibilityValue);
   }
 
   // Truthiness fallback (no operator specified)

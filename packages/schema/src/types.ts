@@ -192,6 +192,15 @@ export interface DateSetting {
   };
 }
 
+/** Field types allowed inside a compound setting. */
+export type CompoundFieldDefinition =
+  | TextSetting
+  | NumberSetting
+  | SelectSetting
+  | MultiSelectSetting
+  | DateSetting
+  | BooleanSetting;
+
 export interface CompoundSetting {
   key: string;
   title: string;
@@ -199,14 +208,7 @@ export interface CompoundSetting {
   helpText?: string;
   type: "compound";
   displayStyle: "modal" | "page" | "inline";
-  fields: Array<
-    | TextSetting
-    | NumberSetting
-    | SelectSetting
-    | MultiSelectSetting
-    | DateSetting
-    | BooleanSetting
-  >;
+  fields: CompoundFieldDefinition[];
   validation?: {
     rules?: Array<{
       when: string;
@@ -219,6 +221,13 @@ export interface CompoundSetting {
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
 }
 
+/** Field types allowed inside a repeatable compound item. */
+export type RepeatableFieldDefinition =
+  | TextSetting
+  | NumberSetting
+  | SelectSetting
+  | BooleanSetting;
+
 export interface RepeatableSetting {
   key: string;
   title: string;
@@ -226,9 +235,7 @@ export interface RepeatableSetting {
   helpText?: string;
   type: "repeatable";
   itemType: "text" | "compound";
-  itemFields?: Array<
-    TextSetting | NumberSetting | SelectSetting | BooleanSetting
-  >;
+  itemFields?: RepeatableFieldDefinition[];
   default?: unknown[];
   confirm?: ConfirmConfig;
   dangerous?: boolean;
@@ -248,9 +255,27 @@ export interface ActionSetting {
   type: "action";
   buttonLabel: string;
   actionType: "modal" | "callback";
+  modal?: {
+    title?: string;
+    description?: string;
+    submitLabel?: string;
+    cancelLabel?: string;
+    fields: ModalActionFieldSetting[];
+    initialValues?: Record<string, unknown>;
+  };
   dangerous?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
 }
+
+export type ModalActionFieldSetting =
+  | TextSetting
+  | NumberSetting
+  | BooleanSetting
+  | SelectSetting
+  | MultiSelectSetting
+  | DateSetting
+  | CompoundSetting
+  | RepeatableSetting;
 
 export interface CustomSetting {
   key: string;
@@ -289,18 +314,21 @@ export interface ConfirmConfig {
   requireText?: string;
 }
 
+/** Primitive value types that can appear in visibility conditions. */
+export type VisibilityValue = string | number | boolean | null;
+
 export interface VisibilityCondition {
   /** The key of the setting this depends on */
   setting: string;
 
   /** Visible when value equals this */
-  equals?: unknown;
+  equals?: VisibilityValue;
 
   /** Visible when value does not equal this */
-  notEquals?: unknown;
+  notEquals?: VisibilityValue;
 
   /** Visible when value is one of these */
-  oneOf?: unknown[];
+  oneOf?: VisibilityValue[];
 }
 
 // ---- Validation ----
