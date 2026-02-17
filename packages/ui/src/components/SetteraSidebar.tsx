@@ -478,7 +478,7 @@ function SidebarItem({
     ? hasChildren &&
       page.pages!.some((child) => matchingPageKeys.has(child.key))
     : expandedGroups.has(page.key);
-  const paddingLeft = depth === 0 ? 8 : 8;
+  const paddingLeft = 8;
 
   // During search, filter children to only matching pages
   const visibleChildren = hasChildren

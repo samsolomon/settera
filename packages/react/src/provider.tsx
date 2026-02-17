@@ -101,7 +101,7 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
     // Walk pages for page/section title matches
     const walkPages = (pages: typeof schema.pages) => {
       for (const page of pages) {
-        const pageMatches = page.title.toLowerCase().includes(q);
+        const pageMatches = page.title?.toLowerCase().includes(q) ?? false;
 
         if (pageMatches) {
           // Page title matches — include all settings on this page
@@ -121,7 +121,7 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
           let pageHasMatch = false;
 
           for (const section of page.sections ?? []) {
-            const sectionMatches = section.title.toLowerCase().includes(q);
+            const sectionMatches = section.title?.toLowerCase().includes(q) ?? false;
 
             if (sectionMatches) {
               // Section title matches — include all settings in this section
@@ -137,7 +137,7 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
             } else {
               // Check individual settings
               for (const setting of section.settings ?? []) {
-                const titleMatch = setting.title.toLowerCase().includes(q);
+                const titleMatch = setting.title?.toLowerCase().includes(q) ?? false;
                 const descMatch =
                   setting.description?.toLowerCase().includes(q) ?? false;
                 if (titleMatch || descMatch) {
@@ -154,7 +154,7 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
                   }
                 } else {
                   for (const setting of sub.settings) {
-                    const titleMatch = setting.title.toLowerCase().includes(q);
+                    const titleMatch = setting.title?.toLowerCase().includes(q) ?? false;
                     const descMatch =
                       setting.description?.toLowerCase().includes(q) ?? false;
                     if (titleMatch || descMatch) {

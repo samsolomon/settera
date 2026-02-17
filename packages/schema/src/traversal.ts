@@ -133,8 +133,9 @@ export function isFlattenedPage(page: PageDefinition): boolean {
  * Resolve through flattened pages to find the leaf key that should be used
  * as the activePage. Recurses when the single child is itself flattened.
  */
-export function resolvePageKey(page: PageDefinition): string {
-  if (isFlattenedPage(page)) return resolvePageKey(page.pages![0]);
+export function resolvePageKey(page: PageDefinition, depth = 0): string {
+  if (depth > 10) return page.key;
+  if (isFlattenedPage(page)) return resolvePageKey(page.pages![0], depth + 1);
   return page.key;
 }
 
