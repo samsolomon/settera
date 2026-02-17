@@ -67,6 +67,45 @@ const schema: SetteraSchema = {
                 submitLabel: "Send invite",
               },
             },
+            {
+              key: "inviteAdvanced",
+              title: "Invite Advanced",
+              type: "action",
+              buttonLabel: "Invite Advanced",
+              actionType: "modal",
+              modal: {
+                title: "Invite advanced",
+                fields: [
+                  {
+                    key: "profile",
+                    title: "Profile",
+                    type: "compound",
+                    displayStyle: "inline",
+                    fields: [
+                      {
+                        key: "name",
+                        title: "Name",
+                        type: "text",
+                      },
+                      {
+                        key: "active",
+                        title: "Active",
+                        type: "boolean",
+                        default: true,
+                      },
+                    ],
+                  },
+                  {
+                    key: "tags",
+                    title: "Tags",
+                    type: "repeatable",
+                    itemType: "text",
+                    default: ["alpha"],
+                  },
+                ],
+                submitLabel: "Submit advanced",
+              },
+            },
           ],
         },
       ],
@@ -242,5 +281,74 @@ describe("ActionButton", () => {
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("resets modal draft after cancel and reopen", async () => {
+    const user = userEvent.setup();
+    renderActionButton("invite", { invite: () => {} });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    const email = screen.getByLabelText("Email") as HTMLInputElement;
+    await user.type(email, "sam@example.com");
+    expect(email.value).toBe("sam@example.com");
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+
+    expect((screen.getByLabelText("Email") as HTMLInputElement).value).toBe("");
+  });
+
+  it("submits nested modal payload shapes", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    renderActionButton("inviteAdvanced", { inviteAdvanced: handler });
+
+    await user.click(screen.getByRole("button", { name: "Invite Advanced" }));
+    await user.type(screen.getByLabelText("Name"), "Sam");
+    await user.click(screen.getByLabelText("Active"));
+    await user.click(screen.getByRole("button", { name: "Add item" }));
+    await user.type(screen.getByLabelText("Tags item 2"), "beta");
+    await user.click(screen.getByRole("button", { name: "Submit advanced" }));
+
+    expect(handler).toHaveBeenCalledWith({
+      profile: { name: "Sam", active: false },
+      tags: ["alpha", "beta"],
+    });
+  });
+
+  it("keeps modal open and blocks duplicate submit while async in-flight", async () => {
+    const user = userEvent.setup();
+    let resolve: () => void;
+    const handler = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        }),
+    );
+    renderActionButton("invite", { invite: handler });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    await user.type(screen.getByLabelText("Email"), "sam@example.com");
+    await user.click(screen.getByRole("button", { name: "Send invite" }));
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole("dialog", { name: "Invite teammate" }),
+    ).toBeDefined();
+    const loadingSubmit = screen.getByRole("button", {
+      name: "Loading…",
+    }) as HTMLButtonElement;
+    expect(loadingSubmit.disabled).toBe(true);
+
+    await user.click(loadingSubmit);
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolve!();
+    });
+
+    expect(
+      screen.queryByRole("dialog", { name: "Invite teammate" }),
+    ).toBeNull();
   });
 });
