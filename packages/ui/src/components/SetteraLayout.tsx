@@ -18,6 +18,7 @@ import {
 import type { PageDefinition } from "@settera/schema";
 import { SetteraSidebar } from "./SetteraSidebar.js";
 import { SetteraPage } from "./SetteraPage.js";
+import type { SetteraCustomPageProps } from "./SetteraPage.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 
 export interface SetteraBackToAppConfig {
@@ -35,6 +36,7 @@ export interface SetteraLayoutProps {
   backToApp?: SetteraBackToAppConfig;
   syncActivePageWithUrl?: boolean;
   activePageQueryParam?: string;
+  customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
 }
 
 interface BreadcrumbItem {
@@ -84,6 +86,7 @@ export function SetteraLayout({
   backToApp,
   syncActivePageWithUrl = true,
   activePageQueryParam = "setteraPage",
+  customPages,
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -373,7 +376,7 @@ export function SetteraLayout({
           marginInline: "auto",
         }}
       >
-        {children ?? <SetteraPage />}
+        {children ?? <SetteraPage customPages={customPages} />}
       </div>
     </main>
   );

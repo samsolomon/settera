@@ -341,6 +341,18 @@ function dateDef(validation?: Record<string, unknown>): SettingDefinition {
   } as SettingDefinition;
 }
 
+function repeatableDef(
+  validation?: Record<string, unknown>,
+): SettingDefinition {
+  return {
+    key: "l",
+    title: "Repeatable",
+    type: "repeatable",
+    itemType: "text",
+    validation,
+  } as SettingDefinition;
+}
+
 describe("validateSettingValue — date", () => {
   it("returns null when no validation rules", () => {
     expect(validateSettingValue(dateDef(), "2025-01-15")).toBeNull();
@@ -404,6 +416,53 @@ describe("validateSettingValue — date", () => {
     expect(validateSettingValue(dateDef({ required: true }), undefined)).toBe(
       "This field is required",
     );
+  });
+});
+
+// ---- List Validation ----
+
+describe("validateSettingValue — repeatable", () => {
+  it("returns null when no validation rules", () => {
+    expect(validateSettingValue(repeatableDef(), ["a"])).toBeNull();
+  });
+
+  it("returns error when below minItems", () => {
+    expect(validateSettingValue(repeatableDef({ minItems: 2 }), ["a"])).toBe(
+      "Add at least 2 items",
+    );
+  });
+
+  it("returns null when at minItems", () => {
+    expect(
+      validateSettingValue(repeatableDef({ minItems: 2 }), ["a", "b"]),
+    ).toBeNull();
+  });
+
+  it("returns error when above maxItems", () => {
+    expect(
+      validateSettingValue(repeatableDef({ maxItems: 1 }), ["a", "b"]),
+    ).toBe("Add at most 1 items");
+  });
+
+  it("returns null when at maxItems", () => {
+    expect(
+      validateSettingValue(repeatableDef({ maxItems: 2 }), ["a", "b"]),
+    ).toBeNull();
+  });
+
+  it("uses custom message", () => {
+    expect(
+      validateSettingValue(
+        repeatableDef({ minItems: 2, message: "Need more rows" }),
+        ["a"],
+      ),
+    ).toBe("Need more rows");
+  });
+
+  it("treats non-array as empty list", () => {
+    expect(
+      validateSettingValue(repeatableDef({ minItems: 1 }), undefined),
+    ).toBe("Add at least 1 items");
   });
 });
 

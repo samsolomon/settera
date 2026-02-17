@@ -179,6 +179,18 @@ export const demoSchema: SetteraSchema = {
                 },
               ],
             },
+            {
+              key: "profile.aliases",
+              title: "Aliases (List)",
+              description: "A text list example for list setting behavior.",
+              type: "repeatable",
+              itemType: "text",
+              default: ["Sam"],
+              validation: {
+                minItems: 1,
+                maxItems: 4,
+              },
+            },
           ],
         },
         {
@@ -399,6 +411,14 @@ export const demoSchema: SetteraSchema = {
           ],
         },
       ],
+    },
+    {
+      key: "users",
+      title: "Users",
+      description: "Manage team members who can access this workspace.",
+      icon: "users",
+      mode: "custom",
+      renderer: "usersPage",
     },
   ],
 };

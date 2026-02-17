@@ -1,0 +1,142 @@
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { RepeatableInput } from "../components/ListInput.js";
+import type { SetteraSchema } from "@settera/schema";
+
+const schema: SetteraSchema = {
+  version: "1.0",
+  pages: [
+    {
+      key: "general",
+      title: "General",
+      sections: [
+        {
+          key: "main",
+          title: "Main",
+          settings: [
+            {
+              key: "tags",
+              title: "Tags",
+              type: "repeatable",
+              itemType: "text",
+              default: ["one"],
+              validation: {
+                minItems: 1,
+                maxItems: 3,
+              },
+            },
+            {
+              key: "addresses",
+              title: "Addresses",
+              type: "repeatable",
+              itemType: "compound",
+              itemFields: [
+                { key: "street", title: "Street", type: "text" },
+                { key: "primary", title: "Primary", type: "boolean" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+function renderRepeatableInput(
+  settingKey: string,
+  values: Record<string, unknown>,
+  onChange: (key: string, value: unknown) => void = () => {},
+) {
+  return render(
+    <SetteraProvider schema={schema}>
+      <SetteraRenderer values={values} onChange={onChange}>
+        <RepeatableInput settingKey={settingKey} />
+      </SetteraRenderer>
+    </SetteraProvider>,
+  );
+}
+
+describe("RepeatableInput", () => {
+  it("renders existing text items", () => {
+    renderRepeatableInput("tags", { tags: ["alpha", "beta"] });
+    const items = screen.getAllByLabelText(/List item/i) as HTMLInputElement[];
+    expect(items).toHaveLength(2);
+    expect(items[0].value).toBe("alpha");
+    expect(items[1].value).toBe("beta");
+  });
+
+  it("does not commit text item on each keystroke", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha"] }, onChange);
+
+    const input = screen.getByLabelText("List item 1");
+    await user.click(input);
+    await user.type(input, "x");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("commits text item on blur", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha"] }, onChange);
+
+    const input = screen.getByLabelText("List item 1");
+    await user.click(input);
+    await user.type(input, "x");
+    await user.tab();
+
+    expect(onChange).toHaveBeenCalledWith("tags", ["alphax"]);
+  });
+
+  it("adds new text item", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha"] }, onChange);
+
+    await user.click(screen.getByRole("button", { name: "Add item to Tags" }));
+    expect(onChange).toHaveBeenCalledWith("tags", ["alpha", ""]);
+  });
+
+  it("preserves pending draft when adding item", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha"] }, onChange);
+
+    const input = screen.getByLabelText("List item 1");
+    await user.click(input);
+    await user.type(input, "x");
+    await user.click(screen.getByRole("button", { name: "Add item to Tags" }));
+
+    expect(onChange).toHaveBeenCalledWith("tags", ["alphax", ""]);
+  });
+
+  it("removes text item", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha", "beta"] }, onChange);
+
+    await user.click(screen.getByLabelText("Remove item 1"));
+    expect(onChange).toHaveBeenCalledWith("tags", ["beta"]);
+  });
+
+  it("disables add button at maxItems", () => {
+    renderRepeatableInput("tags", { tags: ["a", "b", "c"] });
+    const add = screen.getByRole("button", {
+      name: "Add item to Tags",
+    }) as HTMLButtonElement;
+    expect(add.disabled).toBe(true);
+  });
+
+  it("shows fallback message for compound itemType", () => {
+    renderRepeatableInput("addresses", { addresses: [] });
+    expect(
+      screen.getByText(
+        'Repeatable item type "compound" is not implemented yet.',
+      ),
+    ).toBeDefined();
+  });
+});

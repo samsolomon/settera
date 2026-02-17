@@ -77,6 +77,37 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
   });
 
+  it("rejects custom page without renderer", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "users",
+          title: "Users",
+          mode: "custom",
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".renderer"))).toBe(true);
+  });
+
+  it("accepts custom page with renderer and no sections", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "users",
+          title: "Users",
+          mode: "custom",
+          renderer: "usersPage",
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
   it("rejects section without key", () => {
     const schema: SetteraSchema = {
       version: "1.0",

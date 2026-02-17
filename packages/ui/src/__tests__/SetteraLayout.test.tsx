@@ -4,6 +4,7 @@ import { render, screen, act, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
+import type { SetteraCustomPageProps } from "../components/SetteraPage.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -111,6 +112,7 @@ function renderLayout(
     mobileTitle?: string;
     syncActivePageWithUrl?: boolean;
     activePageQueryParam?: string;
+    customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
     backToApp?: {
       label?: string;
       href?: string;
@@ -179,6 +181,35 @@ describe("SetteraLayout", () => {
     expect(screen.getByTestId("custom-content")).toBeDefined();
     // Auto-rendered page content should not be present
     expect(screen.queryByText("Behavior")).toBeNull();
+  });
+
+  it("renders custom page content via customPages registry", () => {
+    const customSchema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "users",
+          title: "Users",
+          mode: "custom",
+          renderer: "usersPage",
+        },
+      ],
+    };
+
+    renderLayout(
+      {
+        customPages: {
+          usersPage: ({ page }: SetteraCustomPageProps) => (
+            <div data-testid="users-page">Custom {page.title}</div>
+          ),
+        },
+      },
+      customSchema,
+    );
+
+    expect(screen.getByTestId("users-page").textContent).toContain(
+      "Custom Users",
+    );
   });
 
   it("forwards renderIcon to sidebar", () => {

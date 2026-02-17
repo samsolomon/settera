@@ -15,7 +15,7 @@ export type {
   MultiSelectSetting,
   DateSetting,
   CompoundSetting,
-  ListSetting,
+  RepeatableSetting,
   ActionSetting,
   CustomSetting,
   ConfirmConfig,

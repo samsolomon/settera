@@ -178,4 +178,63 @@ describe("SetteraPage", () => {
     // Next element should be a section, not a <p>
     expect(nextSibling?.tagName).not.toBe("P");
   });
+
+  it("renders custom page content when mode is custom", () => {
+    const customSchema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "users",
+          title: "Users",
+          mode: "custom",
+          renderer: "usersPage",
+        },
+      ],
+    };
+
+    render(
+      <SetteraProvider schema={customSchema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
+          <SetteraPage
+            pageKey="users"
+            customPages={{
+              usersPage: ({ page }) => (
+                <div data-testid="users-page">Custom: {page.title}</div>
+              ),
+            }}
+          />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    expect(screen.getByTestId("users-page").textContent).toContain(
+      "Custom: Users",
+    );
+  });
+
+  it("shows fallback when custom page renderer is missing", () => {
+    const customSchema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "users",
+          title: "Users",
+          mode: "custom",
+          renderer: "usersPage",
+        },
+      ],
+    };
+
+    render(
+      <SetteraProvider schema={customSchema}>
+        <SetteraRenderer values={{}} onChange={() => {}}>
+          <SetteraPage pageKey="users" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    expect(
+      screen.getByTestId("missing-custom-page-users").textContent,
+    ).toContain("usersPage");
+  });
 });

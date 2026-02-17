@@ -29,6 +29,12 @@ export interface PageDefinition {
   /** Optional icon identifier (top-level pages only) */
   icon?: string;
 
+  /** Page rendering mode: auto settings sections or custom app content */
+  mode?: "settings" | "custom";
+
+  /** Required when mode is "custom"; references a consumer-provided page renderer */
+  renderer?: string;
+
   /** Content sections displayed on this page */
   sections?: SectionDefinition[];
 
@@ -74,7 +80,7 @@ export type ValueSetting =
   | MultiSelectSetting
   | DateSetting
   | CompoundSetting
-  | ListSetting
+  | RepeatableSetting
   | CustomSetting;
 
 // ---- Individual Setting Types ----
@@ -213,12 +219,12 @@ export interface CompoundSetting {
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
 }
 
-export interface ListSetting {
+export interface RepeatableSetting {
   key: string;
   title: string;
   description?: string;
   helpText?: string;
-  type: "list";
+  type: "repeatable";
   itemType: "text" | "compound";
   itemFields?: Array<
     TextSetting | NumberSetting | SelectSetting | BooleanSetting

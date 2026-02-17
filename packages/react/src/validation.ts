@@ -20,6 +20,8 @@ export function validateSettingValue(
       return validateMultiSelect(definition.validation, value);
     case "date":
       return validateDate(definition.validation, value);
+    case "repeatable":
+      return validateRepeatable(definition.validation, value);
     default:
       return null;
   }
@@ -197,6 +199,31 @@ function validateDate(
     return (
       validation.message ?? `Date must be on or before ${validation.maxDate}`
     );
+  }
+
+  return null;
+}
+
+function validateRepeatable(
+  validation:
+    | {
+        minItems?: number;
+        maxItems?: number;
+        message?: string;
+      }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const arr = Array.isArray(value) ? value : [];
+
+  if (validation.minItems !== undefined && arr.length < validation.minItems) {
+    return validation.message ?? `Add at least ${validation.minItems} items`;
+  }
+
+  if (validation.maxItems !== undefined && arr.length > validation.maxItems) {
+    return validation.message ?? `Add at most ${validation.maxItems} items`;
   }
 
   return null;

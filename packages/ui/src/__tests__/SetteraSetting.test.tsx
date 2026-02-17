@@ -62,6 +62,13 @@ const schema: SetteraSchema = {
               type: "date",
             },
             {
+              key: "aliases",
+              title: "Aliases",
+              type: "repeatable",
+              itemType: "text",
+              default: ["alpha"],
+            },
+            {
               key: "hidden",
               title: "Hidden Setting",
               type: "boolean",
@@ -145,6 +152,11 @@ describe("SetteraSetting", () => {
       selector: "input",
     }) as HTMLInputElement;
     expect(input.type).toBe("date");
+  });
+
+  it("renders RepeatableInput for repeatable type", () => {
+    renderSetting("aliases");
+    expect(screen.getByTestId("repeatable-aliases")).toBeDefined();
   });
 
   it("wraps control in SettingRow with title", () => {

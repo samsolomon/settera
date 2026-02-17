@@ -16,6 +16,7 @@ import {
   SettingRow,
   TextInput,
   NumberInput,
+  RepeatableInput,
   Select,
   ActionButton,
   SetteraSearch,
@@ -56,6 +57,7 @@ describe("@settera/ui", () => {
     expect(typeof SettingRow).toBe("function");
     expect(typeof TextInput).toBe("function");
     expect(typeof NumberInput).toBe("function");
+    expect(typeof RepeatableInput).toBe("function");
     expect(typeof Select).toBe("function");
     expect(typeof ActionButton).toBe("function");
   });

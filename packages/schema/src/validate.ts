@@ -118,6 +118,14 @@ function validatePage(
     }
   }
 
+  if (page.mode === "custom" && !page.renderer) {
+    errors.push({
+      path: `${path}.renderer`,
+      code: "MISSING_REQUIRED_FIELD",
+      message: `Custom page "${page.key}" must define a renderer.`,
+    });
+  }
+
   // Validate nested pages
   if (page.pages) {
     for (let i = 0; i < page.pages.length; i++) {
@@ -237,7 +245,7 @@ const VALID_SETTING_TYPES = [
   "multiselect",
   "date",
   "compound",
-  "list",
+  "repeatable",
   "action",
   "custom",
 ] as const;

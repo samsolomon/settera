@@ -13,7 +13,7 @@ import {
   useSetteraNavigation,
   evaluateVisibility,
 } from "@settera/react";
-import { SetteraLayout } from "@settera/ui";
+import { SetteraLayout, type SetteraCustomPageProps } from "@settera/ui";
 import { demoSchema } from "./schema.js";
 
 type DemoMode = "schema" | "headless" | "ui";
@@ -340,6 +340,143 @@ function SchemaView() {
   );
 }
 
+const demoUsers = [
+  {
+    initials: "AU",
+    name: "Admin User",
+    email: "admin@feedback-notes.com",
+    role: "Admin",
+    created: "Feb 13, 2026",
+  },
+  {
+    initials: "JT",
+    name: "Jake Torres",
+    email: "jake@feedback-notes.com",
+    role: "Member",
+    created: "Feb 13, 2026",
+  },
+  {
+    initials: "MC",
+    name: "Maria Chen",
+    email: "maria@feedback-notes.com",
+    role: "Member",
+    created: "Feb 13, 2026",
+  },
+  {
+    initials: "RU",
+    name: "Review User",
+    email: "reviewer@feedback-notes.com",
+    role: "Member",
+    created: "Feb 13, 2026",
+  },
+  {
+    initials: "SS",
+    name: "Sam Solomon",
+    email: "sam@feedback-notes.com",
+    role: "Admin",
+    created: "Feb 13, 2026",
+  },
+];
+
+function UsersPage({ page }: SetteraCustomPageProps) {
+  return (
+    <section style={{ marginTop: "16px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          marginBottom: "12px",
+        }}
+      >
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <input
+            aria-label="Search users"
+            placeholder="Search users..."
+            style={{
+              fontSize: "14px",
+              padding: "8px 10px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              minWidth: "220px",
+            }}
+          />
+          <select
+            aria-label="Filter role"
+            style={{
+              fontSize: "14px",
+              padding: "8px 10px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+            }}
+            defaultValue="all"
+          >
+            <option value="all">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+          </select>
+        </div>
+
+        <button
+          type="button"
+          style={{
+            border: "1px solid #d1d5db",
+            borderRadius: "10px",
+            background: "#ffffff",
+            padding: "8px 12px",
+            fontSize: "14px",
+            cursor: "pointer",
+          }}
+        >
+          + Add user
+        </button>
+      </div>
+
+      <div
+        aria-label={`${page.title} table`}
+        style={{
+          border: "1px solid #e5e7eb",
+          borderRadius: "12px",
+          background: "#ffffff",
+          overflow: "hidden",
+        }}
+      >
+        {demoUsers.map((user, index) => (
+          <div
+            key={user.email}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "64px 1fr 140px 140px 40px",
+              alignItems: "center",
+              gap: "8px",
+              padding: "12px 16px",
+              borderTop: index === 0 ? "none" : "1px solid #f1f5f9",
+            }}
+          >
+            <span style={{ color: "#6b7280", fontSize: "13px" }}>
+              {user.initials}
+            </span>
+            <div>
+              <div style={{ fontSize: "15px", fontWeight: 500 }}>
+                {user.name}
+              </div>
+              <div style={{ fontSize: "13px", color: "#6b7280" }}>
+                {user.email}
+              </div>
+            </div>
+            <span style={{ fontSize: "14px" }}>{user.role}</span>
+            <span style={{ fontSize: "14px", color: "#6b7280" }}>
+              {user.created}
+            </span>
+            <span style={{ textAlign: "right", color: "#9ca3af" }}>...</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [values, setValues] = useState<Record<string, unknown>>({});
@@ -497,6 +634,7 @@ export function App() {
                   label: "Back to app",
                   href: "/",
                 }}
+                customPages={{ usersPage: UsersPage }}
               />
             )}
             {mode === "headless" && <HeadlessView />}

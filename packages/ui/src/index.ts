@@ -34,6 +34,8 @@ export { DateInput } from "./components/DateInput.js";
 export type { DateInputProps } from "./components/DateInput.js";
 export { CompoundInput } from "./components/CompoundInput.js";
 export type { CompoundInputProps } from "./components/CompoundInput.js";
+export { RepeatableInput } from "./components/ListInput.js";
+export type { RepeatableInputProps } from "./components/ListInput.js";
 export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
 // Utilities
@@ -48,7 +50,10 @@ export type { SetteraSettingProps } from "./components/SetteraSetting.js";
 export { SetteraSection } from "./components/SetteraSection.js";
 export type { SetteraSectionProps } from "./components/SetteraSection.js";
 export { SetteraPage } from "./components/SetteraPage.js";
-export type { SetteraPageProps } from "./components/SetteraPage.js";
+export type {
+  SetteraPageProps,
+  SetteraCustomPageProps,
+} from "./components/SetteraPage.js";
 export { SetteraSidebar } from "./components/SetteraSidebar.js";
 export type { SetteraSidebarProps } from "./components/SetteraSidebar.js";
 export { SetteraLayout } from "./components/SetteraLayout.js";

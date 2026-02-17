@@ -8,7 +8,7 @@ import type {
   MultiSelectSetting,
   DateSetting,
   CompoundSetting,
-  ListSetting,
+  RepeatableSetting,
   ActionSetting,
   CustomSetting,
   ValueSetting,
@@ -64,10 +64,10 @@ describe("SettingDefinition discriminated union", () => {
     }
   });
 
-  it("narrows to ListSetting on type === 'list'", () => {
-    const setting = { type: "list" as const } as SettingDefinition;
-    if (setting.type === "list") {
-      expectTypeOf(setting).toMatchTypeOf<ListSetting>();
+  it("narrows to RepeatableSetting on type === 'repeatable'", () => {
+    const setting = { type: "repeatable" as const } as SettingDefinition;
+    if (setting.type === "repeatable") {
+      expectTypeOf(setting).toMatchTypeOf<RepeatableSetting>();
     }
   });
 

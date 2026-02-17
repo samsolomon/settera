@@ -4,18 +4,25 @@ import {
   useSetteraNavigation,
   useSetteraSearch,
 } from "@settera/react";
+import type { PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
+  customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
+}
+
+export interface SetteraCustomPageProps {
+  page: PageDefinition;
+  pageKey: string;
 }
 
 /**
  * Renders all sections for a page.
  * Defaults to the active page from navigation context, but accepts an explicit pageKey override.
  */
-export function SetteraPage({ pageKey }: SetteraPageProps) {
+export function SetteraPage({ pageKey, customPages }: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage } = useSetteraNavigation();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
@@ -30,6 +37,12 @@ export function SetteraPage({ pageKey }: SetteraPageProps) {
   if (!page) {
     return null;
   }
+
+  const customPageRendererKey = page.mode === "custom" ? page.renderer : null;
+  const CustomPage =
+    customPageRendererKey && customPages
+      ? customPages[customPageRendererKey]
+      : undefined;
 
   // During search, only show sections that contain matching settings
   const visibleSections = isSearching
@@ -67,13 +80,43 @@ export function SetteraPage({ pageKey }: SetteraPageProps) {
           {parseDescriptionLinks(page.description)}
         </p>
       )}
-      {visibleSections.map((section) => (
-        <SetteraSection
-          key={section.key}
-          pageKey={resolvedKey}
-          sectionKey={section.key}
-        />
-      ))}
+      {page.mode === "custom" && customPageRendererKey && CustomPage && (
+        <CustomPage page={page} pageKey={resolvedKey} />
+      )}
+      {page.mode === "custom" && customPageRendererKey && !CustomPage && (
+        <div
+          data-testid={`missing-custom-page-${resolvedKey}`}
+          style={{
+            marginTop: "12px",
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
+            fontStyle: "italic",
+          }}
+        >
+          Missing custom page renderer "{customPageRendererKey}".
+        </div>
+      )}
+      {page.mode === "custom" && !customPageRendererKey && (
+        <div
+          data-testid={`invalid-custom-page-${resolvedKey}`}
+          style={{
+            marginTop: "12px",
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
+            fontStyle: "italic",
+          }}
+        >
+          Custom page "{resolvedKey}" is missing a renderer key.
+        </div>
+      )}
+      {page.mode !== "custom" &&
+        visibleSections.map((section) => (
+          <SetteraSection
+            key={section.key}
+            pageKey={resolvedKey}
+            sectionKey={section.key}
+          />
+        ))}
     </div>
   );
 }
