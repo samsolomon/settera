@@ -9,7 +9,7 @@ export interface UseSetteraActionResult {
   /** Whether this setting is currently visible */
   isVisible: boolean;
   /** The action handler, or undefined if none provided */
-  onAction: (() => void) | undefined;
+  onAction: ((payload?: unknown) => void) | undefined;
   /** True while an async onAction handler is in-flight */
   isLoading: boolean;
 }
@@ -47,27 +47,30 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
 
   const handler = valuesCtx.onAction?.[key];
 
-  const onAction = useCallback(() => {
-    if (!handler || inFlightRef.current) return;
-    const result = handler();
-    // If the handler returns a thenable, track loading state.
-    // Errors are caught here to prevent unhandled rejections since
-    // onClick handlers don't await the return value.
-    if (result instanceof Promise) {
-      inFlightRef.current = true;
-      setIsLoading(true);
-      result
-        .catch((err: unknown) => {
-          console.error(`[settera] Action "${key}" failed:`, err);
-        })
-        .finally(() => {
-          inFlightRef.current = false;
-          if (mountedRef.current) {
-            setIsLoading(false);
-          }
-        });
-    }
-  }, [handler, key]);
+  const onAction = useCallback(
+    (payload?: unknown) => {
+      if (!handler || inFlightRef.current) return;
+      const result = handler(payload);
+      // If the handler returns a thenable, track loading state.
+      // Errors are caught here to prevent unhandled rejections since
+      // onClick handlers don't await the return value.
+      if (result instanceof Promise) {
+        inFlightRef.current = true;
+        setIsLoading(true);
+        result
+          .catch((err: unknown) => {
+            console.error(`[settera] Action "${key}" failed:`, err);
+          })
+          .finally(() => {
+            inFlightRef.current = false;
+            if (mountedRef.current) {
+              setIsLoading(false);
+            }
+          });
+      }
+    },
+    [handler, key],
+  );
 
   const isVisible = evaluateVisibility(
     definition.visibleWhen,

@@ -413,6 +413,34 @@ function validateSetting(
         message: `Action setting "${setting.key}" must have an actionType.`,
       });
     }
+
+    if (setting.actionType === "modal") {
+      if (!setting.modal) {
+        errors.push({
+          path: `${path}.modal`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: `Action setting "${setting.key}" with actionType "modal" must define modal config.`,
+        });
+      } else if (!setting.modal.fields || setting.modal.fields.length === 0) {
+        errors.push({
+          path: `${path}.modal.fields`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: `Action setting "${setting.key}" modal must define at least one field.`,
+        });
+      } else {
+        const modalFieldKeys = new Set<string>();
+        for (let i = 0; i < setting.modal.fields.length; i++) {
+          const modalField = setting.modal.fields[i];
+          validateSetting(
+            modalField,
+            `${path}.modal.fields[${i}]`,
+            modalFieldKeys,
+            [],
+            errors,
+          );
+        }
+      }
+    }
   }
 
   if (setting.type === "compound") {

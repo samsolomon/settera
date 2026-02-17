@@ -32,6 +32,41 @@ const schema: SetteraSchema = {
               actionType: "callback",
               dangerous: true,
             },
+            {
+              key: "invite",
+              title: "Invite User",
+              type: "action",
+              buttonLabel: "Invite",
+              actionType: "modal",
+              modal: {
+                title: "Invite teammate",
+                fields: [
+                  {
+                    key: "email",
+                    title: "Email",
+                    type: "text",
+                    inputType: "email",
+                  },
+                  {
+                    key: "role",
+                    title: "Role",
+                    type: "select",
+                    options: [
+                      { value: "member", label: "Member" },
+                      { value: "admin", label: "Admin" },
+                    ],
+                    default: "member",
+                  },
+                  {
+                    key: "quota",
+                    title: "Quota",
+                    type: "number",
+                    default: 1,
+                  },
+                ],
+                submitLabel: "Send invite",
+              },
+            },
           ],
         },
       ],
@@ -41,7 +76,7 @@ const schema: SetteraSchema = {
 
 function renderActionButton(
   settingKey: string,
-  onAction?: Record<string, () => void | Promise<void>>,
+  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>,
 ) {
   return render(
     <SetteraProvider schema={schema}>
@@ -155,5 +190,57 @@ describe("ActionButton", () => {
     renderActionButton("reset", { reset: () => {} });
     const button = screen.getByRole("button");
     expect(button.style.color).not.toContain("--settera-dangerous-color");
+  });
+
+  it("opens modal action dialog", async () => {
+    const user = userEvent.setup();
+    renderActionButton("invite", { invite: () => {} });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    expect(
+      screen.getByRole("dialog", { name: "Invite teammate" }),
+    ).toBeDefined();
+    expect(screen.getByLabelText("Email")).toBeDefined();
+  });
+
+  it("does not call modal action handler before submit", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    renderActionButton("invite", { invite: handler });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    await user.type(screen.getByLabelText("Email"), "sam@example.com");
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("submits modal payload on explicit submit", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    renderActionButton("invite", { invite: handler });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    await user.type(screen.getByLabelText("Email"), "sam@example.com");
+    await user.selectOptions(screen.getByLabelText("Role"), "admin");
+    await user.clear(screen.getByLabelText("Quota"));
+    await user.type(screen.getByLabelText("Quota"), "1.5");
+    await user.click(screen.getByRole("button", { name: "Send invite" }));
+
+    expect(handler).toHaveBeenCalledWith({
+      email: "sam@example.com",
+      role: "admin",
+      quota: 1.5,
+    });
+  });
+
+  it("cancels modal without calling handler", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    renderActionButton("invite", { invite: handler });
+
+    await user.click(screen.getByRole("button", { name: "Invite User" }));
+    await user.type(screen.getByLabelText("Email"), "sam@example.com");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(handler).not.toHaveBeenCalled();
   });
 });

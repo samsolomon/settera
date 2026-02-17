@@ -59,7 +59,7 @@ export interface SetteraValuesContextValue {
     string,
     (value: unknown) => string | null | Promise<string | null>
   >;
-  onAction?: Record<string, () => void | Promise<void>>;
+  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>;
   saveStatus: Record<string, SaveStatus>;
   pendingConfirm: PendingConfirm | null;
   requestConfirm: (pending: PendingConfirm) => void;

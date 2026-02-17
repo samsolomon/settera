@@ -445,6 +445,67 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
   });
 
+  it("rejects modal action without modal config", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".modal"))).toBe(true);
+  });
+
+  it("rejects modal action with empty fields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                  modal: {
+                    fields: [],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".modal.fields"))).toBe(true);
+  });
+
   // Duplicate option values
   it("rejects select with duplicate option values", () => {
     const schema: SetteraSchema = {
@@ -784,9 +845,9 @@ describe("validateSchema", () => {
     };
     const errors = validateSchema(schema);
     expect(errors.some((e) => e.code === "DUPLICATE_KEY")).toBe(true);
-    expect(
-      errors.some((e) => e.message.includes("Duplicate field key")),
-    ).toBe(true);
+    expect(errors.some((e) => e.message.includes("Duplicate field key"))).toBe(
+      true,
+    );
   });
 
   // Repeatable itemType/itemFields coherence

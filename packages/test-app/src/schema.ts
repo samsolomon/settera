@@ -470,7 +470,31 @@ export const demoSchema: SetteraSchema = {
               description: "Download all your data as a JSON file.",
               type: "action",
               buttonLabel: "Export",
-              actionType: "callback",
+              actionType: "modal",
+              modal: {
+                title: "Export data",
+                description:
+                  "Choose export format and whether to include private notes.",
+                submitLabel: "Start export",
+                fields: [
+                  {
+                    key: "format",
+                    title: "Format",
+                    type: "select",
+                    options: [
+                      { value: "json", label: "JSON" },
+                      { value: "csv", label: "CSV" },
+                    ],
+                    default: "json",
+                  },
+                  {
+                    key: "includePrivate",
+                    title: "Include private notes",
+                    type: "boolean",
+                    default: false,
+                  },
+                ],
+              },
             },
             {
               key: "actions.clearCache",

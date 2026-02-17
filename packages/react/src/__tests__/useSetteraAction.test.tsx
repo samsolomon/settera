@@ -72,7 +72,7 @@ function ActionDisplay({ settingKey }: { settingKey: string }) {
 
 function renderAction(
   settingKey: string,
-  onAction?: Record<string, () => void | Promise<void>>,
+  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>,
   values: Record<string, unknown> = {},
 ) {
   return render(
@@ -112,6 +112,38 @@ describe("useSetteraAction", () => {
     renderAction("resetAction", { resetAction: handler });
     await user.click(screen.getByTestId("trigger-resetAction"));
     expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("forwards payload to handler", () => {
+    const payload = { foo: "bar" };
+    const handler = vi.fn();
+
+    function PayloadTrigger() {
+      const { onAction } = useSetteraAction("resetAction");
+      return (
+        <button
+          data-testid="payload-trigger"
+          onClick={() => onAction?.(payload)}
+        >
+          Trigger
+        </button>
+      );
+    }
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
+          values={{}}
+          onChange={() => {}}
+          onAction={{ resetAction: handler }}
+        >
+          <PayloadTrigger />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    screen.getByTestId("payload-trigger").click();
+    expect(handler).toHaveBeenCalledWith(payload);
   });
 
   it("tracks loading state for async handler", async () => {

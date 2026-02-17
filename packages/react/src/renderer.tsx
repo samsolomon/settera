@@ -21,7 +21,7 @@ export interface SetteraRendererProps {
   /** Optional batch change handler for compound settings */
   onBatchChange?: (changes: Array<{ key: string; value: unknown }>) => void;
   /** Handlers for action-type settings */
-  onAction?: Record<string, () => void | Promise<void>>;
+  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>;
   /** Custom validation callbacks */
   onValidate?: Record<
     string,
@@ -73,7 +73,9 @@ export function SetteraRenderer({
   // ---- Async save tracking ----
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
   const saveGenerationRef = useRef<Record<string, number>>({});
-  const saveTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const saveTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>(
+    {},
+  );
   const mountedRef = useRef(true);
 
   useEffect(() => {

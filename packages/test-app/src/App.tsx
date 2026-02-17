@@ -527,19 +527,26 @@ export function App() {
     return new Promise<void>((resolve) => setTimeout(resolve, 800));
   }, []);
 
-  const onAction: Record<string, () => void | Promise<void>> = {
-    "actions.export": async () => {
-      await new Promise((r) => setTimeout(r, 1500));
-      alert("Data exported!");
-    },
-    "actions.clearCache": () => {
-      alert("Cache cleared!");
-    },
-    "actions.deleteAccount": async () => {
-      await new Promise((r) => setTimeout(r, 2000));
-      alert("Account deleted (just kidding).");
-    },
-  };
+  const onAction: Record<string, (payload?: unknown) => void | Promise<void>> =
+    {
+      "actions.export": async (payload) => {
+        await new Promise((r) => setTimeout(r, 1500));
+        const config =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+        alert(
+          `Data export started (${String(config.format ?? "json")}, include private: ${String(config.includePrivate ?? false)}).`,
+        );
+      },
+      "actions.clearCache": () => {
+        alert("Cache cleared!");
+      },
+      "actions.deleteAccount": async () => {
+        await new Promise((r) => setTimeout(r, 2000));
+        alert("Account deleted (just kidding).");
+      },
+    };
 
   const onValidate: Record<
     string,
