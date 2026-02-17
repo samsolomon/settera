@@ -315,6 +315,87 @@ function validateSetting(
         message: `${setting.type} setting "${setting.key}" must have at least one option.`,
       });
     }
+
+    if (setting.options && setting.options.length > 0) {
+      // Duplicate option values
+      const seen = new Set<string>();
+      for (let i = 0; i < setting.options.length; i++) {
+        const val = setting.options[i].value;
+        if (seen.has(val)) {
+          errors.push({
+            path: `${path}.options[${i}].value`,
+            code: "DUPLICATE_OPTION_VALUE",
+            message: `Duplicate option value "${val}" in ${setting.type} setting "${setting.key}".`,
+          });
+        }
+        seen.add(val);
+      }
+
+      // Default must be in options
+      if (setting.type === "select" && setting.default !== undefined) {
+        const validValues = setting.options.map((o) => o.value);
+        if (!validValues.includes(setting.default)) {
+          errors.push({
+            path: `${path}.default`,
+            code: "INVALID_DEFAULT",
+            message: `Default "${setting.default}" is not a valid option for select setting "${setting.key}".`,
+          });
+        }
+      }
+      if (setting.type === "multiselect" && setting.default !== undefined) {
+        const validValues = new Set(setting.options.map((o) => o.value));
+        for (const val of setting.default) {
+          if (!validValues.has(val)) {
+            errors.push({
+              path: `${path}.default`,
+              code: "INVALID_DEFAULT",
+              message: `Default value "${val}" is not a valid option for multiselect setting "${setting.key}".`,
+            });
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Number default within min/max
+  if (setting.type === "number" && setting.default !== undefined) {
+    const min = setting.validation?.min;
+    const max = setting.validation?.max;
+    if (min !== undefined && setting.default < min) {
+      errors.push({
+        path: `${path}.default`,
+        code: "INVALID_DEFAULT",
+        message: `Default ${setting.default} is below min ${min} for number setting "${setting.key}".`,
+      });
+    }
+    if (max !== undefined && setting.default > max) {
+      errors.push({
+        path: `${path}.default`,
+        code: "INVALID_DEFAULT",
+        message: `Default ${setting.default} is above max ${max} for number setting "${setting.key}".`,
+      });
+    }
+  }
+
+  // Date default within minDate/maxDate
+  if (setting.type === "date" && setting.default !== undefined) {
+    const minDate = setting.validation?.minDate;
+    const maxDate = setting.validation?.maxDate;
+    if (minDate !== undefined && setting.default < minDate) {
+      errors.push({
+        path: `${path}.default`,
+        code: "INVALID_DEFAULT",
+        message: `Default "${setting.default}" is before minDate "${minDate}" for date setting "${setting.key}".`,
+      });
+    }
+    if (maxDate !== undefined && setting.default > maxDate) {
+      errors.push({
+        path: `${path}.default`,
+        code: "INVALID_DEFAULT",
+        message: `Default "${setting.default}" is after maxDate "${maxDate}" for date setting "${setting.key}".`,
+      });
+    }
   }
 
   if (setting.type === "action") {
@@ -343,6 +424,7 @@ function validateSetting(
       });
     }
     if (setting.fields) {
+      const fieldKeys = new Set<string>();
       for (let i = 0; i < setting.fields.length; i++) {
         const field = setting.fields[i];
         if (field.key && field.key.includes(".")) {
@@ -352,6 +434,16 @@ function validateSetting(
             message: `Compound field key "${field.key}" must not contain dots.`,
           });
         }
+        if (field.key) {
+          if (fieldKeys.has(field.key)) {
+            errors.push({
+              path: `${path}.fields[${i}].key`,
+              code: "DUPLICATE_KEY",
+              message: `Duplicate field key "${field.key}" in compound setting "${setting.key}".`,
+            });
+          }
+          fieldKeys.add(field.key);
+        }
       }
     }
     if (!setting.displayStyle) {
@@ -360,6 +452,18 @@ function validateSetting(
         code: "MISSING_REQUIRED_FIELD",
         message: `Compound setting "${setting.key}" must have a displayStyle.`,
       });
+    }
+  }
+
+  if (setting.type === "repeatable") {
+    if (setting.itemType === "compound") {
+      if (!setting.itemFields || setting.itemFields.length === 0) {
+        errors.push({
+          path: `${path}.itemFields`,
+          code: "INVALID_REPEATABLE_CONFIG",
+          message: `Repeatable setting "${setting.key}" with itemType "compound" must have at least one itemField.`,
+        });
+      }
     }
   }
 

@@ -318,7 +318,10 @@ export interface SchemaValidationError {
     | "DUPLICATE_KEY"
     | "INVALID_VISIBILITY_REF"
     | "COMPOUND_FIELD_DOT_KEY"
-    | "EMPTY_OPTIONS";
+    | "EMPTY_OPTIONS"
+    | "DUPLICATE_OPTION_VALUE"
+    | "INVALID_DEFAULT"
+    | "INVALID_REPEATABLE_CONFIG";
 
   /** Human-readable error message */
   message: string;

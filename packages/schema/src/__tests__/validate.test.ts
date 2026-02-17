@@ -445,6 +445,440 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
   });
 
+  // Duplicate option values
+  it("rejects select with duplicate option values", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.select",
+                  title: "Select",
+                  type: "select",
+                  options: [
+                    { value: "a", label: "A" },
+                    { value: "a", label: "A duplicate" },
+                    { value: "b", label: "B" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_OPTION_VALUE")).toBe(true);
+  });
+
+  it("rejects multiselect with duplicate option values", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.multi",
+                  title: "Multi",
+                  type: "multiselect",
+                  options: [
+                    { value: "x", label: "X" },
+                    { value: "y", label: "Y" },
+                    { value: "x", label: "X again" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_OPTION_VALUE")).toBe(true);
+  });
+
+  // Invalid defaults
+  it("rejects select default not in options", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.select",
+                  title: "Select",
+                  type: "select",
+                  options: [
+                    { value: "a", label: "A" },
+                    { value: "b", label: "B" },
+                  ],
+                  default: "c",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  it("accepts select default that is in options", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.select",
+                  title: "Select",
+                  type: "select",
+                  options: [
+                    { value: "a", label: "A" },
+                    { value: "b", label: "B" },
+                  ],
+                  default: "a",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("rejects multiselect default with value not in options", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.multi",
+                  title: "Multi",
+                  type: "multiselect",
+                  options: [
+                    { value: "a", label: "A" },
+                    { value: "b", label: "B" },
+                  ],
+                  default: ["a", "z"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  it("rejects number default below min", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.num",
+                  title: "Number",
+                  type: "number",
+                  default: 5,
+                  validation: { min: 10 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  it("rejects number default above max", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.num",
+                  title: "Number",
+                  type: "number",
+                  default: 100,
+                  validation: { max: 50 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  it("accepts number default within range", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.num",
+                  title: "Number",
+                  type: "number",
+                  default: 14,
+                  validation: { min: 8, max: 72 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("rejects date default before minDate", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.date",
+                  title: "Date",
+                  type: "date",
+                  default: "2020-01-01",
+                  validation: { minDate: "2024-01-01" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  it("rejects date default after maxDate", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.date",
+                  title: "Date",
+                  type: "date",
+                  default: "2030-01-01",
+                  validation: { maxDate: "2025-12-31" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
+  });
+
+  // Compound field key uniqueness
+  it("rejects compound with duplicate field keys", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                    { key: "port", title: "Port", type: "number" },
+                    { key: "host", title: "Host 2", type: "text" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_KEY")).toBe(true);
+    expect(
+      errors.some((e) => e.message.includes("Duplicate field key")),
+    ).toBe(true);
+  });
+
+  // Repeatable itemType/itemFields coherence
+  it("rejects repeatable with itemType compound but no itemFields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "items",
+                  title: "Items",
+                  type: "repeatable",
+                  itemType: "compound",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_REPEATABLE_CONFIG")).toBe(
+      true,
+    );
+  });
+
+  it("rejects repeatable with itemType compound and empty itemFields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "items",
+                  title: "Items",
+                  type: "repeatable",
+                  itemType: "compound",
+                  itemFields: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_REPEATABLE_CONFIG")).toBe(
+      true,
+    );
+  });
+
+  it("accepts repeatable with itemType text and no itemFields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "tags",
+                  title: "Tags",
+                  type: "repeatable",
+                  itemType: "text",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
   // Subsection validation
   it("validates settings inside subsections", () => {
     const schema: SetteraSchema = {
