@@ -105,11 +105,16 @@ export function SetteraLayout({
   const didInitUrlSyncRef = useRef(false);
   const pendingScrollKeyRef = useRef<string | null>(null);
   const initialSettingKeyRef = useRef<string | null | undefined>(undefined);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const mobileDrawerId = useId();
   const schemaCtx = useContext(SetteraSchemaContext);
   const { query: searchQuery, setQuery } = useSetteraSearch();
-  const { activePage, setActivePage, registerFocusContentHandler } =
-    useSetteraNavigation();
+  const {
+    activePage,
+    setActivePage,
+    setHighlightedSettingKey,
+    registerFocusContentHandler,
+  } = useSetteraNavigation();
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.innerWidth < mobileBreakpoint;
@@ -220,7 +225,7 @@ export function SetteraLayout({
     return () => media.removeListener(onChange);
   }, []);
 
-  // Scroll to a deep-linked setting within the current page.
+  // Scroll-and-highlight for deep-linked settings.
   const scrollToSettingNow = useCallback(
     (key: string) => {
       const main = mainRef.current;
@@ -236,9 +241,15 @@ export function SetteraLayout({
           block: "center",
         });
       }
+      setHighlightedSettingKey(key);
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = setTimeout(
+        () => setHighlightedSettingKey(null),
+        2000,
+      );
       return true;
     },
-    [escapeSelectorValue, prefersReducedMotion],
+    [escapeSelectorValue, prefersReducedMotion, setHighlightedSettingKey],
   );
 
   const scrollToSetting = useCallback(
@@ -250,20 +261,20 @@ export function SetteraLayout({
     [scrollToSettingNow],
   );
 
+  // Clean up highlight timer on unmount.
+  useEffect(() => {
+    return () => clearTimeout(highlightTimerRef.current);
+  }, []);
   // Consume pending scroll key after page renders.
   useEffect(() => {
     const key = pendingScrollKeyRef.current;
     if (!key) return;
 
-    // Try immediately — useEffect runs after paint so the DOM
-    // should already contain the new page's settings.
     if (scrollToSettingNow(key)) {
       pendingScrollKeyRef.current = null;
       return;
     }
 
-    // Fallback: retry via rAF for cases where the target element
-    // renders asynchronously (e.g. lazy sections).
     let cancelled = false;
     let attempts = 0;
     const maxAttempts = 8;
@@ -271,7 +282,8 @@ export function SetteraLayout({
     const attemptScroll = () => {
       if (cancelled) return;
 
-      if (scrollToSettingNow(key)) {
+      const didScroll = scrollToSettingNow(key);
+      if (didScroll) {
         pendingScrollKeyRef.current = null;
         return;
       }
@@ -315,12 +327,9 @@ export function SetteraLayout({
       }
     };
 
-    // On mount, use the initial setting key captured during render.
-    // This survives React StrictMode double-fire where the URL-write
-    // effect may delete the param before this effect re-runs.
     const initialKey = initialSettingKeyRef.current;
     if (initialKey !== undefined) {
-      initialSettingKeyRef.current = undefined; // consume it
+      initialSettingKeyRef.current = undefined;
       processSettingKey(initialKey);
     }
 
