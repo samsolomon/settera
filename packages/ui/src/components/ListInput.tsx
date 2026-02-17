@@ -1,11 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting } from "@settera/react";
+import { useBufferedInput } from "../hooks/useBufferedInput.js";
 
 export interface RepeatableInputProps {
   settingKey: string;
@@ -19,7 +14,7 @@ function toStringArray(value: unknown): string[] {
 function ListTextItem({
   item,
   index,
-  onCommit,
+  onCommit: onCommitProp,
   onDraftChange,
   onRemove,
 }: {
@@ -29,22 +24,25 @@ function ListTextItem({
   onDraftChange: (index: number, nextValue: string) => void;
   onRemove: (index: number) => void;
 }) {
-  const [localValue, setLocalValue] = useState(item);
-  const localRef = useRef(localValue);
-  const focusedRef = useRef(false);
+  const handleCommit = useCallback(
+    (local: string) => {
+      if (local !== item) {
+        onCommitProp(index, local);
+      }
+    },
+    [index, item, onCommitProp],
+  );
 
-  useEffect(() => {
-    if (!focusedRef.current) {
-      localRef.current = item;
-      setLocalValue(item);
-    }
-  }, [item]);
+  const { inputProps } = useBufferedInput(item, handleCommit);
 
-  const commit = useCallback(() => {
-    if (localRef.current !== item) {
-      onCommit(index, localRef.current);
-    }
-  }, [index, item, onCommit]);
+  // Compose onChange to also notify parent of draft changes
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      inputProps.onChange(e);
+      onDraftChange(index, e.target.value);
+    },
+    [inputProps.onChange, onDraftChange, index],
+  );
 
   return (
     <div
@@ -56,28 +54,8 @@ function ListTextItem({
     >
       <input
         aria-label={`List item ${index + 1}`}
-        value={localValue}
-        onChange={(e) => {
-          localRef.current = e.target.value;
-          setLocalValue(e.target.value);
-          onDraftChange(index, e.target.value);
-        }}
-        onFocus={() => {
-          focusedRef.current = true;
-        }}
-        onBlur={() => {
-          focusedRef.current = false;
-          commit();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            commit();
-          } else if (e.key === "Escape") {
-            localRef.current = item;
-            setLocalValue(item);
-            onDraftChange(index, item);
-          }
-        }}
+        {...inputProps}
+        onChange={handleChange}
         style={{
           fontSize: "var(--settera-input-font-size, 14px)",
           padding: "var(--settera-input-padding, 6px 10px)",

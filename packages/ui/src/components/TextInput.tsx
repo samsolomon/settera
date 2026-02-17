@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import { useSetteraSetting } from "@settera/react";
 import { ControlInput } from "./ControlPrimitives.js";
+import { useBufferedInput } from "../hooks/useBufferedInput.js";
 
 export interface TextInputProps {
   settingKey: string;
@@ -13,30 +14,20 @@ export interface TextInputProps {
 export function TextInput({ settingKey }: TextInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
-  const [isFocusVisible, setIsFocusVisible] = useState(false);
 
   const committed = typeof value === "string" ? value : "";
-  const [localValue, setLocalValue] = useState(committed);
-  const localValueRef = useRef(localValue);
-  const isFocusedRef = useRef(false);
 
-  // Sync from external value when not focused
-  useEffect(() => {
-    if (!isFocusedRef.current) {
-      const synced = typeof value === "string" ? value : "";
-      localValueRef.current = synced;
-      setLocalValue(synced);
-    }
-  }, [value]);
+  const onCommit = useCallback(
+    (local: string) => {
+      if (local !== committed) {
+        setValue(local);
+      }
+      validate(local);
+    },
+    [committed, setValue, validate],
+  );
 
-  const commit = useCallback(() => {
-    const local = localValueRef.current;
-    const current = typeof value === "string" ? value : "";
-    if (local !== current) {
-      setValue(local);
-    }
-    validate(local);
-  }, [value, setValue, validate]);
+  const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
@@ -49,45 +40,12 @@ export function TextInput({ settingKey }: TextInputProps) {
       ? definition.validation.maxLength
       : undefined;
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    localValueRef.current = e.target.value;
-    setLocalValue(e.target.value);
-  }, []);
-
-  const handleBlur = useCallback(() => {
-    setIsFocusVisible(false);
-    isFocusedRef.current = false;
-    commit();
-  }, [commit]);
-
-  const handleFocus = useCallback(() => {
-    isFocusedRef.current = true;
-    setIsFocusVisible(true);
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        commit();
-      } else if (e.key === "Escape") {
-        const current = typeof value === "string" ? value : "";
-        localValueRef.current = current;
-        setLocalValue(current);
-      }
-    },
-    [commit, value],
-  );
-
   const hasError = error !== null;
 
   return (
     <ControlInput
       type={inputType}
-      value={localValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onFocus={handleFocus}
-      onKeyDown={handleKeyDown}
+      {...inputProps}
       placeholder={placeholder}
       maxLength={maxLength}
       aria-label={definition.title}
@@ -95,7 +53,7 @@ export function TextInput({ settingKey }: TextInputProps) {
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
       hasError={hasError}
       isDangerous={isDangerous}
-      isFocusVisible={isFocusVisible}
+      isFocusVisible={isFocused}
     />
   );
 }

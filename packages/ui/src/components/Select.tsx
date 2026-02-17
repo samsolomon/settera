@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import * as RadixSelect from "@radix-ui/react-select";
 import { useSetteraSetting } from "@settera/react";
+import { useFocusVisible } from "../hooks/useFocusVisible.js";
 
 export interface SelectProps {
   settingKey: string;
@@ -16,7 +17,7 @@ const EMPTY_OPTION_VALUE_BASE = "__settera_empty_option__";
 export function Select({ settingKey }: SelectProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
-  const [isFocusVisible, setIsFocusVisible] = useState(false);
+  const { isFocusVisible, focusVisibleProps } = useFocusVisible();
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
@@ -50,30 +51,6 @@ export function Select({ settingKey }: SelectProps) {
     [setValue, validate, emptyOptionValue],
   );
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        setIsFocusVisible(false);
-      }
-    },
-    [setIsFocusVisible],
-  );
-
-  const pointerDownRef = useRef(false);
-
-  const handlePointerDown = useCallback(() => {
-    pointerDownRef.current = true;
-  }, []);
-
-  const handleFocus = useCallback(() => {
-    setIsFocusVisible(!pointerDownRef.current);
-    pointerDownRef.current = false;
-  }, []);
-
-  const handleBlur = useCallback(() => {
-    setIsFocusVisible(false);
-  }, []);
-
   const handleEscapeKeyDown = useCallback((e: KeyboardEvent) => {
     e.stopPropagation();
   }, []);
@@ -84,13 +61,10 @@ export function Select({ settingKey }: SelectProps) {
     <RadixSelect.Root
       value={selectedValue}
       onValueChange={handleValueChange}
-      onOpenChange={handleOpenChange}
     >
       <RadixSelect.Trigger
         data-settera-select-trigger="true"
-        onPointerDown={handlePointerDown}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        {...focusVisibleProps}
         aria-label={definition.title}
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}

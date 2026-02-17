@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 import type {
   CompoundSetting,
@@ -12,6 +6,7 @@ import type {
   SelectSetting,
   MultiSelectSetting,
 } from "@settera/schema";
+import { useBufferedInput } from "../hooks/useBufferedInput.js";
 
 export interface CompoundInputProps {
   settingKey: string;
@@ -164,52 +159,23 @@ function CompoundTextField({
   onChange: (fieldKey: string, value: unknown) => void;
 }) {
   const committed = typeof fieldValue === "string" ? fieldValue : "";
-  const [localValue, setLocalValue] = useState(committed);
-  const [isFocused, setIsFocused] = useState(false);
-  const localRef = useRef(localValue);
-  const focusedRef = useRef(false);
 
-  useEffect(() => {
-    if (!focusedRef.current) {
-      const next = typeof fieldValue === "string" ? fieldValue : "";
-      localRef.current = next;
-      setLocalValue(next);
-    }
-  }, [fieldValue]);
+  const onCommit = useCallback(
+    (local: string) => {
+      if (local !== committed) {
+        onChange(field.key, local);
+      }
+    },
+    [committed, field.key, onChange],
+  );
 
-  const commit = useCallback(() => {
-    const next = localRef.current;
-    if (next !== committed) {
-      onChange(field.key, next);
-    }
-  }, [committed, field.key, onChange]);
+  const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
 
   return (
     <input
       id={fieldId}
       type={field.inputType ?? "text"}
-      value={localValue}
-      onChange={(e) => {
-        localRef.current = e.target.value;
-        setLocalValue(e.target.value);
-      }}
-      onFocus={() => {
-        setIsFocused(true);
-        focusedRef.current = true;
-      }}
-      onBlur={() => {
-        setIsFocused(false);
-        focusedRef.current = false;
-        commit();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          commit();
-        } else if (e.key === "Escape") {
-          localRef.current = committed;
-          setLocalValue(committed);
-        }
-      }}
+      {...inputProps}
       style={{
         ...inputStyles,
         boxShadow: isFocused
@@ -233,64 +199,31 @@ function CompoundNumberField({
 }) {
   const committed =
     fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "";
-  const [localValue, setLocalValue] = useState(committed);
-  const [isFocused, setIsFocused] = useState(false);
-  const localRef = useRef(localValue);
-  const focusedRef = useRef(false);
 
-  useEffect(() => {
-    if (!focusedRef.current) {
-      const next =
-        fieldValue !== undefined && fieldValue !== null
-          ? String(fieldValue)
-          : "";
-      localRef.current = next;
-      setLocalValue(next);
-    }
-  }, [fieldValue]);
-
-  const commit = useCallback(() => {
-    const next = localRef.current;
-    if (next === "") {
-      if (committed !== "") {
-        onChange(field.key, undefined);
+  const onCommit = useCallback(
+    (local: string) => {
+      if (local === "") {
+        if (committed !== "") {
+          onChange(field.key, undefined);
+        }
+        return;
       }
-      return;
-    }
+      const num = Number(local);
+      if (Number.isNaN(num)) return;
+      if (local !== committed) {
+        onChange(field.key, num);
+      }
+    },
+    [committed, field.key, onChange],
+  );
 
-    const num = Number(next);
-    if (Number.isNaN(num)) return;
-    if (next !== committed) {
-      onChange(field.key, num);
-    }
-  }, [committed, field.key, onChange]);
+  const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
 
   return (
     <input
       id={fieldId}
       type="number"
-      value={localValue}
-      onChange={(e) => {
-        localRef.current = e.target.value;
-        setLocalValue(e.target.value);
-      }}
-      onFocus={() => {
-        setIsFocused(true);
-        focusedRef.current = true;
-      }}
-      onBlur={() => {
-        setIsFocused(false);
-        focusedRef.current = false;
-        commit();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          commit();
-        } else if (e.key === "Escape") {
-          localRef.current = committed;
-          setLocalValue(committed);
-        }
-      }}
+      {...inputProps}
       style={{
         ...inputStyles,
         boxShadow: isFocused

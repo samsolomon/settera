@@ -1,6 +1,7 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useSetteraSetting } from "@settera/react";
+import { useFocusVisible } from "../hooks/useFocusVisible.js";
 
 export interface BooleanSwitchProps {
   settingKey: string;
@@ -13,7 +14,7 @@ export interface BooleanSwitchProps {
  */
 export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
   const { value, setValue, definition } = useSetteraSetting(settingKey);
-  const [isFocusVisible, setIsFocusVisible] = useState(false);
+  const { isFocusVisible, focusVisibleProps } = useFocusVisible();
 
   const checked = Boolean(value);
   const isDangerous = "dangerous" in definition && definition.dangerous;
@@ -24,24 +25,6 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
     },
     [setValue],
   );
-
-  // Track keyboard-driven focus for visible focus ring.
-  // onPointerDown fires before onFocus for mouse clicks, so we use a ref
-  // to reliably distinguish pointer focus from keyboard focus.
-  const pointerDownRef = useRef(false);
-
-  const handlePointerDown = useCallback(() => {
-    pointerDownRef.current = true;
-  }, []);
-
-  const handleFocus = useCallback(() => {
-    setIsFocusVisible(!pointerDownRef.current);
-    pointerDownRef.current = false;
-  }, []);
-
-  const handleBlur = useCallback(() => {
-    setIsFocusVisible(false);
-  }, []);
 
   const trackColor = checked
     ? isDangerous
@@ -54,9 +37,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
       checked={checked}
       onCheckedChange={handleCheckedChange}
       aria-label={definition.title}
-      onPointerDown={handlePointerDown}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
+      {...focusVisibleProps}
       style={{
         position: "relative",
         display: "inline-flex",
