@@ -28,6 +28,36 @@ export function useContentCardNavigation(
 ) {
   const { mainRef } = options;
 
+  const getCheckboxControls = useCallback((scope: ParentNode) => {
+    const roleCheckboxes = Array.from(
+      scope.querySelectorAll<HTMLElement>('[role="checkbox"]'),
+    ).filter((el) => {
+      if (
+        el.hasAttribute("hidden") ||
+        el.getAttribute("aria-hidden") === "true"
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    if (roleCheckboxes.length > 0) {
+      return roleCheckboxes;
+    }
+
+    return Array.from(
+      scope.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+    ).filter((el) => {
+      if (
+        el.hasAttribute("hidden") ||
+        el.getAttribute("aria-hidden") === "true"
+      ) {
+        return false;
+      }
+      return !el.disabled && el.tabIndex !== -1;
+    });
+  }, []);
+
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
       const main = mainRef.current;
@@ -38,15 +68,15 @@ export function useContentCardNavigation(
 
       // --- Multiselect checkbox navigation ---
       // When focused on a checkbox inside a card, ArrowDown/Up moves between checkboxes
-      if (
-        activeEl instanceof HTMLInputElement &&
-        activeEl.type === "checkbox"
-      ) {
+      const activeIsCheckbox =
+        (activeEl instanceof HTMLInputElement &&
+          activeEl.type === "checkbox") ||
+        activeEl.getAttribute("role") === "checkbox";
+
+      if (activeIsCheckbox) {
         const card = activeEl.closest<HTMLElement>("[data-setting-key]");
         if (card && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
-          const checkboxes = Array.from(
-            card.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
-          );
+          const checkboxes = getCheckboxControls(card);
           const idx = checkboxes.indexOf(activeEl);
           if (idx === -1) return;
 
@@ -110,8 +140,7 @@ export function useContentCardNavigation(
         if (cards.length === 0) return;
 
         e.preventDefault();
-        const target =
-          e.key === "Home" ? cards[0] : cards[cards.length - 1];
+        const target = e.key === "Home" ? cards[0] : cards[cards.length - 1];
         target.focus();
         target.scrollIntoView?.({ block: "nearest" });
         return;
@@ -123,9 +152,7 @@ export function useContentCardNavigation(
         e.preventDefault();
 
         // Multiselect: drill into first checkbox
-        const checkbox = focusedCard.querySelector<HTMLInputElement>(
-          'input[type="checkbox"]',
-        );
+        const checkbox = getCheckboxControls(focusedCard)[0];
         if (checkbox) {
           checkbox.focus();
           return;
@@ -141,7 +168,7 @@ export function useContentCardNavigation(
         return;
       }
     },
-    [mainRef],
+    [getCheckboxControls, mainRef],
   );
 
   return { onKeyDown };

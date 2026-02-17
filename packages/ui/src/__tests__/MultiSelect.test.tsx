@@ -114,10 +114,10 @@ describe("MultiSelect", () => {
 
   it("reflects checked state from value", () => {
     renderMultiSelect("channels", { channels: ["email", "push"] });
-    const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
-    expect(checkboxes[0].checked).toBe(true); // email
-    expect(checkboxes[1].checked).toBe(false); // sms
-    expect(checkboxes[2].checked).toBe(true); // push
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes[0].getAttribute("aria-checked")).toBe("true"); // email
+    expect(checkboxes[1].getAttribute("aria-checked")).toBe("false"); // sms
+    expect(checkboxes[2].getAttribute("aria-checked")).toBe("true"); // push
   });
 
   it("toggles value — checking adds to array", async () => {
@@ -140,10 +140,10 @@ describe("MultiSelect", () => {
 
   it("uses default value when not in values", () => {
     renderMultiSelect("channels", {});
-    const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
-    expect(checkboxes[0].checked).toBe(true); // email (default)
-    expect(checkboxes[1].checked).toBe(false);
-    expect(checkboxes[2].checked).toBe(false);
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes[0].getAttribute("aria-checked")).toBe("true"); // email (default)
+    expect(checkboxes[1].getAttribute("aria-checked")).toBe("false");
+    expect(checkboxes[2].getAttribute("aria-checked")).toBe("false");
   });
 
   it("does not add its own role=group (SettingRow provides it)", () => {

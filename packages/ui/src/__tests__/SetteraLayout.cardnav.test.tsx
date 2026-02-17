@@ -244,7 +244,7 @@ describe("SetteraLayout card navigation", () => {
 
       fireKey("Enter");
 
-      const checkboxes = msCard.querySelectorAll('input[type="checkbox"]');
+      const checkboxes = msCard.querySelectorAll('[role="checkbox"]');
       expect(document.activeElement).toBe(checkboxes[0]);
     });
   });
@@ -338,7 +338,7 @@ describe("SetteraLayout card navigation", () => {
       fireKey("Enter");
 
       const checkboxes = Array.from(
-        msCard.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+        msCard.querySelectorAll<HTMLElement>('[role="checkbox"]'),
       );
       expect(document.activeElement).toBe(checkboxes[0]);
 
@@ -376,9 +376,7 @@ describe("SetteraLayout card navigation", () => {
       focusElement(msCard);
       fireKey("Enter");
 
-      const checkbox = msCard.querySelector<HTMLInputElement>(
-        'input[type="checkbox"]',
-      )!;
+      const checkbox = msCard.querySelector<HTMLElement>('[role="checkbox"]')!;
       expect(document.activeElement).toBe(checkbox);
 
       fireKey("Escape");
