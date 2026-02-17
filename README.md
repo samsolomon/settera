@@ -35,11 +35,11 @@ function AppSettings() {
 
 Settera is split into three independent packages. Use only what you need.
 
-| Package | Purpose | Dependencies |
-|---------|---------|-------------|
-| `@settera/schema` | Pure TypeScript types and schema validation. No React. | None |
-| `@settera/react` | Headless hooks and unstyled primitives. Handles navigation, search, keyboard nav, validation, and focus management. | `@settera/schema`, React |
-| `@settera/ui` | Styled components using Tailwind CSS and shadcn/ui patterns. Drop-in settings UI. | `@settera/react`, Tailwind |
+| Package           | Purpose                                                                                                             | Dependencies                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `@settera/schema` | Pure TypeScript types and schema validation. No React.                                                              | None                            |
+| `@settera/react`  | Headless hooks and unstyled primitives. Handles navigation, search, keyboard nav, validation, and focus management. | `@settera/schema`, React        |
+| `@settera/ui`     | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI.                                | `@settera/react`, `@radix-ui/*` |
 
 **Building with your own design system?** Use `@settera/schema` + `@settera/react` and write your own components.
 
@@ -91,18 +91,18 @@ const schema: SetteraSchema = {
 
 ## Setting Types
 
-| Type | Description | Apply behavior |
-|------|-------------|---------------|
-| `boolean` | Toggle switch | Instant |
-| `text` | Single-line text input | On blur / Enter |
-| `number` | Numeric input with optional min/max | On blur / Enter |
-| `select` | Single-choice dropdown | Instant |
-| `multiselect` | Multi-choice selection | Instant |
-| `date` | Date picker (native `<input type="date">`) | On blur |
-| `compound` | Multi-field group with scoped Save/Cancel | On save |
-| `repeatable` | Add/remove/reorder list of items | On save |
-| `action` | Button that triggers a callback or modal | On click |
-| `custom` | Developer-provided renderer | Developer-defined |
+| Type          | Description                                               | Apply behavior                                              |
+| ------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| `boolean`     | Toggle switch                                             | Instant                                                     |
+| `text`        | Single-line text input                                    | On blur / Enter                                             |
+| `number`      | Numeric input with optional min/max                       | On blur / Enter                                             |
+| `select`      | Single-choice dropdown                                    | Instant                                                     |
+| `multiselect` | Multi-choice selection                                    | Instant                                                     |
+| `date`        | Date picker (native `<input type="date">`)                | On blur                                                     |
+| `compound`    | Multi-field group (`inline`, `modal`, or `page`)          | Field-dependent (text/number on blur/Enter; others instant) |
+| `repeatable`  | Add/remove list of text or compound items                 | Field-dependent (text/number on blur/Enter; others instant) |
+| `action`      | Button that triggers callback or submit-only modal action | Callback: on click; Modal: on submit                        |
+| `custom`      | Developer-provided renderer                               | Developer-defined                                           |
 
 ### Common Properties
 
@@ -290,6 +290,7 @@ All date values use ISO format (`YYYY-MM-DD`).
 A multi-field group with scoped Save/Cancel. Groups related fields into a single setting that stores an object value.
 
 `displayStyle` controls how the editor appears:
+
 - `"inline"` — fields render directly in the settings row
 - `"modal"` — fields open in a dialog
 - `"page"` — fields expand into a page-style panel
@@ -484,7 +485,7 @@ When `itemType` is `"text"`, the value is `string[]`. When `itemType` is `"compo
 
 ### Action
 
-A button that triggers a callback. Does not store a value.
+Action settings do not store a value in settings state. They either execute a callback immediately or open a submit-only modal draft form.
 
 ```typescript
 {
@@ -494,6 +495,43 @@ A button that triggers a callback. Does not store a value.
   type: "action",
   buttonLabel: "Export",
   actionType: "callback",
+}
+```
+
+**Modal action** (draft values are local until Submit):
+
+```typescript
+{
+  key: "actions.export",
+  title: "Export Data",
+  description: "Choose export options before starting.",
+  type: "action",
+  buttonLabel: "Export",
+  actionType: "modal",
+  modal: {
+    title: "Export data",
+    description: "Configure the export payload.",
+    submitLabel: "Start export",
+    cancelLabel: "Cancel",
+    fields: [
+      {
+        key: "format",
+        title: "Format",
+        type: "select",
+        options: [
+          { value: "json", label: "JSON" },
+          { value: "csv", label: "CSV" },
+        ],
+        default: "json",
+      },
+      {
+        key: "includePrivate",
+        title: "Include private notes",
+        type: "boolean",
+        default: false,
+      },
+    ],
+  },
 }
 ```
 
@@ -518,9 +556,12 @@ Action handlers are provided via the `onAction` prop on `SetteraRenderer`:
   values={values}
   onChange={handleChange}
   onAction={{
-    "actions.export": async () => {
+    "actions.export": async (payload) => {
+      // For callback actions, payload is undefined.
+      // For modal actions, payload contains submitted modal field values.
+      const opts = (payload ?? {}) as { format?: string };
       const data = await fetchUserData();
-      downloadAsJson(data);
+      downloadAs(data, opts.format ?? "json");
     },
     "actions.deleteAccount": async () => {
       await deleteAccount();
@@ -530,6 +571,7 @@ Action handlers are provided via the `onAction` prop on `SetteraRenderer`:
 ```
 
 If the handler returns a Promise, the button automatically shows a loading state while it resolves.
+For modal actions, the dialog stays open while submit is in-flight and closes after completion.
 
 ### Custom
 
@@ -575,18 +617,46 @@ function SignatureCard({ settingKey, definition }) {
   customSettings={{
     signatureCard: SignatureCard,
   }}
-/>
+/>;
 ```
 
 The component receives `{ settingKey: string; definition: CustomSetting }` and uses hooks like `useSetteraSetting` to read/write the value.
 
+### Custom Pages
+
+Use custom pages for app-specific screens (for example Users, Billing, Audit Logs) while keeping Settera navigation/layout.
+
+**Schema page definition:**
+
+```typescript
+{
+  key: "users",
+  title: "Users",
+  mode: "custom",
+  renderer: "usersPage",
+}
+```
+
+**Register custom page component:**
+
+```tsx
+<SetteraLayout
+  customPages={{
+    usersPage: ({ page }) => <UsersTable title={page.title} />,
+  }}
+/>
+```
+
 ## Features
 
 ### Schema-driven rendering
+
 Define settings once in a schema. The sidebar, page layout, sections, and controls are all generated automatically.
 
 ### Keyboard navigation
+
 Three-tier keyboard model designed for casual users through power users:
+
 - **Tab** flows linearly through settings
 - **F6** cycles between sidebar and content
 - **Ctrl+Arrow** jumps between section headings
@@ -594,9 +664,11 @@ Three-tier keyboard model designed for casual users through power users:
 - Full roving tabindex in the sidebar (arrow keys, Home/End)
 
 ### Client-side search
+
 Search filters the sidebar and content area by matching against setting titles, descriptions, section titles, and page titles. Substring match, case-insensitive.
 
 ### Conditional visibility
+
 Show or hide settings based on other settings' values:
 
 ```typescript
@@ -615,29 +687,23 @@ Show or hide settings based on other settings' values:
 Supports `equals`, `notEquals`, `oneOf`, and AND conditions (array of conditions).
 
 ### Validation
+
 Schema-level validators (required, min/max, pattern, minLength/maxLength, etc.) plus async callback validators for custom logic like API key verification.
 
 ### Confirmation dialogs
+
 Any setting can require confirmation before applying, with optional text confirmation for dangerous actions.
 
 ### Responsive layout
+
 Desktop shows a sidebar + content layout. Below 768px, it switches to full-screen drill-down navigation with back buttons. The breakpoint is configurable.
 
-### Custom renderers
-Register custom components for setting types not covered by the built-ins:
+### Custom registries
 
-```tsx
-<SetteraProvider
-  schema={schema}
-  renderers={{
-    "color-picker": ({ value, onChange, config }) => (
-      <MyColorPicker value={value} onChange={onChange} />
-    ),
-  }}
->
-  <SetteraRenderer values={values} onChange={handleChange} />
-</SetteraProvider>
-```
+`@settera/ui` supports two extension registries:
+
+- `customSettings` on `SetteraLayout` for `type: "custom"` settings
+- `customPages` on `SetteraLayout` for pages with `mode: "custom"`
 
 ## Headless Hooks
 
@@ -652,7 +718,8 @@ import {
 } from "@settera/react";
 
 const { schema, values, setValue } = useSettera();
-const { value, setValue, error, isVisible } = useSetteraSetting("general.autoSave");
+const { value, setValue, error, isVisible } =
+  useSetteraSetting("general.autoSave");
 const { activePage, setActivePage } = useSetteraNavigation();
 const { query, setQuery, filteredPages } = useSetteraSearch();
 ```
@@ -661,28 +728,20 @@ const { query, setQuery, filteredPages } = useSetteraSearch();
 
 Settera is in active development. Here's what's been built and what's planned.
 
-### Completed
+### Implemented
 
-- **Project scaffold** — pnpm monorepo with Turborepo, tsup builds, Vitest testing, ESLint + Prettier, CI pipeline
-- **Schema package** — Full TypeScript types, schema validator, traversal utilities (flattenSettings, getSettingByKey, getPageByKey, resolveDependencies)
-- **React headless layer** — SetteraProvider, SetteraRenderer, all core hooks (useSettera, useSetteraSetting, useSetteraAction, useSetteraNavigation, useSetteraSearch, useSetteraGlobalKeys, useSetteraConfirm), visibility engine, validation engine, roving tabindex
-- **Styled components** — BooleanSwitch, TextInput, NumberInput, Select, MultiSelect, DateInput, ActionButton, ConfirmDialog, SettingRow
-- **Layout** — SetteraLayout (sidebar + content), SetteraSidebar, SetteraPage, SetteraSection, SetteraSetting, SetteraSearch
-- **Keyboard navigation** — Linear tab, F6 pane cycling, Ctrl+Arrow section jumping, roving tabindex in sidebar, global shortcuts (/, Cmd+K, Escape)
-- **Search** — Client-side filtering across pages, sections, and settings
-- **Confirm dialogs** — With optional text confirmation for dangerous actions
-- **HelpText** — Expandable inline help blocks
+- Core setting types: boolean, text, number, select, multiselect, date, compound, repeatable, action, custom
+- Compound `displayStyle` modes: `inline`, `modal`, `page`
+- Repeatable item types: `text`, `compound`
+- Action modes: `callback` and submit-only `modal`
+- Custom extension points: `customSettings` and `customPages`
+- Deep-linking to page + setting query params and copy-link affordance
 
-### Planned
+### In progress / next
 
-- **Mobile responsive layout** — Full-screen drill-down navigation for narrow viewports
-- **Dangerous setting styling** — Warning colors and enhanced confirmation UX
-- **Icon mapping** — Lucide icon integration for sidebar navigation
-- **Accessibility audit** — Full ARIA structure review and screen reader testing
-- **Playwright e2e tests** — Real browser testing for keyboard navigation
-- **Examples** — Minimal, enterprise, and headless usage examples
-- **Documentation site** — API reference and guides (post-stabilization)
-- **shadcn-style CLI** — `npx settera add` for ejecting components (post-API stabilization)
+- Additional repeatable UX polish (for example reorder controls)
+- Accessibility and keyboard polish passes for complex nested modal content
+- Documentation site/API reference
 
 ## Development
 
@@ -712,7 +771,7 @@ pnpm format
 packages/
   schema/     @settera/schema — Types, validation, traversal
   react/      @settera/react  — Headless hooks and primitives
-  ui/         @settera/ui     — Styled Tailwind components
+  ui/         @settera/ui     — Prebuilt components (inline styles + Radix)
   test-app/   Internal Vite app for development testing
 ```
 
