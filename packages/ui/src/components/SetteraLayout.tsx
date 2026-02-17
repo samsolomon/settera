@@ -21,6 +21,8 @@ import { SetteraPage } from "./SetteraPage.js";
 import type { SetteraCustomPageProps } from "./SetteraPage.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
+import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
+import type { SetteraDeepLinkContextValue } from "../contexts/SetteraDeepLinkContext.js";
 
 export interface SetteraBackToAppConfig {
   label?: string;
@@ -42,6 +44,7 @@ export interface SetteraLayoutProps {
     string,
     React.ComponentType<SetteraCustomSettingProps>
   >;
+  activeSettingQueryParam?: string;
 }
 
 interface BreadcrumbItem {
@@ -93,17 +96,24 @@ export function SetteraLayout({
   activePageQueryParam = "setteraPage",
   customPages,
   customSettings,
+  activeSettingQueryParam = "setting",
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileDrawerRef = useRef<HTMLDivElement>(null);
   const didInitUrlSyncRef = useRef(false);
+  const pendingScrollKeyRef = useRef<string | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const mobileDrawerId = useId();
   const schemaCtx = useContext(SetteraSchemaContext);
   const { query: searchQuery, setQuery } = useSetteraSearch();
-  const { activePage, setActivePage, registerFocusContentHandler } =
-    useSetteraNavigation();
+  const {
+    activePage,
+    setActivePage,
+    setHighlightedSettingKey,
+    registerFocusContentHandler,
+  } = useSetteraNavigation();
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.innerWidth < mobileBreakpoint;
@@ -143,19 +153,26 @@ export function SetteraLayout({
     const fromUrl = url.searchParams.get(activePageQueryParam);
     if (fromUrl === activePage) return;
     url.searchParams.set(activePageQueryParam, activePage);
+    // Clear stale setting param when page changes via navigation
+    url.searchParams.delete(activeSettingQueryParam);
     window.history.replaceState(window.history.state, "", url);
-  }, [activePage, activePageQueryParam, syncActivePageWithUrl, validPageKeys]);
+  }, [
+    activePage,
+    activePageQueryParam,
+    activeSettingQueryParam,
+    syncActivePageWithUrl,
+    validPageKeys,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!syncActivePageWithUrl) return;
 
     const readFromUrl = () => {
-      const key = new URL(window.location.href).searchParams.get(
-        activePageQueryParam,
-      );
-      if (key && validPageKeys.has(key) && key !== activePage) {
-        setActivePage(key);
+      const url = new URL(window.location.href);
+      const pageKey = url.searchParams.get(activePageQueryParam);
+      if (pageKey && validPageKeys.has(pageKey) && pageKey !== activePage) {
+        setActivePage(pageKey);
       }
     };
 
@@ -186,6 +203,143 @@ export function SetteraLayout({
     media.addListener(onChange);
     return () => media.removeListener(onChange);
   }, []);
+
+  // Scroll-and-highlight for deep-linked settings.
+  const scrollToSettingNow = useCallback(
+    (key: string) => {
+      const main = mainRef.current;
+      if (!main) return false;
+      const el = main.querySelector(`[data-setting-key="${CSS.escape(key)}"]`);
+      if (!el) return false;
+
+      el.scrollIntoView({
+        behavior: prefersReducedMotion ? "instant" : "smooth",
+        block: "center",
+      });
+      setHighlightedSettingKey(key);
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = setTimeout(
+        () => setHighlightedSettingKey(null),
+        2000,
+      );
+      return true;
+    },
+    [prefersReducedMotion, setHighlightedSettingKey],
+  );
+
+  const scrollToSetting = useCallback(
+    (key: string) => {
+      requestAnimationFrame(() => {
+        void scrollToSettingNow(key);
+      });
+    },
+    [scrollToSettingNow],
+  );
+
+  // Clean up highlight timer on unmount.
+  useEffect(() => {
+    return () => clearTimeout(highlightTimerRef.current);
+  }, []);
+
+  // Consume pending scroll key after page renders.
+  useEffect(() => {
+    const key = pendingScrollKeyRef.current;
+    if (!key) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 8;
+
+    const attemptScroll = () => {
+      if (cancelled) return;
+
+      const didScroll = scrollToSettingNow(key);
+      if (didScroll) {
+        pendingScrollKeyRef.current = null;
+        return;
+      }
+
+      attempts += 1;
+      if (attempts >= maxAttempts) return;
+      requestAnimationFrame(attemptScroll);
+    };
+
+    requestAnimationFrame(attemptScroll);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePage, scrollToSettingNow]);
+
+  // Read setting param from URL on mount and popstate.
+  // Separate from page-sync to avoid re-running on every activePage change.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!syncActivePageWithUrl || !schemaCtx) return;
+
+    const readSettingFromUrl = () => {
+      const settingKey = new URL(window.location.href).searchParams.get(
+        activeSettingQueryParam,
+      );
+      if (!settingKey) return;
+
+      const flat = schemaCtx.flatSettings.find(
+        (f) => f.definition.key === settingKey,
+      );
+      if (!flat) return;
+
+      const targetPage = flat.pageKey;
+      if (!targetPage || !validPageKeys.has(targetPage)) return;
+
+      if (targetPage !== activePage) {
+        setActivePage(targetPage);
+        // Page will change — scroll after render via pending ref
+        pendingScrollKeyRef.current = settingKey;
+      } else {
+        // Already on the correct page — scroll immediately
+        scrollToSetting(settingKey);
+      }
+    };
+
+    readSettingFromUrl();
+    window.addEventListener("popstate", readSettingFromUrl);
+    return () => window.removeEventListener("popstate", readSettingFromUrl);
+    // activePage intentionally read but not in deps — we only want this
+    // to run on mount and popstate, not on every page navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeSettingQueryParam,
+    syncActivePageWithUrl,
+    validPageKeys,
+    schemaCtx,
+    setActivePage,
+    scrollToSetting,
+  ]);
+
+  // Deep-link context value for copy-link buttons.
+  const deepLinkContextValue =
+    useMemo<SetteraDeepLinkContextValue | null>(() => {
+      if (!syncActivePageWithUrl) return null;
+      return {
+        getSettingUrl: (settingKey: string) => {
+          const url = new URL(window.location.href);
+          // Look up the setting's page
+          const flat = schemaCtx?.flatSettings.find(
+            (f) => f.definition.key === settingKey,
+          );
+          if (flat) {
+            url.searchParams.set(activePageQueryParam, flat.pageKey);
+          }
+          url.searchParams.set(activeSettingQueryParam, settingKey);
+          return url.toString();
+        },
+      };
+    }, [
+      syncActivePageWithUrl,
+      schemaCtx,
+      activePageQueryParam,
+      activeSettingQueryParam,
+    ]);
 
   // Keep isMobile in sync with viewport width.
   useEffect(() => {
@@ -416,215 +570,217 @@ export function SetteraLayout({
   }, [backToApp, closeMobileNav]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        display: "flex",
-        flexDirection: isMobile ? "column" : "row",
-        height: "100%",
-        position: "relative",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      }}
-    >
-      {!isMobile && (
-        <SetteraSidebar renderIcon={renderIcon} backToApp={backToApp} />
-      )}
+    <SetteraDeepLinkContext.Provider value={deepLinkContextValue}>
+      <div
+        ref={containerRef}
+        style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          height: "100%",
+          position: "relative",
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        }}
+      >
+        {!isMobile && (
+          <SetteraSidebar renderIcon={renderIcon} backToApp={backToApp} />
+        )}
 
-      {isMobile && (
-        <header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 5,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            minHeight: "var(--settera-mobile-topbar-height, 52px)",
-            padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
-            borderBottom:
-              "var(--settera-mobile-topbar-border, 1px solid #e5e7eb)",
-            backgroundColor: "var(--settera-mobile-topbar-bg, #f9fafb)",
-          }}
-        >
-          <button
-            ref={menuButtonRef}
-            type="button"
-            aria-label="Open navigation"
-            aria-expanded={isMobileNavOpen}
-            aria-controls={mobileDrawerId}
-            onClick={openMobileNav}
+        {isMobile && (
+          <header
             style={{
-              width: "36px",
-              height: "36px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "8px",
-              border: "var(--settera-mobile-menu-border, 1px solid #d1d5db)",
-              backgroundColor: "var(--settera-mobile-menu-bg, #ffffff)",
-              color: "var(--settera-mobile-menu-color, #111827)",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-          >
-            <span
-              aria-hidden="true"
-              style={{ fontSize: "18px", lineHeight: 1 }}
-            >
-              ≡
-            </span>
-          </button>
-
-          {showBreadcrumbs && (
-            <nav aria-label="Breadcrumb" style={{ minWidth: 0, flex: 1 }}>
-              <ol
-                style={{
-                  listStyle: "none",
-                  margin: 0,
-                  padding: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  color: "var(--settera-breadcrumb-muted, #6b7280)",
-                  minWidth: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                }}
-              >
-                <li
-                  style={{
-                    fontSize: "13px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {resolvedMobileTitle}
-                </li>
-                {breadcrumbItems.map((crumb, index) => {
-                  const isLast = index === breadcrumbItems.length - 1;
-                  return (
-                    <React.Fragment key={crumb.key}>
-                      <li aria-hidden="true" style={{ color: "#9ca3af" }}>
-                        /
-                      </li>
-                      <li
-                        style={{
-                          minWidth: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {isLast ? (
-                          <span
-                            aria-current="page"
-                            style={{
-                              fontSize: "13px",
-                              color:
-                                "var(--settera-breadcrumb-current, #111827)",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {crumb.title}
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setActivePage(crumb.key)}
-                            style={{
-                              border: "none",
-                              background: "transparent",
-                              padding: 0,
-                              fontSize: "13px",
-                              color: "inherit",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {crumb.title}
-                          </button>
-                        )}
-                      </li>
-                    </React.Fragment>
-                  );
-                })}
-              </ol>
-            </nav>
-          )}
-        </header>
-      )}
-
-      {content}
-
-      {isMobile && (
-        <>
-          <div
-            role="presentation"
-            onClick={overlayIsVisible ? closeMobileNav : undefined}
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor:
-                "var(--settera-mobile-overlay-bg, rgba(17, 24, 39, 0.45))",
-              opacity: overlayIsVisible ? 1 : 0,
-              transition: overlayTransition,
-              pointerEvents: overlayIsVisible ? "auto" : "none",
-              zIndex: 20,
-            }}
-          />
-          <div
-            id={mobileDrawerId}
-            ref={mobileDrawerRef}
-            role="dialog"
-            aria-modal="true"
-            aria-hidden={!overlayIsVisible}
-            aria-label="Settings navigation"
-            tabIndex={-1}
-            onKeyDown={handleDrawerKeyDown}
-            style={{
-              position: "fixed",
-              left: 0,
+              position: "sticky",
               top: 0,
-              bottom: 0,
-              width: "var(--settera-mobile-drawer-width, min(85vw, 320px))",
-              maxWidth: "100%",
-              zIndex: 21,
+              zIndex: 5,
               display: "flex",
-              flexDirection: "column",
-              backgroundColor: "var(--settera-mobile-drawer-bg, #f3f4f6)",
-              borderRight:
-                "var(--settera-mobile-drawer-border, 1px solid #d1d5db)",
-              boxShadow: "0 16px 40px rgba(0, 0, 0, 0.18)",
-              overflow: "hidden",
-              transform: overlayIsVisible
-                ? "translateX(0)"
-                : "translateX(-100%)",
-              transition: drawerTransition,
-              pointerEvents: overlayIsVisible ? "auto" : "none",
+              alignItems: "center",
+              gap: "8px",
+              minHeight: "var(--settera-mobile-topbar-height, 52px)",
+              padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
+              borderBottom:
+                "var(--settera-mobile-topbar-border, 1px solid #e5e7eb)",
+              backgroundColor: "var(--settera-mobile-topbar-bg, #f9fafb)",
             }}
           >
-            <div
+            <button
+              ref={menuButtonRef}
+              type="button"
+              aria-label="Open navigation"
+              aria-expanded={isMobileNavOpen}
+              aria-controls={mobileDrawerId}
+              onClick={openMobileNav}
               style={{
-                display: "flex",
-                height: "100%",
-                minHeight: 0,
-                overflow: "hidden",
-                paddingBottom: "env(safe-area-inset-bottom, 0px)",
-                ...({
-                  "--settera-sidebar-width": "100%",
-                } as React.CSSProperties),
+                width: "36px",
+                height: "36px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                border: "var(--settera-mobile-menu-border, 1px solid #d1d5db)",
+                backgroundColor: "var(--settera-mobile-menu-bg, #ffffff)",
+                color: "var(--settera-mobile-menu-color, #111827)",
+                cursor: "pointer",
+                flexShrink: 0,
               }}
             >
-              <SetteraSidebar
-                renderIcon={renderIcon}
-                onNavigate={closeMobileNav}
-                backToApp={mobileBackToApp}
-              />
-            </div>
-          </div>
-        </>
-      )}
+              <span
+                aria-hidden="true"
+                style={{ fontSize: "18px", lineHeight: 1 }}
+              >
+                ≡
+              </span>
+            </button>
 
-      <ConfirmDialog />
-    </div>
+            {showBreadcrumbs && (
+              <nav aria-label="Breadcrumb" style={{ minWidth: 0, flex: 1 }}>
+                <ol
+                  style={{
+                    listStyle: "none",
+                    margin: 0,
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    color: "var(--settera-breadcrumb-muted, #6b7280)",
+                    minWidth: 0,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                  }}
+                >
+                  <li
+                    style={{
+                      fontSize: "13px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {resolvedMobileTitle}
+                  </li>
+                  {breadcrumbItems.map((crumb, index) => {
+                    const isLast = index === breadcrumbItems.length - 1;
+                    return (
+                      <React.Fragment key={crumb.key}>
+                        <li aria-hidden="true" style={{ color: "#9ca3af" }}>
+                          /
+                        </li>
+                        <li
+                          style={{
+                            minWidth: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {isLast ? (
+                            <span
+                              aria-current="page"
+                              style={{
+                                fontSize: "13px",
+                                color:
+                                  "var(--settera-breadcrumb-current, #111827)",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {crumb.title}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setActivePage(crumb.key)}
+                              style={{
+                                border: "none",
+                                background: "transparent",
+                                padding: 0,
+                                fontSize: "13px",
+                                color: "inherit",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {crumb.title}
+                            </button>
+                          )}
+                        </li>
+                      </React.Fragment>
+                    );
+                  })}
+                </ol>
+              </nav>
+            )}
+          </header>
+        )}
+
+        {content}
+
+        {isMobile && (
+          <>
+            <div
+              role="presentation"
+              onClick={overlayIsVisible ? closeMobileNav : undefined}
+              style={{
+                position: "fixed",
+                inset: 0,
+                backgroundColor:
+                  "var(--settera-mobile-overlay-bg, rgba(17, 24, 39, 0.45))",
+                opacity: overlayIsVisible ? 1 : 0,
+                transition: overlayTransition,
+                pointerEvents: overlayIsVisible ? "auto" : "none",
+                zIndex: 20,
+              }}
+            />
+            <div
+              id={mobileDrawerId}
+              ref={mobileDrawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-hidden={!overlayIsVisible}
+              aria-label="Settings navigation"
+              tabIndex={-1}
+              onKeyDown={handleDrawerKeyDown}
+              style={{
+                position: "fixed",
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: "var(--settera-mobile-drawer-width, min(85vw, 320px))",
+                maxWidth: "100%",
+                zIndex: 21,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "var(--settera-mobile-drawer-bg, #f3f4f6)",
+                borderRight:
+                  "var(--settera-mobile-drawer-border, 1px solid #d1d5db)",
+                boxShadow: "0 16px 40px rgba(0, 0, 0, 0.18)",
+                overflow: "hidden",
+                transform: overlayIsVisible
+                  ? "translateX(0)"
+                  : "translateX(-100%)",
+                transition: drawerTransition,
+                pointerEvents: overlayIsVisible ? "auto" : "none",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  height: "100%",
+                  minHeight: 0,
+                  overflow: "hidden",
+                  paddingBottom: "env(safe-area-inset-bottom, 0px)",
+                  ...({
+                    "--settera-sidebar-width": "100%",
+                  } as React.CSSProperties),
+                }}
+              >
+                <SetteraSidebar
+                  renderIcon={renderIcon}
+                  onNavigate={closeMobileNav}
+                  backToApp={mobileBackToApp}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        <ConfirmDialog />
+      </div>
+    </SetteraDeepLinkContext.Provider>
   );
 }

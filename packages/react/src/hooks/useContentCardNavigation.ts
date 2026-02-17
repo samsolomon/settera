@@ -158,10 +158,25 @@ export function useContentCardNavigation(
           return;
         }
 
-        // Other controls: find first interactive element
-        const control = focusedCard.querySelector<HTMLElement>(
-          "button, input, select, textarea",
-        );
+        // Other controls: find first interactive element (skip tabIndex=-1 utility buttons)
+        const control = Array.from(
+          focusedCard.querySelectorAll<HTMLElement>(
+            "button, input, select, textarea",
+          ),
+        ).find((el) => {
+          if (el.getAttribute("data-settera-copy-link") === "true")
+            return false;
+          if (el.tabIndex === -1) return false;
+          if (
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLButtonElement ||
+            el instanceof HTMLSelectElement ||
+            el instanceof HTMLTextAreaElement
+          ) {
+            if (el.disabled) return false;
+          }
+          return true;
+        });
         if (control) {
           control.focus();
         }
