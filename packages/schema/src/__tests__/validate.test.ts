@@ -940,6 +940,391 @@ describe("validateSchema", () => {
     expect(errors).toEqual([]);
   });
 
+  // Invalid type
+  it("rejects setting with unrecognized type", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.checkbox",
+                  title: "Checkbox",
+                  type: "checkbox" as "boolean",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_TYPE");
+    expect(errors[0].message).toContain("checkbox");
+  });
+
+  // Action without actionType
+  it("rejects action without actionType", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.action",
+                  title: "Action",
+                  type: "action",
+                  buttonLabel: "Do it",
+                  actionType: "" as "callback",
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".actionType"))).toBe(true);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
+  });
+
+  // Custom setting without renderer
+  it("rejects custom setting without renderer", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.custom",
+                  title: "Custom",
+                  type: "custom",
+                  renderer: "",
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".renderer"))).toBe(true);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
+  });
+
+  // Missing title fields
+  it("rejects section without title", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [{ key: "main", title: "" }],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "MISSING_REQUIRED_FIELD" &&
+          e.path.endsWith(".title") &&
+          e.message.includes("Section"),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects subsection without title", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "",
+                  settings: [
+                    { key: "s1", title: "S1", type: "boolean" },
+                  ],
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "MISSING_REQUIRED_FIELD" &&
+          e.message.includes("Subsection"),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects setting without title", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "test.notitle", title: "", type: "boolean" } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "MISSING_REQUIRED_FIELD" &&
+          e.path.endsWith(".title") &&
+          e.message.includes("Setting"),
+      ),
+    ).toBe(true);
+  });
+
+  // Duplicate subsection keys
+  it("rejects duplicate subsection keys within a section", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              subsections: [
+                {
+                  key: "sub",
+                  title: "Sub A",
+                  settings: [
+                    { key: "a", title: "A", type: "boolean" },
+                  ],
+                },
+                {
+                  key: "sub",
+                  title: "Sub B",
+                  settings: [
+                    { key: "b", title: "B", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "DUPLICATE_KEY" &&
+          e.message.includes("subsection"),
+      ),
+    ).toBe(true);
+  });
+
+  // Modal field validation errors propagate
+  it("detects errors inside modal action fields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                  modal: {
+                    fields: [
+                      {
+                        key: "email",
+                        title: "Email",
+                        type: "text",
+                      },
+                      {
+                        key: "role",
+                        title: "Role",
+                        type: "select",
+                        options: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "EMPTY_OPTIONS")).toBe(true);
+    expect(errors[0].path).toContain("modal.fields");
+  });
+
+  it("rejects duplicate keys among modal action fields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                  modal: {
+                    fields: [
+                      { key: "name", title: "Name", type: "text" },
+                      { key: "name", title: "Name 2", type: "text" },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "DUPLICATE_KEY" &&
+          e.path.includes("modal.fields"),
+      ),
+    ).toBe(true);
+  });
+
+  // Nested page key collision across depth levels
+  it("rejects nested page with same key as top-level page", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          pages: [
+            {
+              key: "general",
+              title: "General Child",
+              sections: [
+                {
+                  key: "s1",
+                  title: "S1",
+                  settings: [
+                    { key: "a", title: "A", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) => e.code === "DUPLICATE_KEY" && e.message.includes("page"),
+      ),
+    ).toBe(true);
+  });
+
+  // Compound without displayStyle
+  it("rejects compound setting without displayStyle", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "" as "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                  ],
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(
+      errors.some(
+        (e) =>
+          e.code === "MISSING_REQUIRED_FIELD" &&
+          e.path.endsWith(".displayStyle"),
+      ),
+    ).toBe(true);
+  });
+
   // Subsection validation
   it("validates settings inside subsections", () => {
     const schema: SetteraSchema = {

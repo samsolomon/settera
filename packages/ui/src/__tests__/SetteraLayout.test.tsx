@@ -406,4 +406,15 @@ describe("SetteraLayout", () => {
       expect(screen.getByText("Debug Mode")).toBeDefined();
     });
   });
+
+  it("hydrates active page from setting deep-link query param", async () => {
+    setLocationSearch("?setting=debug");
+    renderLayout();
+
+    await waitFor(() => {
+      expect(screen.getByText("Experimental")).toBeDefined();
+      expect(screen.getByText("Debug Mode")).toBeDefined();
+    });
+    expect(screen.queryByText("Auto Save")).toBeNull();
+  });
 });

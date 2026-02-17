@@ -1,6 +1,12 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  act,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import {
   SetteraProvider,
   SetteraRenderer,
@@ -9,6 +15,7 @@ import {
 } from "@settera/react";
 import { SettingRow } from "../components/SettingRow.js";
 import type { SetteraSchema } from "@settera/schema";
+import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 
 const schema: SetteraSchema = {
   version: "1.0",
@@ -192,6 +199,84 @@ describe("SettingRow", () => {
     renderRow("toggle", { toggle: false });
     expect(screen.queryByText(/ⓘ/)).toBeNull();
   });
+
+  it("shows copy feedback only when clipboard write succeeds", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
+          <SetteraDeepLinkContext.Provider
+            value={{
+              getSettingUrl: (key) =>
+                `https://example.com/?setteraSetting=${key}`,
+            }}
+          >
+            <SettingRow settingKey="toggle">
+              <span>control</span>
+            </SettingRow>
+          </SetteraDeepLinkContext.Provider>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    const group = screen.getByRole("group", { name: "Auto Save" });
+    fireEvent.mouseEnter(group);
+    const copyButton = screen.getByRole("button", {
+      name: "Copy link to setting",
+    });
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        "https://example.com/?setteraSetting=toggle",
+      );
+      const checkPath = copyButton.querySelector("path");
+      expect(checkPath?.getAttribute("d")).toBe("M3 8.5l3.5 3.5L13 4");
+    });
+  });
+
+  it("does not show copy feedback when clipboard write fails", async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
+          <SetteraDeepLinkContext.Provider
+            value={{
+              getSettingUrl: (key) =>
+                `https://example.com/?setteraSetting=${key}`,
+            }}
+          >
+            <SettingRow settingKey="toggle">
+              <span>control</span>
+            </SettingRow>
+          </SetteraDeepLinkContext.Provider>
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    const group = screen.getByRole("group", { name: "Auto Save" });
+    fireEvent.mouseEnter(group);
+    const copyButton = screen.getByRole("button", {
+      name: "Copy link to setting",
+    });
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalled();
+    });
+    const iconPath = copyButton.querySelector("path");
+    expect(iconPath?.getAttribute("d")?.startsWith("M6.5 8.5")).toBe(true);
+  });
 });
 
 // ---- Save status indicator ----
@@ -220,9 +305,7 @@ describe("save status indicator", () => {
 
   it("shows 'Saving...' during async save", async () => {
     let resolveSave!: () => void;
-    const onChange = vi.fn(
-      () => new Promise<void>((r) => (resolveSave = r)),
-    );
+    const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
       <SetteraProvider schema={schema}>
         <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
@@ -239,9 +322,7 @@ describe("save status indicator", () => {
 
   it("shows 'Saved' after success", async () => {
     let resolveSave!: () => void;
-    const onChange = vi.fn(
-      () => new Promise<void>((r) => (resolveSave = r)),
-    );
+    const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
       <SetteraProvider schema={schema}>
         <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
@@ -277,9 +358,7 @@ describe("save status indicator", () => {
 
   it("'Saved' auto-clears after 2s", async () => {
     let resolveSave!: () => void;
-    const onChange = vi.fn(
-      () => new Promise<void>((r) => (resolveSave = r)),
-    );
+    const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
       <SetteraProvider schema={schema}>
         <SetteraRenderer values={{ toggle: false }} onChange={onChange}>

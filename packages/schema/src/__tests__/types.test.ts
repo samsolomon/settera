@@ -8,10 +8,14 @@ import type {
   MultiSelectSetting,
   DateSetting,
   CompoundSetting,
+  CompoundFieldDefinition,
   RepeatableSetting,
+  RepeatableFieldDefinition,
   ActionSetting,
+  ModalActionFieldSetting,
   CustomSetting,
   ValueSetting,
+  VisibilityValue,
 } from "../types.js";
 
 describe("SettingDefinition discriminated union", () => {
@@ -93,5 +97,68 @@ describe("SettingDefinition discriminated union", () => {
     expectTypeOf<BooleanSetting["validation"]>().toEqualTypeOf<
       never | undefined
     >();
+  });
+});
+
+describe("CompoundFieldDefinition", () => {
+  it("includes all six field types", () => {
+    expectTypeOf<TextSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<NumberSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<SelectSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<MultiSelectSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<DateSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<BooleanSetting>().toMatchTypeOf<CompoundFieldDefinition>();
+  });
+
+  it("excludes ActionSetting and RepeatableSetting", () => {
+    expectTypeOf<ActionSetting>().not.toMatchTypeOf<CompoundFieldDefinition>();
+    expectTypeOf<RepeatableSetting>().not.toMatchTypeOf<CompoundFieldDefinition>();
+  });
+
+  it("is the element type of CompoundSetting.fields", () => {
+    expectTypeOf<CompoundSetting["fields"][number]>().toEqualTypeOf<CompoundFieldDefinition>();
+  });
+});
+
+describe("RepeatableFieldDefinition", () => {
+  it("includes text, number, select, and boolean", () => {
+    expectTypeOf<TextSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<NumberSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<SelectSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<BooleanSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+  });
+
+  it("excludes DateSetting and MultiSelectSetting", () => {
+    expectTypeOf<DateSetting>().not.toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<MultiSelectSetting>().not.toMatchTypeOf<RepeatableFieldDefinition>();
+  });
+});
+
+describe("ModalActionFieldSetting", () => {
+  it("includes value-bearing setting types", () => {
+    expectTypeOf<TextSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+    expectTypeOf<NumberSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+    expectTypeOf<BooleanSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+    expectTypeOf<SelectSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+    expectTypeOf<CompoundSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+    expectTypeOf<RepeatableSetting>().toMatchTypeOf<ModalActionFieldSetting>();
+  });
+
+  it("excludes ActionSetting", () => {
+    expectTypeOf<ActionSetting>().not.toMatchTypeOf<ModalActionFieldSetting>();
+  });
+});
+
+describe("VisibilityValue", () => {
+  it("accepts string, number, boolean, and null", () => {
+    expectTypeOf<string>().toMatchTypeOf<VisibilityValue>();
+    expectTypeOf<number>().toMatchTypeOf<VisibilityValue>();
+    expectTypeOf<boolean>().toMatchTypeOf<VisibilityValue>();
+    expectTypeOf<null>().toMatchTypeOf<VisibilityValue>();
+  });
+
+  it("does not accept object or undefined", () => {
+    expectTypeOf<object>().not.toMatchTypeOf<VisibilityValue>();
+    expectTypeOf<undefined>().not.toMatchTypeOf<VisibilityValue>();
   });
 });

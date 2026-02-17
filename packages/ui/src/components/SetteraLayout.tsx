@@ -117,6 +117,13 @@ export function SetteraLayout({
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
+  const escapeSelectorValue = useCallback((value: string) => {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(value);
+    }
+    return value.replace(/["\\]/g, "\\$&");
+  }, []);
+
   // Capture the initial setting key from the URL during render (before effects)
   // so it survives React StrictMode's effect double-fire, which would otherwise
   // let the URL-write effect delete the param before readSettingFromUrl runs.
@@ -126,9 +133,8 @@ export function SetteraLayout({
     typeof window !== "undefined"
   ) {
     initialSettingKeyRef.current =
-      new URL(window.location.href).searchParams.get(
-        activeSettingQueryParam,
-      ) ?? null;
+      new URL(window.location.href).searchParams.get(activeSettingQueryParam) ??
+      null;
   }
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
@@ -219,16 +225,20 @@ export function SetteraLayout({
     (key: string) => {
       const main = mainRef.current;
       if (!main) return false;
-      const el = main.querySelector(`[data-setting-key="${CSS.escape(key)}"]`);
+      const el = main.querySelector(
+        `[data-setting-key="${escapeSelectorValue(key)}"]`,
+      );
       if (!el) return false;
 
-      el.scrollIntoView({
-        behavior: prefersReducedMotion ? "instant" : "smooth",
-        block: "center",
-      });
+      if (typeof el.scrollIntoView === "function") {
+        el.scrollIntoView({
+          behavior: prefersReducedMotion ? "instant" : "smooth",
+          block: "center",
+        });
+      }
       return true;
     },
-    [prefersReducedMotion],
+    [escapeSelectorValue, prefersReducedMotion],
   );
 
   const scrollToSetting = useCallback(

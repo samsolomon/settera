@@ -222,6 +222,127 @@ describe("isFlattenedPage", () => {
   });
 });
 
+describe("flattenSettings — path values", () => {
+  it("sets correct path for top-level settings", () => {
+    const flat = flattenSettings(referenceSchema);
+    const autoSave = flat.find((f) => f.definition.key === "general.autoSave");
+    expect(autoSave?.path).toBe("pages[0].sections[0].settings[0]");
+  });
+
+  it("sets correct path for nested-page settings", () => {
+    const flat = flattenSettings(referenceSchema);
+    const telemetry = flat.find(
+      (f) => f.definition.key === "privacy.telemetry",
+    );
+    expect(telemetry?.path).toBe(
+      "pages[0].pages[0].sections[0].settings[0]",
+    );
+  });
+
+  it("sets correct path for subsection settings", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "sub.a", title: "A", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const flat = flattenSettings(schema);
+    expect(flat[0].path).toBe(
+      "pages[0].sections[0].subsections[0].settings[0]",
+    );
+  });
+
+  it("preserves declaration order across sections and subsections", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [{ key: "first", title: "First", type: "boolean" }],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub",
+                  settings: [
+                    { key: "second", title: "Second", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+            {
+              key: "s2",
+              title: "S2",
+              settings: [{ key: "third", title: "Third", type: "boolean" }],
+            },
+          ],
+        },
+      ],
+    };
+    const flat = flattenSettings(schema);
+    const keys = flat.map((f) => f.definition.key);
+    expect(keys).toEqual(["first", "second", "third"]);
+  });
+});
+
+describe("getSettingByKey — subsections", () => {
+  it("finds a setting inside a subsection", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    {
+                      key: "sub.hidden",
+                      title: "Hidden",
+                      type: "boolean",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const setting = getSettingByKey(schema, "sub.hidden");
+    expect(setting).toBeDefined();
+    expect(setting?.title).toBe("Hidden");
+  });
+});
+
 describe("resolvePageKey", () => {
   it("returns own key for non-flatten page", () => {
     expect(
@@ -268,6 +389,21 @@ describe("resolvePageKey", () => {
         pages: [{ key: "child", title: "Child" }],
       }),
     ).toBe("parent");
+  });
+
+  it("returns current key when depth limit is exceeded", () => {
+    // Build a chain of 12 flattened pages (each with 1 child, no sections)
+    type Page = { key: string; title: string; pages?: Page[] };
+    let deepest: Page = { key: "leaf-12", title: "L12" };
+    for (let i = 11; i >= 0; i--) {
+      deepest = { key: `level-${i}`, title: `L${i}`, pages: [deepest] };
+    }
+    // depth > 10 guard triggers: should NOT resolve to "leaf-12"
+    const result = resolvePageKey(deepest);
+    expect(result).not.toBe("leaf-12");
+    // Should stop at the 11th level (depth=10 is the last valid recurse,
+    // depth=11 returns early)
+    expect(result).toBe("level-11");
   });
 });
 
@@ -448,5 +584,53 @@ describe("walkSchema", () => {
     });
 
     expect(visited).toEqual([]);
+  });
+
+  it("provides correct path for subsection settings", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [{ key: "direct", title: "Direct", type: "boolean" }],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "nested", title: "Nested", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const paths: Array<{ key: string; path: string }> = [];
+    walkSchema(schema, {
+      onSetting(setting, ctx) {
+        paths.push({ key: setting.key, path: ctx.path });
+      },
+    });
+
+    expect(paths).toEqual([
+      { key: "direct", path: "pages[0].sections[0].settings[0]" },
+      {
+        key: "nested",
+        path: "pages[0].sections[0].subsections[0].settings[0]",
+      },
+    ]);
+  });
+
+  it("does nothing with an empty visitor", () => {
+    // Should not throw with no callbacks defined
+    walkSchema(referenceSchema, {});
   });
 });
