@@ -46,7 +46,10 @@ export { SetteraSearch } from "./components/SetteraSearch.js";
 
 // Layout components
 export { SetteraSetting } from "./components/SetteraSetting.js";
-export type { SetteraSettingProps } from "./components/SetteraSetting.js";
+export type {
+  SetteraSettingProps,
+  SetteraCustomSettingProps,
+} from "./components/SetteraSetting.js";
 export { SetteraSection } from "./components/SetteraSection.js";
 export type { SetteraSectionProps } from "./components/SetteraSection.js";
 export { SetteraPage } from "./components/SetteraPage.js";

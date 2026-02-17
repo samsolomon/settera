@@ -93,6 +93,15 @@ const schema: SetteraSchema = {
                 },
               ],
             },
+            {
+              key: "customCard",
+              title: "Custom Card",
+              type: "custom",
+              renderer: "customCard",
+              config: {
+                tone: "info",
+              },
+            },
           ],
         },
       ],
@@ -103,11 +112,17 @@ const schema: SetteraSchema = {
 function renderSetting(
   settingKey: string,
   values: Record<string, unknown> = {},
+  customSettings?: React.ComponentProps<
+    typeof SetteraSetting
+  >["customSettings"],
 ) {
   return render(
     <SetteraProvider schema={schema}>
       <SetteraRenderer values={values} onChange={() => {}}>
-        <SetteraSetting settingKey={settingKey} />
+        <SetteraSetting
+          settingKey={settingKey}
+          customSettings={customSettings}
+        />
       </SetteraRenderer>
     </SetteraProvider>,
   );
@@ -157,6 +172,31 @@ describe("SetteraSetting", () => {
   it("renders RepeatableInput for repeatable type", () => {
     renderSetting("aliases");
     expect(screen.getByTestId("repeatable-aliases")).toBeDefined();
+  });
+
+  it("renders custom setting renderer when provided", () => {
+    renderSetting(
+      "customCard",
+      {},
+      {
+        customCard: ({ settingKey, definition }) => (
+          <div data-testid="custom-setting-renderer">
+            {settingKey}:{String(definition.config?.tone)}
+          </div>
+        ),
+      },
+    );
+
+    expect(screen.getByTestId("custom-setting-renderer").textContent).toBe(
+      "customCard:info",
+    );
+  });
+
+  it("shows fallback when custom setting renderer is missing", () => {
+    renderSetting("customCard");
+    expect(
+      screen.getByTestId("missing-custom-setting-customCard").textContent,
+    ).toContain("customCard");
   });
 
   it("wraps control in SettingRow with title", () => {

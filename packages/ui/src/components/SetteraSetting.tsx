@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { SetteraSchemaContext } from "@settera/react";
+import type { CustomSetting } from "@settera/schema";
 import { SettingRow } from "./SettingRow.js";
 import { BooleanSwitch } from "./BooleanSwitch.js";
 import { TextInput } from "./TextInput.js";
@@ -15,13 +16,26 @@ export interface SetteraSettingProps {
   settingKey: string;
   /** When true, suppresses the bottom border (last item in a card). */
   isLast?: boolean;
+  customSettings?: Record<
+    string,
+    React.ComponentType<SetteraCustomSettingProps>
+  >;
+}
+
+export interface SetteraCustomSettingProps {
+  settingKey: string;
+  definition: CustomSetting;
 }
 
 /**
  * Type-to-component dispatcher.
  * Maps a setting definition's type to the correct UI control, wrapped in SettingRow.
  */
-export function SetteraSetting({ settingKey, isLast }: SetteraSettingProps) {
+export function SetteraSetting({
+  settingKey,
+  isLast,
+  customSettings,
+}: SetteraSettingProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
 
   if (!schemaCtx) {
@@ -63,7 +77,31 @@ export function SetteraSetting({ settingKey, isLast }: SetteraSettingProps) {
     case "action":
       control = <ActionButton settingKey={settingKey} />;
       break;
+    case "custom": {
+      const CustomSettingComponent = customSettings?.[definition.renderer];
+      control = CustomSettingComponent ? (
+        <CustomSettingComponent
+          settingKey={settingKey}
+          definition={definition}
+        />
+      ) : (
+        <span
+          data-testid={`missing-custom-setting-${settingKey}`}
+          style={{
+            fontSize: "var(--settera-description-font-size, 13px)",
+            color: "var(--settera-description-color, #6b7280)",
+            fontStyle: "italic",
+          }}
+        >
+          Missing custom setting renderer "{definition.renderer}".
+        </span>
+      );
+      break;
+    }
     default:
+      // Exhaustive fallback for forward compatibility.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustive: never = definition;
       control = (
         <span
           data-testid={`unsupported-${settingKey}`}
@@ -73,7 +111,7 @@ export function SetteraSetting({ settingKey, isLast }: SetteraSettingProps) {
             fontStyle: "italic",
           }}
         >
-          {definition.type}
+          unsupported
         </span>
       );
       break;

@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
 import type { SetteraCustomPageProps } from "../components/SetteraPage.js";
+import type { SetteraCustomSettingProps } from "../components/SetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -113,6 +114,10 @@ function renderLayout(
     syncActivePageWithUrl?: boolean;
     activePageQueryParam?: string;
     customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
+    customSettings?: Record<
+      string,
+      React.ComponentType<SetteraCustomSettingProps>
+    >;
     backToApp?: {
       label?: string;
       href?: string;
@@ -209,6 +214,48 @@ describe("SetteraLayout", () => {
 
     expect(screen.getByTestId("users-page").textContent).toContain(
       "Custom Users",
+    );
+  });
+
+  it("renders custom setting content via customSettings registry", () => {
+    const customSchema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "customCard",
+                  title: "Custom Card",
+                  type: "custom",
+                  renderer: "customCard",
+                  config: { tone: "info" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    renderLayout(
+      {
+        customSettings: {
+          customCard: ({ settingKey }: SetteraCustomSettingProps) => (
+            <div data-testid="custom-setting">Renderer {settingKey}</div>
+          ),
+        },
+      },
+      customSchema,
+    );
+
+    expect(screen.getByTestId("custom-setting").textContent).toContain(
+      "Renderer customCard",
     );
   });
 

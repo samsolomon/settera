@@ -191,6 +191,17 @@ export const demoSchema: SetteraSchema = {
                 maxItems: 4,
               },
             },
+            {
+              key: "profile.signatureCard",
+              title: "Signature Card (Custom)",
+              description:
+                "Custom-rendered setting surface for app-specific UI.",
+              type: "custom",
+              renderer: "signatureCard",
+              config: {
+                label: "Public signature",
+              },
+            },
           ],
         },
         {

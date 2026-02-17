@@ -2,18 +2,27 @@ import React, { useContext } from "react";
 import { SetteraSchemaContext, useSetteraSearch } from "@settera/react";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
+import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SetteraSectionProps {
   pageKey: string;
   sectionKey: string;
+  customSettings?: Record<
+    string,
+    React.ComponentType<SetteraCustomSettingProps>
+  >;
 }
 
 /**
  * Renders a section heading + description + auto-rendered settings.
  * Handles subsections as nested groups.
  */
-export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
+export function SetteraSection({
+  pageKey,
+  sectionKey,
+  customSettings,
+}: SetteraSectionProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
@@ -95,6 +104,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
               key={setting.key}
               settingKey={setting.key}
               isLast={i === visibleSettings.length - 1}
+              customSettings={customSettings}
             />
           ))}
         </div>
@@ -149,6 +159,7 @@ export function SetteraSection({ pageKey, sectionKey }: SetteraSectionProps) {
                   key={setting.key}
                   settingKey={setting.key}
                   isLast={i === subSettings.length - 1}
+                  customSettings={customSettings}
                 />
               ))}
             </div>

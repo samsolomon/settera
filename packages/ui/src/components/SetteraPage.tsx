@@ -6,11 +6,16 @@ import {
 } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
+import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
   customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
+  customSettings?: Record<
+    string,
+    React.ComponentType<SetteraCustomSettingProps>
+  >;
 }
 
 export interface SetteraCustomPageProps {
@@ -22,7 +27,11 @@ export interface SetteraCustomPageProps {
  * Renders all sections for a page.
  * Defaults to the active page from navigation context, but accepts an explicit pageKey override.
  */
-export function SetteraPage({ pageKey, customPages }: SetteraPageProps) {
+export function SetteraPage({
+  pageKey,
+  customPages,
+  customSettings,
+}: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage } = useSetteraNavigation();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
@@ -115,6 +124,7 @@ export function SetteraPage({ pageKey, customPages }: SetteraPageProps) {
             key={section.key}
             pageKey={resolvedKey}
             sectionKey={section.key}
+            customSettings={customSettings}
           />
         ))}
     </div>

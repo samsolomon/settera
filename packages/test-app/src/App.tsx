@@ -11,9 +11,14 @@ import {
   useSettera,
   useSetteraAction,
   useSetteraNavigation,
+  useSetteraSetting,
   evaluateVisibility,
 } from "@settera/react";
-import { SetteraLayout, type SetteraCustomPageProps } from "@settera/ui";
+import {
+  SetteraLayout,
+  type SetteraCustomPageProps,
+  type SetteraCustomSettingProps,
+} from "@settera/ui";
 import { demoSchema } from "./schema.js";
 
 type DemoMode = "schema" | "headless" | "ui";
@@ -477,6 +482,41 @@ function UsersPage({ page }: SetteraCustomPageProps) {
   );
 }
 
+function SignatureCardSetting({
+  settingKey,
+  definition,
+}: SetteraCustomSettingProps) {
+  const { value, setValue } = useSetteraSetting(settingKey);
+
+  return (
+    <div
+      style={{
+        border: "1px dashed #d1d5db",
+        borderRadius: "10px",
+        padding: "10px",
+        minWidth: "260px",
+      }}
+    >
+      <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "6px" }}>
+        {String(definition.config?.label ?? "Signature")}
+      </div>
+      <input
+        aria-label="Signature card input"
+        value={typeof value === "string" ? value : ""}
+        placeholder="Kind regards, ..."
+        onChange={(e) => setValue(e.target.value)}
+        style={{
+          width: "100%",
+          fontSize: "14px",
+          padding: "8px 10px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
+        }}
+      />
+    </div>
+  );
+}
+
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [values, setValues] = useState<Record<string, unknown>>({});
@@ -635,6 +675,7 @@ export function App() {
                   href: "/",
                 }}
                 customPages={{ usersPage: UsersPage }}
+                customSettings={{ signatureCard: SignatureCardSetting }}
               />
             )}
             {mode === "headless" && <HeadlessView />}
