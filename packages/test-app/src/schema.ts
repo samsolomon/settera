@@ -180,6 +180,34 @@ export const demoSchema: SetteraSchema = {
               ],
             },
             {
+              key: "profile.publicCard",
+              title: "Public Card (Compound Page)",
+              description:
+                "Compound editor rendered as an expandable page-style panel.",
+              type: "compound",
+              displayStyle: "page",
+              fields: [
+                {
+                  key: "headline",
+                  title: "Headline",
+                  type: "text",
+                  default: "",
+                },
+                {
+                  key: "tagline",
+                  title: "Tagline",
+                  type: "text",
+                  default: "",
+                },
+                {
+                  key: "showLocation",
+                  title: "Show Location",
+                  type: "boolean",
+                  default: true,
+                },
+              ],
+            },
+            {
               key: "profile.aliases",
               title: "Aliases (List)",
               description: "A text list example for list setting behavior.",

@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraSetting } from "@settera/react";
 import type {
   CompoundSetting,
@@ -21,6 +22,8 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
 export function CompoundInput({ settingKey }: CompoundInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPageOpen, setIsPageOpen] = useState(false);
 
   if (definition.type !== "compound") {
     return null;
@@ -57,6 +60,164 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
     [effectiveValue, setValue, validate],
   );
 
+  if (definition.displayStyle === "modal") {
+    return (
+      <div
+        data-testid={`compound-${settingKey}`}
+        aria-invalid={error !== null}
+        aria-describedby={
+          error !== null ? `settera-error-${settingKey}` : undefined
+        }
+      >
+        <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <Dialog.Trigger asChild>
+            <button
+              type="button"
+              style={{
+                fontSize: "var(--settera-button-font-size, 13px)",
+                padding: "6px 10px",
+                borderRadius: "var(--settera-button-border-radius, 6px)",
+                border: "var(--settera-button-border, 1px solid #d1d5db)",
+                backgroundColor: "var(--settera-button-bg, white)",
+                cursor: "pointer",
+              }}
+            >
+              Edit {definition.title}
+            </button>
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <Dialog.Overlay
+              style={{
+                position: "fixed",
+                inset: 0,
+                backgroundColor:
+                  "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
+                zIndex: 1000,
+              }}
+            />
+            <Dialog.Content
+              aria-label={`Edit ${definition.title}`}
+              onEscapeKeyDown={(e) => e.stopPropagation()}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                backgroundColor: "var(--settera-dialog-bg, white)",
+                borderRadius: "var(--settera-dialog-border-radius, 8px)",
+                padding: "var(--settera-dialog-padding, 20px)",
+                maxWidth: "560px",
+                width: "calc(100% - 24px)",
+                boxShadow:
+                  "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
+                zIndex: 1001,
+              }}
+            >
+              <Dialog.Title
+                style={{
+                  margin: "0 0 12px 0",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "var(--settera-title-color, #111827)",
+                }}
+              >
+                {definition.title}
+              </Dialog.Title>
+              <Dialog.Description
+                style={{
+                  margin: "0 0 12px 0",
+                  fontSize: "13px",
+                  color: "var(--settera-description-color, #6b7280)",
+                }}
+              >
+                {definition.description ?? `Edit ${definition.title}.`}
+              </Dialog.Description>
+              <CompoundFields
+                settingKey={settingKey}
+                fields={definition.fields}
+                getFieldValue={getFieldValue}
+                updateField={updateField}
+              />
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    style={{
+                      fontSize: "var(--settera-button-font-size, 13px)",
+                      padding: "6px 10px",
+                      borderRadius: "var(--settera-button-border-radius, 6px)",
+                      border: "var(--settera-button-border, 1px solid #d1d5db)",
+                      backgroundColor: "var(--settera-button-bg, white)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Done
+                  </button>
+                </Dialog.Close>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </div>
+    );
+  }
+
+  if (definition.displayStyle === "page") {
+    return (
+      <div
+        data-testid={`compound-${settingKey}`}
+        aria-invalid={error !== null}
+        aria-describedby={
+          error !== null ? `settera-error-${settingKey}` : undefined
+        }
+        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+      >
+        <button
+          type="button"
+          onClick={() => setIsPageOpen((open) => !open)}
+          aria-expanded={isPageOpen}
+          aria-controls={`compound-page-panel-${settingKey}`}
+          style={{
+            alignSelf: "flex-start",
+            fontSize: "var(--settera-button-font-size, 13px)",
+            padding: "6px 10px",
+            borderRadius: "var(--settera-button-border-radius, 6px)",
+            border: "var(--settera-button-border, 1px solid #d1d5db)",
+            backgroundColor: "var(--settera-button-bg, white)",
+            cursor: "pointer",
+          }}
+        >
+          {isPageOpen ? "Close" : "Open"} {definition.title}
+        </button>
+
+        {isPageOpen && (
+          <div
+            data-testid={`compound-page-panel-${settingKey}`}
+            id={`compound-page-panel-${settingKey}`}
+            style={{
+              border: "1px solid #e5e7eb",
+              borderRadius: "10px",
+              padding: "12px",
+            }}
+          >
+            <CompoundFields
+              settingKey={settingKey}
+              fields={definition.fields}
+              getFieldValue={getFieldValue}
+              updateField={updateField}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       data-testid={`compound-${settingKey}`}
@@ -70,7 +231,30 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
         gap: "var(--settera-compound-gap, 10px)",
       }}
     >
-      {definition.fields.map((field) => {
+      <CompoundFields
+        settingKey={settingKey}
+        fields={definition.fields}
+        getFieldValue={getFieldValue}
+        updateField={updateField}
+      />
+    </div>
+  );
+}
+
+function CompoundFields({
+  settingKey,
+  fields,
+  getFieldValue,
+  updateField,
+}: {
+  settingKey: string;
+  fields: CompoundSetting["fields"];
+  getFieldValue: (field: CompoundField) => unknown;
+  updateField: (fieldKey: string, nextFieldValue: unknown) => void;
+}) {
+  return (
+    <>
+      {fields.map((field) => {
         const fieldId = `settera-compound-${settingKey}-${field.key}`;
         const fieldValue = getFieldValue(field);
 
@@ -91,7 +275,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
           </label>
         );
       })}
-    </div>
+    </>
   );
 }
 

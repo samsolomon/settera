@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraSetting } from "../components/SetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -90,6 +91,32 @@ const schema: SetteraSchema = {
                   title: "Public",
                   type: "boolean",
                   default: false,
+                },
+              ],
+            },
+            {
+              key: "profileModal",
+              title: "Profile Modal",
+              type: "compound",
+              displayStyle: "modal",
+              fields: [
+                {
+                  key: "nickname",
+                  title: "Modal Nickname",
+                  type: "text",
+                },
+              ],
+            },
+            {
+              key: "profilePage",
+              title: "Profile Page",
+              type: "compound",
+              displayStyle: "page",
+              fields: [
+                {
+                  key: "nickname",
+                  title: "Page Nickname",
+                  type: "text",
                 },
               ],
             },
@@ -264,5 +291,26 @@ describe("SetteraSetting", () => {
       nickname: "Alex",
       public: false,
     });
+  });
+
+  it("renders modal compound fields only after opening dialog", async () => {
+    const user = userEvent.setup();
+    renderSetting("profileModal", { profileModal: { nickname: "Sam" } });
+
+    expect(screen.queryByLabelText("Modal Nickname")).toBeNull();
+    await user.click(
+      screen.getByRole("button", { name: "Edit Profile Modal" }),
+    );
+    expect(screen.getByLabelText("Modal Nickname")).toBeDefined();
+  });
+
+  it("renders page compound panel only after open button", async () => {
+    const user = userEvent.setup();
+    renderSetting("profilePage", { profilePage: { nickname: "Sam" } });
+
+    expect(screen.queryByTestId("compound-page-panel-profilePage")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Open Profile Page" }));
+    expect(screen.getByTestId("compound-page-panel-profilePage")).toBeDefined();
+    expect(screen.getByLabelText("Page Nickname")).toBeDefined();
   });
 });
