@@ -114,6 +114,71 @@ export const demoSchema: SetteraSchema = {
                 maxDate: "2010-01-01",
               },
             },
+            {
+              key: "profile.preferences",
+              title: "Profile Preferences (Compound Inline)",
+              description:
+                "Demo compound object that edits multiple profile fields together.",
+              type: "compound",
+              displayStyle: "inline",
+              fields: [
+                {
+                  key: "pronouns",
+                  title: "Pronouns",
+                  type: "text",
+                  default: "",
+                },
+                {
+                  key: "profileVisibility",
+                  title: "Public Profile",
+                  type: "boolean",
+                  default: false,
+                },
+                {
+                  key: "timezone",
+                  title: "Timezone",
+                  type: "select",
+                  options: [
+                    { value: "utc", label: "UTC" },
+                    { value: "pst", label: "Pacific" },
+                    { value: "est", label: "Eastern" },
+                  ],
+                  default: "utc",
+                },
+              ],
+            },
+            {
+              key: "profile.contactCard",
+              title: "Emergency Contact (Compound Modal)",
+              description:
+                "Second compound example using modal display style in schema.",
+              type: "compound",
+              displayStyle: "modal",
+              fields: [
+                {
+                  key: "name",
+                  title: "Contact Name",
+                  type: "text",
+                },
+                {
+                  key: "phone",
+                  title: "Phone Number",
+                  type: "text",
+                  inputType: "text",
+                },
+                {
+                  key: "methods",
+                  title: "Preferred Contact Methods",
+                  type: "multiselect",
+                  options: [
+                    { value: "call", label: "Call" },
+                    { value: "sms", label: "SMS" },
+                    { value: "email", label: "Email" },
+                  ],
+                  default: ["call"],
+                },
+              ],
+            },
           ],
         },
         {

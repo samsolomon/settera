@@ -129,16 +129,22 @@ function renderFieldControl(
       );
     case "date":
       return (
-        <input
-          id={fieldId}
-          type="date"
-          value={typeof fieldValue === "string" ? fieldValue : ""}
-          onChange={(e) => onChange(field.key, e.target.value)}
-          style={inputStyles}
+        <CompoundDateField
+          field={field}
+          fieldId={fieldId}
+          fieldValue={fieldValue}
+          onChange={onChange}
         />
       );
     case "select":
-      return renderSelectField(field, fieldId, fieldValue, onChange);
+      return (
+        <CompoundSelectField
+          field={field}
+          fieldId={fieldId}
+          fieldValue={fieldValue}
+          onChange={onChange}
+        />
+      );
     case "multiselect":
       return renderMultiSelectField(field, fieldId, fieldValue, onChange);
     default:
@@ -159,6 +165,7 @@ function CompoundTextField({
 }) {
   const committed = typeof fieldValue === "string" ? fieldValue : "";
   const [localValue, setLocalValue] = useState(committed);
+  const [isFocused, setIsFocused] = useState(false);
   const localRef = useRef(localValue);
   const focusedRef = useRef(false);
 
@@ -187,9 +194,11 @@ function CompoundTextField({
         setLocalValue(e.target.value);
       }}
       onFocus={() => {
+        setIsFocused(true);
         focusedRef.current = true;
       }}
       onBlur={() => {
+        setIsFocused(false);
         focusedRef.current = false;
         commit();
       }}
@@ -201,7 +210,12 @@ function CompoundTextField({
           setLocalValue(committed);
         }
       }}
-      style={inputStyles}
+      style={{
+        ...inputStyles,
+        boxShadow: isFocused
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
+      }}
     />
   );
 }
@@ -220,6 +234,7 @@ function CompoundNumberField({
   const committed =
     fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "";
   const [localValue, setLocalValue] = useState(committed);
+  const [isFocused, setIsFocused] = useState(false);
   const localRef = useRef(localValue);
   const focusedRef = useRef(false);
 
@@ -260,9 +275,11 @@ function CompoundNumberField({
         setLocalValue(e.target.value);
       }}
       onFocus={() => {
+        setIsFocused(true);
         focusedRef.current = true;
       }}
       onBlur={() => {
+        setIsFocused(false);
         focusedRef.current = false;
         commit();
       }}
@@ -274,8 +291,81 @@ function CompoundNumberField({
           setLocalValue(committed);
         }
       }}
-      style={inputStyles}
+      style={{
+        ...inputStyles,
+        boxShadow: isFocused
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
+      }}
     />
+  );
+}
+
+function CompoundDateField({
+  field,
+  fieldId,
+  fieldValue,
+  onChange,
+}: {
+  field: Extract<CompoundField, { type: "date" }>;
+  fieldId: string;
+  fieldValue: unknown;
+  onChange: (fieldKey: string, value: unknown) => void;
+}) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  return (
+    <input
+      id={fieldId}
+      type="date"
+      value={typeof fieldValue === "string" ? fieldValue : ""}
+      onChange={(e) => onChange(field.key, e.target.value)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      style={{
+        ...inputStyles,
+        boxShadow: isFocused
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
+      }}
+    />
+  );
+}
+
+function CompoundSelectField({
+  field,
+  fieldId,
+  fieldValue,
+  onChange,
+}: {
+  field: SelectSetting;
+  fieldId: string;
+  fieldValue: unknown;
+  onChange: (fieldKey: string, value: unknown) => void;
+}) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  return (
+    <select
+      id={fieldId}
+      value={typeof fieldValue === "string" ? fieldValue : ""}
+      onChange={(e) => onChange(field.key, e.target.value)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      style={{
+        ...inputStyles,
+        boxShadow: isFocused
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
+      }}
+    >
+      <option value="">Select...</option>
+      {field.options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -296,29 +386,6 @@ function renderBooleanField(
         height: "var(--settera-checkbox-size, 16px)",
       }}
     />
-  );
-}
-
-function renderSelectField(
-  field: SelectSetting,
-  fieldId: string,
-  fieldValue: unknown,
-  onChange: (fieldKey: string, value: unknown) => void,
-) {
-  return (
-    <select
-      id={fieldId}
-      value={typeof fieldValue === "string" ? fieldValue : ""}
-      onChange={(e) => onChange(field.key, e.target.value)}
-      style={inputStyles}
-    >
-      <option value="">Select...</option>
-      {field.options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
   );
 }
 
@@ -367,7 +434,6 @@ const inputStyles: React.CSSProperties = {
   padding: "var(--settera-input-padding, 6px 10px)",
   borderRadius: "var(--settera-input-border-radius, 6px)",
   border: "var(--settera-input-border, 1px solid #d1d5db)",
-  outline: "none",
   width: "var(--settera-input-width, 200px)",
   color: "var(--settera-input-color, #111827)",
   backgroundColor: "var(--settera-input-bg, white)",
