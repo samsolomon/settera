@@ -100,9 +100,485 @@ const schema: SetteraSchema = {
 | `multiselect` | Multi-choice selection | Instant |
 | `date` | Date picker (native `<input type="date">`) | On blur |
 | `compound` | Multi-field group with scoped Save/Cancel | On save |
-| `list` | Add/remove/reorder list of items | On save |
+| `repeatable` | Add/remove/reorder list of items | On save |
 | `action` | Button that triggers a callback or modal | On click |
 | `custom` | Developer-provided renderer | Developer-defined |
+
+### Common Properties
+
+Every setting type supports these properties:
+
+```typescript
+{
+  key: string;           // Globally unique identifier (e.g. "general.autoSave")
+  title: string;         // Display label
+  description?: string;  // Shown below the title
+  helpText?: string;     // Expandable help block below the description
+  dangerous?: boolean;   // Renders the title in a warning style
+  visibleWhen?: VisibilityCondition | VisibilityCondition[];  // Conditional visibility
+  confirm?: ConfirmConfig;  // Require confirmation before applying a change
+}
+```
+
+### Boolean
+
+A toggle switch. Changes apply instantly.
+
+```typescript
+{
+  key: "general.autoSave",
+  title: "Auto Save",
+  description: "Automatically save changes when you leave a field.",
+  helpText: "Changes are saved to local storage automatically.",
+  type: "boolean",
+  default: true,
+}
+```
+
+Boolean settings do not support `validation`. Use `confirm` for dangerous toggles:
+
+```typescript
+{
+  key: "advanced.experimental",
+  title: "Enable Experimental Features",
+  description: "Turn on features that are still in development.",
+  type: "boolean",
+  default: false,
+  dangerous: true,
+  confirm: {
+    title: "Enable Experimental Features?",
+    message: "Experimental features may cause instability. Proceed?",
+  },
+}
+```
+
+### Text
+
+A single-line text input. Changes apply on blur or Enter.
+
+```typescript
+{
+  key: "profile.displayName",
+  title: "Display Name",
+  description: "Your name as shown to other users.",
+  type: "text",
+  default: "",
+  placeholder: "Enter your name",
+  inputType: "text",  // "text" | "email" | "url" | "password"
+  validation: {
+    required: true,
+    minLength: 2,
+    maxLength: 50,
+    pattern: "^[a-zA-Z ]+$",  // Regex string
+    message: "Custom error message",  // Overrides all default error messages
+  },
+}
+```
+
+Use `inputType` to get browser-native behavior for email, URL, or password fields:
+
+```typescript
+{
+  key: "profile.email",
+  title: "Email Address",
+  type: "text",
+  inputType: "email",
+  placeholder: "you@example.com",
+  validation: {
+    required: true,
+    pattern: "^[^@]+@[^@]+\\.[^@]+$",
+    message: "Please enter a valid email address",
+  },
+}
+```
+
+### Number
+
+A numeric input. Changes apply on blur or Enter.
+
+```typescript
+{
+  key: "appearance.fontSize",
+  title: "Font Size",
+  description: "Base font size in pixels.",
+  type: "number",
+  default: 14,
+  placeholder: "14",
+  validation: {
+    required: true,
+    min: 10,
+    max: 24,
+    message: "Font size must be between 10 and 24",
+  },
+}
+```
+
+### Select
+
+A single-choice dropdown. Changes apply instantly.
+
+```typescript
+{
+  key: "appearance.theme",
+  title: "Theme",
+  description: "Choose the visual theme for the application.",
+  type: "select",
+  options: [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "System" },
+  ],
+  default: "system",
+  validation: {
+    required: true,
+  },
+}
+```
+
+`default` must be one of the option `value`s. Option values must be unique.
+
+### Multiselect
+
+A multi-choice selection. Changes apply instantly.
+
+```typescript
+{
+  key: "general.channels",
+  title: "Notification Channels",
+  description: "Choose how you want to receive notifications.",
+  type: "multiselect",
+  options: [
+    { value: "email", label: "Email" },
+    { value: "sms", label: "SMS" },
+    { value: "push", label: "Push Notifications" },
+    { value: "in-app", label: "In-App" },
+  ],
+  default: ["email", "in-app"],
+  validation: {
+    required: true,
+    minSelections: 1,
+    maxSelections: 3,
+  },
+}
+```
+
+The value is a `string[]`. Each default value must be one of the option `value`s.
+
+### Date
+
+A date picker using native `<input type="date">`. Changes apply on blur.
+
+```typescript
+{
+  key: "profile.birthday",
+  title: "Birthday",
+  description: "Your date of birth (used for age verification).",
+  type: "date",
+  default: "2000-01-15",  // ISO date string
+  validation: {
+    required: true,
+    minDate: "1900-01-01",
+    maxDate: "2010-01-01",
+  },
+}
+```
+
+All date values use ISO format (`YYYY-MM-DD`).
+
+### Compound
+
+A multi-field group with scoped Save/Cancel. Groups related fields into a single setting that stores an object value.
+
+`displayStyle` controls how the editor appears:
+- `"inline"` — fields render directly in the settings row
+- `"modal"` — fields open in a dialog
+- `"page"` — fields expand into a page-style panel
+
+**Inline compound:**
+
+```typescript
+{
+  key: "profile.preferences",
+  title: "Profile Preferences",
+  description: "Edit multiple profile fields together.",
+  type: "compound",
+  displayStyle: "inline",
+  fields: [
+    {
+      key: "pronouns",
+      title: "Pronouns",
+      type: "text",
+      default: "",
+    },
+    {
+      key: "profileVisibility",
+      title: "Public Profile",
+      type: "boolean",
+      default: false,
+    },
+    {
+      key: "timezone",
+      title: "Timezone",
+      type: "select",
+      options: [
+        { value: "utc", label: "UTC" },
+        { value: "pst", label: "Pacific" },
+        { value: "est", label: "Eastern" },
+      ],
+      default: "utc",
+    },
+  ],
+}
+```
+
+**Modal compound:**
+
+```typescript
+{
+  key: "profile.contactCard",
+  title: "Emergency Contact",
+  description: "Opens a dialog to edit contact details.",
+  type: "compound",
+  displayStyle: "modal",
+  fields: [
+    {
+      key: "name",
+      title: "Contact Name",
+      type: "text",
+    },
+    {
+      key: "phone",
+      title: "Phone Number",
+      type: "text",
+    },
+    {
+      key: "methods",
+      title: "Preferred Contact Methods",
+      type: "multiselect",
+      options: [
+        { value: "call", label: "Call" },
+        { value: "sms", label: "SMS" },
+        { value: "email", label: "Email" },
+      ],
+      default: ["call"],
+    },
+  ],
+}
+```
+
+**Page compound:**
+
+```typescript
+{
+  key: "profile.publicCard",
+  title: "Public Card",
+  description: "Expands into a page-style panel for editing.",
+  type: "compound",
+  displayStyle: "page",
+  fields: [
+    {
+      key: "headline",
+      title: "Headline",
+      type: "text",
+      default: "",
+    },
+    {
+      key: "showLocation",
+      title: "Show Location",
+      type: "boolean",
+      default: true,
+    },
+  ],
+}
+```
+
+The stored value is a `Record<string, unknown>` keyed by field keys. Field keys must not contain dots. Fields support text, number, select, multiselect, date, and boolean types.
+
+Compound settings support cross-field validation rules:
+
+```typescript
+{
+  type: "compound",
+  // ...fields
+  validation: {
+    rules: [
+      {
+        when: "phone",         // When this field has a value...
+        require: "name",       // ...require this other field
+        message: "Name is required when phone is provided",
+      },
+    ],
+  },
+}
+```
+
+### Repeatable
+
+An add/remove/reorder list. Changes apply on save.
+
+**Text list** — each item is a string:
+
+```typescript
+{
+  key: "profile.aliases",
+  title: "Aliases",
+  description: "Alternative names for your account.",
+  type: "repeatable",
+  itemType: "text",
+  default: ["Sam"],
+  validation: {
+    minItems: 1,
+    maxItems: 4,
+  },
+}
+```
+
+**Compound list** — each item is a multi-field object:
+
+```typescript
+{
+  key: "profile.socialLinks",
+  title: "Social Links",
+  description: "Links to your social profiles.",
+  type: "repeatable",
+  itemType: "compound",
+  itemFields: [
+    {
+      key: "label",
+      title: "Label",
+      type: "text",
+      default: "",
+    },
+    {
+      key: "url",
+      title: "URL",
+      type: "text",
+      inputType: "url",
+      default: "",
+    },
+    {
+      key: "visibility",
+      title: "Visibility",
+      type: "select",
+      options: [
+        { value: "public", label: "Public" },
+        { value: "private", label: "Private" },
+      ],
+      default: "public",
+    },
+    {
+      key: "featured",
+      title: "Featured",
+      type: "boolean",
+      default: false,
+    },
+  ],
+  default: [],
+  validation: {
+    maxItems: 5,
+  },
+}
+```
+
+When `itemType` is `"text"`, the value is `string[]`. When `itemType` is `"compound"`, the value is `Array<Record<string, unknown>>` and `itemFields` is required. Item fields support text, number, select, and boolean types.
+
+### Action
+
+A button that triggers a callback. Does not store a value.
+
+```typescript
+{
+  key: "actions.export",
+  title: "Export Data",
+  description: "Download all your data as a JSON file.",
+  type: "action",
+  buttonLabel: "Export",
+  actionType: "callback",
+}
+```
+
+Mark destructive actions with `dangerous`:
+
+```typescript
+{
+  key: "actions.deleteAccount",
+  title: "Delete Account",
+  description: "Permanently delete your account. This cannot be undone.",
+  type: "action",
+  buttonLabel: "Delete Account",
+  actionType: "callback",
+  dangerous: true,
+}
+```
+
+Action handlers are provided via the `onAction` prop on `SetteraRenderer`:
+
+```tsx
+<SetteraRenderer
+  values={values}
+  onChange={handleChange}
+  onAction={{
+    "actions.export": async () => {
+      const data = await fetchUserData();
+      downloadAsJson(data);
+    },
+    "actions.deleteAccount": async () => {
+      await deleteAccount();
+    },
+  }}
+/>
+```
+
+If the handler returns a Promise, the button automatically shows a loading state while it resolves.
+
+### Custom
+
+A developer-provided renderer for setting types not covered by the built-ins.
+
+**Schema definition:**
+
+```typescript
+{
+  key: "profile.signatureCard",
+  title: "Signature Card",
+  description: "Custom-rendered setting surface for app-specific UI.",
+  type: "custom",
+  renderer: "signatureCard",     // Must match a key in the customSettings registry
+  config: {                       // Arbitrary config passed to your component
+    label: "Public signature",
+  },
+  default: null,
+  validation: {
+    required: true,
+  },
+}
+```
+
+**Register the custom component:**
+
+```tsx
+import { SetteraLayout } from "@settera/ui";
+import { useSetteraSetting } from "@settera/react";
+
+function SignatureCard({ settingKey, definition }) {
+  const { value, setValue } = useSetteraSetting(settingKey);
+
+  return (
+    <div>
+      <label>{definition.config?.label}</label>
+      <canvas /* your custom UI */ />
+    </div>
+  );
+}
+
+<SetteraLayout
+  customSettings={{
+    signatureCard: SignatureCard,
+  }}
+/>
+```
+
+The component receives `{ settingKey: string; definition: CustomSetting }` and uses hooks like `useSetteraSetting` to read/write the value.
 
 ## Features
 
@@ -199,9 +675,6 @@ Settera is in active development. Here's what's been built and what's planned.
 
 ### Planned
 
-- **Compound settings** — Modal, subpage, and inline editing contexts with scoped Save/Cancel and batch onChange
-- **List settings** — Add/remove/reorder for text and compound lists
-- **Custom renderer registration** — Full integration of the custom setting type extension point
 - **Mobile responsive layout** — Full-screen drill-down navigation for narrow viewports
 - **Dangerous setting styling** — Warning colors and enhanced confirmation UX
 - **Icon mapping** — Lucide icon integration for sidebar navigation
