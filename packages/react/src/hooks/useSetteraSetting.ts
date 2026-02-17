@@ -88,15 +88,15 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
   // Suppressed when a confirm dialog is pending for this key to avoid showing
   // validation errors for an uncommitted value.
   const onValidate = valuesCtx.onValidate;
-  const pendingConfirm = valuesCtx.pendingConfirm;
+  const pendingConfirmKey = valuesCtx.pendingConfirm?.key;
   const validate = useCallback(
     async (valueOverride?: unknown): Promise<string | null> => {
       // Suppress validation while confirm is pending for this key
-      if (pendingConfirm?.key === key) return null;
+      if (pendingConfirmKey === key) return null;
 
       // Use explicit value when provided (avoids stale-closure after setValue)
       const currentValue =
-        valueOverride !== undefined ? valueOverride : valuesCtx.values[key];
+        valueOverride !== undefined ? valueOverride : value;
       const syncError = validateSettingValue(definition, currentValue);
       if (syncError) {
         contextSetError(key, syncError);
@@ -118,14 +118,7 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
 
       return null;
     },
-    [
-      valuesCtx.values,
-      definition,
-      key,
-      contextSetError,
-      onValidate,
-      pendingConfirm,
-    ],
+    [value, definition, key, contextSetError, onValidate, pendingConfirmKey],
   );
 
   // Error
@@ -140,5 +133,13 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
 
   const saveStatus: SaveStatus = valuesCtx.saveStatus[key] ?? "idle";
 
-  return { value, setValue, error, isVisible, definition, saveStatus, validate };
+  return {
+    value,
+    setValue,
+    error,
+    isVisible,
+    definition,
+    saveStatus,
+    validate,
+  };
 }

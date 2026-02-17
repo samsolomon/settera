@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 
 export interface UseSetteraGlobalKeysOptions {
@@ -40,6 +40,12 @@ export function useSetteraGlobalKeys(
   options: UseSetteraGlobalKeysOptions,
 ): void {
   const { containerRef, clearSearch, searchQuery } = options;
+
+  // Use a ref for searchQuery so the effect doesn't re-run on every keystroke
+  const searchQueryRef = useRef(searchQuery);
+  useEffect(() => {
+    searchQueryRef.current = searchQuery;
+  }, [searchQuery]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -94,7 +100,12 @@ export function useSetteraGlobalKeys(
           container.querySelector<HTMLElement>('nav[role="tree"]');
 
         // 3. Text/number input in content → blur, focus enclosing card
-        if (main && activeEl && main.contains(activeEl) && isTextInput(activeEl)) {
+        if (
+          main &&
+          activeEl &&
+          main.contains(activeEl) &&
+          isTextInput(activeEl)
+        ) {
           e.preventDefault();
           (activeEl as HTMLElement).blur();
           const card = activeEl.closest<HTMLElement>("[data-setting-key]");
@@ -126,7 +137,7 @@ export function useSetteraGlobalKeys(
         }
 
         // 6. Search query active — clear search
-        if (searchQuery) {
+        if (searchQueryRef.current) {
           e.preventDefault();
           clearSearch();
         }
@@ -177,5 +188,5 @@ export function useSetteraGlobalKeys(
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [containerRef, clearSearch, searchQuery]);
+  }, [containerRef, clearSearch]);
 }

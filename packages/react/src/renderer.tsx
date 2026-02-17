@@ -73,12 +73,16 @@ export function SetteraRenderer({
   // ---- Async save tracking ----
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
   const saveGenerationRef = useRef<Record<string, number>>({});
+  const saveTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      for (const timer of Object.values(saveTimersRef.current)) {
+        clearTimeout(timer);
+      }
     };
   }, []);
 
@@ -97,7 +101,8 @@ export function SetteraRenderer({
             if (!mountedRef.current) return;
             if (saveGenerationRef.current[key] !== gen) return;
             setSaveStatus((prev) => ({ ...prev, [key]: "saved" }));
-            setTimeout(() => {
+            clearTimeout(saveTimersRef.current[key]);
+            saveTimersRef.current[key] = setTimeout(() => {
               if (!mountedRef.current) return;
               if (saveGenerationRef.current[key] !== gen) return;
               setSaveStatus((prev) => ({ ...prev, [key]: "idle" }));
