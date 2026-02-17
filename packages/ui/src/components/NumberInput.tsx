@@ -76,16 +76,9 @@ export function NumberInput({ settingKey }: NumberInputProps) {
     commit();
   }, [commit]);
 
-  const pointerDownRef = useRef(false);
-
-  const handlePointerDown = useCallback(() => {
-    pointerDownRef.current = true;
-  }, []);
-
   const handleFocus = useCallback(() => {
     isFocusedRef.current = true;
-    setIsFocusVisible(!pointerDownRef.current);
-    pointerDownRef.current = false;
+    setIsFocusVisible(true);
   }, []);
 
   const handleKeyDown = useCallback(
@@ -109,7 +102,6 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
-      onPointerDown={handlePointerDown}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 import { ControlInput } from "./ControlPrimitives.js";
 
@@ -39,15 +39,8 @@ export function DateInput({ settingKey }: DateInputProps) {
     validate();
   }, [validate]);
 
-  const pointerDownRef = useRef(false);
-
-  const handlePointerDown = useCallback(() => {
-    pointerDownRef.current = true;
-  }, []);
-
   const handleFocus = useCallback(() => {
-    setIsFocusVisible(!pointerDownRef.current);
-    pointerDownRef.current = false;
+    setIsFocusVisible(true);
   }, []);
 
   const hasError = error !== null;
@@ -58,7 +51,6 @@ export function DateInput({ settingKey }: DateInputProps) {
       value={typeof value === "string" ? value : ""}
       onChange={handleChange}
       onBlur={handleBlur}
-      onPointerDown={handlePointerDown}
       onFocus={handleFocus}
       min={minDate}
       max={maxDate}
