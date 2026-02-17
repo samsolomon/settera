@@ -68,6 +68,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
       if (nextIndex < 0 || nextIndex >= checkboxes.length) return;
 
       event.preventDefault();
+      event.stopPropagation();
       checkboxes[nextIndex].focus();
     },
     [],

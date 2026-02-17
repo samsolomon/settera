@@ -32,6 +32,8 @@ export { MultiSelect } from "./components/MultiSelect.js";
 export type { MultiSelectProps } from "./components/MultiSelect.js";
 export { DateInput } from "./components/DateInput.js";
 export type { DateInputProps } from "./components/DateInput.js";
+export { CompoundInput } from "./components/CompoundInput.js";
+export type { CompoundInputProps } from "./components/CompoundInput.js";
 export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
 // Utilities

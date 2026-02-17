@@ -8,6 +8,7 @@ import { Select } from "./Select.js";
 import { ActionButton } from "./ActionButton.js";
 import { MultiSelect } from "./MultiSelect.js";
 import { DateInput } from "./DateInput.js";
+import { CompoundInput } from "./CompoundInput.js";
 
 export interface SetteraSettingProps {
   settingKey: string;
@@ -51,6 +52,9 @@ export function SetteraSetting({ settingKey, isLast }: SetteraSettingProps) {
       break;
     case "date":
       control = <DateInput settingKey={settingKey} />;
+      break;
+    case "compound":
+      control = <CompoundInput settingKey={settingKey} />;
       break;
     case "action":
       control = <ActionButton settingKey={settingKey} />;

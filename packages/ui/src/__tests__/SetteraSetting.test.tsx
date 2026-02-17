@@ -1,6 +1,6 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
 import { SetteraSetting } from "../components/SetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -66,6 +66,25 @@ const schema: SetteraSchema = {
               title: "Hidden Setting",
               type: "boolean",
               visibleWhen: { setting: "toggle", equals: true },
+            },
+            {
+              key: "profile",
+              title: "Profile",
+              type: "compound",
+              displayStyle: "inline",
+              fields: [
+                {
+                  key: "nickname",
+                  title: "Nickname",
+                  type: "text",
+                },
+                {
+                  key: "public",
+                  title: "Public",
+                  type: "boolean",
+                  default: false,
+                },
+              ],
             },
           ],
         },
@@ -137,5 +156,61 @@ describe("SetteraSetting", () => {
   it("respects visibility — hidden when condition not met", () => {
     renderSetting("hidden", { toggle: false });
     expect(screen.queryByText("Hidden Setting")).toBeNull();
+  });
+
+  it("renders CompoundInput fields for compound type", () => {
+    renderSetting("profile", { profile: { nickname: "Sam" } });
+    expect(screen.getByLabelText("Nickname")).toBeDefined();
+    expect(screen.getByLabelText("Public")).toBeDefined();
+  });
+
+  it("updates compound value as a single object", () => {
+    const onChange = vi.fn();
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
+          values={{ profile: { nickname: "Sam", public: false } }}
+          onChange={onChange}
+        >
+          <SetteraSetting settingKey="profile" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Nickname"), {
+      target: { value: "Alex" },
+    });
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.blur(screen.getByLabelText("Nickname"));
+
+    expect(onChange).toHaveBeenCalledWith("profile", {
+      nickname: "Alex",
+      public: false,
+    });
+  });
+
+  it("keeps defaulted compound fields in emitted object", () => {
+    const onChange = vi.fn();
+    render(
+      <SetteraProvider schema={schema}>
+        <SetteraRenderer
+          values={{ profile: { nickname: "Sam" } }}
+          onChange={onChange}
+        >
+          <SetteraSetting settingKey="profile" />
+        </SetteraRenderer>
+      </SetteraProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Nickname"), {
+      target: { value: "Alex" },
+    });
+    fireEvent.blur(screen.getByLabelText("Nickname"));
+
+    expect(onChange).toHaveBeenCalledWith("profile", {
+      nickname: "Alex",
+      public: false,
+    });
   });
 });
