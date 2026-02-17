@@ -128,6 +128,27 @@ describe("RepeatableInput", () => {
     expect(onChange).toHaveBeenCalledWith("tags", ["beta"]);
   });
 
+  it("reorders text items down", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha", "beta"] }, onChange);
+
+    await user.click(screen.getByLabelText("Move item 1 down"));
+    expect(onChange).toHaveBeenCalledWith("tags", ["beta", "alpha"]);
+  });
+
+  it("reorders text items using pending draft values", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("tags", { tags: ["alpha", "beta"] }, onChange);
+
+    await user.click(screen.getByLabelText("List item 1"));
+    await user.type(screen.getByLabelText("List item 1"), "x");
+    await user.click(screen.getByLabelText("Move item 1 down"));
+
+    expect(onChange).toHaveBeenCalledWith("tags", ["beta", "alphax"]);
+  });
+
   it("disables add button at maxItems", () => {
     renderRepeatableInput("tags", { tags: ["a", "b", "c"] });
     const add = screen.getByRole("button", {
@@ -193,6 +214,28 @@ describe("RepeatableInput", () => {
 
     expect(onChange).toHaveBeenCalledWith("addresses", [
       { street: "456 Park", primary: false },
+    ]);
+  });
+
+  it("reorders compound items", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput(
+      "addresses",
+      {
+        addresses: [
+          { street: "One", primary: false },
+          { street: "Two", primary: true },
+        ],
+      },
+      onChange,
+    );
+
+    await user.click(screen.getByLabelText("Move item 1 down"));
+
+    expect(onChange).toHaveBeenCalledWith("addresses", [
+      { street: "Two", primary: true },
+      { street: "One", primary: false },
     ]);
   });
 });

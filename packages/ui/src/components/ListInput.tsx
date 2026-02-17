@@ -51,12 +51,20 @@ function ListTextItem({
   onCommit: onCommitProp,
   onDraftChange,
   onRemove,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
 }: {
   item: string;
   index: number;
   onCommit: (index: number, nextValue: string) => void;
   onDraftChange: (index: number, nextValue: string) => void;
   onRemove: (index: number) => void;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const handleCommit = useCallback(
     (local: string) => {
@@ -100,6 +108,42 @@ function ListTextItem({
           backgroundColor: "var(--settera-input-bg, white)",
         }}
       />
+
+      <button
+        type="button"
+        aria-label={`Move item ${index + 1} up`}
+        onClick={() => onMoveUp(index)}
+        disabled={isFirst}
+        style={{
+          fontSize: "var(--settera-button-font-size, 13px)",
+          padding: "4px 8px",
+          borderRadius: "var(--settera-button-border-radius, 6px)",
+          border: "var(--settera-button-border, 1px solid #d1d5db)",
+          backgroundColor: "var(--settera-button-bg, white)",
+          cursor: isFirst ? "not-allowed" : "pointer",
+          opacity: isFirst ? 0.6 : 1,
+        }}
+      >
+        Up
+      </button>
+
+      <button
+        type="button"
+        aria-label={`Move item ${index + 1} down`}
+        onClick={() => onMoveDown(index)}
+        disabled={isLast}
+        style={{
+          fontSize: "var(--settera-button-font-size, 13px)",
+          padding: "4px 8px",
+          borderRadius: "var(--settera-button-border-radius, 6px)",
+          border: "var(--settera-button-border, 1px solid #d1d5db)",
+          backgroundColor: "var(--settera-button-bg, white)",
+          cursor: isLast ? "not-allowed" : "pointer",
+          opacity: isLast ? 0.6 : 1,
+        }}
+      >
+        Down
+      </button>
 
       <button
         type="button"
@@ -359,6 +403,35 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
     [definition.itemType, getLatestTextItems, setValue, validate],
   );
 
+  const moveItem = useCallback(
+    (index: number, direction: "up" | "down") => {
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0) return;
+
+      const base =
+        definition.itemType === "text"
+          ? getLatestTextItems()
+          : [...compoundItemsRef.current];
+
+      if (targetIndex >= base.length) return;
+
+      const next = [...base];
+      const current = next[index];
+      next[index] = next[targetIndex];
+      next[targetIndex] = current;
+
+      if (definition.itemType === "text") {
+        draftTextValuesRef.current = {};
+      } else {
+        compoundItemsRef.current = next as Record<string, unknown>[];
+      }
+
+      setValue(next);
+      void validate(next);
+    },
+    [definition.itemType, getLatestTextItems, setValue, validate],
+  );
+
   const commitTextItem = useCallback(
     (index: number, nextValue: string) => {
       const next = getLatestTextItems();
@@ -423,6 +496,10 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
             onCommit={commitTextItem}
             onDraftChange={handleDraftChange}
             onRemove={removeItem}
+            onMoveUp={(i) => moveItem(i, "up")}
+            onMoveDown={(i) => moveItem(i, "down")}
+            isFirst={index === 0}
+            isLast={index === textItems.length - 1}
           />
         ))}
 
@@ -458,6 +535,47 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 />
               </label>
             ))}
+
+            <button
+              type="button"
+              aria-label={`Move item ${index + 1} up`}
+              onClick={() => moveItem(index, "up")}
+              disabled={index === 0}
+              style={{
+                alignSelf: "flex-start",
+                fontSize: "var(--settera-button-font-size, 13px)",
+                padding: "4px 8px",
+                borderRadius: "var(--settera-button-border-radius, 6px)",
+                border: "var(--settera-button-border, 1px solid #d1d5db)",
+                backgroundColor: "var(--settera-button-bg, white)",
+                cursor: index === 0 ? "not-allowed" : "pointer",
+                opacity: index === 0 ? 0.6 : 1,
+              }}
+            >
+              Up
+            </button>
+
+            <button
+              type="button"
+              aria-label={`Move item ${index + 1} down`}
+              onClick={() => moveItem(index, "down")}
+              disabled={index === compoundItems.length - 1}
+              style={{
+                alignSelf: "flex-start",
+                fontSize: "var(--settera-button-font-size, 13px)",
+                padding: "4px 8px",
+                borderRadius: "var(--settera-button-border-radius, 6px)",
+                border: "var(--settera-button-border, 1px solid #d1d5db)",
+                backgroundColor: "var(--settera-button-bg, white)",
+                cursor:
+                  index === compoundItems.length - 1
+                    ? "not-allowed"
+                    : "pointer",
+                opacity: index === compoundItems.length - 1 ? 0.6 : 1,
+              }}
+            >
+              Down
+            </button>
 
             <button
               type="button"
