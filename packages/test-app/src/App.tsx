@@ -4,6 +4,7 @@ import {
   getPageByKey,
   type PageDefinition,
   type SettingDefinition,
+  type CompoundFieldDefinition,
 } from "@settera/schema";
 import {
   SetteraProvider,
@@ -70,6 +71,352 @@ function collectPageSettings(page?: PageDefinition): SettingDefinition[] {
   return settings;
 }
 
+const headlessInputStyle: React.CSSProperties = {
+  border: "1px solid #cbd5e1",
+  borderRadius: "8px",
+  padding: "8px 10px",
+  fontSize: "13px",
+  width: "100%",
+};
+
+const headlessButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  background: "#ffffff",
+  padding: "8px 12px",
+  fontSize: "13px",
+  cursor: "pointer",
+};
+
+const headlessSmallButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: "6px",
+  background: "#ffffff",
+  padding: "4px 8px",
+  fontSize: "12px",
+  cursor: "pointer",
+};
+
+function HeadlessFieldControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: CompoundFieldDefinition;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}) {
+  switch (field.type) {
+    case "text":
+      return (
+        <input
+          type={field.inputType ?? "text"}
+          value={typeof value === "string" ? value : ""}
+          placeholder={field.placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          style={headlessInputStyle}
+        />
+      );
+    case "number":
+      return (
+        <input
+          type="number"
+          value={typeof value === "number" ? value : ""}
+          placeholder={field.placeholder}
+          onChange={(e) => {
+            const next = e.target.value;
+            onChange(next === "" ? undefined : Number(next));
+          }}
+          style={{ ...headlessInputStyle, width: "100px" }}
+        />
+      );
+    case "boolean":
+      return (
+        <input
+          type="checkbox"
+          checked={Boolean(value)}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+      );
+    case "select":
+      return (
+        <select
+          value={typeof value === "string" ? value : ""}
+          onChange={(e) => onChange(e.target.value)}
+          style={headlessInputStyle}
+        >
+          {field.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      );
+    case "multiselect":
+      return (
+        <select
+          multiple
+          value={Array.isArray(value) ? value.map(String) : []}
+          onChange={(e) => {
+            const selected = Array.from(e.target.selectedOptions).map(
+              (o) => o.value,
+            );
+            onChange(selected);
+          }}
+          style={{ ...headlessInputStyle, minHeight: "60px" }}
+        >
+          {field.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      );
+    case "date":
+      return (
+        <input
+          type="date"
+          value={typeof value === "string" ? value : ""}
+          onChange={(e) => onChange(e.target.value)}
+          style={headlessInputStyle}
+        />
+      );
+  }
+}
+
+function HeadlessCompoundSetting({ settingKey }: { settingKey: string }) {
+  const { value, setValue, definition } = useSetteraSetting(settingKey);
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (definition.type !== "compound") return null;
+
+  const obj = (
+    typeof value === "object" && value !== null && !Array.isArray(value)
+      ? value
+      : {}
+  ) as Record<string, unknown>;
+
+  const getFieldValue = (field: CompoundFieldDefinition) =>
+    obj[field.key] ?? ("default" in field ? field.default : undefined);
+
+  const updateField = (fieldKey: string, fieldValue: unknown) => {
+    setValue({ ...obj, [fieldKey]: fieldValue });
+  };
+
+  const fieldsUI = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        width: "100%",
+      }}
+    >
+      {definition.fields.map((field) => (
+        <label
+          key={field.key}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+            fontSize: "13px",
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>{field.title}</span>
+          <HeadlessFieldControl
+            field={field}
+            value={getFieldValue(field)}
+            onChange={(v) => updateField(field.key, v)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+
+  if (definition.displayStyle === "inline") return fieldsUI;
+
+  return (
+    <div style={{ width: "100%" }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={headlessButtonStyle}
+      >
+        {isOpen
+          ? "Close"
+          : definition.displayStyle === "modal"
+            ? "Edit"
+            : "Open"}
+      </button>
+      {isOpen && (
+        <div
+          style={{
+            marginTop: "12px",
+            padding: "12px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            background: "#f8fafc",
+          }}
+        >
+          {fieldsUI}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HeadlessRepeatableSetting({ settingKey }: { settingKey: string }) {
+  const { value, setValue, definition } = useSetteraSetting(settingKey);
+
+  if (definition.type !== "repeatable") return null;
+
+  const items = Array.isArray(value) ? (value as unknown[]) : [];
+  const maxItems = definition.validation?.maxItems;
+  const canAdd = maxItems === undefined || items.length < maxItems;
+
+  const updateItem = (index: number, newValue: unknown) => {
+    const next = [...items];
+    next[index] = newValue;
+    setValue(next);
+  };
+
+  const removeItem = (index: number) => {
+    setValue(items.filter((_, i) => i !== index));
+  };
+
+  const moveItem = (index: number, direction: "up" | "down") => {
+    const next = [...items];
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]];
+    setValue(next);
+  };
+
+  const addItem = () => {
+    if (definition.itemType === "text") {
+      setValue([...items, ""]);
+    } else {
+      const defaults: Record<string, unknown> = {};
+      definition.itemFields?.forEach((f) => {
+        if ("default" in f) defaults[f.key] = f.default;
+      });
+      setValue([...items, defaults]);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        width: "100%",
+      }}
+    >
+      {items.map((item, index) => (
+        <div
+          key={index}
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px",
+            padding: "8px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            {definition.itemType === "text" ? (
+              <input
+                type="text"
+                value={typeof item === "string" ? item : ""}
+                onChange={(e) => updateItem(index, e.target.value)}
+                style={headlessInputStyle}
+              />
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                }}
+              >
+                {definition.itemFields?.map((field) => {
+                  const obj = (
+                    typeof item === "object" &&
+                    item !== null &&
+                    !Array.isArray(item)
+                      ? item
+                      : {}
+                  ) as Record<string, unknown>;
+                  return (
+                    <label
+                      key={field.key}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2px",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <span style={{ fontWeight: 500 }}>{field.title}</span>
+                      <HeadlessFieldControl
+                        field={field}
+                        value={
+                          obj[field.key] ??
+                          ("default" in field ? field.default : undefined)
+                        }
+                        onChange={(v) =>
+                          updateItem(index, { ...obj, [field.key]: v })
+                        }
+                      />
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => moveItem(index, "up")}
+              disabled={index === 0}
+              style={headlessSmallButtonStyle}
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              onClick={() => moveItem(index, "down")}
+              disabled={index === items.length - 1}
+              style={headlessSmallButtonStyle}
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              onClick={() => removeItem(index)}
+              style={{ ...headlessSmallButtonStyle, color: "#dc2626" }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      ))}
+      {canAdd && (
+        <button
+          type="button"
+          onClick={addItem}
+          style={{ ...headlessSmallButtonStyle, alignSelf: "flex-start" }}
+        >
+          + Add item
+        </button>
+      )}
+    </div>
+  );
+}
+
 function HeadlessActionButton({
   settingKey,
   label,
@@ -77,19 +424,111 @@ function HeadlessActionButton({
   settingKey: string;
   label: string;
 }) {
-  const { onAction, isLoading } = useSetteraAction(settingKey);
+  const { onAction, isLoading, definition } = useSetteraAction(settingKey);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formValues, setFormValues] = useState<Record<string, unknown>>({});
+
+  const isModal =
+    definition.type === "action" &&
+    definition.actionType === "modal" &&
+    definition.modal;
+
+  const openModal = () => {
+    if (!isModal || definition.type !== "action" || !definition.modal) return;
+    const defaults: Record<string, unknown> = {};
+    for (const field of definition.modal.fields) {
+      if ("default" in field && field.default !== undefined) {
+        defaults[field.key] = field.default;
+      }
+    }
+    setFormValues({ ...defaults, ...definition.modal.initialValues });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = () => {
+    onAction?.(formValues);
+    setIsModalOpen(false);
+  };
+
+  if (isModal && isModalOpen && definition.type === "action" && definition.modal) {
+    const modal = definition.modal;
+    return (
+      <div
+        style={{
+          width: "100%",
+          border: "1px solid #e2e8f0",
+          borderRadius: "8px",
+          background: "#f8fafc",
+          padding: "12px",
+        }}
+      >
+        {modal.title && (
+          <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}>
+            {modal.title}
+          </div>
+        )}
+        {modal.description && (
+          <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "12px" }}>
+            {modal.description}
+          </div>
+        )}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            marginBottom: "12px",
+          }}
+        >
+          {modal.fields.map((field) => (
+            <label
+              key={field.key}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                fontSize: "13px",
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>{field.title}</span>
+              <HeadlessModalField
+                field={field}
+                value={formValues[field.key]}
+                onChange={(v) =>
+                  setFormValues((prev) => ({ ...prev, [field.key]: v }))
+                }
+              />
+            </label>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            style={headlessButtonStyle}
+          >
+            {isLoading ? "Working..." : (modal.submitLabel ?? "Submit")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(false)}
+            style={headlessButtonStyle}
+          >
+            {modal.cancelLabel ?? "Cancel"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <button
       type="button"
-      onClick={onAction}
+      onClick={isModal ? openModal : onAction}
       disabled={!onAction || isLoading}
       style={{
-        border: "1px solid #d1d5db",
-        borderRadius: "8px",
-        background: "#ffffff",
-        padding: "8px 12px",
-        fontSize: "13px",
+        ...headlessButtonStyle,
         cursor: onAction ? "pointer" : "not-allowed",
       }}
     >
@@ -98,7 +537,184 @@ function HeadlessActionButton({
   );
 }
 
-function HeadlessView() {
+function HeadlessModalField({
+  field,
+  value,
+  onChange,
+}: {
+  field: SettingDefinition;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}) {
+  if (
+    field.type === "text" ||
+    field.type === "number" ||
+    field.type === "boolean" ||
+    field.type === "select" ||
+    field.type === "multiselect" ||
+    field.type === "date"
+  ) {
+    return (
+      <HeadlessFieldControl field={field} value={value} onChange={onChange} />
+    );
+  }
+
+  if (field.type === "compound") {
+    const obj = (
+      typeof value === "object" && value !== null && !Array.isArray(value)
+        ? value
+        : {}
+    ) as Record<string, unknown>;
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "6px",
+          paddingLeft: "12px",
+          borderLeft: "2px solid #e2e8f0",
+        }}
+      >
+        {field.fields.map((subField) => (
+          <label
+            key={subField.key}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "2px",
+              fontSize: "13px",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>{subField.title}</span>
+            <HeadlessFieldControl
+              field={subField}
+              value={
+                obj[subField.key] ??
+                ("default" in subField ? subField.default : undefined)
+              }
+              onChange={(v) => onChange({ ...obj, [subField.key]: v })}
+            />
+          </label>
+        ))}
+      </div>
+    );
+  }
+
+  if (field.type === "repeatable") {
+    const items = Array.isArray(value) ? (value as unknown[]) : [];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        {items.map((item, index) => (
+          <div
+            key={index}
+            style={{ display: "flex", gap: "4px", alignItems: "flex-start" }}
+          >
+            <div style={{ flex: 1 }}>
+              {field.itemType === "text" ? (
+                <input
+                  type="text"
+                  value={typeof item === "string" ? item : ""}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[index] = e.target.value;
+                    onChange(next);
+                  }}
+                  style={headlessInputStyle}
+                />
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
+                  {field.itemFields?.map((subField) => {
+                    const obj = (
+                      typeof item === "object" &&
+                      item !== null &&
+                      !Array.isArray(item)
+                        ? item
+                        : {}
+                    ) as Record<string, unknown>;
+                    return (
+                      <label
+                        key={subField.key}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "2px",
+                          fontSize: "13px",
+                        }}
+                      >
+                        <span style={{ fontWeight: 500 }}>
+                          {subField.title}
+                        </span>
+                        <HeadlessFieldControl
+                          field={subField}
+                          value={
+                            obj[subField.key] ??
+                            ("default" in subField
+                              ? subField.default
+                              : undefined)
+                          }
+                          onChange={(v) => {
+                            const next = [...items];
+                            next[index] = { ...obj, [subField.key]: v };
+                            onChange(next);
+                          }}
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, i) => i !== index))}
+              style={{ ...headlessSmallButtonStyle, color: "#dc2626" }}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            if (field.itemType === "text") {
+              onChange([...items, ""]);
+            } else {
+              const defaults: Record<string, unknown> = {};
+              field.itemFields?.forEach((f) => {
+                if ("default" in f) defaults[f.key] = f.default;
+              });
+              onChange([...items, defaults]);
+            }
+          }}
+          style={{ ...headlessSmallButtonStyle, alignSelf: "flex-start" }}
+        >
+          + Add
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function HeadlessView({
+  customSettings,
+}: {
+  customSettings?: Record<
+    string,
+    React.ComponentType<{
+      settingKey: string;
+      definition: SettingDefinition;
+    }>
+  >;
+}) {
   const { schema, values, setValue } = useSettera();
   const { activePage, setActivePage } = useSetteraNavigation();
 
@@ -112,6 +728,9 @@ function HeadlessView() {
       evaluateVisibility(setting.visibleWhen, values),
     );
   }, [activePageDef, values]);
+
+  const needsExpandedLayout = (type: string) =>
+    type === "compound" || type === "repeatable";
 
   return (
     <div
@@ -176,15 +795,17 @@ function HeadlessView() {
             const fallback = "default" in setting ? setting.default : undefined;
             const current = values[setting.key] ?? fallback;
             const borderTop = index > 0 ? "1px solid #f1f5f9" : "none";
+            const expanded = needsExpandedLayout(setting.type);
 
             return (
               <div
                 key={setting.key}
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "16px",
+                  flexDirection: expanded ? "column" : "row",
+                  alignItems: expanded ? "stretch" : "center",
+                  justifyContent: expanded ? undefined : "space-between",
+                  gap: expanded ? "10px" : "16px",
                   padding: "14px 16px",
                   borderTop,
                 }}
@@ -299,12 +920,34 @@ function HeadlessView() {
                     </select>
                   )}
 
+                  {setting.type === "compound" && (
+                    <HeadlessCompoundSetting settingKey={setting.key} />
+                  )}
+
+                  {setting.type === "repeatable" && (
+                    <HeadlessRepeatableSetting settingKey={setting.key} />
+                  )}
+
                   {setting.type === "action" && (
                     <HeadlessActionButton
                       settingKey={setting.key}
                       label={setting.buttonLabel ?? setting.title}
                     />
                   )}
+
+                  {setting.type === "custom" && (() => {
+                    const Custom = customSettings?.[setting.renderer];
+                    return Custom ? (
+                      <Custom
+                        settingKey={setting.key}
+                        definition={setting}
+                      />
+                    ) : (
+                      <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+                        Missing renderer &ldquo;{setting.renderer}&rdquo;
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             );
@@ -695,7 +1338,11 @@ export function App() {
                 customSettings={{ signatureCard: SignatureCardSetting }}
               />
             )}
-            {mode === "headless" && <HeadlessView />}
+            {mode === "headless" && (
+              <HeadlessView
+                customSettings={{ signatureCard: SignatureCardSetting }}
+              />
+            )}
             {mode === "schema" && <SchemaView />}
           </SetteraRenderer>
         </SetteraProvider>
