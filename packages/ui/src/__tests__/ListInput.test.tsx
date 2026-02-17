@@ -35,7 +35,12 @@ const schema: SetteraSchema = {
               itemType: "compound",
               itemFields: [
                 { key: "street", title: "Street", type: "text" },
-                { key: "primary", title: "Primary", type: "boolean" },
+                {
+                  key: "primary",
+                  title: "Primary",
+                  type: "boolean",
+                  default: false,
+                },
               ],
             },
           ],
@@ -131,12 +136,63 @@ describe("RepeatableInput", () => {
     expect(add.disabled).toBe(true);
   });
 
-  it("shows fallback message for compound itemType", () => {
-    renderRepeatableInput("addresses", { addresses: [] });
-    expect(
-      screen.getByText(
-        'Repeatable item type "compound" is not implemented yet.',
-      ),
-    ).toBeDefined();
+  it("renders compound item fields", () => {
+    renderRepeatableInput("addresses", {
+      addresses: [{ street: "123 Main", primary: true }],
+    });
+    expect(screen.getByLabelText("Street 1")).toBeDefined();
+    expect(screen.getByLabelText("Primary 1")).toBeDefined();
+  });
+
+  it("adds a compound item with defaults", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput("addresses", { addresses: [] }, onChange);
+
+    await user.click(
+      screen.getByRole("button", { name: "Add item to Addresses" }),
+    );
+
+    expect(onChange).toHaveBeenCalledWith("addresses", [{ primary: false }]);
+  });
+
+  it("preserves pending compound draft when adding item", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput(
+      "addresses",
+      { addresses: [{ street: "123 Main", primary: false }] },
+      onChange,
+    );
+
+    await user.click(screen.getByLabelText("Street 1"));
+    await user.clear(screen.getByLabelText("Street 1"));
+    await user.type(screen.getByLabelText("Street 1"), "456 Park");
+    await user.click(
+      screen.getByRole("button", { name: "Add item to Addresses" }),
+    );
+
+    expect(onChange).toHaveBeenCalledWith("addresses", [
+      { street: "456 Park", primary: false },
+      { primary: false },
+    ]);
+  });
+
+  it("updates compound field values", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderRepeatableInput(
+      "addresses",
+      { addresses: [{ street: "123 Main", primary: false }] },
+      onChange,
+    );
+
+    await user.clear(screen.getByLabelText("Street 1"));
+    await user.type(screen.getByLabelText("Street 1"), "456 Park");
+    await user.tab();
+
+    expect(onChange).toHaveBeenCalledWith("addresses", [
+      { street: "456 Park", primary: false },
+    ]);
   });
 });

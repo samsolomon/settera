@@ -192,6 +192,49 @@ export const demoSchema: SetteraSchema = {
               },
             },
             {
+              key: "profile.socialLinks",
+              title: "Social Links (Repeatable Compound)",
+              description:
+                "Repeatable compound items with per-row text/select/boolean fields.",
+              type: "repeatable",
+              itemType: "compound",
+              itemFields: [
+                {
+                  key: "label",
+                  title: "Label",
+                  type: "text",
+                  default: "",
+                },
+                {
+                  key: "url",
+                  title: "URL",
+                  type: "text",
+                  inputType: "url",
+                  default: "",
+                },
+                {
+                  key: "visibility",
+                  title: "Visibility",
+                  type: "select",
+                  options: [
+                    { value: "public", label: "Public" },
+                    { value: "private", label: "Private" },
+                  ],
+                  default: "public",
+                },
+                {
+                  key: "featured",
+                  title: "Featured",
+                  type: "boolean",
+                  default: false,
+                },
+              ],
+              default: [],
+              validation: {
+                maxItems: 5,
+              },
+            },
+            {
               key: "profile.signatureCard",
               title: "Signature Card (Custom)",
               description:
