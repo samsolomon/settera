@@ -1,6 +1,13 @@
-import React, { useCallback, useRef, useState } from "react";
-import { useSetteraSetting } from "@settera/react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useSetteraSetting, useSetteraNavigation } from "@settera/react";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
+import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 
 export interface SettingRowProps {
   settingKey: string;
@@ -16,23 +23,27 @@ export interface SettingRowProps {
 export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
+  const { highlightedSettingKey } = useSetteraNavigation();
+  const deepLinkCtx = useContext(SetteraDeepLinkContext);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
   const pointerDownRef = useRef(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const isHighlighted = highlightedSettingKey === settingKey;
 
   const handlePointerDown = useCallback(() => {
     pointerDownRef.current = true;
   }, []);
 
-  const handleFocus = useCallback(
-    (e: React.FocusEvent<HTMLDivElement>) => {
-      // Only show focus ring when the card itself is focused, not a child
-      if (e.target === e.currentTarget) {
-        setIsFocusVisible(!pointerDownRef.current);
-      }
-      pointerDownRef.current = false;
-    },
-    [],
-  );
+  const handleFocus = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+    // Only show focus ring when the card itself is focused, not a child
+    if (e.target === e.currentTarget) {
+      setIsFocusVisible(!pointerDownRef.current);
+    }
+    pointerDownRef.current = false;
+  }, []);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
     // Don't clear focus ring when focus moves to a child within the card
@@ -40,12 +51,44 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
     setIsFocusVisible(false);
   }, []);
 
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+
+  const handleCopyLink = useCallback(async () => {
+    if (!deepLinkCtx) return;
+    if (!navigator.clipboard?.writeText) return;
+
+    const url = deepLinkCtx.getSettingUrl(settingKey);
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyFeedback(true);
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyFeedback(false), 2000);
+    } catch {
+      // Clipboard write failed (permissions denied, insecure context, etc.).
+    }
+  }, [deepLinkCtx, settingKey]);
+
+  // Clean up copy feedback timer on unmount.
+  useEffect(() => {
+    return () => clearTimeout(copyTimeoutRef.current);
+  }, []);
+
   if (!isVisible) return null;
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
+  const showCopyButton = deepLinkCtx && (isHovered || isFocusVisible);
+
+  const boxShadow = isHighlighted
+    ? "0 0 0 2px var(--settera-highlight-color, #f59e0b)"
+    : isFocusVisible
+      ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+      : "none";
 
   return (
     <div
+      id={`settera-setting-${settingKey}`}
       role="group"
       aria-label={definition.title}
       tabIndex={-1}
@@ -53,14 +96,15 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
       onPointerDown={handlePointerDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
         padding: "var(--settera-row-padding-x, 0 16px)",
         opacity: "var(--settera-row-opacity, 1)",
         outline: "none",
-        boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
+        boxShadow,
         borderRadius: "var(--settera-row-focus-radius, 6px)",
+        transition: isHighlighted ? "box-shadow 300ms ease" : undefined,
       }}
     >
       <div
@@ -92,8 +136,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Saving"
                 style={{
-                  fontSize:
-                    "var(--settera-save-indicator-font-size, 12px)",
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
                   color: "var(--settera-save-saving-color, #6b7280)",
                 }}
               >
@@ -104,8 +147,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Saved"
                 style={{
-                  fontSize:
-                    "var(--settera-save-indicator-font-size, 12px)",
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
                   color: "var(--settera-save-saved-color, #16a34a)",
                 }}
               >
@@ -116,13 +158,61 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Save failed"
                 style={{
-                  fontSize:
-                    "var(--settera-save-indicator-font-size, 12px)",
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
                   color: "var(--settera-save-error-color, #dc2626)",
                 }}
               >
                 Save failed
               </span>
+            )}
+            {showCopyButton && (
+              <button
+                type="button"
+                tabIndex={-1}
+                data-settera-copy-link
+                aria-label="Copy link to setting"
+                onClick={handleCopyLink}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  padding: "2px",
+                  borderRadius: "4px",
+                  color: "var(--settera-copy-link-color, #9ca3af)",
+                  fontSize: "12px",
+                  lineHeight: 1,
+                }}
+              >
+                {copyFeedback ? (
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--settera-save-saved-color, #16a34a)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Copied
+                  </span>
+                ) : (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M6.5 8.5a3 3 0 0 0 4.243 0l2-2a3 3 0 0 0-4.243-4.243l-1 1" />
+                    <path d="M9.5 7.5a3 3 0 0 0-4.243 0l-2 2a3 3 0 0 0 4.243 4.243l1-1" />
+                  </svg>
+                )}
+              </button>
             )}
           </div>
           {"description" in definition && definition.description && (

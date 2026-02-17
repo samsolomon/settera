@@ -38,6 +38,10 @@ export { RepeatableInput } from "./components/ListInput.js";
 export type { RepeatableInputProps } from "./components/ListInput.js";
 export { ConfirmDialog } from "./components/ConfirmDialog.js";
 
+// Contexts
+export { SetteraDeepLinkContext } from "./contexts/SetteraDeepLinkContext.js";
+export type { SetteraDeepLinkContextValue } from "./contexts/SetteraDeepLinkContext.js";
+
 // Utilities
 export { parseDescriptionLinks } from "./utils/parseDescriptionLinks.js";
 

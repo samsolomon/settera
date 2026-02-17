@@ -86,6 +86,11 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
     [],
   );
 
+  // Highlighted setting (deep-link)
+  const [highlightedSettingKey, setHighlightedSettingKey] = useState<
+    string | null
+  >(null);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -176,6 +181,8 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
       setSearchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      highlightedSettingKey,
+      setHighlightedSettingKey,
       requestFocusContent,
       registerFocusContentHandler,
     }),
@@ -186,6 +193,7 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
       searchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      highlightedSettingKey,
       requestFocusContent,
       registerFocusContentHandler,
     ],
