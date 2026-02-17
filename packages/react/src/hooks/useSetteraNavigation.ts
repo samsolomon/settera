@@ -23,8 +23,6 @@ export function useSetteraNavigation() {
     setSearchQuery: ctx.setSearchQuery,
     matchingSettingKeys: ctx.matchingSettingKeys,
     matchingPageKeys: ctx.matchingPageKeys,
-    highlightedSettingKey: ctx.highlightedSettingKey,
-    setHighlightedSettingKey: ctx.setHighlightedSettingKey,
     requestFocusContent: ctx.requestFocusContent,
     registerFocusContentHandler: ctx.registerFocusContentHandler,
   };

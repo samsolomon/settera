@@ -104,22 +104,32 @@ export function SetteraLayout({
   const mobileDrawerRef = useRef<HTMLDivElement>(null);
   const didInitUrlSyncRef = useRef(false);
   const pendingScrollKeyRef = useRef<string | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const initialSettingKeyRef = useRef<string | null | undefined>(undefined);
   const mobileDrawerId = useId();
   const schemaCtx = useContext(SetteraSchemaContext);
   const { query: searchQuery, setQuery } = useSetteraSearch();
-  const {
-    activePage,
-    setActivePage,
-    setHighlightedSettingKey,
-    registerFocusContentHandler,
-  } = useSetteraNavigation();
+  const { activePage, setActivePage, registerFocusContentHandler } =
+    useSetteraNavigation();
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.innerWidth < mobileBreakpoint;
   });
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Capture the initial setting key from the URL during render (before effects)
+  // so it survives React StrictMode's effect double-fire, which would otherwise
+  // let the URL-write effect delete the param before readSettingFromUrl runs.
+  if (
+    initialSettingKeyRef.current === undefined &&
+    syncActivePageWithUrl &&
+    typeof window !== "undefined"
+  ) {
+    initialSettingKeyRef.current =
+      new URL(window.location.href).searchParams.get(
+        activeSettingQueryParam,
+      ) ?? null;
+  }
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
 
@@ -204,7 +214,7 @@ export function SetteraLayout({
     return () => media.removeListener(onChange);
   }, []);
 
-  // Scroll-and-highlight for deep-linked settings.
+  // Scroll to a deep-linked setting within the current page.
   const scrollToSettingNow = useCallback(
     (key: string) => {
       const main = mainRef.current;
@@ -216,15 +226,9 @@ export function SetteraLayout({
         behavior: prefersReducedMotion ? "instant" : "smooth",
         block: "center",
       });
-      setHighlightedSettingKey(key);
-      clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(
-        () => setHighlightedSettingKey(null),
-        2000,
-      );
       return true;
     },
-    [prefersReducedMotion, setHighlightedSettingKey],
+    [prefersReducedMotion],
   );
 
   const scrollToSetting = useCallback(
@@ -236,16 +240,20 @@ export function SetteraLayout({
     [scrollToSettingNow],
   );
 
-  // Clean up highlight timer on unmount.
-  useEffect(() => {
-    return () => clearTimeout(highlightTimerRef.current);
-  }, []);
-
   // Consume pending scroll key after page renders.
   useEffect(() => {
     const key = pendingScrollKeyRef.current;
     if (!key) return;
 
+    // Try immediately — useEffect runs after paint so the DOM
+    // should already contain the new page's settings.
+    if (scrollToSettingNow(key)) {
+      pendingScrollKeyRef.current = null;
+      return;
+    }
+
+    // Fallback: retry via rAF for cases where the target element
+    // renders asynchronously (e.g. lazy sections).
     let cancelled = false;
     let attempts = 0;
     const maxAttempts = 8;
@@ -253,8 +261,7 @@ export function SetteraLayout({
     const attemptScroll = () => {
       if (cancelled) return;
 
-      const didScroll = scrollToSettingNow(key);
-      if (didScroll) {
+      if (scrollToSettingNow(key)) {
         pendingScrollKeyRef.current = null;
         return;
       }
@@ -277,10 +284,7 @@ export function SetteraLayout({
     if (typeof window === "undefined") return;
     if (!syncActivePageWithUrl || !schemaCtx) return;
 
-    const readSettingFromUrl = () => {
-      const settingKey = new URL(window.location.href).searchParams.get(
-        activeSettingQueryParam,
-      );
+    const processSettingKey = (settingKey: string | null) => {
       if (!settingKey) return;
 
       const flat = schemaCtx.flatSettings.find(
@@ -301,9 +305,24 @@ export function SetteraLayout({
       }
     };
 
-    readSettingFromUrl();
-    window.addEventListener("popstate", readSettingFromUrl);
-    return () => window.removeEventListener("popstate", readSettingFromUrl);
+    // On mount, use the initial setting key captured during render.
+    // This survives React StrictMode double-fire where the URL-write
+    // effect may delete the param before this effect re-runs.
+    const initialKey = initialSettingKeyRef.current;
+    if (initialKey !== undefined) {
+      initialSettingKeyRef.current = undefined; // consume it
+      processSettingKey(initialKey);
+    }
+
+    const onPopState = () => {
+      const settingKey = new URL(window.location.href).searchParams.get(
+        activeSettingQueryParam,
+      );
+      processSettingKey(settingKey);
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
     // activePage intentionally read but not in deps — we only want this
     // to run on mount and popstate, not on every page navigation.
     // eslint-disable-next-line react-hooks/exhaustive-deps

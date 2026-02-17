@@ -31,8 +31,6 @@ export interface SetteraNavigationContextValue {
   setSearchQuery: (query: string) => void;
   matchingSettingKeys: Set<string>;
   matchingPageKeys: Set<string>;
-  highlightedSettingKey: string | null;
-  setHighlightedSettingKey: (key: string | null) => void;
   requestFocusContent: () => void;
   registerFocusContentHandler: (handler: () => void) => () => void;
 }

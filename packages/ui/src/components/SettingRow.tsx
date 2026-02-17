@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useSetteraSetting, useSetteraNavigation } from "@settera/react";
+import { useSetteraSetting } from "@settera/react";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 
@@ -23,7 +23,6 @@ export interface SettingRowProps {
 export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
-  const { highlightedSettingKey } = useSetteraNavigation();
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -31,8 +30,6 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const [copyFeedback, setCopyFeedback] = useState(false);
   const pointerDownRef = useRef(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const isHighlighted = highlightedSettingKey === settingKey;
 
   const handlePointerDown = useCallback(() => {
     pointerDownRef.current = true;
@@ -81,12 +78,6 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const showCopyButton = deepLinkCtx && (isHovered || isFocusVisible);
 
-  const boxShadow = isHighlighted
-    ? "0 0 0 2px var(--settera-highlight-color, #f59e0b)"
-    : isFocusVisible
-      ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-      : "none";
-
   return (
     <div
       id={`settera-setting-${settingKey}`}
@@ -103,9 +94,10 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
         padding: "var(--settera-row-padding-x, 0 16px)",
         opacity: "var(--settera-row-opacity, 1)",
         outline: "none",
-        boxShadow,
+        boxShadow: isFocusVisible
+          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          : "none",
         borderRadius: "var(--settera-row-focus-radius, 6px)",
-        transition: isHighlighted ? "box-shadow 300ms ease" : undefined,
       }}
     >
       <div
