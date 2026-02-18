@@ -4,6 +4,7 @@ import type {
   RepeatableFieldDefinition,
   TextSetting,
   SelectSetting,
+  MultiSelectSetting,
   BooleanSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
@@ -226,6 +227,57 @@ function RepeatableCompoundFieldControl({
           </option>
         ))}
       </select>
+    );
+  }
+
+  if (field.type === "multiselect") {
+    const multiField = field as MultiSelectSetting;
+    const selected = Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string")
+      : [];
+    return (
+      <div
+        aria-label={`${field.title} ${itemIndex + 1}`}
+        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+      >
+        {multiField.options.map((opt) => {
+          const checked = selected.includes(opt.value);
+          return (
+            <label
+              key={opt.value}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => {
+                  const next = e.target.checked
+                    ? [...selected, opt.value]
+                    : selected.filter((v) => v !== opt.value);
+                  onChange(itemIndex, field.key, next);
+                }}
+              />
+              {opt.label}
+            </label>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (field.type === "date") {
+    return (
+      <input
+        aria-label={`${field.title} ${itemIndex + 1}`}
+        type="date"
+        value={typeof value === "string" ? value : ""}
+        onChange={(e) => onChange(itemIndex, field.key, e.target.value)}
+        style={inputStyle}
+      />
     );
   }
 

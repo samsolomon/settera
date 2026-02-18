@@ -226,6 +226,8 @@ export type RepeatableFieldDefinition =
   | TextSetting
   | NumberSetting
   | SelectSetting
+  | MultiSelectSetting
+  | DateSetting
   | BooleanSetting;
 
 export interface RepeatableSetting {

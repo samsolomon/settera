@@ -121,16 +121,17 @@ describe("CompoundFieldDefinition", () => {
 });
 
 describe("RepeatableFieldDefinition", () => {
-  it("includes text, number, select, and boolean", () => {
+  it("includes all six primitive field types", () => {
     expectTypeOf<TextSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
     expectTypeOf<NumberSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
     expectTypeOf<SelectSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<MultiSelectSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
+    expectTypeOf<DateSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
     expectTypeOf<BooleanSetting>().toMatchTypeOf<RepeatableFieldDefinition>();
   });
 
-  it("excludes DateSetting and MultiSelectSetting", () => {
-    expectTypeOf<DateSetting>().not.toMatchTypeOf<RepeatableFieldDefinition>();
-    expectTypeOf<MultiSelectSetting>().not.toMatchTypeOf<RepeatableFieldDefinition>();
+  it("matches CompoundFieldDefinition", () => {
+    expectTypeOf<RepeatableFieldDefinition>().toEqualTypeOf<CompoundFieldDefinition>();
   });
 });
 
