@@ -398,6 +398,19 @@ function validateSetting(
     }
   }
 
+  // Text pattern must be valid regex
+  if (setting.type === "text" && setting.validation?.pattern) {
+    try {
+      new RegExp(setting.validation.pattern);
+    } catch {
+      errors.push({
+        path: `${path}.validation.pattern`,
+        code: "INVALID_PATTERN",
+        message: `Invalid regex pattern "${setting.validation.pattern}" in text setting "${setting.key}".`,
+      });
+    }
+  }
+
   if (setting.type === "action") {
     if (!setting.buttonLabel) {
       errors.push({
@@ -435,7 +448,7 @@ function validateSetting(
             modalField,
             `${path}.modal.fields[${i}]`,
             modalFieldKeys,
-            [],
+            allVisibilityRefs,
             errors,
           );
         }

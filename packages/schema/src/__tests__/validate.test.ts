@@ -1325,6 +1325,159 @@ describe("validateSchema", () => {
     ).toBe(true);
   });
 
+  // Modal field visibleWhen refs validated against global keys
+  it("rejects modal field visibleWhen referencing unknown setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                  modal: {
+                    fields: [
+                      {
+                        key: "name",
+                        title: "Name",
+                        type: "text",
+                        visibleWhen: {
+                          setting: "nonexistent.setting",
+                          equals: true,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_VISIBILITY_REF")).toBe(true);
+  });
+
+  it("accepts modal field visibleWhen referencing valid global setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "toggle",
+                  title: "Toggle",
+                  type: "boolean",
+                },
+                {
+                  key: "test.modalAction",
+                  title: "Modal Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "modal",
+                  modal: {
+                    fields: [
+                      {
+                        key: "name",
+                        title: "Name",
+                        type: "text",
+                        visibleWhen: {
+                          setting: "toggle",
+                          equals: true,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  // Text pattern regex validation
+  it("rejects text setting with invalid regex pattern", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.email",
+                  title: "Email",
+                  type: "text",
+                  validation: {
+                    pattern: "[invalid(regex",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_PATTERN");
+    expect(errors[0].path).toContain("validation.pattern");
+  });
+
+  it("accepts text setting with valid regex pattern", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.email",
+                  title: "Email",
+                  type: "text",
+                  validation: {
+                    pattern: "^[^@]+@[^@]+\\.[^@]+$",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
   // Subsection validation
   it("validates settings inside subsections", () => {
     const schema: SetteraSchema = {
