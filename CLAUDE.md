@@ -6,7 +6,7 @@ A settings UI framework. Declare a schema, provide values, and render a full set
 
 ```
 packages/schema   — Types, validation, and traversal for setting schemas (pure TS, no React)
-packages/react    — React provider, renderer, and hooks (depends on schema)
+packages/react    — Unified Settera component, store, and hooks (depends on schema)
 packages/ui       — Prebuilt UI components (depends on react + schema)
 packages/test-app — Vite dev app for manual testing
 ```
@@ -45,14 +45,14 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 ### Schema (`@settera/schema`)
 - **Types**: `SettingDefinition` is a discriminated union on `type` — text, number, boolean, select, multiselect, date, compound, repeatable, action, custom.
 - **Validation**: `validateSchema()` returns an array of errors. Called at provider mount (console warning, not thrown).
-- **Traversal**: `flattenSettings()` walks pages/sections/subsections into a flat list. `getSettingByKey()` does O(n) lookup.
+- **Traversal**: `flattenSettings()` walks pages/sections/subsections into a flat list. `getSettingByKey()` does O(n) lookup. `buildSettingIndex()` builds an O(1) Map used by the react layer.
 
 ### React (`@settera/react`)
-- **Provider** (`SetteraProvider`): Holds schema context, search state, navigation, and page resolution.
-- **Renderer** (`SetteraRenderer`): Holds values context, save state machine, confirm dialog state, and error tracking.
+- **Unified component** (`Settera`): Provides both schema context and values context. Holds the `SetteraValuesStore` which manages values, save tracking, errors, confirm dialogs, and action loading.
+- **Store pipeline**: `store.setValue(key, value)` runs the full pipeline — disabled/readonly guards, sync validation, confirm interception, then `onChange`. Direct store calls and hook calls go through the same path.
 - **Save flow**: `onChange(key, value)` is instant-apply. If it returns a Promise, state tracks `idle → saving → saved → idle` (2s auto-reset). Race-safe via generation counter per key.
-- **Validation**: Sync validation on every change (`validateSettingValue`). Async validators (`onValidate`) run on blur.
-- **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd.
+- **Validation**: Sync validation runs in `store.setValue` on every change (`validateSettingValue`). Async validators (`onValidate`) run via `store.validate` on blur.
+- **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd. Shared `useVisibility` hook used by setting, action, and section hooks.
 
 ### UI (`@settera/ui`)
 - All components use **inline styles** exclusively — no CSS files or modules.
@@ -63,7 +63,7 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 
 - **Framework**: Vitest with `globals: true`. Schema tests use `node` environment; react/UI tests use `jsdom`.
 - **Timers**: Use `act(() => element.click())` instead of `userEvent.click()` when combining with `vi.useFakeTimers()`.
-- **Import paths**: Renderer tests (`packages/react`) import source directly. UI tests import from `@settera/react` package (built dist).
+- **Import paths**: React package tests import source directly. UI tests import from `@settera/react` package (built dist).
 - Tests live in `src/__tests__/` within each package.
 
 ## Style Guide

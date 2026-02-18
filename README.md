@@ -13,20 +13,22 @@ Stop spending cycles on settings infrastructure and focus on your core product.
 Building a settings page seems simple until you need keyboard navigation, search filtering, conditional visibility, compound settings with scoped editing, validation, and responsive layouts. Settera handles all of this from a single schema definition.
 
 ```tsx
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
+import { SetteraLayout } from "@settera/ui";
 
 function AppSettings() {
   const [values, setValues] = useState(initialValues);
 
   return (
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer
-        values={values}
-        onChange={(key, value) => {
-          setValues((prev) => ({ ...prev, [key]: value }));
-        }}
-      />
-    </SetteraProvider>
+    <Settera
+      schema={schema}
+      values={values}
+      onChange={(key, value) => {
+        setValues((prev) => ({ ...prev, [key]: value }));
+      }}
+    >
+      <SetteraLayout />
+    </Settera>
   );
 }
 ```
@@ -38,7 +40,7 @@ Settera is split into three independent packages. Use only what you need.
 | Package           | Purpose                                                                                                             | Dependencies                    |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | `@settera/schema` | Pure TypeScript types and schema validation. No React.                                                              | None                            |
-| `@settera/react`  | Headless hooks and unstyled primitives. Handles navigation, search, keyboard nav, validation, and focus management. | `@settera/schema`, React        |
+| `@settera/react`  | Unified `Settera` component, store, and headless hooks. Handles validation, save tracking, confirm dialogs, and visibility. | `@settera/schema`, React        |
 | `@settera/ui`     | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI.                                | `@settera/react`, `@radix-ui/*` |
 
 **Building with your own design system?** Use `@settera/schema` + `@settera/react` and write your own components.
@@ -572,10 +574,11 @@ Mark destructive actions with `dangerous`:
 }
 ```
 
-Action handlers are provided via the `onAction` prop on `SetteraRenderer`:
+Action handlers are provided via the `onAction` prop on `Settera`:
 
 ```tsx
-<SetteraRenderer
+<Settera
+  schema={schema}
   values={values}
   onChange={handleChange}
   onAction={{
@@ -590,7 +593,9 @@ Action handlers are provided via the `onAction` prop on `SetteraRenderer`:
       await deleteAccount();
     },
   }}
-/>
+>
+  <SetteraLayout />
+</Settera>
 ```
 
 If the handler returns a Promise, the button automatically shows a loading state while it resolves.
