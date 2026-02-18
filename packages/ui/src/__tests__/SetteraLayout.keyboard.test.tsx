@@ -489,10 +489,9 @@ describe("SetteraLayout keyboard navigation", () => {
                     type: "boolean",
                     confirm: {
                       title: "Are you sure?",
-                      description: "This will reset everything.",
+                      message: "This will reset everything.",
                       confirmLabel: "Reset",
                       cancelLabel: "Cancel",
-                      dangerous: true,
                     },
                   },
                 ],

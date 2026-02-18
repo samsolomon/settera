@@ -5,6 +5,7 @@ import {
   evaluateVisibility,
   type PageDefinition,
   type SettingDefinition,
+  type CustomSetting,
   type CompoundFieldDefinition,
 } from "@settera/schema";
 import {
@@ -528,7 +529,7 @@ function HeadlessActionButton({
       disabled={!onAction || isLoading}
       style={{
         ...headlessButtonStyle,
-        cursor: onAction ? "pointer" : "not-allowed",
+        cursor: "pointer",
       }}
     >
       {isLoading ? "Working..." : label}
@@ -710,7 +711,7 @@ function HeadlessView({
     string,
     React.ComponentType<{
       settingKey: string;
-      definition: SettingDefinition;
+      definition: CustomSetting;
     }>
   >;
 }) {

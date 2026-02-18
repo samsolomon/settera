@@ -124,11 +124,11 @@ describe("NumberInput", () => {
   it("commits undefined when cleared and blurred", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderNumberInput("port", { port: 3000 }, onChange);
+    renderNumberInput("simple", { simple: 3000 }, onChange);
     const input = screen.getByRole("spinbutton");
     await user.clear(input);
     await user.tab();
-    expect(onChange).toHaveBeenCalledWith("port", undefined);
+    expect(onChange).toHaveBeenCalledWith("simple", undefined);
   });
 
   it("external value updates sync when not focused", () => {

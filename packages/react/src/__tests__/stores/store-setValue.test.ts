@@ -61,7 +61,7 @@ describe("store.setValue pipeline", () => {
         key: "delete",
         title: "Delete Account",
         type: "boolean",
-        confirm: { title: "Are you sure?" },
+        confirm: { title: "Are you sure?", message: "This action cannot be undone." },
       },
     ]);
     store.setValue("delete", true);
@@ -78,7 +78,7 @@ describe("store.setValue pipeline", () => {
         key: "delete",
         title: "Delete Account",
         type: "boolean",
-        confirm: { title: "Are you sure?" },
+        confirm: { title: "Are you sure?", message: "This action cannot be undone." },
       },
     ]);
     store.setValue("delete", true);
@@ -95,7 +95,7 @@ describe("store.setValue pipeline", () => {
         key: "delete",
         title: "Delete Account",
         type: "boolean",
-        confirm: { title: "Are you sure?" },
+        confirm: { title: "Are you sure?", message: "This action cannot be undone." },
       },
     ]);
     store.setValue("delete", true);
@@ -205,7 +205,7 @@ describe("store.validate", () => {
         key: "delete",
         title: "Delete",
         type: "boolean",
-        confirm: { title: "Sure?" },
+        confirm: { title: "Sure?", message: "Please confirm." },
       },
     ]);
     // Trigger confirm

@@ -75,8 +75,7 @@ export function SetteraSetting({
       control = <RepeatableInput settingKey={settingKey} />;
       break;
     case "action":
-      control = <ActionButton settingKey={settingKey} />;
-      break;
+      return <ActionButton settingKey={settingKey} />;
     case "custom": {
       const CustomSettingComponent = customSettings?.[definition.renderer];
       control = CustomSettingComponent ? (

@@ -47,6 +47,19 @@ Settera is split into three independent packages. Use only what you need.
 
 **Want settings working in an afternoon?** Use `@settera/ui` which includes everything.
 
+### Styling Approach (`@settera/ui`)
+
+`@settera/ui` is framework-agnostic at runtime. It does **not** require Tailwind, shadcn, or DaisyUI.
+
+- Use it directly with default styles (CSS variables + inline styles).
+- If your app uses Tailwind/shadcn, map Settera CSS variables to your design tokens.
+- If your app uses another system (DaisyUI, Chakra, custom CSS), keep using `@settera/ui` or build custom UI on `@settera/react`.
+
+### UI API Stability
+
+`@settera/ui` exports stable component and hook entrypoints from `packages/ui/src/index.ts`.  
+Internal `SetteraLayout` helper hooks (`useSetteraLayout*`) are implementation details and intentionally not part of the public API.
+
 ## Schema Example
 
 Settings are defined as a JSON/TypeScript schema. The schema drives the entire UI — sidebar navigation, sections, controls, validation, and conditional visibility.

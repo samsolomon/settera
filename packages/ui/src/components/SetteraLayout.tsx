@@ -1,26 +1,19 @@
-import React, {
-  useRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useContext,
-  useState,
-  useId,
-} from "react";
+import React, { useMemo, useContext, useRef, useId, useCallback } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
-import { useSetteraGlobalKeys, isTextInput } from "../hooks/useSetteraGlobalKeys.js";
-import { useContentCardNavigation } from "../hooks/useContentCardNavigation.js";
+import { useSetteraLayoutMainKeys } from "../hooks/useSetteraLayoutMainKeys.js";
+import { useSetteraLayoutMobileShell } from "../hooks/useSetteraLayoutMobileShell.js";
+import { useSetteraLayoutHighlight } from "../hooks/useSetteraLayoutHighlight.js";
+import { useSetteraLayoutUrlSync } from "../hooks/useSetteraLayoutUrlSync.js";
 import { SetteraSidebar } from "./SetteraSidebar.js";
 import { SetteraPage } from "./SetteraPage.js";
 import type { SetteraCustomPageProps } from "./SetteraPage.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
-import type { SetteraDeepLinkContextValue } from "../contexts/SetteraDeepLinkContext.js";
 
 export interface SetteraBackToAppConfig {
   label?: string;
@@ -66,19 +59,6 @@ function findPagePathByKey(
   return null;
 }
 
-function collectPageKeys(
-  pages: PageDefinition[],
-  acc = new Set<string>(),
-): Set<string> {
-  for (const page of pages) {
-    acc.add(page.key);
-    if (page.pages && page.pages.length > 0) {
-      collectPageKeys(page.pages, acc);
-    }
-  }
-  return acc;
-}
-
 /**
  * Two-column layout shell: sidebar navigation + content area.
  * Switches to a mobile drawer navigation below mobileBreakpoint.
@@ -110,13 +90,8 @@ function SetteraLayoutInner({
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const mobileDrawerRef = useRef<HTMLDivElement>(null);
-  const didInitUrlSyncRef = useRef(false);
-  const pendingScrollKeyRef = useRef<string | null>(null);
-  const initialSettingKeyRef = useRef<string | null | undefined>(undefined);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const mobileDrawerId = useId();
+
   const schemaCtx = useContext(SetteraSchemaContext);
   const { query: searchQuery, setQuery } = useSetteraSearch();
   const {
@@ -125,41 +100,48 @@ function SetteraLayoutInner({
     setHighlightedSettingKey,
     registerFocusContentHandler,
   } = useSetteraNavigation();
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.innerWidth < mobileBreakpoint;
-  });
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  const escapeSelectorValue = useCallback((value: string) => {
-    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
-      return CSS.escape(value);
-    }
-    return value.replace(/["\\]/g, "\\$&");
-  }, []);
-
-  // Capture the initial setting key from the URL during render (before effects)
-  // so it survives React StrictMode's effect double-fire, which would otherwise
-  // let the URL-write effect delete the param before readSettingFromUrl runs.
-  if (
-    initialSettingKeyRef.current === undefined &&
-    syncActivePageWithUrl &&
-    typeof window !== "undefined"
-  ) {
-    initialSettingKeyRef.current =
-      new URL(window.location.href).searchParams.get(activeSettingQueryParam) ??
-      null;
-  }
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
 
-  const openMobileNav = useCallback(() => setIsMobileNavOpen(true), []);
-  const closeMobileNav = useCallback(() => setIsMobileNavOpen(false), []);
+  const {
+    menuButtonRef,
+    mobileDrawerRef,
+    isMobile,
+    prefersReducedMotion,
+    isMobileNavOpen,
+    openMobileNav,
+    closeMobileNav,
+    handleDrawerKeyDown,
+    overlayIsVisible,
+    drawerTransition,
+    overlayTransition,
+  } = useSetteraLayoutMobileShell(mobileBreakpoint);
 
-  useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
+  const { handleComposedKeyDown } = useSetteraLayoutMainKeys({
+    containerRef,
+    mainRef,
+    clearSearch,
+    searchQuery,
+    registerFocusContentHandler,
+  });
 
-  const { onKeyDown: cardNavKeyDown } = useContentCardNavigation({ mainRef });
+  const { setPendingScrollKey, scrollToSetting } = useSetteraLayoutHighlight({
+    activePage,
+    mainRef,
+    prefersReducedMotion,
+    setHighlightedSettingKey,
+  });
+
+  const { deepLinkContextValue } = useSetteraLayoutUrlSync({
+    schemaCtx,
+    activePage,
+    setActivePage,
+    syncActivePageWithUrl,
+    activePageQueryParam,
+    activeSettingQueryParam,
+    scrollToSetting,
+    setPendingScrollKey,
+  });
 
   const resolvedMobileTitle =
     mobileTitle ?? schemaCtx?.schema.meta?.title ?? "Settings";
@@ -169,399 +151,6 @@ function SetteraLayoutInner({
     const path = findPagePathByKey(schemaCtx.schema.pages, activePage) ?? [];
     return path.map((page) => ({ key: page.key, title: page.title }));
   }, [schemaCtx, activePage]);
-
-  const validPageKeys = useMemo(() => {
-    if (!schemaCtx) return new Set<string>();
-    return collectPageKeys(schemaCtx.schema.pages);
-  }, [schemaCtx]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!syncActivePageWithUrl || !validPageKeys.has(activePage)) return;
-    if (!didInitUrlSyncRef.current) return;
-
-    const url = new URL(window.location.href);
-    const fromUrl = url.searchParams.get(activePageQueryParam);
-    if (fromUrl === activePage) return;
-    url.searchParams.set(activePageQueryParam, activePage);
-    // Clear stale setting param when page changes via navigation
-    url.searchParams.delete(activeSettingQueryParam);
-    window.history.replaceState(window.history.state, "", url);
-  }, [
-    activePage,
-    activePageQueryParam,
-    activeSettingQueryParam,
-    syncActivePageWithUrl,
-    validPageKeys,
-  ]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!syncActivePageWithUrl) return;
-
-    const readFromUrl = () => {
-      const url = new URL(window.location.href);
-      const pageKey = url.searchParams.get(activePageQueryParam);
-      if (pageKey && validPageKeys.has(pageKey) && pageKey !== activePage) {
-        setActivePage(pageKey);
-      }
-    };
-
-    readFromUrl();
-    didInitUrlSyncRef.current = true;
-    window.addEventListener("popstate", readFromUrl);
-    return () => window.removeEventListener("popstate", readFromUrl);
-  }, [
-    activePage,
-    activePageQueryParam,
-    setActivePage,
-    syncActivePageWithUrl,
-    validPageKeys,
-  ]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setPrefersReducedMotion(media.matches);
-
-    onChange();
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", onChange);
-      return () => media.removeEventListener("change", onChange);
-    }
-
-    media.addListener(onChange);
-    return () => media.removeListener(onChange);
-  }, []);
-
-  // Scroll-and-highlight for deep-linked settings.
-  const scrollToSettingNow = useCallback(
-    (key: string) => {
-      const main = mainRef.current;
-      if (!main) return false;
-      const el = main.querySelector(
-        `[data-setting-key="${escapeSelectorValue(key)}"]`,
-      );
-      if (!el) return false;
-
-      if (typeof el.scrollIntoView === "function") {
-        el.scrollIntoView({
-          behavior: prefersReducedMotion ? "instant" : "smooth",
-          block: "center",
-        });
-      }
-      setHighlightedSettingKey(key);
-      clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(
-        () => setHighlightedSettingKey(null),
-        2000,
-      );
-      return true;
-    },
-    [escapeSelectorValue, prefersReducedMotion, setHighlightedSettingKey],
-  );
-
-  const scrollToSetting = useCallback(
-    (key: string) => {
-      requestAnimationFrame(() => {
-        void scrollToSettingNow(key);
-      });
-    },
-    [scrollToSettingNow],
-  );
-
-  // Clean up highlight timer on unmount.
-  useEffect(() => {
-    return () => clearTimeout(highlightTimerRef.current);
-  }, []);
-  // Consume pending scroll key after page renders.
-  useEffect(() => {
-    const key = pendingScrollKeyRef.current;
-    if (!key) return;
-
-    if (scrollToSettingNow(key)) {
-      pendingScrollKeyRef.current = null;
-      return;
-    }
-
-    let cancelled = false;
-    let attempts = 0;
-    const maxAttempts = 8;
-
-    const attemptScroll = () => {
-      if (cancelled) return;
-
-      const didScroll = scrollToSettingNow(key);
-      if (didScroll) {
-        pendingScrollKeyRef.current = null;
-        return;
-      }
-
-      attempts += 1;
-      if (attempts >= maxAttempts) return;
-      requestAnimationFrame(attemptScroll);
-    };
-
-    requestAnimationFrame(attemptScroll);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activePage, scrollToSettingNow]);
-
-  // Read setting param from URL on mount and popstate.
-  // Separate from page-sync to avoid re-running on every activePage change.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!syncActivePageWithUrl || !schemaCtx) return;
-
-    const processSettingKey = (settingKey: string | null) => {
-      if (!settingKey) return;
-
-      const flat = schemaCtx.flatSettings.find(
-        (f) => f.definition.key === settingKey,
-      );
-      if (!flat) return;
-
-      const targetPage = flat.pageKey;
-      if (!targetPage || !validPageKeys.has(targetPage)) return;
-
-      if (targetPage !== activePage) {
-        setActivePage(targetPage);
-        // Page will change — scroll after render via pending ref
-        pendingScrollKeyRef.current = settingKey;
-      } else {
-        // Already on the correct page — scroll immediately
-        scrollToSetting(settingKey);
-      }
-    };
-
-    const initialKey = initialSettingKeyRef.current;
-    if (initialKey !== undefined) {
-      initialSettingKeyRef.current = undefined;
-      processSettingKey(initialKey);
-    }
-
-    const onPopState = () => {
-      const settingKey = new URL(window.location.href).searchParams.get(
-        activeSettingQueryParam,
-      );
-      processSettingKey(settingKey);
-    };
-
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-    // activePage intentionally read but not in deps — we only want this
-    // to run on mount and popstate, not on every page navigation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeSettingQueryParam,
-    syncActivePageWithUrl,
-    validPageKeys,
-    schemaCtx,
-    setActivePage,
-    scrollToSetting,
-  ]);
-
-  // Deep-link context value for copy-link buttons.
-  const deepLinkContextValue =
-    useMemo<SetteraDeepLinkContextValue | null>(() => {
-      if (!syncActivePageWithUrl) return null;
-      return {
-        getSettingUrl: (settingKey: string) => {
-          const url = new URL(window.location.href);
-          // Look up the setting's page
-          const flat = schemaCtx?.flatSettings.find(
-            (f) => f.definition.key === settingKey,
-          );
-          if (flat) {
-            url.searchParams.set(activePageQueryParam, flat.pageKey);
-          }
-          url.searchParams.set(activeSettingQueryParam, settingKey);
-          return url.toString();
-        },
-      };
-    }, [
-      syncActivePageWithUrl,
-      schemaCtx,
-      activePageQueryParam,
-      activeSettingQueryParam,
-    ]);
-
-  // Keep isMobile in sync with viewport width.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const current = window.innerWidth < mobileBreakpoint;
-    if (current !== isMobile) {
-      setIsMobile(current);
-    }
-
-    const onResize = () => {
-      const next = window.innerWidth < mobileBreakpoint;
-      setIsMobile((prev) => (prev === next ? prev : next));
-    };
-
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [mobileBreakpoint, isMobile]);
-
-  // Close mobile nav when switching to desktop mode.
-  useEffect(() => {
-    if (!isMobile && isMobileNavOpen) {
-      setIsMobileNavOpen(false);
-    }
-  }, [isMobile, isMobileNavOpen]);
-
-  // Lock background scrolling while the mobile drawer is open.
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    if (!isMobile || !isMobileNavOpen) return;
-
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, [isMobile, isMobileNavOpen]);
-
-  // Focus drawer search on open and restore trigger focus on close.
-  useEffect(() => {
-    if (!isMobile) return;
-
-    if (isMobileNavOpen) {
-      requestAnimationFrame(() => {
-        const drawer = mobileDrawerRef.current;
-        if (!drawer) return;
-        const searchInput = drawer.querySelector<HTMLInputElement>(
-          'input[role="searchbox"]',
-        );
-        const fallback = drawer.querySelector<HTMLElement>("button, a, input");
-        if (searchInput) {
-          searchInput.focus();
-        } else if (fallback) {
-          fallback.focus();
-        } else {
-          drawer.focus();
-        }
-      });
-      return;
-    }
-
-    menuButtonRef.current?.focus();
-  }, [isMobile, isMobileNavOpen]);
-
-  // Register handler so sidebar Enter can focus the first card in content.
-  useEffect(() => {
-    return registerFocusContentHandler(() => {
-      requestAnimationFrame(() => {
-        const main = mainRef.current;
-        if (!main) return;
-        const target = main.querySelector<HTMLElement>("[data-setting-key]");
-        if (target) {
-          target.focus();
-        } else {
-          main.focus();
-        }
-      });
-    });
-  }, [registerFocusContentHandler]);
-
-  // Ctrl+ArrowDown/Up section heading jumping within <main>.
-  const handleSectionKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLElement>) => {
-      if (!e.ctrlKey) return;
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      if (isTextInput(e.target)) return;
-
-      const main = e.currentTarget;
-      const headings = Array.from(
-        main.querySelectorAll<HTMLElement>(
-          'h2[id^="settera-section-"], h3[id^="settera-subsection-"]',
-        ),
-      );
-      if (headings.length === 0) return;
-
-      e.preventDefault();
-
-      const activeEl = document.activeElement;
-      let currentIndex = -1;
-      for (let i = 0; i < headings.length; i++) {
-        if (headings[i] === activeEl || headings[i].contains(activeEl)) {
-          currentIndex = i;
-          break;
-        }
-      }
-
-      const nextIndex =
-        e.key === "ArrowDown"
-          ? currentIndex < headings.length - 1
-            ? currentIndex + 1
-            : 0
-          : currentIndex > 0
-            ? currentIndex - 1
-            : headings.length - 1;
-
-      headings[nextIndex].focus();
-    },
-    [],
-  );
-
-  // Compose card navigation + section heading jumping.
-  const handleComposedKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLElement>) => {
-      cardNavKeyDown(e);
-      if (!e.defaultPrevented) {
-        handleSectionKeyDown(e);
-      }
-    },
-    [cardNavKeyDown, handleSectionKeyDown],
-  );
-
-  const handleDrawerKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (!isMobileNavOpen) return;
-      if (e.key === "Escape") {
-        e.preventDefault();
-        closeMobileNav();
-        return;
-      }
-
-      if (e.key !== "Tab") return;
-      const drawer = mobileDrawerRef.current;
-      if (!drawer) return;
-
-      const focusable = Array.from(
-        drawer.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => {
-        if (el.hasAttribute("hidden")) return false;
-        const styles = window.getComputedStyle(el);
-        return styles.display !== "none" && styles.visibility !== "hidden";
-      });
-
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-
-      if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      } else if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      }
-    },
-    [closeMobileNav, isMobileNavOpen],
-  );
 
   const content = (
     <main
@@ -593,14 +182,6 @@ function SetteraLayoutInner({
       </div>
     </main>
   );
-
-  const overlayIsVisible = isMobile && isMobileNavOpen;
-  const drawerTransition = prefersReducedMotion
-    ? "none"
-    : "transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1)";
-  const overlayTransition = prefersReducedMotion
-    ? "none"
-    : "opacity 180ms ease";
 
   const mobileBackToApp = useMemo(() => {
     if (!backToApp) return undefined;

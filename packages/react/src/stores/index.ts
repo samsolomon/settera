@@ -11,7 +11,9 @@ import { ErrorMap } from "./error-map.js";
 import { ConfirmManager } from "./confirm-manager.js";
 import { ActionTracker } from "./action-tracker.js";
 
-const IS_DEV = process.env.NODE_ENV !== "production";
+const IS_DEV =
+  (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
+    ?.NODE_ENV !== "production";
 
 export type ValidationMode = "valid-only" | "eager-save";
 

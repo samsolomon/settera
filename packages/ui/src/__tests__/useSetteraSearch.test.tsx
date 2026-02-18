@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
@@ -111,6 +111,10 @@ function renderSearch() {
 }
 
 describe("useSetteraSearch", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns empty query and isSearching=false initially", () => {
     renderSearch();
     expect(screen.getByTestId("query").textContent).toBe("");
@@ -197,7 +201,14 @@ describe("useSetteraSearch", () => {
     expect(screen.getByTestId("settingKeys").textContent).toBe("");
   });
 
-  it("returns safe defaults when used outside SetteraNavigationProvider", () => {
+  it("throws in non-production when used outside SetteraNavigationProvider", () => {
+    expect(() => render(<SearchConsumer />)).toThrow(
+      "useSetteraSearch must be used within a SetteraNavigationProvider.",
+    );
+  });
+
+  it("returns safe defaults in production when used outside SetteraNavigationProvider", () => {
+    vi.stubEnv("NODE_ENV", "production");
     render(<SearchConsumer />);
     expect(screen.getByTestId("query").textContent).toBe("");
     expect(screen.getByTestId("isSearching").textContent).toBe("false");

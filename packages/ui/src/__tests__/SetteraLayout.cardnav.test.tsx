@@ -72,7 +72,7 @@ const schema: SetteraSchema = {
               key: "hiddenSetting",
               title: "Hidden Setting",
               type: "boolean",
-              visibleWhen: { key: "debug", operator: "eq", value: true },
+              visibleWhen: { setting: "debug", equals: true },
             },
           ],
         },

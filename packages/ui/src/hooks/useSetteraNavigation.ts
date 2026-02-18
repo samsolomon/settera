@@ -4,6 +4,9 @@ import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.j
 const EMPTY_SET = new Set<string>();
 const NOOP = () => {};
 const NOOP_UNREGISTER = () => () => {};
+const isProduction = () =>
+  (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
+    ?.NODE_ENV === "production";
 
 /**
  * Access sidebar navigation state and controls.
@@ -16,6 +19,11 @@ export function useSetteraNavigation() {
   const ctx = useContext(SetteraNavigationContext);
 
   if (!ctx) {
+    if (!isProduction()) {
+      throw new Error(
+        "useSetteraNavigation must be used within a SetteraNavigationProvider.",
+      );
+    }
     return {
       activePage: "",
       setActivePage: NOOP as (key: string) => void,

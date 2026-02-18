@@ -5,7 +5,7 @@ import type { PendingConfirm } from "../../stores/confirm-manager.js";
 function makePending(overrides: Partial<PendingConfirm> = {}): PendingConfirm {
   return {
     key: "testKey",
-    config: { title: "Confirm?" },
+    config: { title: "Confirm?", message: "Proceed?" },
     dangerous: false,
     onConfirm: vi.fn(),
     onCancel: vi.fn(),
@@ -69,7 +69,7 @@ describe("ConfirmManager", () => {
   it("stays open when requireText doesn't match", () => {
     const mgr = new ConfirmManager(() => {});
     const pending = makePending({
-      config: { title: "Confirm?", requireText: "DELETE" },
+      config: { title: "Confirm?", message: "Proceed?", requireText: "DELETE" },
     });
     mgr.requestConfirm(pending);
     mgr.resolveConfirm(true, "wrong");
@@ -80,7 +80,7 @@ describe("ConfirmManager", () => {
   it("resolves when requireText matches", () => {
     const mgr = new ConfirmManager(() => {});
     const pending = makePending({
-      config: { title: "Confirm?", requireText: "DELETE" },
+      config: { title: "Confirm?", message: "Proceed?", requireText: "DELETE" },
     });
     mgr.requestConfirm(pending);
     mgr.resolveConfirm(true, "DELETE");
@@ -91,7 +91,7 @@ describe("ConfirmManager", () => {
   it("cancel always works regardless of requireText", () => {
     const mgr = new ConfirmManager(() => {});
     const pending = makePending({
-      config: { title: "Confirm?", requireText: "DELETE" },
+      config: { title: "Confirm?", message: "Proceed?", requireText: "DELETE" },
     });
     mgr.requestConfirm(pending);
     mgr.resolveConfirm(false);

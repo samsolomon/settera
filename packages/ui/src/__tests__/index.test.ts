@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import * as ui from "../index.js";
 import {
   SCHEMA_VERSION,
   Settera,
@@ -99,5 +100,12 @@ describe("@settera/ui", () => {
   it("exports contexts and utilities", () => {
     expect(SetteraDeepLinkContext).toBeDefined();
     expect(typeof parseDescriptionLinks).toBe("function");
+  });
+
+  it("does not export internal SetteraLayout hooks", () => {
+    expect("useSetteraLayoutMobileShell" in ui).toBe(false);
+    expect("useSetteraLayoutUrlSync" in ui).toBe(false);
+    expect("useSetteraLayoutHighlight" in ui).toBe(false);
+    expect("useSetteraLayoutMainKeys" in ui).toBe(false);
   });
 });

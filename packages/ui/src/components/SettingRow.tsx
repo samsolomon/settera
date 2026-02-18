@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useSetteraSetting } from "@settera/react";
-import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 
@@ -24,7 +24,8 @@ export interface SettingRowProps {
 export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
-  const { highlightedSettingKey } = useSetteraNavigation();
+  const navigationCtx = useContext(SetteraNavigationContext);
+  const highlightedSettingKey = navigationCtx?.highlightedSettingKey ?? null;
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
   const [isFocusVisible, setIsFocusVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
