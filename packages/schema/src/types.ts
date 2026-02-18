@@ -350,7 +350,8 @@ export interface SchemaValidationError {
     | "DUPLICATE_OPTION_VALUE"
     | "INVALID_DEFAULT"
     | "INVALID_REPEATABLE_CONFIG"
-    | "INVALID_PATTERN";
+    | "INVALID_PATTERN"
+    | "INVALID_COMPOUND_RULE";
 
   /** Human-readable error message */
   message: string;

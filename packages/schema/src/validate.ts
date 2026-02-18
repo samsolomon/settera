@@ -494,6 +494,28 @@ function validateSetting(
         message: `Compound setting "${setting.key}" must have a displayStyle.`,
       });
     }
+
+    // Validate compound rules reference existing field keys
+    if (setting.validation?.rules && setting.fields) {
+      const fieldKeys = new Set(setting.fields.map((f) => f.key));
+      for (let i = 0; i < setting.validation.rules.length; i++) {
+        const rule = setting.validation.rules[i];
+        if (rule.when && !fieldKeys.has(rule.when)) {
+          errors.push({
+            path: `${path}.validation.rules[${i}].when`,
+            code: "INVALID_COMPOUND_RULE",
+            message: `Compound rule "when" references unknown field "${rule.when}" in setting "${setting.key}".`,
+          });
+        }
+        if (rule.require && !fieldKeys.has(rule.require)) {
+          errors.push({
+            path: `${path}.validation.rules[${i}].require`,
+            code: "INVALID_COMPOUND_RULE",
+            message: `Compound rule "require" references unknown field "${rule.require}" in setting "${setting.key}".`,
+          });
+        }
+      }
+    }
   }
 
   if (setting.type === "repeatable") {
@@ -505,6 +527,13 @@ function validateSetting(
           message: `Repeatable setting "${setting.key}" with itemType "compound" must have at least one itemField.`,
         });
       }
+    }
+    if (setting.itemType === "text" && setting.itemFields && setting.itemFields.length > 0) {
+      errors.push({
+        path: `${path}.itemFields`,
+        code: "INVALID_REPEATABLE_CONFIG",
+        message: `Repeatable setting "${setting.key}" with itemType "text" must not define itemFields.`,
+      });
     }
   }
 

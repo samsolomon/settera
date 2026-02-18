@@ -850,6 +850,134 @@ describe("validateSchema", () => {
     );
   });
 
+  // Compound validation rules
+  it("rejects compound rule with unknown 'when' field reference", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                    { key: "port", title: "Port", type: "number" },
+                  ],
+                  validation: {
+                    rules: [
+                      {
+                        when: "nonexistent",
+                        require: "port",
+                        message: "Port is required",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_COMPOUND_RULE");
+    expect(errors[0].path).toContain("rules[0].when");
+  });
+
+  it("rejects compound rule with unknown 'require' field reference", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                    { key: "port", title: "Port", type: "number" },
+                  ],
+                  validation: {
+                    rules: [
+                      {
+                        when: "host",
+                        require: "missing",
+                        message: "Missing is required",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_COMPOUND_RULE");
+    expect(errors[0].path).toContain("rules[0].require");
+  });
+
+  it("accepts compound rules referencing valid field keys", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                    { key: "port", title: "Port", type: "number" },
+                  ],
+                  validation: {
+                    rules: [
+                      {
+                        when: "host",
+                        require: "port",
+                        message: "Port required when host is set",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
   // Repeatable itemType/itemFields coherence
   it("rejects repeatable with itemType compound but no itemFields", () => {
     const schema: SetteraSchema = {
@@ -910,6 +1038,40 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "INVALID_REPEATABLE_CONFIG")).toBe(
       true,
     );
+  });
+
+  it("rejects repeatable with itemType text and itemFields present", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "tags",
+                  title: "Tags",
+                  type: "repeatable",
+                  itemType: "text",
+                  itemFields: [
+                    { key: "label", title: "Label", type: "text" },
+                  ],
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_REPEATABLE_CONFIG");
+    expect(errors[0].message).toContain("must not define itemFields");
   });
 
   it("accepts repeatable with itemType text and no itemFields", () => {
