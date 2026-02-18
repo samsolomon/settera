@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, act, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
 import type { SetteraCustomPageProps } from "../components/SetteraPage.js";
 import type { SetteraCustomSettingProps } from "../components/SetteraSetting.js";
@@ -127,11 +127,9 @@ function renderLayout(
   customSchema: SetteraSchema = schema,
 ) {
   return render(
-    <SetteraProvider schema={customSchema}>
-      <SetteraRenderer values={{}} onChange={() => {}}>
-        <SetteraLayout {...props} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={customSchema} values={{}} onChange={() => {}}>
+      <SetteraLayout {...props} />
+    </Settera>,
   );
 }
 

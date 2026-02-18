@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -38,11 +38,11 @@ function NavConsumer() {
 
 function renderNav() {
   return render(
-    <SetteraProvider schema={schema}>
+    <Settera schema={schema} values={{}} onChange={() => {}}>
       <SetteraNavigationProvider>
         <NavConsumer />
       </SetteraNavigationProvider>
-    </SetteraProvider>,
+    </Settera>,
   );
 }
 
@@ -108,11 +108,11 @@ describe("useSetteraNavigation", () => {
       ],
     };
     render(
-      <SetteraProvider schema={flattenedSchema}>
+      <Settera schema={flattenedSchema} values={{}} onChange={() => {}}>
         <SetteraNavigationProvider>
           <NavConsumer />
         </SetteraNavigationProvider>
-      </SetteraProvider>,
+      </Settera>,
     );
     expect(screen.getByTestId("active").textContent).toBe("only-child");
   });

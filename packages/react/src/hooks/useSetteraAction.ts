@@ -16,17 +16,17 @@ export interface UseSetteraActionResult {
 
 /**
  * Access and invoke an action-type setting by key.
- * Must be used within both SetteraProvider and SetteraRenderer.
+ * Must be used within a Settera component.
  */
 export function useSetteraAction(key: string): UseSetteraActionResult {
   const schemaCtx = useContext(SetteraSchemaContext);
   const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
-    throw new Error("useSetteraAction must be used within a SetteraProvider.");
+    throw new Error("useSetteraAction must be used within a Settera component.");
   }
   if (!store) {
-    throw new Error("useSetteraAction must be used within a SetteraRenderer.");
+    throw new Error("useSetteraAction must be used within a Settera component.");
   }
 
   const definition = schemaCtx.getSettingByKey(key);

@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -83,11 +83,9 @@ const schema: SetteraSchema = {
 
 function renderLayout(values: Record<string, unknown> = {}) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SetteraLayout />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={() => {}}>
+      <SetteraLayout />
+    </Settera>,
   );
 }
 

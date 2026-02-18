@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { TextInput } from "../components/TextInput.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -79,11 +79,9 @@ function renderTextInput(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <TextInput settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <TextInput settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -144,21 +142,17 @@ describe("TextInput", () => {
 
   it("external value updates sync when not focused", () => {
     const { rerender } = render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ name: "Old" }} onChange={() => {}}>
-          <TextInput settingKey="name" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ name: "Old" }} onChange={() => {}}>
+        <TextInput settingKey="name" />
+      </Settera>,
     );
     const input = screen.getByRole("textbox") as HTMLInputElement;
     expect(input.value).toBe("Old");
 
     rerender(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ name: "New" }} onChange={() => {}}>
-          <TextInput settingKey="name" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ name: "New" }} onChange={() => {}}>
+        <TextInput settingKey="name" />
+      </Settera>,
     );
     expect(input.value).toBe("New");
   });
@@ -166,22 +160,18 @@ describe("TextInput", () => {
   it("external value updates ignored when focused", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ name: "Old" }} onChange={() => {}}>
-          <TextInput settingKey="name" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ name: "Old" }} onChange={() => {}}>
+        <TextInput settingKey="name" />
+      </Settera>,
     );
     const input = screen.getByRole("textbox") as HTMLInputElement;
     await user.click(input);
     await user.type(input, "Typing");
 
     rerender(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ name: "External" }} onChange={() => {}}>
-          <TextInput settingKey="name" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ name: "External" }} onChange={() => {}}>
+        <TextInput settingKey="name" />
+      </Settera>,
     );
     expect(input.value).toBe("OldTyping");
   });

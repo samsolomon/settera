@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  SetteraProvider,
-  SetteraRenderer,
   Settera,
   useSettera,
   useSetteraSetting,
@@ -16,15 +14,7 @@ import {
 } from "../index.js";
 
 describe("@settera/react", () => {
-  it("exports SetteraProvider", () => {
-    expect(typeof SetteraProvider).toBe("function");
-  });
-
-  it("exports SetteraRenderer", () => {
-    expect(typeof SetteraRenderer).toBe("function");
-  });
-
-  it("exports Settera (unified)", () => {
+  it("exports Settera", () => {
     expect(typeof Settera).toBe("function");
   });
 

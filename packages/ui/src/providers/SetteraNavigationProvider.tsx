@@ -16,7 +16,7 @@ export interface SetteraNavigationProviderProps {
 
 /**
  * Provides navigation state (active page, expanded groups, search, highlight)
- * for the settings UI. Must be nested inside a SetteraProvider (needs schema context).
+ * for the settings UI. Must be nested inside a Settera component (needs schema context).
  */
 export function SetteraNavigationProvider({
   children,
@@ -25,7 +25,7 @@ export function SetteraNavigationProvider({
 
   if (!schemaCtx) {
     throw new Error(
-      "SetteraNavigationProvider must be used within a SetteraProvider.",
+      "SetteraNavigationProvider must be used within a Settera component.",
     );
   }
 

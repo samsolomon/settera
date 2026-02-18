@@ -12,7 +12,7 @@ export interface UseSetteraSectionResult {
 
 /**
  * Access section-level metadata and visibility for a given page + section key pair.
- * Must be used within both SetteraProvider and SetteraRenderer.
+ * Must be used within a Settera component.
  */
 export function useSetteraSection(
   pageKey: string,
@@ -22,10 +22,10 @@ export function useSetteraSection(
   const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
-    throw new Error("useSetteraSection must be used within a SetteraProvider.");
+    throw new Error("useSetteraSection must be used within a Settera component.");
   }
   if (!store) {
-    throw new Error("useSetteraSection must be used within a SetteraRenderer.");
+    throw new Error("useSetteraSection must be used within a Settera component.");
   }
 
   const definition = schemaCtx.sectionIndex.get(`${pageKey}:${sectionKey}`);

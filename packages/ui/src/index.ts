@@ -8,8 +8,6 @@ export {
 
 // Re-export essentials from react layer
 export {
-  SetteraProvider,
-  SetteraRenderer,
   Settera,
   useSettera,
   useSetteraSetting,

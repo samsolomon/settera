@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { ActionButton } from "../components/ActionButton.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -126,11 +126,9 @@ function renderActionButton(
   onAction?: Record<string, (payload?: unknown) => void | Promise<void>>,
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={{}} onChange={() => {}} onAction={onAction}>
-        <ActionButton settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={{}} onChange={() => {}} onAction={onAction}>
+      <ActionButton settingKey={settingKey} />
+    </Settera>,
   );
 }
 

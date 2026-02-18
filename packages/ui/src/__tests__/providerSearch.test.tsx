@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { SetteraProvider } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -138,11 +138,11 @@ function SearchConsumer() {
 
 function renderSearchProvider() {
   return render(
-    <SetteraProvider schema={schema}>
+    <Settera schema={schema} values={{}} onChange={() => {}}>
       <SetteraNavigationProvider>
         <SearchConsumer />
       </SetteraNavigationProvider>
-    </SetteraProvider>,
+    </Settera>,
   );
 }
 
@@ -316,11 +316,11 @@ describe("Navigation search — empty and edge cases", () => {
       pages: [{ key: "empty", title: "Empty" }],
     };
     render(
-      <SetteraProvider schema={minimal}>
+      <Settera schema={minimal} values={{}} onChange={() => {}}>
         <SetteraNavigationProvider>
           <SearchConsumer />
         </SetteraNavigationProvider>
-      </SetteraProvider>,
+      </Settera>,
     );
     setSearch("Empty");
     expect(pageKeys()).toContain("empty");

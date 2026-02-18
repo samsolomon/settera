@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SetteraProvider, SetteraRenderer } from "../index.js";
+import { Settera } from "../settera.js";
 import { useSetteraSection } from "../hooks/useSetteraSection.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -54,11 +54,9 @@ function renderSection(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SectionConsumer pageKey={pageKey} sectionKey={sectionKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={() => {}}>
+      <SectionConsumer pageKey={pageKey} sectionKey={sectionKey} />
+    </Settera>,
   );
 }
 
@@ -96,21 +94,11 @@ describe("useSetteraSection", () => {
     );
   });
 
-  it("throws when used outside SetteraProvider", () => {
+  it("throws when used outside Settera", () => {
     expect(() =>
       render(
         <SectionConsumer pageKey="general" sectionKey="always" />,
       ),
-    ).toThrow("useSetteraSection must be used within a SetteraProvider.");
-  });
-
-  it("throws when used outside SetteraRenderer", () => {
-    expect(() =>
-      render(
-        <SetteraProvider schema={schema}>
-          <SectionConsumer pageKey="general" sectionKey="always" />
-        </SetteraProvider>,
-      ),
-    ).toThrow("useSetteraSection must be used within a SetteraRenderer.");
+    ).toThrow("useSetteraSection must be used within a Settera component.");
   });
 });

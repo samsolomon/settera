@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   SCHEMA_VERSION,
-  SetteraProvider,
-  SetteraRenderer,
   Settera,
   useSettera,
   useSetteraSetting,
@@ -47,8 +45,6 @@ describe("@settera/ui", () => {
   });
 
   it("re-exports react layer components", () => {
-    expect(typeof SetteraProvider).toBe("function");
-    expect(typeof SetteraRenderer).toBe("function");
     expect(typeof Settera).toBe("function");
   });
 

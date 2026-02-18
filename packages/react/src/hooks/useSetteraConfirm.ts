@@ -18,7 +18,7 @@ export interface UseSetteraConfirmResult {
 export function useSetteraConfirm(): UseSetteraConfirmResult {
   const store = useContext(SetteraValuesContext);
   if (!store) {
-    throw new Error("useSetteraConfirm must be used within a SetteraRenderer.");
+    throw new Error("useSetteraConfirm must be used within a Settera component.");
   }
 
   const pendingConfirm = useStoreSelector(

@@ -35,7 +35,7 @@ export function SetteraPage({
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SetteraPage must be used within a SetteraProvider.");
+    throw new Error("SetteraPage must be used within a Settera component.");
   }
 
   const resolvedKey = pageKey ?? activePage;

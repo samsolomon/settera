@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { NumberInput } from "../components/NumberInput.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -65,11 +65,9 @@ function renderNumberInput(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <NumberInput settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <NumberInput settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -135,21 +133,17 @@ describe("NumberInput", () => {
 
   it("external value updates sync when not focused", () => {
     const { rerender } = render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ simple: 10 }} onChange={() => {}}>
-          <NumberInput settingKey="simple" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ simple: 10 }} onChange={() => {}}>
+        <NumberInput settingKey="simple" />
+      </Settera>,
     );
     const input = screen.getByRole("spinbutton") as HTMLInputElement;
     expect(input.value).toBe("10");
 
     rerender(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ simple: 20 }} onChange={() => {}}>
-          <NumberInput settingKey="simple" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ simple: 20 }} onChange={() => {}}>
+        <NumberInput settingKey="simple" />
+      </Settera>,
     );
     expect(input.value).toBe("20");
   });
@@ -157,22 +151,18 @@ describe("NumberInput", () => {
   it("external value updates ignored when focused", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ simple: 10 }} onChange={() => {}}>
-          <NumberInput settingKey="simple" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ simple: 10 }} onChange={() => {}}>
+        <NumberInput settingKey="simple" />
+      </Settera>,
     );
     const input = screen.getByRole("spinbutton") as HTMLInputElement;
     await user.click(input);
     await user.type(input, "5");
 
     rerender(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ simple: 99 }} onChange={() => {}}>
-          <NumberInput settingKey="simple" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ simple: 99 }} onChange={() => {}}>
+        <NumberInput settingKey="simple" />
+      </Settera>,
     );
     expect(input.value).toBe("105");
   });

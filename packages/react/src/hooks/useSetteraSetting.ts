@@ -31,17 +31,17 @@ export interface UseSetteraSettingResult {
 
 /**
  * Access and control a single setting by key.
- * Must be used within both SetteraProvider and SetteraRenderer.
+ * Must be used within a Settera component.
  */
 export function useSetteraSetting(key: string): UseSetteraSettingResult {
   const schemaCtx = useContext(SetteraSchemaContext);
   const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
-    throw new Error("useSetteraSetting must be used within a SetteraProvider.");
+    throw new Error("useSetteraSetting must be used within a Settera component.");
   }
   if (!store) {
-    throw new Error("useSetteraSetting must be used within a SetteraRenderer.");
+    throw new Error("useSetteraSetting must be used within a Settera component.");
   }
 
   const definition = schemaCtx.getSettingByKey(key);

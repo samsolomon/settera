@@ -2,8 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider } from "../provider.js";
-import { SetteraRenderer } from "../renderer.js";
+import { Settera } from "../settera.js";
 import { useSetteraSetting } from "../hooks/useSetteraSetting.js";
 import { useSetteraConfirm } from "../hooks/useSetteraConfirm.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -127,7 +126,7 @@ function SettingDisplay({ settingKey }: { settingKey: string }) {
   );
 }
 
-function renderWithProviders(
+function renderWithSettera(
   values: Record<string, unknown>,
   onChange: (key: string, value: unknown) => void,
   children: React.ReactNode,
@@ -139,21 +138,20 @@ function renderWithProviders(
   },
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer
-        values={values}
-        onChange={onChange}
-        onValidate={extra?.onValidate}
-      >
-        {children}
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera
+      schema={schema}
+      values={values}
+      onChange={onChange}
+      onValidate={extra?.onValidate}
+    >
+      {children}
+    </Settera>,
   );
 }
 
 describe("useSetteraSetting", () => {
   it("returns current value from values object", () => {
-    renderWithProviders(
+    renderWithSettera(
       { autoSave: false },
       () => {},
       <SettingDisplay settingKey="autoSave" />,
@@ -162,12 +160,12 @@ describe("useSetteraSetting", () => {
   });
 
   it("falls back to default when value is undefined", () => {
-    renderWithProviders({}, () => {}, <SettingDisplay settingKey="autoSave" />);
+    renderWithSettera({}, () => {}, <SettingDisplay settingKey="autoSave" />);
     expect(screen.getByTestId("value-autoSave").textContent).toBe("true");
   });
 
   it("returns undefined when no value and no default", () => {
-    renderWithProviders(
+    renderWithSettera(
       {},
       () => {},
       <SettingDisplay settingKey="noDefault" />,
@@ -176,14 +174,14 @@ describe("useSetteraSetting", () => {
   });
 
   it("returns definition with correct title", () => {
-    renderWithProviders({}, () => {}, <SettingDisplay settingKey="autoSave" />);
+    renderWithSettera({}, () => {}, <SettingDisplay settingKey="autoSave" />);
     expect(screen.getByTestId("title-autoSave").textContent).toBe("Auto Save");
   });
 
   it("calls onChange when setValue is called", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderWithProviders(
+    renderWithSettera(
       { autoSave: true },
       onChange,
       <SettingDisplay settingKey="autoSave" />,
@@ -193,7 +191,7 @@ describe("useSetteraSetting", () => {
   });
 
   it("evaluates visibility — visible", () => {
-    renderWithProviders(
+    renderWithSettera(
       { autoSave: true },
       () => {},
       <SettingDisplay settingKey="dependent" />,
@@ -202,7 +200,7 @@ describe("useSetteraSetting", () => {
   });
 
   it("evaluates visibility — hidden", () => {
-    renderWithProviders(
+    renderWithSettera(
       { autoSave: true },
       () => {},
       <SettingDisplay settingKey="hidden" />,
@@ -211,7 +209,7 @@ describe("useSetteraSetting", () => {
   });
 
   it("uses default for visibility when value not in values", () => {
-    renderWithProviders(
+    renderWithSettera(
       {},
       () => {},
       <>
@@ -222,17 +220,17 @@ describe("useSetteraSetting", () => {
     expect(screen.getByTestId("visible-dependent").textContent).toBe("visible");
   });
 
-  it("throws when used outside SetteraProvider", () => {
+  it("throws when used outside Settera", () => {
     expect(() => {
       render(<SettingDisplay settingKey="autoSave" />);
-    }).toThrow("useSetteraSetting must be used within a SetteraProvider");
+    }).toThrow("useSetteraSetting must be used within a Settera component");
   });
 
   // ---- Validation tests ----
 
   it("sets sync validation error on setValue", async () => {
     const user = userEvent.setup();
-    renderWithProviders(
+    renderWithSettera(
       { username: "sam" },
       () => {},
       <SettingDisplay settingKey="username" />,
@@ -251,11 +249,9 @@ describe("useSetteraSetting", () => {
       values.username = value as string;
     });
     const { rerender } = render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={values} onChange={onChange}>
-          <SettingDisplay settingKey="username" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={values} onChange={onChange}>
+        <SettingDisplay settingKey="username" />
+      </Settera>,
     );
 
     // Trigger error with empty value
@@ -264,24 +260,20 @@ describe("useSetteraSetting", () => {
       "This field is required",
     );
 
-    // Re-render with valid value — clicking toggle sets boolean,
-    // but we can trigger a valid set by re-rendering
+    // Re-render with valid value
     rerender(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ username: "sam" }} onChange={onChange}>
-          <SettingDisplay settingKey="username" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ username: "sam" }} onChange={onChange}>
+        <SettingDisplay settingKey="username" />
+      </Settera>,
     );
 
-    // After re-render, the error from the context should clear when next setValue runs.
-    // For this test, we check that the value is now "sam"
+    // After re-render, the value is now "sam"
     expect(screen.getByTestId("value-username").textContent).toBe("sam");
   });
 
   it("validate() runs sync + async pipeline", async () => {
     const asyncValidator = vi.fn().mockResolvedValue("Username taken");
-    renderWithProviders(
+    renderWithSettera(
       { asyncField: "hello" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
@@ -300,7 +292,7 @@ describe("useSetteraSetting", () => {
 
   it("validate() skips async when sync fails", async () => {
     const asyncValidator = vi.fn().mockResolvedValue(null);
-    renderWithProviders(
+    renderWithSettera(
       { asyncField: "" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
@@ -319,7 +311,7 @@ describe("useSetteraSetting", () => {
 
   it("validate() clears error when both sync and async pass", async () => {
     const asyncValidator = vi.fn().mockResolvedValue(null);
-    renderWithProviders(
+    renderWithSettera(
       { asyncField: "valid" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
@@ -339,7 +331,7 @@ describe("useSetteraSetting", () => {
   it("defers setValue when definition has confirm config", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderWithProviders(
+    renderWithSettera(
       { confirmed: false },
       onChange,
       <SettingDisplay settingKey="confirmed" />,
@@ -365,7 +357,7 @@ describe("useSetteraSetting", () => {
     }
 
     const user = userEvent.setup();
-    renderWithProviders(
+    renderWithSettera(
       { confirmed: false },
       onChange,
       <>
@@ -397,7 +389,7 @@ describe("useSetteraSetting", () => {
     }
 
     const user = userEvent.setup();
-    renderWithProviders(
+    renderWithSettera(
       { confirmed: false },
       onChange,
       <>
@@ -414,7 +406,7 @@ describe("useSetteraSetting", () => {
   it("suppresses validate() while confirm is pending for the same key", async () => {
     const onChange = vi.fn();
 
-    renderWithProviders(
+    renderWithSettera(
       { confirmedText: "" },
       onChange,
       <SettingDisplay settingKey="confirmedText" />,
@@ -437,7 +429,7 @@ describe("useSetteraSetting", () => {
   it("applies setValue immediately when no confirm config", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderWithProviders(
+    renderWithSettera(
       { autoSave: true },
       onChange,
       <SettingDisplay settingKey="autoSave" />,
@@ -459,7 +451,7 @@ describe("useSetteraSetting", () => {
       );
     }
 
-    renderWithProviders(
+    renderWithSettera(
       {},
       () => {},
       <ReadonlyDisplay settingKey="readonlyField" />,
@@ -479,7 +471,7 @@ describe("useSetteraSetting", () => {
       );
     }
 
-    renderWithProviders(
+    renderWithSettera(
       {},
       () => {},
       <ReadonlyDisplay settingKey="autoSave" />,
@@ -490,7 +482,7 @@ describe("useSetteraSetting", () => {
   it("setValue is a no-op when setting is readonly", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderWithProviders(
+    renderWithSettera(
       { readonlyField: "locked" },
       onChange,
       <SettingDisplay settingKey="readonlyField" />,

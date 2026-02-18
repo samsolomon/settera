@@ -1,11 +1,3 @@
-// Provider
-export { SetteraProvider } from "./provider.js";
-export type { SetteraProviderProps } from "./provider.js";
-
-// Renderer
-export { SetteraRenderer } from "./renderer.js";
-export type { SetteraRendererProps } from "./renderer.js";
-
 // Unified component
 export { Settera } from "./settera.js";
 export type { SetteraProps } from "./settera.js";

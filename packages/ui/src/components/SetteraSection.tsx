@@ -28,7 +28,7 @@ export function SetteraSection({
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SetteraSection must be used within a SetteraProvider.");
+    throw new Error("SetteraSection must be used within a Settera component.");
   }
 
   const page = schemaCtx.getPageByKey(pageKey);

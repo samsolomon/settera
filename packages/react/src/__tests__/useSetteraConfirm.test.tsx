@@ -1,8 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { SetteraProvider } from "../provider.js";
-import { SetteraRenderer } from "../renderer.js";
+import { Settera } from "../settera.js";
 import { useSetteraConfirm } from "../hooks/useSetteraConfirm.js";
 import { useSetteraSetting } from "../hooks/useSetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -130,15 +129,13 @@ function renderWithConfirm(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={{}} onChange={onChange}>
-        <ConfirmConsumer />
-        <SettingTrigger settingKey="confirmed" />
-        <SettingTrigger settingKey="confirmedB" />
-        <SettingTrigger settingKey="normal" />
-        <SettingTrigger settingKey="destructive" />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={{}} onChange={onChange}>
+      <ConfirmConsumer />
+      <SettingTrigger settingKey="confirmed" />
+      <SettingTrigger settingKey="confirmedB" />
+      <SettingTrigger settingKey="normal" />
+      <SettingTrigger settingKey="destructive" />
+    </Settera>,
   );
 }
 
@@ -245,18 +242,14 @@ describe("useSetteraConfirm", () => {
     expect(screen.getByTestId("pending-key").textContent).toBe("none");
   });
 
-  it("throws when used outside SetteraRenderer", () => {
+  it("throws when used outside Settera", () => {
     function Bare() {
       useSetteraConfirm();
       return null;
     }
     expect(() => {
-      render(
-        <SetteraProvider schema={schema}>
-          <Bare />
-        </SetteraProvider>,
-      );
-    }).toThrow("useSetteraConfirm must be used within a SetteraRenderer");
+      render(<Bare />);
+    }).toThrow("useSetteraConfirm must be used within a Settera component");
   });
 
   // ---- requireText enforcement ----

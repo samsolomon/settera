@@ -3,9 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "../settera.js";
-import { SetteraProvider } from "../provider.js";
-import { SetteraRenderer } from "../renderer.js";
-import { SetteraValuesContext } from "../context.js";
+import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useSetteraSetting } from "../hooks/useSetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -85,6 +83,174 @@ function SettingDisplay({ settingKey }: { settingKey: string }) {
   );
 }
 
+function SchemaConsumer() {
+  const ctx = React.useContext(SetteraSchemaContext);
+  if (!ctx) return <div>no schema</div>;
+  return (
+    <div>
+      <span data-testid="version">{ctx.schema.version}</span>
+      <span data-testid="flat-count">{ctx.flatSettings.length}</span>
+      <span data-testid="found-setting">
+        {ctx.getSettingByKey("toggle")?.title ?? "not found"}
+      </span>
+      <span data-testid="found-page">
+        {ctx.getPageByKey("appearance")?.title ?? "not found"}
+      </span>
+    </div>
+  );
+}
+
+// ---- Schema context tests (from provider.test.tsx) ----
+
+const minimalSchema: SetteraSchema = {
+  version: "1.0",
+  pages: [
+    {
+      key: "general",
+      title: "General",
+      sections: [
+        {
+          key: "main",
+          title: "Main",
+          settings: [
+            { key: "toggle", title: "Toggle", type: "boolean", default: false },
+          ],
+        },
+      ],
+    },
+    {
+      key: "appearance",
+      title: "Appearance",
+    },
+  ],
+};
+
+describe("Settera — schema context", () => {
+  it("provides schema context", () => {
+    render(
+      <Settera schema={minimalSchema} values={{}} onChange={() => {}}>
+        <SchemaConsumer />
+      </Settera>,
+    );
+    expect(screen.getByTestId("version").textContent).toBe("1.0");
+    expect(screen.getByTestId("flat-count").textContent).toBe("1");
+    expect(screen.getByTestId("found-setting").textContent).toBe("Toggle");
+    expect(screen.getByTestId("found-page").textContent).toBe("Appearance");
+  });
+
+  it("warns on invalid schema", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const badSchema = {
+      version: "2.0" as "1.0",
+      pages: [{ key: "p", title: "P" }],
+    };
+    render(
+      <Settera schema={badSchema} values={{}} onChange={() => {}}>
+        <div>child</div>
+      </Settera>,
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("INVALID_VERSION"),
+    );
+    warnSpy.mockRestore();
+  });
+
+  it("does not warn on valid schema", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    render(
+      <Settera schema={minimalSchema} values={{}} onChange={() => {}}>
+        <div>child</div>
+      </Settera>,
+    );
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+});
+
+// ---- Values context tests (from renderer.test.tsx) ----
+
+function ValuesConsumer() {
+  const store = React.useContext(SetteraValuesContext);
+  if (!store) return <div>no values context</div>;
+  const values = useSyncExternalStore(
+    store.subscribe,
+    () => store.getState().values,
+  );
+  return (
+    <div>
+      <span data-testid="toggle-value">{String(values.toggle)}</span>
+      <button onClick={() => store.setValue("toggle", true)}>set-true</button>
+    </div>
+  );
+}
+
+describe("Settera — values context", () => {
+  it("provides values context to children", () => {
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={() => {}}>
+        <ValuesConsumer />
+      </Settera>,
+    );
+    expect(screen.getByTestId("toggle-value").textContent).toBe("false");
+  });
+
+  it("calls onChange when setValue is invoked", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <ValuesConsumer />
+      </Settera>,
+    );
+    await user.click(screen.getByText("set-true"));
+    expect(onChange).toHaveBeenCalledWith("toggle", true);
+  });
+
+  it("renders children", () => {
+    render(
+      <Settera schema={schema} values={{}} onChange={() => {}}>
+        <span data-testid="child">content</span>
+      </Settera>,
+    );
+    expect(screen.getByTestId("child").textContent).toBe("content");
+  });
+
+  it("provides onAction and onValidate to context", () => {
+    const onAction = { clearCache: vi.fn() };
+    const onValidate = {
+      apiKey: () => null,
+    };
+
+    function ActionConsumer() {
+      const store = React.useContext(SetteraValuesContext);
+      return (
+        <div>
+          <span data-testid="has-action">
+            {store?.getOnAction()?.clearCache ? "yes" : "no"}
+          </span>
+          <span data-testid="has-validate">
+            {store?.getOnValidate()?.apiKey ? "yes" : "no"}
+          </span>
+        </div>
+      );
+    }
+
+    render(
+      <Settera
+        schema={schema}
+        values={{}}
+        onChange={() => {}}
+        onAction={onAction}
+        onValidate={onValidate}
+      >
+        <ActionConsumer />
+      </Settera>,
+    );
+    expect(screen.getByTestId("has-action").textContent).toBe("yes");
+    expect(screen.getByTestId("has-validate").textContent).toBe("yes");
+  });
+});
+
 // ---- Unified Settera tests ----
 
 describe("Settera (unified)", () => {
@@ -150,7 +316,7 @@ describe("Settera (unified)", () => {
   });
 });
 
-// ---- Async save tracking in unified component ----
+// ---- Async save tracking ----
 
 function SaveStatusConsumer() {
   const store = React.useContext(SetteraValuesContext);
@@ -177,6 +343,17 @@ describe("Settera — async save tracking", () => {
     vi.useRealTimers();
   });
 
+  it("keeps status idle for sync onChange", () => {
+    const onChange = vi.fn();
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SaveStatusConsumer />
+      </Settera>,
+    );
+    act(() => screen.getByText("save").click());
+    expect(screen.getByTestId("save-status").textContent).toBe("idle");
+  });
+
   it("transitions saving → saved → idle for async onChange", async () => {
     let resolveSave!: () => void;
     const onChange = vi.fn(
@@ -198,19 +375,62 @@ describe("Settera — async save tracking", () => {
     act(() => vi.advanceTimersByTime(2000));
     expect(screen.getByTestId("save-status").textContent).toBe("idle");
   });
-});
 
-// ---- Backward compat: nested Provider + Renderer still works ----
-
-describe("Backward compat — Provider + Renderer", () => {
-  it("nested Provider + Renderer still works", () => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
-          <SettingDisplay settingKey="toggle" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+  it("transitions to error on rejection", async () => {
+    let rejectSave!: (err: Error) => void;
+    const onChange = vi.fn(
+      () => new Promise<void>((_r, rej) => (rejectSave = rej)),
     );
-    expect(screen.getByTestId("value-toggle").textContent).toBe("false");
+
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SaveStatusConsumer />
+      </Settera>,
+    );
+
+    act(() => screen.getByText("save").click());
+    expect(screen.getByTestId("save-status").textContent).toBe("saving");
+
+    await act(async () => rejectSave(new Error("fail")));
+    expect(screen.getByTestId("save-status").textContent).toBe("error");
+  });
+
+  it("only latest save wins (race condition)", async () => {
+    const resolvers: Array<() => void> = [];
+    const onChange = vi.fn(
+      () => new Promise<void>((r) => resolvers.push(r)),
+    );
+
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SaveStatusConsumer />
+      </Settera>,
+    );
+
+    // First save
+    act(() => screen.getByText("save").click());
+    // Second save
+    act(() => screen.getByText("save").click());
+    expect(resolvers).toHaveLength(2);
+
+    // Resolve first save — should be ignored since second is newer
+    await act(async () => resolvers[0]());
+    expect(screen.getByTestId("save-status").textContent).toBe("saving");
+
+    // Resolve second save — this one takes effect
+    await act(async () => resolvers[1]());
+    expect(screen.getByTestId("save-status").textContent).toBe("saved");
+  });
+
+  it("void onChange still works (backward compatible)", () => {
+    const onChange = vi.fn(() => undefined);
+    render(
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SaveStatusConsumer />
+      </Settera>,
+    );
+    act(() => screen.getByText("save").click());
+    expect(onChange).toHaveBeenCalled();
+    expect(screen.getByTestId("save-status").textContent).toBe("idle");
   });
 });

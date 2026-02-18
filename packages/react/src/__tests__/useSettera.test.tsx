@@ -1,8 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SetteraProvider } from "../provider.js";
-import { SetteraRenderer } from "../renderer.js";
+import { Settera } from "../settera.js";
 import { useSettera } from "../hooks/useSettera.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -57,11 +56,9 @@ function SetteraConsumer() {
 describe("useSettera", () => {
   it("returns schema with correct version and pages", () => {
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{}} onChange={() => {}}>
+        <SetteraConsumer />
+      </Settera>,
     );
     expect(screen.getByTestId("schema-version").textContent).toBe("1.0");
     expect(screen.getByTestId("page-count").textContent).toBe("1");
@@ -69,11 +66,9 @@ describe("useSettera", () => {
 
   it("returns resolved values with defaults applied", () => {
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{}} onChange={() => {}}>
+        <SetteraConsumer />
+      </Settera>,
     );
     expect(screen.getByTestId("autoSave").textContent).toBe("true");
     expect(screen.getByTestId("theme").textContent).toBe("light");
@@ -81,14 +76,13 @@ describe("useSettera", () => {
 
   it("returns explicit values over defaults", () => {
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ autoSave: false, theme: "dark" }}
-          onChange={() => {}}
-        >
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ autoSave: false, theme: "dark" }}
+        onChange={() => {}}
+      >
+        <SetteraConsumer />
+      </Settera>,
     );
     expect(screen.getByTestId("autoSave").textContent).toBe("false");
     expect(screen.getByTestId("theme").textContent).toBe("dark");
@@ -97,33 +91,17 @@ describe("useSettera", () => {
   it("exposes setValue that calls onChange", async () => {
     const onChange = vi.fn();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={onChange}>
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{}} onChange={onChange}>
+        <SetteraConsumer />
+      </Settera>,
     );
     screen.getByText("set-dark").click();
     expect(onChange).toHaveBeenCalledWith("theme", "dark");
   });
 
-  it("throws when used outside SetteraProvider", () => {
+  it("throws when used outside Settera", () => {
     expect(() => {
-      render(
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraConsumer />
-        </SetteraRenderer>,
-      );
-    }).toThrow("useSettera must be used within a SetteraProvider");
-  });
-
-  it("throws when used outside SetteraRenderer", () => {
-    expect(() => {
-      render(
-        <SetteraProvider schema={schema}>
-          <SetteraConsumer />
-        </SetteraProvider>,
-      );
-    }).toThrow("useSettera must be used within a SetteraRenderer");
+      render(<SetteraConsumer />);
+    }).toThrow("useSettera must be used within a Settera component");
   });
 });

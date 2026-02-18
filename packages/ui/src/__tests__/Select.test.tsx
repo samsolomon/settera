@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { Select } from "../components/Select.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -99,11 +99,9 @@ function renderSelect(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <Select settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <Select settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -239,15 +237,14 @@ describe("Select", () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Invalid choice");
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ theme: "light" }}
-          onChange={() => {}}
-          onValidate={{ theme: asyncValidator }}
-        >
-          <Select settingKey="theme" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ theme: "light" }}
+        onChange={() => {}}
+        onValidate={{ theme: asyncValidator }}
+      >
+        <Select settingKey="theme" />
+      </Settera>,
     );
 
     await openSelect(user);

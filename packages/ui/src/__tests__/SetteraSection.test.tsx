@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { SetteraSection } from "../components/SetteraSection.js";
@@ -70,13 +70,11 @@ function renderSection(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
+    <Settera schema={schema} values={values} onChange={() => {}}>
       <SetteraNavigationProvider>
-        <SetteraRenderer values={values} onChange={() => {}}>
-          <SetteraSection pageKey={pageKey} sectionKey={sectionKey} />
-        </SetteraRenderer>
+        <SetteraSection pageKey={pageKey} sectionKey={sectionKey} />
       </SetteraNavigationProvider>
-    </SetteraProvider>,
+    </Settera>,
   );
 }
 
@@ -127,14 +125,12 @@ describe("SetteraSection", () => {
     }
 
     render(
-      <SetteraProvider schema={schema}>
+      <Settera schema={schema} values={{ autoSave: true }} onChange={() => {}}>
         <SetteraNavigationProvider>
-          <SetteraRenderer values={{ autoSave: true }} onChange={() => {}}>
-            <SearchTrigger />
-            <SetteraSection pageKey="general" sectionKey="behavior" />
-          </SetteraRenderer>
+          <SearchTrigger />
+          <SetteraSection pageKey="general" sectionKey="behavior" />
         </SetteraNavigationProvider>
-      </SetteraProvider>,
+      </Settera>,
     );
 
     // Both visible before search (autoSave=true satisfies visibleWhen)
@@ -157,14 +153,12 @@ describe("SetteraSection", () => {
     }
 
     render(
-      <SetteraProvider schema={schema}>
+      <Settera schema={schema} values={{}} onChange={() => {}}>
         <SetteraNavigationProvider>
-          <SetteraRenderer values={{}} onChange={() => {}}>
-            <SearchTrigger />
-            <SetteraSection pageKey="general" sectionKey="behavior" />
-          </SetteraRenderer>
+          <SearchTrigger />
+          <SetteraSection pageKey="general" sectionKey="behavior" />
         </SetteraNavigationProvider>
-      </SetteraProvider>,
+      </Settera>,
     );
 
     expect(screen.getByText("Behavior")).toBeDefined();
@@ -184,14 +178,12 @@ describe("SetteraSection", () => {
     }
 
     render(
-      <SetteraProvider schema={schema}>
+      <Settera schema={schema} values={{}} onChange={() => {}}>
         <SetteraNavigationProvider>
-          <SetteraRenderer values={{}} onChange={() => {}}>
-            <SearchTrigger />
-            <SetteraSection pageKey="general" sectionKey="withSubs" />
-          </SetteraRenderer>
+          <SearchTrigger />
+          <SetteraSection pageKey="general" sectionKey="withSubs" />
         </SetteraNavigationProvider>
-      </SetteraProvider>,
+      </Settera>,
     );
 
     // Before search, both top-level and subsection settings visible

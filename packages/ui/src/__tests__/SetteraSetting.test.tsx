@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { SetteraSetting } from "../components/SetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -144,14 +144,12 @@ function renderSetting(
   >["customSettings"],
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SetteraSetting
-          settingKey={settingKey}
-          customSettings={customSettings}
-        />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={() => {}}>
+      <SetteraSetting
+        settingKey={settingKey}
+        customSettings={customSettings}
+      />
+    </Settera>,
   );
 }
 
@@ -246,14 +244,13 @@ describe("SetteraSetting", () => {
   it("updates compound value as a single object", () => {
     const onChange = vi.fn();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ profile: { nickname: "Sam", public: false } }}
-          onChange={onChange}
-        >
-          <SetteraSetting settingKey="profile" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ profile: { nickname: "Sam", public: false } }}
+        onChange={onChange}
+      >
+        <SetteraSetting settingKey="profile" />
+      </Settera>,
     );
 
     fireEvent.change(screen.getByLabelText("Nickname"), {
@@ -272,14 +269,13 @@ describe("SetteraSetting", () => {
   it("keeps defaulted compound fields in emitted object", () => {
     const onChange = vi.fn();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ profile: { nickname: "Sam" } }}
-          onChange={onChange}
-        >
-          <SetteraSetting settingKey="profile" />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ profile: { nickname: "Sam" } }}
+        onChange={onChange}
+      >
+        <SetteraSetting settingKey="profile" />
+      </Settera>,
     );
 
     fireEvent.change(screen.getByLabelText("Nickname"), {

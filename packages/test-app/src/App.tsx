@@ -8,8 +8,7 @@ import {
   type CompoundFieldDefinition,
 } from "@settera/schema";
 import {
-  SetteraProvider,
-  SetteraRenderer,
+  Settera,
   useSettera,
   useSetteraAction,
   useSetteraSetting,
@@ -1321,31 +1320,30 @@ export function App() {
         </div>
       </header>
       <div style={{ flex: 1, overflow: "hidden" }}>
-        <SetteraProvider schema={demoSchema}>
-          <SetteraRenderer
-            values={values}
-            onChange={handleChange}
-            onAction={onAction}
-            onValidate={onValidate}
-          >
-            {mode === "ui" && (
-              <SetteraLayout
-                backToApp={{
-                  label: "Back to app",
-                  href: "/",
-                }}
-                customPages={{ usersPage: UsersPage }}
-                customSettings={{ signatureCard: SignatureCardSetting }}
-              />
-            )}
-            {mode === "headless" && (
-              <HeadlessView
-                customSettings={{ signatureCard: SignatureCardSetting }}
-              />
-            )}
-            {mode === "schema" && <SchemaView />}
-          </SetteraRenderer>
-        </SetteraProvider>
+        <Settera
+          schema={demoSchema}
+          values={values}
+          onChange={handleChange}
+          onAction={onAction}
+          onValidate={onValidate}
+        >
+          {mode === "ui" && (
+            <SetteraLayout
+              backToApp={{
+                label: "Back to app",
+                href: "/",
+              }}
+              customPages={{ usersPage: UsersPage }}
+              customSettings={{ signatureCard: SignatureCardSetting }}
+            />
+          )}
+          {mode === "headless" && (
+            <HeadlessView
+              customSettings={{ signatureCard: SignatureCardSetting }}
+            />
+          )}
+          {mode === "schema" && <SchemaView />}
+        </Settera>
       </div>
     </div>
   );

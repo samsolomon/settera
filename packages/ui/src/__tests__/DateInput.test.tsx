@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { DateInput } from "../components/DateInput.js";
 import { SettingRow } from "../components/SettingRow.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -72,11 +72,9 @@ function renderDateInput(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <DateInput settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <DateInput settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -136,13 +134,11 @@ describe("DateInput", () => {
   it("shows required validation error on blur", async () => {
     const user = userEvent.setup();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ "required-date": "" }} onChange={() => {}}>
-          <SettingRow settingKey="required-date">
-            <DateInput settingKey="required-date" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ "required-date": "" }} onChange={() => {}}>
+        <SettingRow settingKey="required-date">
+          <DateInput settingKey="required-date" />
+        </SettingRow>
+      </Settera>,
     );
 
     const input = screen.getByLabelText("Required Date", {
@@ -174,17 +170,16 @@ describe("DateInput", () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Date not available");
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ birthday: "2000-01-01" }}
-          onChange={() => {}}
-          onValidate={{ birthday: asyncValidator }}
-        >
-          <SettingRow settingKey="birthday">
-            <DateInput settingKey="birthday" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ birthday: "2000-01-01" }}
+        onChange={() => {}}
+        onValidate={{ birthday: asyncValidator }}
+      >
+        <SettingRow settingKey="birthday">
+          <DateInput settingKey="birthday" />
+        </SettingRow>
+      </Settera>,
     );
 
     await user.click(screen.getByLabelText("Birthday", { selector: "input" }));

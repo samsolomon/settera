@@ -2,8 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider } from "../provider.js";
-import { SetteraRenderer } from "../renderer.js";
+import { Settera } from "../settera.js";
 import { useSetteraAction } from "../hooks/useSetteraAction.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -71,11 +70,9 @@ function renderAction(
   values: Record<string, unknown> = {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}} onAction={onAction}>
-        <ActionDisplay settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={() => {}} onAction={onAction}>
+      <ActionDisplay settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -126,15 +123,14 @@ describe("useSetteraAction", () => {
     }
 
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{}}
-          onChange={() => {}}
-          onAction={{ resetAction: handler }}
-        >
-          <PayloadTrigger />
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{}}
+        onChange={() => {}}
+        onAction={{ resetAction: handler }}
+      >
+        <PayloadTrigger />
+      </Settera>,
     );
 
     screen.getByTestId("payload-trigger").click();
@@ -178,10 +174,10 @@ describe("useSetteraAction", () => {
     expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
   });
 
-  it("throws when used outside SetteraProvider", () => {
+  it("throws when used outside Settera", () => {
     expect(() => {
       render(<ActionDisplay settingKey="resetAction" />);
-    }).toThrow("useSetteraAction must be used within a SetteraProvider");
+    }).toThrow("useSetteraAction must be used within a Settera component");
   });
 
   it("recovers loading state when async handler rejects", async () => {

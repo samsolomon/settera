@@ -52,7 +52,7 @@ export function SetteraSidebar({
   const { isSearching, matchingPageKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
-    throw new Error("SetteraSidebar must be used within a SetteraProvider.");
+    throw new Error("SetteraSidebar must be used within a Settera component.");
   }
 
   const { schema } = schemaCtx;

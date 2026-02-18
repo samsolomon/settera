@@ -3,8 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
-  SetteraProvider,
-  SetteraRenderer,
+  Settera,
   useSetteraSetting,
 } from "@settera/react";
 import { ConfirmDialog } from "../components/ConfirmDialog.js";
@@ -84,12 +83,10 @@ function renderWithDialog(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <ToggleButton settingKey={settingKey} />
-        <ConfirmDialog />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <ToggleButton settingKey={settingKey} />
+      <ConfirmDialog />
+    </Settera>,
   );
 }
 

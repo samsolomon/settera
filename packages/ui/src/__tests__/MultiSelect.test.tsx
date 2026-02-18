@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { Settera } from "@settera/react";
 import { MultiSelect } from "../components/MultiSelect.js";
 import { SettingRow } from "../components/SettingRow.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -100,11 +100,9 @@ function renderMultiSelect(
   onChange: (key: string, value: unknown) => void = () => {},
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={onChange}>
-        <MultiSelect settingKey={settingKey} />
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={onChange}>
+      <MultiSelect settingKey={settingKey} />
+    </Settera>,
   );
 }
 
@@ -172,16 +170,15 @@ describe("MultiSelect", () => {
   it("shows required validation error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ "required-multi": ["a"] }}
-          onChange={() => {}}
-        >
-          <SettingRow settingKey="required-multi">
-            <MultiSelect settingKey="required-multi" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ "required-multi": ["a"] }}
+        onChange={() => {}}
+      >
+        <SettingRow settingKey="required-multi">
+          <MultiSelect settingKey="required-multi" />
+        </SettingRow>
+      </Settera>,
     );
 
     // Uncheck the only selected option
@@ -195,16 +192,15 @@ describe("MultiSelect", () => {
   it("shows minSelections error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ "min-multi": ["a", "b"] }}
-          onChange={() => {}}
-        >
-          <SettingRow settingKey="min-multi">
-            <MultiSelect settingKey="min-multi" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ "min-multi": ["a", "b"] }}
+        onChange={() => {}}
+      >
+        <SettingRow settingKey="min-multi">
+          <MultiSelect settingKey="min-multi" />
+        </SettingRow>
+      </Settera>,
     );
 
     // Uncheck one to go below minimum
@@ -216,13 +212,11 @@ describe("MultiSelect", () => {
   it("shows maxSelections error on change", async () => {
     const user = userEvent.setup();
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ "max-multi": ["a"] }} onChange={() => {}}>
-          <SettingRow settingKey="max-multi">
-            <MultiSelect settingKey="max-multi" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ "max-multi": ["a"] }} onChange={() => {}}>
+        <SettingRow settingKey="max-multi">
+          <MultiSelect settingKey="max-multi" />
+        </SettingRow>
+      </Settera>,
     );
 
     // Check another to exceed maximum
@@ -250,17 +244,16 @@ describe("MultiSelect", () => {
     const user = userEvent.setup();
     const asyncValidator = vi.fn().mockResolvedValue("Too many selected");
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{ channels: ["email"] }}
-          onChange={() => {}}
-          onValidate={{ channels: asyncValidator }}
-        >
-          <SettingRow settingKey="channels">
-            <MultiSelect settingKey="channels" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera
+        schema={schema}
+        values={{ channels: ["email"] }}
+        onChange={() => {}}
+        onValidate={{ channels: asyncValidator }}
+      >
+        <SettingRow settingKey="channels">
+          <MultiSelect settingKey="channels" />
+        </SettingRow>
+      </Settera>,
     );
 
     await user.click(screen.getByText("SMS"));

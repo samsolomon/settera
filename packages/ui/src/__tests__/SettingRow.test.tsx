@@ -8,8 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import {
-  SetteraProvider,
-  SetteraRenderer,
+  Settera,
   SetteraValuesContext,
   useSetteraSetting,
 } from "@settera/react";
@@ -99,11 +98,9 @@ function renderRow(
   children: React.ReactNode = <span>control</span>,
 ) {
   return render(
-    <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SettingRow settingKey={settingKey}>{children}</SettingRow>
-      </SetteraRenderer>
-    </SetteraProvider>,
+    <Settera schema={schema} values={values} onChange={() => {}}>
+      <SettingRow settingKey={settingKey}>{children}</SettingRow>
+    </Settera>,
   );
 }
 
@@ -148,13 +145,11 @@ describe("SettingRow", () => {
 
   it("renders error with role='alert' when error exists", () => {
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ username: "" }} onChange={() => {}}>
-          <SettingRow settingKey="username">
-            <ErrorTrigger settingKey="username" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ username: "" }} onChange={() => {}}>
+        <SettingRow settingKey="username">
+          <ErrorTrigger settingKey="username" />
+        </SettingRow>
+      </Settera>,
     );
 
     act(() => {
@@ -168,13 +163,11 @@ describe("SettingRow", () => {
 
   it("error element has correct id", () => {
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ username: "" }} onChange={() => {}}>
-          <SettingRow settingKey="username">
-            <ErrorTrigger settingKey="username" />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ username: "" }} onChange={() => {}}>
+        <SettingRow settingKey="username">
+          <ErrorTrigger settingKey="username" />
+        </SettingRow>
+      </Settera>,
     );
 
     act(() => {
@@ -235,20 +228,18 @@ describe("SettingRow", () => {
     });
 
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
-          <SetteraDeepLinkContext.Provider
-            value={{
-              getSettingUrl: (key) =>
-                `https://example.com/?setteraSetting=${key}`,
-            }}
-          >
-            <SettingRow settingKey="toggle">
-              <span>control</span>
-            </SettingRow>
-          </SetteraDeepLinkContext.Provider>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={() => {}}>
+        <SetteraDeepLinkContext.Provider
+          value={{
+            getSettingUrl: (key) =>
+              `https://example.com/?setteraSetting=${key}`,
+          }}
+        >
+          <SettingRow settingKey="toggle">
+            <span>control</span>
+          </SettingRow>
+        </SetteraDeepLinkContext.Provider>
+      </Settera>,
     );
 
     const group = screen.getByRole("group", { name: "Auto Save" });
@@ -275,20 +266,18 @@ describe("SettingRow", () => {
     });
 
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={() => {}}>
-          <SetteraDeepLinkContext.Provider
-            value={{
-              getSettingUrl: (key) =>
-                `https://example.com/?setteraSetting=${key}`,
-            }}
-          >
-            <SettingRow settingKey="toggle">
-              <span>control</span>
-            </SettingRow>
-          </SetteraDeepLinkContext.Provider>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={() => {}}>
+        <SetteraDeepLinkContext.Provider
+          value={{
+            getSettingUrl: (key) =>
+              `https://example.com/?setteraSetting=${key}`,
+          }}
+        >
+          <SettingRow settingKey="toggle">
+            <span>control</span>
+          </SettingRow>
+        </SetteraDeepLinkContext.Provider>
+      </Settera>,
     );
 
     const group = screen.getByRole("group", { name: "Auto Save" });
@@ -334,13 +323,11 @@ describe("save status indicator", () => {
     let resolveSave!: () => void;
     const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
-          <SettingRow settingKey="toggle">
-            <SetValueButton />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SettingRow settingKey="toggle">
+          <SetValueButton />
+        </SettingRow>
+      </Settera>,
     );
     act(() => screen.getByText("save-setting").click());
     expect(screen.getByLabelText("Saving")).toBeDefined();
@@ -351,13 +338,11 @@ describe("save status indicator", () => {
     let resolveSave!: () => void;
     const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
-          <SettingRow settingKey="toggle">
-            <SetValueButton />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SettingRow settingKey="toggle">
+          <SetValueButton />
+        </SettingRow>
+      </Settera>,
     );
     act(() => screen.getByText("save-setting").click());
     await act(async () => resolveSave());
@@ -370,13 +355,11 @@ describe("save status indicator", () => {
       () => new Promise<void>((_r, rej) => (rejectSave = rej)),
     );
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
-          <SettingRow settingKey="toggle">
-            <SetValueButton />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SettingRow settingKey="toggle">
+          <SetValueButton />
+        </SettingRow>
+      </Settera>,
     );
     act(() => screen.getByText("save-setting").click());
     await act(async () => rejectSave(new Error("fail")));
@@ -387,13 +370,11 @@ describe("save status indicator", () => {
     let resolveSave!: () => void;
     const onChange = vi.fn(() => new Promise<void>((r) => (resolveSave = r)));
     render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ toggle: false }} onChange={onChange}>
-          <SettingRow settingKey="toggle">
-            <SetValueButton />
-          </SettingRow>
-        </SetteraRenderer>
-      </SetteraProvider>,
+      <Settera schema={schema} values={{ toggle: false }} onChange={onChange}>
+        <SettingRow settingKey="toggle">
+          <SetValueButton />
+        </SettingRow>
+      </Settera>,
     );
     act(() => screen.getByText("save-setting").click());
     await act(async () => resolveSave());

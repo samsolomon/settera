@@ -39,7 +39,7 @@ export function SetteraSetting({
   const schemaCtx = useContext(SetteraSchemaContext);
 
   if (!schemaCtx) {
-    throw new Error("SetteraSetting must be used within a SetteraProvider.");
+    throw new Error("SetteraSetting must be used within a Settera component.");
   }
 
   const definition = schemaCtx.getSettingByKey(settingKey);
