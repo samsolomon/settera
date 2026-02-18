@@ -1,5 +1,6 @@
 import { useContext, useCallback, useState, useRef, useEffect } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
+import { useStoreSelector } from "./useStoreSelector.js";
 import { evaluateVisibility } from "../visibility.js";
 import type { SettingDefinition } from "@settera/schema";
 
@@ -8,8 +9,8 @@ export interface UseSetteraActionResult {
   definition: SettingDefinition;
   /** Whether this setting is currently visible */
   isVisible: boolean;
-  /** The action handler, or undefined if none provided */
-  onAction: ((payload?: unknown) => void) | undefined;
+  /** The action handler. No-ops if no handler is registered for this key. */
+  onAction: (payload?: unknown) => void;
   /** True while an async onAction handler is in-flight */
   isLoading: boolean;
 }
@@ -20,12 +21,12 @@ export interface UseSetteraActionResult {
  */
 export function useSetteraAction(key: string): UseSetteraActionResult {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const valuesCtx = useContext(SetteraValuesContext);
+  const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
     throw new Error("useSetteraAction must be used within a SetteraProvider.");
   }
-  if (!valuesCtx) {
+  if (!store) {
     throw new Error("useSetteraAction must be used within a SetteraRenderer.");
   }
 
@@ -45,15 +46,11 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
     };
   }, []);
 
-  const handler = valuesCtx.onAction?.[key];
-
   const onAction = useCallback(
     (payload?: unknown) => {
-      if (!handler || inFlightRef.current) return;
-      const result = handler(payload);
-      // If the handler returns a thenable, track loading state.
-      // Errors are caught here to prevent unhandled rejections since
-      // onClick handlers don't await the return value.
+      const currentHandler = store.getOnAction()?.[key];
+      if (!currentHandler || inFlightRef.current) return;
+      const result = currentHandler(payload);
       if (result instanceof Promise) {
         inFlightRef.current = true;
         setIsLoading(true);
@@ -69,18 +66,23 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
           });
       }
     },
-    [handler, key],
+    [store, key],
   );
 
-  const isVisible = evaluateVisibility(
-    definition.visibleWhen,
-    valuesCtx.values,
+  // Subscribe to values for visibility
+  const hasVisibleWhen = definition.visibleWhen !== undefined;
+  const allValues = useStoreSelector(
+    store,
+    (state) => (hasVisibleWhen ? state.values : undefined),
   );
+  const isVisible = hasVisibleWhen
+    ? evaluateVisibility(definition.visibleWhen, allValues!)
+    : true;
 
   return {
     definition,
     isVisible,
-    onAction: handler ? onAction : undefined,
+    onAction,
     isLoading,
   };
 }

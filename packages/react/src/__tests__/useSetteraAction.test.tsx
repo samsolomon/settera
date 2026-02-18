@@ -58,14 +58,9 @@ function ActionDisplay({ settingKey }: { settingKey: string }) {
       <span data-testid={`loading-${settingKey}`}>
         {isLoading ? "loading" : "idle"}
       </span>
-      <span data-testid={`hasHandler-${settingKey}`}>
-        {onAction ? "yes" : "no"}
-      </span>
-      {onAction && (
-        <button onClick={onAction} data-testid={`trigger-${settingKey}`}>
-          Go
-        </button>
-      )}
+      <button onClick={onAction} data-testid={`trigger-${settingKey}`}>
+        Go
+      </button>
     </div>
   );
 }
@@ -123,7 +118,7 @@ describe("useSetteraAction", () => {
       return (
         <button
           data-testid="payload-trigger"
-          onClick={() => onAction?.(payload)}
+          onClick={() => onAction(payload)}
         >
           Trigger
         </button>
@@ -175,9 +170,12 @@ describe("useSetteraAction", () => {
     expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
   });
 
-  it("returns undefined onAction when no handler provided", () => {
+  it("no-ops when no handler is registered for the key", async () => {
+    const user = userEvent.setup();
     renderAction("resetAction");
-    expect(screen.getByTestId("hasHandler-resetAction").textContent).toBe("no");
+    // Should not throw — onAction is always defined, but no-ops internally
+    await user.click(screen.getByTestId("trigger-resetAction"));
+    expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
   });
 
   it("throws when used outside SetteraProvider", () => {

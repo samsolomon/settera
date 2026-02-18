@@ -35,7 +35,6 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
 
   const handleSubmitModal = useCallback(
     (payload: Record<string, unknown>) => {
-      if (!onAction) return;
       onAction(payload);
       setIsSubmittingModal(true);
     },
@@ -67,17 +66,17 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
             setIsModalOpen(true);
             return;
           }
-          onAction?.();
+          onAction();
         }}
         {...focusVisibleProps}
-        disabled={isDisabled || !onAction || isLoading || (isModalAction && !hasModalConfig)}
+        disabled={isDisabled || isLoading || (isModalAction && !hasModalConfig)}
         aria-label={definition.title}
         aria-busy={isLoading}
         isDangerous={isDangerous}
         isFocusVisible={isFocusVisible}
         style={{
           cursor:
-            isDisabled || !onAction || isLoading || (isModalAction && !hasModalConfig)
+            isDisabled || isLoading || (isModalAction && !hasModalConfig)
               ? "not-allowed"
               : "pointer",
           opacity: isDisabled || isLoading ? 0.7 : 1,

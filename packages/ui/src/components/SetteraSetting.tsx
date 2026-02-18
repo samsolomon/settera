@@ -11,6 +11,7 @@ import { MultiSelect } from "./MultiSelect.js";
 import { DateInput } from "./DateInput.js";
 import { CompoundInput } from "./CompoundInput.js";
 import { RepeatableInput } from "./ListInput.js";
+import { ColorInput } from "./ColorInput.js";
 
 export interface SetteraSettingProps {
   settingKey: string;
@@ -76,6 +77,9 @@ export function SetteraSetting({
       break;
     case "action":
       control = <ActionButton settingKey={settingKey} />;
+      break;
+    case "color":
+      control = <ColorInput settingKey={settingKey} />;
       break;
     case "custom": {
       const CustomSettingComponent = customSettings?.[definition.renderer];

@@ -181,10 +181,10 @@ describe("ActionButton", () => {
     expect(screen.getByText("Reset All Data")).toBeDefined();
   });
 
-  it("is disabled when no handler provided", () => {
+  it("is not disabled when no handler provided (no-ops on click)", () => {
     renderActionButton("reset");
     const button = screen.getByRole("button") as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
+    expect(button.disabled).toBe(false);
   });
 
   it("is disabled while loading", async () => {
