@@ -94,11 +94,12 @@ const schema: SetteraSchema = {
 | Type          | Description                                               | Apply behavior                                              |
 | ------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
 | `boolean`     | Toggle switch                                             | Instant                                                     |
-| `text`        | Single-line text input                                    | On blur / Enter                                             |
-| `number`      | Numeric input with optional min/max                       | On blur / Enter                                             |
+| `text`        | Single-line or multi-line text input                      | On blur / Enter                                             |
+| `number`      | Numeric input with optional min/max/step                  | On blur / Enter                                             |
 | `select`      | Single-choice dropdown                                    | Instant                                                     |
 | `multiselect` | Multi-choice selection                                    | Instant                                                     |
 | `date`        | Date picker (native `<input type="date">`)                | On blur                                                     |
+| `color`       | Color picker (native `<input type="color">`)              | Instant                                                     |
 | `compound`    | Multi-field group (`inline`, `modal`, or `page`)          | Field-dependent (text/number on blur/Enter; others instant) |
 | `repeatable`  | Add/remove list of text or compound items                 | Field-dependent (text/number on blur/Enter; others instant) |
 | `action`      | Button that triggers callback or submit-only modal action | Callback: on click; Modal: on submit                        |
@@ -115,10 +116,15 @@ Every setting type supports these properties:
   description?: string;  // Shown below the title
   helpText?: string;     // Expandable help block below the description
   dangerous?: boolean;   // Renders the title in a warning style
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];  // Conditional visibility
+  disabled?: boolean;    // Prevents interaction, grays out the control
+  badge?: string;        // Short label displayed next to the setting title
+  deprecated?: string | boolean;  // Marks the setting as deprecated (string provides a message)
+  visibleWhen?: VisibilityRule | VisibilityRule[];  // Conditional visibility
   confirm?: ConfirmConfig;  // Require confirmation before applying a change
 }
 ```
+
+Text, number, and date settings also support `readonly?: boolean`, which shows the value but prevents editing (the user can still select and copy text).
 
 ### Boolean
 
@@ -154,7 +160,7 @@ Boolean settings do not support `validation`. Use `confirm` for dangerous toggle
 
 ### Text
 
-A single-line text input. Changes apply on blur or Enter.
+A text input. Changes apply on blur or Enter.
 
 ```typescript
 {
@@ -164,7 +170,7 @@ A single-line text input. Changes apply on blur or Enter.
   type: "text",
   default: "",
   placeholder: "Enter your name",
-  inputType: "text",  // "text" | "email" | "url" | "password"
+  inputType: "text",  // "text" | "email" | "url" | "password" | "textarea"
   validation: {
     required: true,
     minLength: 2,
@@ -192,6 +198,19 @@ Use `inputType` to get browser-native behavior for email, URL, or password field
 }
 ```
 
+Use `inputType: "textarea"` with `rows` for multi-line text:
+
+```typescript
+{
+  key: "profile.bio",
+  title: "Bio",
+  type: "text",
+  inputType: "textarea",
+  rows: 4,
+  placeholder: "Tell us about yourself...",
+}
+```
+
 ### Number
 
 A numeric input. Changes apply on blur or Enter.
@@ -204,10 +223,12 @@ A numeric input. Changes apply on blur or Enter.
   type: "number",
   default: 14,
   placeholder: "14",
+  displayHint: "input",  // "input" (default) or "slider"
   validation: {
     required: true,
     min: 10,
     max: 24,
+    step: 1,  // Step increment; use 1 to enforce integers
     message: "Font size must be between 10 and 24",
   },
 }
@@ -223,10 +244,11 @@ A single-choice dropdown. Changes apply instantly.
   title: "Theme",
   description: "Choose the visual theme for the application.",
   type: "select",
+  placeholder: "Choose a theme",
   options: [
     { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "system", label: "System" },
+    { value: "dark", label: "Dark", description: "Reduces eye strain in low-light environments" },
+    { value: "system", label: "System", group: "Automatic" },
   ],
   default: "system",
   validation: {
@@ -236,6 +258,8 @@ A single-choice dropdown. Changes apply instantly.
 ```
 
 `default` must be one of the option `value`s. Option values must be unique.
+
+Options support optional `description` (shown below the label) and `group` (for grouped option lists).
 
 ### Multiselect
 
@@ -284,6 +308,26 @@ A date picker using native `<input type="date">`. Changes apply on blur.
 ```
 
 All date values use ISO format (`YYYY-MM-DD`).
+
+### Color
+
+A native color picker. Changes apply instantly.
+
+```typescript
+{
+  key: "appearance.accentColor",
+  title: "Accent Color",
+  description: "Primary accent color for the UI.",
+  type: "color",
+  default: "#3b82f6",
+  format: "hex",  // "hex" | "rgb" | "hsl" (hint for expected format)
+  validation: {
+    required: true,
+  },
+}
+```
+
+The value is a string. `format` is an optional hint indicating the expected color format.
 
 ### Compound
 
@@ -481,7 +525,7 @@ An add/remove/reorder list. Changes apply on save.
 }
 ```
 
-When `itemType` is `"text"`, the value is `string[]`. When `itemType` is `"compound"`, the value is `Array<Record<string, unknown>>` and `itemFields` is required. Item fields support text, number, select, and boolean types.
+When `itemType` is `"text"`, the value is `string[]`. When `itemType` is `"compound"`, the value is `Array<Record<string, unknown>>` and `itemFields` is required. Item fields support text, number, select, multiselect, date, and boolean types.
 
 ### Action
 
@@ -653,6 +697,22 @@ Use custom pages for app-specific screens (for example Users, Billing, Audit Log
 
 Define settings once in a schema. The sidebar, page layout, sections, and controls are all generated automatically.
 
+### Collapsible sections
+
+Sections can be collapsed to reduce visual clutter:
+
+```typescript
+{
+  key: "advanced",
+  title: "Advanced Options",
+  collapsible: true,
+  defaultCollapsed: true,  // Starts collapsed
+  settings: [/* ... */],
+}
+```
+
+Set `collapsible: true` to allow the user to toggle the section. When `defaultCollapsed` is also `true`, the section renders collapsed on first load.
+
 ### Keyboard navigation
 
 Three-tier keyboard model designed for casual users through power users:
@@ -669,7 +729,7 @@ Search filters the sidebar and content area by matching against setting titles, 
 
 ### Conditional visibility
 
-Show or hide settings based on other settings' values:
+Show or hide settings, sections, or subsections based on other settings' values:
 
 ```typescript
 {
@@ -684,7 +744,39 @@ Show or hide settings based on other settings' values:
 }
 ```
 
-Supports `equals`, `notEquals`, `oneOf`, and AND conditions (array of conditions).
+**Condition operators:**
+
+| Operator      | Description                                        | Example                                    |
+| ------------- | -------------------------------------------------- | ------------------------------------------ |
+| `equals`      | Value equals the given value                       | `{ setting: "mode", equals: "advanced" }`  |
+| `notEquals`   | Value does not equal the given value               | `{ setting: "mode", notEquals: "basic" }`  |
+| `oneOf`       | Value is one of the given values                   | `{ setting: "plan", oneOf: ["pro","ent"] }`|
+| `greaterThan` | Numeric value is greater than                      | `{ setting: "count", greaterThan: 5 }`     |
+| `lessThan`    | Numeric value is less than                         | `{ setting: "count", lessThan: 100 }`      |
+| `contains`    | Array value contains the item (for multiselect)    | `{ setting: "tags", contains: "vip" }`     |
+| `isEmpty`     | Value is empty (`true`) or not empty (`false`)     | `{ setting: "name", isEmpty: false }`      |
+
+**AND conditions** — pass an array. All must be true:
+
+```typescript
+visibleWhen: [
+  { setting: "mode", equals: "advanced" },
+  { setting: "count", greaterThan: 0 },
+]
+```
+
+**OR conditions** — use a `{ or: [...] }` group. At least one must be true:
+
+```typescript
+visibleWhen: {
+  or: [
+    { setting: "plan", equals: "pro" },
+    { setting: "plan", equals: "enterprise" },
+  ],
+}
+```
+
+Sections and subsections also support `visibleWhen` to conditionally show or hide entire groups of settings.
 
 ### Validation
 
@@ -730,12 +822,16 @@ Settera is in active development. Here's what's been built and what's planned.
 
 ### Implemented
 
-- Core setting types: boolean, text, number, select, multiselect, date, compound, repeatable, action, custom
+- Core setting types: boolean, text, number, select, multiselect, date, color, compound, repeatable, action, custom
 - Compound `displayStyle` modes: `inline`, `modal`, `page`
 - Repeatable item types: `text`, `compound`
 - Action modes: `callback` and submit-only `modal`
 - Custom extension points: `customSettings` and `customPages`
 - Deep-linking to page + setting query params and copy-link affordance
+- `disabled` and `readonly` setting states
+- Collapsible sections with `collapsible` / `defaultCollapsed`
+- `badge` and `deprecated` setting metadata
+- Extended visibility operators: `notEquals`, `oneOf`, `greaterThan`, `lessThan`, `contains`, `isEmpty`, OR groups
 
 ### In progress / next
 

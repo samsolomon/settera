@@ -1,11 +1,11 @@
-import React, { useContext } from "react";
+import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider } from "../provider.js";
 import { SetteraRenderer } from "../renderer.js";
 import { useSetteraSetting } from "../hooks/useSetteraSetting.js";
-import { SetteraValuesContext } from "../context.js";
+import { useSetteraConfirm } from "../hooks/useSetteraConfirm.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -346,11 +346,11 @@ describe("useSetteraSetting", () => {
     const onChange = vi.fn();
 
     function ConfirmResolver() {
-      const ctx = useContext(SetteraValuesContext);
+      const { resolveConfirm } = useSetteraConfirm();
       return (
         <button
           data-testid="resolve-confirm"
-          onClick={() => ctx?.resolveConfirm(true)}
+          onClick={() => resolveConfirm(true)}
         >
           confirm
         </button>
@@ -378,11 +378,11 @@ describe("useSetteraSetting", () => {
     const onChange = vi.fn();
 
     function ConfirmCanceller() {
-      const ctx = useContext(SetteraValuesContext);
+      const { resolveConfirm } = useSetteraConfirm();
       return (
         <button
           data-testid="cancel-confirm"
-          onClick={() => ctx?.resolveConfirm(false)}
+          onClick={() => resolveConfirm(false)}
         >
           cancel
         </button>

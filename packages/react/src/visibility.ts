@@ -1,24 +1,35 @@
-import type { VisibilityCondition, VisibilityValue } from "@settera/schema";
+import type { VisibilityCondition, VisibilityRule, VisibilityValue } from "@settera/schema";
 
 /**
- * Evaluate whether a setting should be visible based on its visibility conditions
+ * Evaluate whether a setting should be visible based on its visibility rules
  * and the current values object.
  *
- * - undefined/null conditions → always visible (true)
- * - Single condition → evaluate that condition
- * - Array of conditions → ALL must be true (implicit AND)
+ * - undefined/null rules → always visible (true)
+ * - Single rule → evaluate that rule
+ * - Array of rules → ALL must be true (implicit AND)
+ * - OR group ({ or: [...] }) → at least one condition must be true
  */
 export function evaluateVisibility(
-  conditions: VisibilityCondition | VisibilityCondition[] | undefined,
+  rules: VisibilityRule | VisibilityRule[] | undefined,
   values: Record<string, unknown>,
 ): boolean {
-  if (!conditions) return true;
+  if (!rules) return true;
 
-  const conditionList = Array.isArray(conditions) ? conditions : [conditions];
+  const ruleList = Array.isArray(rules) ? rules : [rules];
 
-  return conditionList.every((condition) =>
-    evaluateCondition(condition, values),
-  );
+  return ruleList.every((rule) => evaluateRule(rule, values));
+}
+
+function evaluateRule(
+  rule: VisibilityRule,
+  values: Record<string, unknown>,
+): boolean {
+  // OR group
+  if ("or" in rule) {
+    return rule.or.some((condition) => evaluateCondition(condition, values));
+  }
+
+  return evaluateCondition(rule, values);
 }
 
 function evaluateCondition(
@@ -42,6 +53,33 @@ function evaluateCondition(
     return condition.oneOf.includes(value as VisibilityValue);
   }
 
+  // greaterThan check (numeric)
+  if ("greaterThan" in condition && condition.greaterThan !== undefined) {
+    return typeof value === "number" && value > condition.greaterThan;
+  }
+
+  // lessThan check (numeric)
+  if ("lessThan" in condition && condition.lessThan !== undefined) {
+    return typeof value === "number" && value < condition.lessThan;
+  }
+
+  // contains check (for arrays / multiselect)
+  if ("contains" in condition && condition.contains !== undefined) {
+    return Array.isArray(value) && value.includes(condition.contains);
+  }
+
+  // isEmpty check
+  if ("isEmpty" in condition && condition.isEmpty !== undefined) {
+    const empty = isValueEmpty(value);
+    return condition.isEmpty ? empty : !empty;
+  }
+
   // Truthiness fallback (no operator specified)
   return Boolean(value);
+}
+
+function isValueEmpty(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
 }

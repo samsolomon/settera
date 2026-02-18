@@ -466,6 +466,93 @@ describe("validateSettingValue — repeatable", () => {
   });
 });
 
+// ---- Number Step Validation ----
+
+describe("validateSettingValue — number step", () => {
+  it("returns null when value matches step from 0", () => {
+    expect(validateSettingValue(numberDef({ step: 5 }), 10)).toBeNull();
+  });
+
+  it("returns error when value does not match step", () => {
+    expect(validateSettingValue(numberDef({ step: 5 }), 7)).toBe(
+      "Must be a multiple of 5",
+    );
+  });
+
+  it("returns null when value matches step from min", () => {
+    expect(validateSettingValue(numberDef({ min: 2, step: 3 }), 5)).toBeNull();
+  });
+
+  it("returns error when value does not match step from min", () => {
+    expect(validateSettingValue(numberDef({ min: 2, step: 3 }), 6)).toBe(
+      "Must be a multiple of 3",
+    );
+  });
+
+  it("uses 'whole number' message for step: 1", () => {
+    expect(validateSettingValue(numberDef({ step: 1 }), 3.5)).toBe(
+      "Must be a whole number",
+    );
+  });
+
+  it("returns null for integer with step: 1", () => {
+    expect(validateSettingValue(numberDef({ step: 1 }), 42)).toBeNull();
+  });
+
+  it("skips step check when value is empty and not required", () => {
+    expect(
+      validateSettingValue(numberDef({ step: 5 }), undefined),
+    ).toBeNull();
+  });
+
+  it("uses custom message for step violation", () => {
+    expect(
+      validateSettingValue(
+        numberDef({ step: 5, message: "Use increments of 5" }),
+        7,
+      ),
+    ).toBe("Use increments of 5");
+  });
+});
+
+// ---- Color Validation ----
+
+describe("validateSettingValue — color", () => {
+  function colorDef(validation?: Record<string, unknown>): SettingDefinition {
+    return {
+      key: "c",
+      title: "Color",
+      type: "color",
+      validation,
+    } as SettingDefinition;
+  }
+
+  it("returns null when no validation rules", () => {
+    expect(validateSettingValue(colorDef(), "#ff0000")).toBeNull();
+  });
+
+  it("returns error for required empty string", () => {
+    expect(validateSettingValue(colorDef({ required: true }), "")).toBe(
+      "This field is required",
+    );
+  });
+
+  it("returns null for required with value", () => {
+    expect(
+      validateSettingValue(colorDef({ required: true }), "#ff0000"),
+    ).toBeNull();
+  });
+
+  it("uses custom message", () => {
+    expect(
+      validateSettingValue(
+        colorDef({ required: true, message: "Pick a color" }),
+        "",
+      ),
+    ).toBe("Pick a color");
+  });
+});
+
 // ---- No-validation fallback ----
 
 describe("validateSettingValue — no-validation types", () => {

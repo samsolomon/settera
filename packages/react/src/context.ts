@@ -6,6 +6,7 @@ import type {
   PageDefinition,
   ConfirmConfig,
 } from "@settera/schema";
+import type { SetteraValuesStore } from "./store.js";
 
 // ---- Schema Context (never re-renders after mount) ----
 
@@ -40,7 +41,7 @@ export interface SetteraNavigationContextValue {
 export const SetteraNavigationContext =
   createContext<SetteraNavigationContextValue | null>(null);
 
-// ---- Values Context (re-renders on setting change) ----
+// ---- Values Context (now holds a stable store reference) ----
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -52,21 +53,5 @@ export interface PendingConfirm {
   onCancel: () => void;
 }
 
-export interface SetteraValuesContextValue {
-  values: Record<string, unknown>;
-  setValue: (key: string, value: unknown) => void;
-  errors: Record<string, string>;
-  setError: (key: string, error: string | null) => void;
-  onValidate?: Record<
-    string,
-    (value: unknown) => string | null | Promise<string | null>
-  >;
-  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>;
-  saveStatus: Record<string, SaveStatus>;
-  pendingConfirm: PendingConfirm | null;
-  requestConfirm: (pending: PendingConfirm) => void;
-  resolveConfirm: (confirmed: boolean) => void;
-}
-
 export const SetteraValuesContext =
-  createContext<SetteraValuesContextValue | null>(null);
+  createContext<SetteraValuesStore | null>(null);

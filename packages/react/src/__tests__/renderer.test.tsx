@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useSyncExternalStore } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -25,12 +25,16 @@ const schema: SetteraSchema = {
 };
 
 function ValuesConsumer() {
-  const ctx = React.useContext(SetteraValuesContext);
-  if (!ctx) return <div>no values context</div>;
+  const store = React.useContext(SetteraValuesContext);
+  if (!store) return <div>no values context</div>;
+  const values = useSyncExternalStore(
+    store.subscribe,
+    () => store.getState().values,
+  );
   return (
     <div>
-      <span data-testid="toggle-value">{String(ctx.values.toggle)}</span>
-      <button onClick={() => ctx.setValue("toggle", true)}>set-true</button>
+      <span data-testid="toggle-value">{String(values.toggle)}</span>
+      <button onClick={() => store.setValue("toggle", true)}>set-true</button>
     </div>
   );
 }
@@ -79,14 +83,14 @@ describe("SetteraRenderer", () => {
     };
 
     function ActionConsumer() {
-      const ctx = React.useContext(SetteraValuesContext);
+      const store = React.useContext(SetteraValuesContext);
       return (
         <div>
           <span data-testid="has-action">
-            {ctx?.onAction?.clearCache ? "yes" : "no"}
+            {store?.getOnAction()?.clearCache ? "yes" : "no"}
           </span>
           <span data-testid="has-validate">
-            {ctx?.onValidate?.apiKey ? "yes" : "no"}
+            {store?.getOnValidate()?.apiKey ? "yes" : "no"}
           </span>
         </div>
       );
@@ -112,14 +116,18 @@ describe("SetteraRenderer", () => {
 // ---- Async save tracking ----
 
 function SaveStatusConsumer() {
-  const ctx = React.useContext(SetteraValuesContext);
-  if (!ctx) return <div>no context</div>;
+  const store = React.useContext(SetteraValuesContext);
+  if (!store) return <div>no context</div>;
+  const saveStatus = useSyncExternalStore(
+    store.subscribe,
+    () => store.getState().saveStatus,
+  );
   return (
     <div>
       <span data-testid="save-status">
-        {ctx.saveStatus["toggle"] ?? "idle"}
+        {saveStatus["toggle"] ?? "idle"}
       </span>
-      <button onClick={() => ctx.setValue("toggle", true)}>save</button>
+      <button onClick={() => store.setValue("toggle", true)}>save</button>
     </div>
   );
 }

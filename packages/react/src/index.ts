@@ -19,6 +19,10 @@ export type { SetteraProviderProps } from "./provider.js";
 export { SetteraRenderer } from "./renderer.js";
 export type { SetteraRendererProps } from "./renderer.js";
 
+// Store
+export { SetteraValuesStore } from "./store.js";
+export type { SetteraValuesState } from "./store.js";
+
 // Contexts (for advanced usage)
 export {
   SetteraSchemaContext,
@@ -28,7 +32,6 @@ export {
 export type {
   SetteraSchemaContextValue,
   SetteraNavigationContextValue,
-  SetteraValuesContextValue,
   PendingConfirm,
   SaveStatus,
 } from "./context.js";
@@ -55,6 +58,9 @@ export {
 export type { UseSetteraGlobalKeysOptions } from "./hooks/useSetteraGlobalKeys.js";
 export { useContentCardNavigation } from "./hooks/useContentCardNavigation.js";
 export type { UseContentCardNavigationOptions } from "./hooks/useContentCardNavigation.js";
+
+// Store selector hooks
+export { useStoreSelector, useStoreSlice } from "./hooks/useStoreSelector.js";
 
 // Validation (pure function, useful for custom renderers)
 export { validateSettingValue } from "./validation.js";

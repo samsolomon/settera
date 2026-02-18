@@ -7,6 +7,7 @@ import type {
   SelectSetting,
   MultiSelectSetting,
   DateSetting,
+  ColorSetting,
   CompoundSetting,
   CompoundFieldDefinition,
   RepeatableSetting,
@@ -15,6 +16,10 @@ import type {
   ModalActionFieldSetting,
   CustomSetting,
   ValueSetting,
+  SelectOption,
+  VisibilityCondition,
+  VisibilityConditionGroup,
+  VisibilityRule,
   VisibilityValue,
 } from "../types.js";
 
@@ -79,6 +84,13 @@ describe("SettingDefinition discriminated union", () => {
     const setting = { type: "action" as const } as SettingDefinition;
     if (setting.type === "action") {
       expectTypeOf(setting).toMatchTypeOf<ActionSetting>();
+    }
+  });
+
+  it("narrows to ColorSetting on type === 'color'", () => {
+    const setting = { type: "color" as const } as SettingDefinition;
+    if (setting.type === "color") {
+      expectTypeOf(setting).toMatchTypeOf<ColorSetting>();
     }
   });
 
@@ -151,13 +163,14 @@ describe("ModalActionFieldSetting", () => {
 });
 
 describe("disabled field", () => {
-  it("exists on all 10 setting types", () => {
+  it("exists on all 11 setting types", () => {
     expectTypeOf<BooleanSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<TextSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<NumberSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<SelectSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<MultiSelectSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<DateSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<ColorSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<CompoundSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<RepeatableSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<ActionSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
@@ -179,6 +192,126 @@ describe("readonly field", () => {
     expectTypeOf<BooleanHasReadonly>().toEqualTypeOf<false>();
     expectTypeOf<SelectHasReadonly>().toEqualTypeOf<false>();
     expectTypeOf<ActionHasReadonly>().toEqualTypeOf<false>();
+  });
+});
+
+describe("badge field", () => {
+  it("exists on all 11 setting types", () => {
+    expectTypeOf<BooleanSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<TextSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<NumberSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<SelectSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<MultiSelectSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<DateSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<ColorSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<CompoundSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<RepeatableSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<ActionSetting["badge"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<CustomSetting["badge"]>().toEqualTypeOf<string | undefined>();
+  });
+});
+
+describe("deprecated field", () => {
+  it("exists on all 11 setting types", () => {
+    expectTypeOf<BooleanSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<TextSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<NumberSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<SelectSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<MultiSelectSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<DateSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<ColorSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<CompoundSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<RepeatableSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<ActionSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+    expectTypeOf<CustomSetting["deprecated"]>().toEqualTypeOf<string | boolean | undefined>();
+  });
+});
+
+describe("SelectOption", () => {
+  it("has value and label", () => {
+    expectTypeOf<SelectOption["value"]>().toEqualTypeOf<string>();
+    expectTypeOf<SelectOption["label"]>().toEqualTypeOf<string>();
+  });
+
+  it("has optional description and group", () => {
+    expectTypeOf<SelectOption["description"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<SelectOption["group"]>().toEqualTypeOf<string | undefined>();
+  });
+
+  it("is the element type of SelectSetting.options", () => {
+    expectTypeOf<SelectSetting["options"][number]>().toEqualTypeOf<SelectOption>();
+  });
+
+  it("is the element type of MultiSelectSetting.options", () => {
+    expectTypeOf<MultiSelectSetting["options"][number]>().toEqualTypeOf<SelectOption>();
+  });
+});
+
+describe("ColorSetting", () => {
+  it("has format field", () => {
+    expectTypeOf<ColorSetting["format"]>().toEqualTypeOf<"hex" | "rgb" | "hsl" | undefined>();
+  });
+
+  it("default is string", () => {
+    expectTypeOf<ColorSetting["default"]>().toEqualTypeOf<string | undefined>();
+  });
+});
+
+describe("TextSetting textarea", () => {
+  it("inputType includes textarea", () => {
+    expectTypeOf<"textarea">().toMatchTypeOf<NonNullable<TextSetting["inputType"]>>();
+  });
+
+  it("has rows field", () => {
+    expectTypeOf<TextSetting["rows"]>().toEqualTypeOf<number | undefined>();
+  });
+});
+
+describe("NumberSetting extensions", () => {
+  it("has displayHint field", () => {
+    expectTypeOf<NumberSetting["displayHint"]>().toEqualTypeOf<"input" | "slider" | undefined>();
+  });
+
+  it("validation has step field", () => {
+    type NumValidation = NonNullable<NumberSetting["validation"]>;
+    expectTypeOf<NumValidation["step"]>().toEqualTypeOf<number | undefined>();
+  });
+});
+
+describe("SelectSetting placeholder", () => {
+  it("has placeholder field", () => {
+    expectTypeOf<SelectSetting["placeholder"]>().toEqualTypeOf<string | undefined>();
+  });
+});
+
+describe("VisibilityCondition extensions", () => {
+  it("has greaterThan and lessThan", () => {
+    expectTypeOf<VisibilityCondition["greaterThan"]>().toEqualTypeOf<number | undefined>();
+    expectTypeOf<VisibilityCondition["lessThan"]>().toEqualTypeOf<number | undefined>();
+  });
+
+  it("has contains", () => {
+    expectTypeOf<VisibilityCondition["contains"]>().toEqualTypeOf<VisibilityValue | undefined>();
+  });
+
+  it("has isEmpty", () => {
+    expectTypeOf<VisibilityCondition["isEmpty"]>().toEqualTypeOf<boolean | undefined>();
+  });
+});
+
+describe("VisibilityConditionGroup", () => {
+  it("has or array", () => {
+    expectTypeOf<VisibilityConditionGroup["or"]>().toEqualTypeOf<VisibilityCondition[]>();
+  });
+});
+
+describe("VisibilityRule", () => {
+  it("accepts VisibilityCondition", () => {
+    expectTypeOf<VisibilityCondition>().toMatchTypeOf<VisibilityRule>();
+  });
+
+  it("accepts VisibilityConditionGroup", () => {
+    expectTypeOf<VisibilityConditionGroup>().toMatchTypeOf<VisibilityRule>();
   });
 });
 

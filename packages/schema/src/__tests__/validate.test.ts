@@ -1640,6 +1640,222 @@ describe("validateSchema", () => {
     expect(errors).toEqual([]);
   });
 
+  // Color setting
+  it("accepts valid color setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "brand.color",
+                  title: "Brand Color",
+                  type: "color",
+                  default: "#ff0000",
+                  format: "hex",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("accepts color setting without format", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "brand.color",
+                  title: "Brand Color",
+                  type: "color",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  // Section-level visibility
+  it("validates section visibleWhen referencing unknown setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              visibleWhen: { setting: "nonexistent", equals: true },
+              settings: [
+                { key: "a", title: "A", type: "boolean" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_VISIBILITY_REF")).toBe(true);
+  });
+
+  it("accepts section visibleWhen referencing valid setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "flags",
+              title: "Flags",
+              settings: [
+                { key: "advanced", title: "Advanced", type: "boolean" },
+              ],
+            },
+            {
+              key: "advanced-section",
+              title: "Advanced Section",
+              visibleWhen: { setting: "advanced", equals: true },
+              settings: [
+                { key: "debug", title: "Debug", type: "boolean" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  // Subsection-level visibility
+  it("validates subsection visibleWhen referencing unknown setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "a", title: "A", type: "boolean" },
+              ],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  visibleWhen: { setting: "nonexistent", equals: true },
+                  settings: [
+                    { key: "b", title: "B", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_VISIBILITY_REF")).toBe(true);
+  });
+
+  // OR group visibility
+  it("validates OR group visibleWhen referencing unknown setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "plan", title: "Plan", type: "select", options: [{ value: "free", label: "Free" }] },
+                {
+                  key: "premium.feature",
+                  title: "Premium Feature",
+                  type: "boolean",
+                  visibleWhen: {
+                    or: [
+                      { setting: "plan", equals: "pro" },
+                      { setting: "nonexistent", equals: "enterprise" },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_VISIBILITY_REF")).toBe(true);
+  });
+
+  it("accepts valid OR group visibleWhen", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "plan", title: "Plan", type: "select", options: [{ value: "free", label: "Free" }, { value: "pro", label: "Pro" }] },
+                {
+                  key: "premium.feature",
+                  title: "Premium Feature",
+                  type: "boolean",
+                  visibleWhen: {
+                    or: [
+                      { setting: "plan", equals: "pro" },
+                      { setting: "plan", equals: "enterprise" },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
   // Subsection validation
   it("validates settings inside subsections", () => {
     const schema: SetteraSchema = {

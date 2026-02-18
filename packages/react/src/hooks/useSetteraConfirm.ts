@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { SetteraValuesContext } from "../context.js";
 import type { PendingConfirm } from "../context.js";
+import { useStoreSelector } from "./useStoreSelector.js";
 
 export interface UseSetteraConfirmResult {
   /** The currently pending confirm dialog, or null if none */
@@ -14,12 +15,18 @@ export interface UseSetteraConfirmResult {
  * Used by ConfirmDialog to render and resolve the dialog.
  */
 export function useSetteraConfirm(): UseSetteraConfirmResult {
-  const ctx = useContext(SetteraValuesContext);
-  if (!ctx) {
+  const store = useContext(SetteraValuesContext);
+  if (!store) {
     throw new Error("useSetteraConfirm must be used within a SetteraRenderer.");
   }
+
+  const pendingConfirm = useStoreSelector(
+    store,
+    (state) => state.pendingConfirm,
+  );
+
   return {
-    pendingConfirm: ctx.pendingConfirm,
-    resolveConfirm: ctx.resolveConfirm,
+    pendingConfirm,
+    resolveConfirm: store.resolveConfirm,
   };
 }

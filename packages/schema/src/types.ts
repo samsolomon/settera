@@ -52,6 +52,15 @@ export interface SectionDefinition {
   /** Optional section description */
   description?: string;
 
+  /** Whether the section can be collapsed */
+  collapsible?: boolean;
+
+  /** Whether the section starts collapsed (requires collapsible) */
+  defaultCollapsed?: boolean;
+
+  /** Conditionally show/hide the entire section */
+  visibleWhen?: VisibilityRule | VisibilityRule[];
+
   /** Settings within this section */
   settings?: SettingDefinition[];
 
@@ -63,6 +72,8 @@ export interface SubsectionDefinition {
   key: string;
   title: string;
   description?: string;
+  /** Conditionally show/hide the entire subsection */
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   settings: SettingDefinition[];
 }
 
@@ -79,9 +90,21 @@ export type ValueSetting =
   | SelectSetting
   | MultiSelectSetting
   | DateSetting
+  | ColorSetting
   | CompoundSetting
   | RepeatableSetting
   | CustomSetting;
+
+// ---- Select Option ----
+
+export interface SelectOption {
+  value: string;
+  label: string;
+  /** Optional description shown below the label */
+  description?: string;
+  /** Optional group name for grouped option lists */
+  group?: string;
+}
 
 // ---- Individual Setting Types ----
 
@@ -95,7 +118,9 @@ export interface BooleanSetting {
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: never;
 }
 
@@ -107,12 +132,16 @@ export interface TextSetting {
   type: "text";
   default?: string;
   placeholder?: string;
-  inputType?: "text" | "email" | "url" | "password";
+  inputType?: "text" | "email" | "url" | "password" | "textarea";
+  /** Number of visible rows when inputType is "textarea" */
+  rows?: number;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
   readonly?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minLength?: number;
@@ -134,11 +163,17 @@ export interface NumberSetting {
   dangerous?: boolean;
   disabled?: boolean;
   readonly?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  visibleWhen?: VisibilityRule | VisibilityRule[];
+  badge?: string;
+  deprecated?: string | boolean;
+  /** Display hint for rendering: standard input or slider */
+  displayHint?: "input" | "slider";
   validation?: {
     required?: boolean;
     min?: number;
     max?: number;
+    /** Step increment; use 1 to enforce integers */
+    step?: number;
     message?: string;
   };
 }
@@ -149,12 +184,15 @@ export interface SelectSetting {
   description?: string;
   helpText?: string;
   type: "select";
-  options: Array<{ value: string; label: string }>;
+  options: SelectOption[];
   default?: string;
+  placeholder?: string;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     message?: string;
@@ -167,12 +205,14 @@ export interface MultiSelectSetting {
   description?: string;
   helpText?: string;
   type: "multiselect";
-  options: Array<{ value: string; label: string }>;
+  options: SelectOption[];
   default?: string[];
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minSelections?: number;
@@ -192,11 +232,34 @@ export interface DateSetting {
   dangerous?: boolean;
   disabled?: boolean;
   readonly?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minDate?: string;
     maxDate?: string;
+    message?: string;
+  };
+}
+
+export interface ColorSetting {
+  key: string;
+  title: string;
+  description?: string;
+  helpText?: string;
+  type: "color";
+  default?: string;
+  /** Expected color format */
+  format?: "hex" | "rgb" | "hsl";
+  confirm?: ConfirmConfig;
+  dangerous?: boolean;
+  disabled?: boolean;
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
+  validation?: {
+    required?: boolean;
     message?: string;
   };
 }
@@ -228,7 +291,9 @@ export interface CompoundSetting {
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
 }
 
 /** Field types allowed inside a repeatable compound item. */
@@ -252,7 +317,9 @@ export interface RepeatableSetting {
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     minItems?: number;
     maxItems?: number;
@@ -278,7 +345,9 @@ export interface ActionSetting {
   };
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
 }
 
 export type ModalActionFieldSetting =
@@ -303,7 +372,9 @@ export interface CustomSetting {
   confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
-  visibleWhen?: VisibilityCondition | VisibilityCondition[];
+  badge?: string;
+  deprecated?: string | boolean;
+  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     message?: string;
@@ -344,7 +415,27 @@ export interface VisibilityCondition {
 
   /** Visible when value is one of these */
   oneOf?: VisibilityValue[];
+
+  /** Visible when value is greater than this (numeric) */
+  greaterThan?: number;
+
+  /** Visible when value is less than this (numeric) */
+  lessThan?: number;
+
+  /** Visible when an array value contains this item (for multiselect) */
+  contains?: VisibilityValue;
+
+  /** Visible when value is empty (true) or not empty (false) */
+  isEmpty?: boolean;
 }
+
+/** OR group: at least one condition must be true. */
+export interface VisibilityConditionGroup {
+  or: VisibilityCondition[];
+}
+
+/** A single visibility rule: either a direct condition or an OR group. */
+export type VisibilityRule = VisibilityCondition | VisibilityConditionGroup;
 
 // ---- Validation ----
 

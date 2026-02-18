@@ -1,17 +1,12 @@
 import React, {
-  useState,
-  useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "./context.js";
-import type {
-  SetteraValuesContextValue,
-  PendingConfirm,
-  SaveStatus,
-} from "./context.js";
+import { SetteraValuesStore } from "./store.js";
 
 export interface SetteraRendererProps {
   /** Current values object (flat keys) */
@@ -43,6 +38,13 @@ export function SetteraRenderer({
 }: SetteraRendererProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
 
+  // Create store once
+  const storeRef = useRef<SetteraValuesStore | null>(null);
+  if (storeRef.current === null) {
+    storeRef.current = new SetteraValuesStore();
+  }
+  const store = storeRef.current;
+
   // Merge schema defaults with provided values so that visibility conditions
   // and value reads resolve correctly even when the consumer hasn't set a value.
   const resolvedValues = useMemo(() => {
@@ -56,124 +58,30 @@ export function SetteraRenderer({
     return { ...defaults, ...values };
   }, [values, schemaCtx]);
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Sync values and pass-through refs during render so children see
+  // correct data via getSnapshot() and getOnAction()/getOnValidate()
+  // during the same render pass. Does NOT emit — concurrent mode may
+  // discard this render without committing.
+  store.setValues(resolvedValues);
+  store.setOnChange(onChange);
+  store.setOnValidate(onValidate);
+  store.setOnAction(onAction);
 
-  const setError = useCallback((key: string, error: string | null) => {
-    setErrors((prev) => {
-      if (error === null) {
-        if (!(key in prev)) return prev;
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      }
-      return { ...prev, [key]: error };
-    });
-  }, []);
+  // Emit after commit so subscribers (useSyncExternalStore) re-render
+  // with the latest values.
+  useLayoutEffect(() => {
+    store.emitChange();
+  }, [store, resolvedValues]);
 
-  // ---- Async save tracking ----
-  const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
-  const saveGenerationRef = useRef<Record<string, number>>({});
-  const saveTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>(
-    {},
-  );
-  const mountedRef = useRef(true);
-
+  // Cleanup on unmount
   useEffect(() => {
-    mountedRef.current = true;
     return () => {
-      mountedRef.current = false;
-      for (const timer of Object.values(saveTimersRef.current)) {
-        clearTimeout(timer);
-      }
+      store.destroy();
     };
-  }, []);
-
-  const setValue = useCallback(
-    (key: string, value: unknown) => {
-      const result = onChange(key, value);
-
-      if (result instanceof Promise) {
-        const gen = (saveGenerationRef.current[key] ?? 0) + 1;
-        saveGenerationRef.current[key] = gen;
-
-        setSaveStatus((prev) => ({ ...prev, [key]: "saving" }));
-
-        result.then(
-          () => {
-            if (!mountedRef.current) return;
-            if (saveGenerationRef.current[key] !== gen) return;
-            setSaveStatus((prev) => ({ ...prev, [key]: "saved" }));
-            clearTimeout(saveTimersRef.current[key]);
-            saveTimersRef.current[key] = setTimeout(() => {
-              if (!mountedRef.current) return;
-              if (saveGenerationRef.current[key] !== gen) return;
-              setSaveStatus((prev) => ({ ...prev, [key]: "idle" }));
-            }, 2000);
-          },
-          () => {
-            if (!mountedRef.current) return;
-            if (saveGenerationRef.current[key] !== gen) return;
-            setSaveStatus((prev) => ({ ...prev, [key]: "error" }));
-          },
-        );
-      }
-    },
-    [onChange],
-  );
-
-  // ---- Confirm dialog state ----
-  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
-    null,
-  );
-  const pendingConfirmRef = useRef<PendingConfirm | null>(null);
-  pendingConfirmRef.current = pendingConfirm;
-
-  const requestConfirm = useCallback((pending: PendingConfirm) => {
-    const prev = pendingConfirmRef.current;
-    if (prev) prev.onCancel();
-    setPendingConfirm(pending);
-  }, []);
-
-  const resolveConfirm = useCallback((confirmed: boolean) => {
-    const prev = pendingConfirmRef.current;
-    if (!prev) return;
-    setPendingConfirm(null);
-    if (confirmed) {
-      prev.onConfirm();
-    } else {
-      prev.onCancel();
-    }
-  }, []);
-
-  const contextValue: SetteraValuesContextValue = useMemo(
-    () => ({
-      values: resolvedValues,
-      setValue,
-      errors,
-      setError,
-      saveStatus,
-      onValidate,
-      onAction,
-      pendingConfirm,
-      requestConfirm,
-      resolveConfirm,
-    }),
-    [
-      resolvedValues,
-      setValue,
-      errors,
-      setError,
-      saveStatus,
-      onValidate,
-      onAction,
-      pendingConfirm,
-      requestConfirm,
-      resolveConfirm,
-    ],
-  );
+  }, [store]);
 
   return (
-    <SetteraValuesContext.Provider value={contextValue}>
+    <SetteraValuesContext.Provider value={store}>
       {children}
     </SetteraValuesContext.Provider>
   );

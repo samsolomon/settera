@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { evaluateVisibility } from "../visibility.js";
-import type { VisibilityCondition } from "@settera/schema";
+import type { VisibilityCondition, VisibilityRule } from "@settera/schema";
 
 describe("evaluateVisibility", () => {
   it("returns true when conditions is undefined", () => {
@@ -90,5 +90,178 @@ describe("evaluateVisibility", () => {
         ssoProvider: "auth0",
       }),
     ).toBe(false);
+  });
+
+  // greaterThan
+  it("evaluates greaterThan condition — match", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      greaterThan: 5,
+    };
+    expect(evaluateVisibility(condition, { count: 10 })).toBe(true);
+  });
+
+  it("evaluates greaterThan condition — no match (equal)", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      greaterThan: 5,
+    };
+    expect(evaluateVisibility(condition, { count: 5 })).toBe(false);
+  });
+
+  it("evaluates greaterThan condition — no match (less)", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      greaterThan: 5,
+    };
+    expect(evaluateVisibility(condition, { count: 3 })).toBe(false);
+  });
+
+  it("evaluates greaterThan — false for non-numeric value", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      greaterThan: 5,
+    };
+    expect(evaluateVisibility(condition, { count: "ten" })).toBe(false);
+  });
+
+  // lessThan
+  it("evaluates lessThan condition — match", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      lessThan: 10,
+    };
+    expect(evaluateVisibility(condition, { count: 5 })).toBe(true);
+  });
+
+  it("evaluates lessThan condition — no match (equal)", () => {
+    const condition: VisibilityCondition = {
+      setting: "count",
+      lessThan: 10,
+    };
+    expect(evaluateVisibility(condition, { count: 10 })).toBe(false);
+  });
+
+  // contains
+  it("evaluates contains condition — match", () => {
+    const condition: VisibilityCondition = {
+      setting: "tags",
+      contains: "advanced",
+    };
+    expect(evaluateVisibility(condition, { tags: ["basic", "advanced"] })).toBe(true);
+  });
+
+  it("evaluates contains condition — no match", () => {
+    const condition: VisibilityCondition = {
+      setting: "tags",
+      contains: "advanced",
+    };
+    expect(evaluateVisibility(condition, { tags: ["basic"] })).toBe(false);
+  });
+
+  it("evaluates contains — false for non-array value", () => {
+    const condition: VisibilityCondition = {
+      setting: "tags",
+      contains: "advanced",
+    };
+    expect(evaluateVisibility(condition, { tags: "advanced" })).toBe(false);
+  });
+
+  // isEmpty
+  it("evaluates isEmpty: true — match when undefined", () => {
+    const condition: VisibilityCondition = {
+      setting: "name",
+      isEmpty: true,
+    };
+    expect(evaluateVisibility(condition, {})).toBe(true);
+  });
+
+  it("evaluates isEmpty: true — match when empty string", () => {
+    const condition: VisibilityCondition = {
+      setting: "name",
+      isEmpty: true,
+    };
+    expect(evaluateVisibility(condition, { name: "" })).toBe(true);
+  });
+
+  it("evaluates isEmpty: true — match when empty array", () => {
+    const condition: VisibilityCondition = {
+      setting: "tags",
+      isEmpty: true,
+    };
+    expect(evaluateVisibility(condition, { tags: [] })).toBe(true);
+  });
+
+  it("evaluates isEmpty: true — no match when non-empty", () => {
+    const condition: VisibilityCondition = {
+      setting: "name",
+      isEmpty: true,
+    };
+    expect(evaluateVisibility(condition, { name: "hello" })).toBe(false);
+  });
+
+  it("evaluates isEmpty: false — match when non-empty", () => {
+    const condition: VisibilityCondition = {
+      setting: "name",
+      isEmpty: false,
+    };
+    expect(evaluateVisibility(condition, { name: "hello" })).toBe(true);
+  });
+
+  it("evaluates isEmpty: false — no match when empty", () => {
+    const condition: VisibilityCondition = {
+      setting: "name",
+      isEmpty: false,
+    };
+    expect(evaluateVisibility(condition, { name: "" })).toBe(false);
+  });
+
+  // OR groups
+  it("evaluates OR group — match when first condition true", () => {
+    const rule: VisibilityRule = {
+      or: [
+        { setting: "plan", equals: "pro" },
+        { setting: "plan", equals: "enterprise" },
+      ],
+    };
+    expect(evaluateVisibility(rule, { plan: "pro" })).toBe(true);
+  });
+
+  it("evaluates OR group — match when second condition true", () => {
+    const rule: VisibilityRule = {
+      or: [
+        { setting: "plan", equals: "pro" },
+        { setting: "plan", equals: "enterprise" },
+      ],
+    };
+    expect(evaluateVisibility(rule, { plan: "enterprise" })).toBe(true);
+  });
+
+  it("evaluates OR group — no match when none true", () => {
+    const rule: VisibilityRule = {
+      or: [
+        { setting: "plan", equals: "pro" },
+        { setting: "plan", equals: "enterprise" },
+      ],
+    };
+    expect(evaluateVisibility(rule, { plan: "free" })).toBe(false);
+  });
+
+  it("evaluates mixed AND array with OR group", () => {
+    const rules: VisibilityRule[] = [
+      { setting: "enabled", equals: true },
+      {
+        or: [
+          { setting: "plan", equals: "pro" },
+          { setting: "plan", equals: "enterprise" },
+        ],
+      },
+    ];
+    // Both AND conditions met
+    expect(evaluateVisibility(rules, { enabled: true, plan: "pro" })).toBe(true);
+    // OR group fails
+    expect(evaluateVisibility(rules, { enabled: true, plan: "free" })).toBe(false);
+    // Plain condition fails
+    expect(evaluateVisibility(rules, { enabled: false, plan: "pro" })).toBe(false);
   });
 });

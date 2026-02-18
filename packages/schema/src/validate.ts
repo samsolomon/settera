@@ -5,6 +5,7 @@ import type {
   SettingDefinition,
   SchemaValidationError,
   VisibilityCondition,
+  VisibilityRule,
 } from "./types.js";
 
 /**
@@ -177,6 +178,9 @@ function validateSection(
     sectionKeys.add(section.key);
   }
 
+  // Collect section-level visibility refs
+  collectVisibilityRefs(section.visibleWhen, `${path}.visibleWhen`, allVisibilityRefs);
+
   // Validate settings
   if (section.settings) {
     for (let i = 0; i < section.settings.length; i++) {
@@ -222,6 +226,9 @@ function validateSection(
         subsectionKeys.add(sub.key);
       }
 
+      // Collect subsection-level visibility refs
+      collectVisibilityRefs(sub.visibleWhen, `${subPath}.visibleWhen`, allVisibilityRefs);
+
       if (sub.settings) {
         for (let j = 0; j < sub.settings.length; j++) {
           validateSetting(
@@ -244,6 +251,7 @@ const VALID_SETTING_TYPES = [
   "select",
   "multiselect",
   "date",
+  "color",
   "compound",
   "repeatable",
   "action",
@@ -547,17 +555,43 @@ function validateSetting(
     }
   }
 
+  if (setting.type === "color") {
+    if (setting.format && !["hex", "rgb", "hsl"].includes(setting.format)) {
+      errors.push({
+        path: `${path}.format`,
+        code: "INVALID_TYPE",
+        message: `Invalid color format "${setting.format}" for color setting "${setting.key}". Must be "hex", "rgb", or "hsl".`,
+      });
+    }
+  }
+
   // Collect visibility refs
   if ("visibleWhen" in setting && setting.visibleWhen) {
-    const conditions = Array.isArray(setting.visibleWhen)
-      ? setting.visibleWhen
-      : [setting.visibleWhen];
-    for (const condition of conditions as VisibilityCondition[]) {
-      if (condition.setting) {
-        allVisibilityRefs.push({
-          path: `${path}.visibleWhen`,
-          setting: condition.setting,
-        });
+    collectVisibilityRefs(setting.visibleWhen, `${path}.visibleWhen`, allVisibilityRefs);
+  }
+}
+
+/** Extract setting references from visibility rules (handles both conditions and OR groups). */
+function collectVisibilityRefs(
+  visibleWhen: VisibilityRule | VisibilityRule[] | undefined,
+  path: string,
+  allVisibilityRefs: Array<{ path: string; setting: string }>,
+): void {
+  if (!visibleWhen) return;
+
+  const rules: VisibilityRule[] = Array.isArray(visibleWhen) ? visibleWhen : [visibleWhen];
+  for (const rule of rules) {
+    if ("or" in rule) {
+      // OR group — collect refs from each inner condition
+      for (const condition of rule.or) {
+        if (condition.setting) {
+          allVisibilityRefs.push({ path, setting: condition.setting });
+        }
+      }
+    } else {
+      // Plain condition
+      if (rule.setting) {
+        allVisibilityRefs.push({ path, setting: rule.setting });
       }
     }
   }

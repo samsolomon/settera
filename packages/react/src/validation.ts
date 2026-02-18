@@ -20,6 +20,8 @@ export function validateSettingValue(
       return validateMultiSelect(definition.validation, value);
     case "date":
       return validateDate(definition.validation, value);
+    case "color":
+      return validateColor(definition.validation, value);
     case "repeatable":
       return validateRepeatable(definition.validation, value);
     default:
@@ -80,7 +82,7 @@ function validateText(
 
 function validateNumber(
   validation:
-    | { required?: boolean; min?: number; max?: number; message?: string }
+    | { required?: boolean; min?: number; max?: number; step?: number; message?: string }
     | undefined,
   value: unknown,
 ): string | null {
@@ -107,6 +109,19 @@ function validateNumber(
 
   if (validation.max !== undefined && num > validation.max) {
     return validation.message ?? `Must be at most ${validation.max}`;
+  }
+
+  if (validation.step !== undefined && validation.step > 0) {
+    const base = validation.min ?? 0;
+    // Use rounding to avoid floating-point precision issues
+    const remainder = Math.abs((num - base) % validation.step);
+    const tolerance = 1e-10;
+    if (remainder > tolerance && Math.abs(remainder - validation.step) > tolerance) {
+      if (validation.step === 1) {
+        return validation.message ?? "Must be a whole number";
+      }
+      return validation.message ?? `Must be a multiple of ${validation.step}`;
+    }
   }
 
   return null;
@@ -199,6 +214,22 @@ function validateDate(
     return (
       validation.message ?? `Date must be on or before ${validation.maxDate}`
     );
+  }
+
+  return null;
+}
+
+function validateColor(
+  validation: { required?: boolean; message?: string } | undefined,
+  value: unknown,
+): string | null {
+  if (!validation) return null;
+
+  const str = typeof value === "string" ? value : "";
+  const isEmpty = str.length === 0;
+
+  if (validation.required && isEmpty) {
+    return validation.message ?? "This field is required";
   }
 
   return null;

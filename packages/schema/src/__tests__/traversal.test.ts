@@ -169,6 +169,94 @@ describe("resolveDependencies", () => {
     const deps = resolveDependencies(schema);
     expect(deps.size).toBe(0);
   });
+
+  it("includes section-level visibleWhen dependencies", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "flags",
+              title: "Flags",
+              settings: [{ key: "advanced", title: "Advanced", type: "boolean" }],
+            },
+            {
+              key: "advanced-section",
+              title: "Advanced Section",
+              visibleWhen: { setting: "advanced", equals: true },
+              settings: [{ key: "debug", title: "Debug", type: "boolean" }],
+            },
+          ],
+        },
+      ],
+    };
+    const deps = resolveDependencies(schema);
+    expect(deps.get("section:advanced-section")).toEqual(["advanced"]);
+  });
+
+  it("includes subsection-level visibleWhen dependencies", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [{ key: "mode", title: "Mode", type: "select", options: [{ value: "basic", label: "Basic" }, { value: "advanced", label: "Advanced" }] }],
+              subsections: [
+                {
+                  key: "advanced-opts",
+                  title: "Advanced Options",
+                  visibleWhen: { setting: "mode", equals: "advanced" },
+                  settings: [{ key: "debug", title: "Debug", type: "boolean" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const deps = resolveDependencies(schema);
+    expect(deps.get("subsection:advanced-opts")).toEqual(["mode"]);
+  });
+
+  it("includes section-level OR group dependencies", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "plans",
+              title: "Plans",
+              settings: [{ key: "plan", title: "Plan", type: "select", options: [{ value: "free", label: "Free" }, { value: "pro", label: "Pro" }] }],
+            },
+            {
+              key: "paid",
+              title: "Paid Features",
+              visibleWhen: {
+                or: [
+                  { setting: "plan", equals: "pro" },
+                  { setting: "plan", equals: "enterprise" },
+                ],
+              },
+              settings: [{ key: "feature", title: "Feature", type: "boolean" }],
+            },
+          ],
+        },
+      ],
+    };
+    const deps = resolveDependencies(schema);
+    expect(deps.get("section:paid")).toEqual(["plan", "plan"]);
+  });
 });
 
 describe("isFlattenedPage", () => {

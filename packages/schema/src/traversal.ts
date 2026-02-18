@@ -5,6 +5,7 @@ import type {
   SettingDefinition,
   FlattenedSetting,
   VisibilityCondition,
+  VisibilityRule,
 } from "./types.js";
 
 // ---- Generic Schema Walker ----
@@ -196,27 +197,66 @@ export function resolvePageKey(page: PageDefinition, depth = 0): string {
 /**
  * Build a dependency map from visibleWhen conditions.
  * Returns Map<dependentKey, controllerKeys[]>.
+ *
+ * Includes dependencies from settings, sections, and subsections.
+ * Section/subsection keys are prefixed with "section:" or "subsection:"
+ * to distinguish them from setting keys.
  */
 export function resolveDependencies(
   schema: SetteraSchema,
 ): Map<string, string[]> {
   const deps = new Map<string, string[]>();
-  const flattened = flattenSettings(schema);
 
+  // Settings
+  const flattened = flattenSettings(schema);
   for (const { definition } of flattened) {
     if (!("visibleWhen" in definition) || !definition.visibleWhen) continue;
 
-    const conditions: VisibilityCondition[] = Array.isArray(
-      definition.visibleWhen,
-    )
-      ? definition.visibleWhen
-      : [definition.visibleWhen];
-
-    const controllers = conditions.map((c) => c.setting);
+    const controllers = extractControllerKeys(definition.visibleWhen);
     if (controllers.length > 0) {
       deps.set(definition.key, controllers);
     }
   }
 
+  // Sections and subsections
+  walkSchema(schema, {
+    onSection(section) {
+      if (section.visibleWhen) {
+        const controllers = extractControllerKeys(section.visibleWhen);
+        if (controllers.length > 0) {
+          deps.set(`section:${section.key}`, controllers);
+        }
+      }
+      if (section.subsections) {
+        for (const sub of section.subsections) {
+          if (sub.visibleWhen) {
+            const controllers = extractControllerKeys(sub.visibleWhen);
+            if (controllers.length > 0) {
+              deps.set(`subsection:${sub.key}`, controllers);
+            }
+          }
+        }
+      }
+    },
+  });
+
   return deps;
+}
+
+/** Extract all controller setting keys from a visibleWhen value. */
+function extractControllerKeys(
+  visibleWhen: VisibilityRule | VisibilityRule[],
+): string[] {
+  const rules: VisibilityRule[] = Array.isArray(visibleWhen) ? visibleWhen : [visibleWhen];
+  const keys: string[] = [];
+  for (const rule of rules) {
+    if ("or" in rule) {
+      for (const condition of rule.or) {
+        keys.push(condition.setting);
+      }
+    } else {
+      keys.push(rule.setting);
+    }
+  }
+  return keys;
 }

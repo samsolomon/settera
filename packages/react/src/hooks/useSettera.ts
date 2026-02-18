@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
+import { useStoreSelector } from "./useStoreSelector.js";
 
 /**
  * Access the full schema and values state.
@@ -7,19 +8,21 @@ import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
  */
 export function useSettera() {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const valuesCtx = useContext(SetteraValuesContext);
+  const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
     throw new Error("useSettera must be used within a SetteraProvider.");
   }
-  if (!valuesCtx) {
+  if (!store) {
     throw new Error("useSettera must be used within a SetteraRenderer.");
   }
 
+  const values = useStoreSelector(store, (state) => state.values);
+
   return {
     schema: schemaCtx.schema,
-    values: valuesCtx.values,
-    setValue: valuesCtx.setValue,
-    validate: valuesCtx.onValidate,
+    values,
+    setValue: store.setValue,
+    validate: store.getOnValidate(),
   };
 }
