@@ -11,6 +11,10 @@ import { ErrorMap } from "./error-map.js";
 import { ConfirmManager } from "./confirm-manager.js";
 import { ActionTracker } from "./action-tracker.js";
 
+const IS_DEV = process.env.NODE_ENV !== "production";
+
+export type ValidationMode = "valid-only" | "eager-save";
+
 export interface SetteraValuesState {
   values: Record<string, unknown>;
   errors: Record<string, string>;
@@ -38,6 +42,7 @@ export class SetteraValuesStore {
   private _errors: ErrorMap;
   private _confirms: ConfirmManager;
   private _actions: ActionTracker;
+  private _validationMode: ValidationMode = "valid-only";
 
   // Cached state snapshot — rebuilt on emit
   private _snapshot: SetteraValuesState;
@@ -108,17 +113,26 @@ export class SetteraValuesStore {
       return;
     }
 
+    if (definition.type === "action") {
+      const message = `[settera] setValue("${key}") cannot target an action setting. Use useSetteraAction/invokeAction.`;
+      if (IS_DEV) throw new Error(message);
+      console.warn(message);
+      return;
+    }
+
     if (definition.disabled) return;
     if ("readonly" in definition && (definition as { readonly?: boolean }).readonly) return;
 
-    const confirmConfig =
-      definition.type !== "action"
-        ? (definition as ValueSetting).confirm
-        : undefined;
+    const valueDefinition = definition as ValueSetting;
+    const confirmConfig = valueDefinition.confirm;
+
+    const syncError = validateSettingValue(definition, value);
+    this._errors.setError(key, syncError);
+    if (syncError && this._validationMode === "valid-only") {
+      return;
+    }
 
     const applyValue = () => {
-      const syncError = validateSettingValue(definition, value);
-      this._errors.setError(key, syncError);
       this._applyRawValue(key, value);
     };
 
@@ -153,10 +167,19 @@ export class SetteraValuesStore {
 
     const asyncValidator = this._callbacks.getOnValidate()?.[key];
     if (asyncValidator) {
-      const asyncError = await asyncValidator(currentValue);
-      if (asyncError) {
-        this._errors.setError(key, asyncError);
-        return asyncError;
+      try {
+        const asyncError = await asyncValidator(currentValue);
+        if (asyncError) {
+          this._errors.setError(key, asyncError);
+          return asyncError;
+        }
+      } catch (error) {
+        const message = "Validation failed";
+        this._errors.setError(key, message);
+        if (IS_DEV) {
+          console.error(`[settera] Async validation failed for "${key}":`, error);
+        }
+        return message;
       }
     }
 
@@ -221,6 +244,10 @@ export class SetteraValuesStore {
       | undefined,
   ): void {
     this._callbacks.setOnAction(map);
+  }
+
+  setValidationMode(mode: ValidationMode): void {
+    this._validationMode = mode;
   }
 
   // ---- Pass-through getters ----

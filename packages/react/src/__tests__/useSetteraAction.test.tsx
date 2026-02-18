@@ -180,6 +180,14 @@ describe("useSetteraAction", () => {
     }).toThrow("useSetteraAction must be used within a Settera component");
   });
 
+  it("throws when used with a non-action setting key", () => {
+    expect(() => {
+      renderAction("toggle");
+    }).toThrow(
+      'Setting "toggle" is not an action. Use useSetteraSetting instead of useSetteraAction.',
+    );
+  });
+
   it("recovers loading state when async handler rejects", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const handler = vi.fn().mockRejectedValue(new Error("boom"));

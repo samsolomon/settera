@@ -40,7 +40,17 @@ describe("store.setValue pipeline", () => {
       { key: "age", title: "Age", type: "number", validation: { min: 0, max: 120 } },
     ]);
     store.setValue("age", 200);
-    // onChange is still called (value is applied with the error set)
+    // default mode is valid-only: invalid values should not be persisted
+    expect(onChange).not.toHaveBeenCalled();
+    expect(store.getState().errors["age"]).toBeTruthy();
+  });
+
+  it("supports eager-save mode for invalid values", () => {
+    const { store, onChange } = makeStore([
+      { key: "age", title: "Age", type: "number", validation: { min: 0, max: 120 } },
+    ]);
+    store.setValidationMode("eager-save");
+    store.setValue("age", 200);
     expect(onChange).toHaveBeenCalledWith("age", 200);
     expect(store.getState().errors["age"]).toBeTruthy();
   });
@@ -118,6 +128,21 @@ describe("store.setValue pipeline", () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(store.getState().saveStatus["name"]).toBe("saved");
   });
+
+  it("throws when setValue targets an action setting", () => {
+    const { store } = makeStore([
+      {
+        key: "reset",
+        title: "Reset",
+        type: "action",
+        buttonLabel: "Reset",
+        actionType: "callback",
+      },
+    ]);
+    expect(() => store.setValue("reset", true)).toThrow(
+      'setValue("reset") cannot target an action setting',
+    );
+  });
 });
 
 describe("store.validate", () => {
@@ -151,6 +176,27 @@ describe("store.validate", () => {
     const error = await store.validate("name");
     expect(error).toBe("Name already taken");
     expect(store.getState().errors["name"]).toBe("Name already taken");
+  });
+
+  it("maps async validator exceptions to a validation error", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { store } = makeStore([
+      { key: "name", title: "Name", type: "text" },
+    ]);
+    store.setValues({ name: "boom" });
+    store.setOnValidate({
+      name: async () => {
+        throw new Error("network down");
+      },
+    });
+    const error = await store.validate("name");
+    expect(error).toBe("Validation failed");
+    expect(store.getState().errors["name"]).toBe("Validation failed");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      '[settera] Async validation failed for "name":',
+      expect.any(Error),
+    );
+    consoleSpy.mockRestore();
   });
 
   it("suppresses validation when confirm is pending for the key", async () => {

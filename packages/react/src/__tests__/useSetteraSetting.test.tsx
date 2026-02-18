@@ -97,6 +97,13 @@ const schema: SetteraSchema = {
               readonly: true,
               default: "locked",
             },
+            {
+              key: "resetAction",
+              title: "Reset",
+              type: "action",
+              buttonLabel: "Reset",
+              actionType: "callback",
+            },
           ],
         },
       ],
@@ -224,6 +231,14 @@ describe("useSetteraSetting", () => {
     expect(() => {
       render(<SettingDisplay settingKey="autoSave" />);
     }).toThrow("useSetteraSetting must be used within a Settera component");
+  });
+
+  it("throws when used with an action setting key", () => {
+    expect(() => {
+      renderWithSettera({}, () => {}, <SettingDisplay settingKey="resetAction" />);
+    }).toThrow(
+      'Setting "resetAction" is an action. Use useSetteraAction instead of useSetteraSetting.',
+    );
   });
 
   // ---- Validation tests ----
@@ -422,8 +437,11 @@ describe("useSetteraSetting", () => {
       screen.getByTestId("validate-confirmedText").click();
     });
 
-    // Error should not be set because validate is suppressed
-    expect(screen.getByTestId("error-confirmedText").textContent).toBe("");
+    // setValue may set sync error immediately in valid-only mode;
+    // validate() itself is still suppressed while confirm is pending.
+    expect(screen.getByTestId("error-confirmedText").textContent).toBe(
+      "This field is required",
+    );
   });
 
   it("applies setValue immediately when no confirm config", async () => {

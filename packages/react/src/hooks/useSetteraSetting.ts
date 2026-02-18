@@ -3,7 +3,7 @@ import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import type { SaveStatus } from "../stores/save-tracker.js";
 import { useStoreSlice } from "./useStoreSelector.js";
 import { useVisibility } from "./useVisibility.js";
-import type { SettingDefinition } from "@settera/schema";
+import type { ValueSetting } from "@settera/schema";
 
 export interface UseSetteraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
@@ -17,7 +17,7 @@ export interface UseSetteraSettingResult {
   /** Whether this setting is readonly (value displayed but not editable) */
   isReadonly: boolean;
   /** The setting definition from the schema */
-  definition: SettingDefinition;
+  definition: ValueSetting;
   /** Per-setting save status (idle/saving/saved/error) */
   saveStatus: SaveStatus;
   /** Run full validation pipeline (sync + async). Call on blur.
@@ -43,6 +43,11 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
   const definition = schemaCtx.getSettingByKey(key);
   if (!definition) {
     throw new Error(`Setting "${key}" not found in schema.`);
+  }
+  if (definition.type === "action") {
+    throw new Error(
+      `Setting "${key}" is an action. Use useSetteraAction instead of useSetteraSetting.`,
+    );
   }
 
   // Per-key slice — only re-renders when this key's data changes.

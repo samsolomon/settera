@@ -138,21 +138,18 @@ describe("Settera — schema context", () => {
     expect(screen.getByTestId("found-page").textContent).toBe("Appearance");
   });
 
-  it("warns on invalid schema", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("throws on invalid schema in non-production environments", () => {
     const badSchema = {
       version: "2.0" as "1.0",
       pages: [{ key: "p", title: "P" }],
     };
-    render(
-      <Settera schema={badSchema} values={{}} onChange={() => {}}>
-        <div>child</div>
-      </Settera>,
-    );
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("INVALID_VERSION"),
-    );
-    warnSpy.mockRestore();
+    expect(() => {
+      render(
+        <Settera schema={badSchema} values={{}} onChange={() => {}}>
+          <div>child</div>
+        </Settera>,
+      );
+    }).toThrow("[settera] Invalid schema");
   });
 
   it("does not warn on valid schema", () => {

@@ -2,11 +2,11 @@ import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useStoreSelector } from "./useStoreSelector.js";
 import { useVisibility } from "./useVisibility.js";
-import type { SettingDefinition } from "@settera/schema";
+import type { ActionSetting } from "@settera/schema";
 
 export interface UseSetteraActionResult {
   /** The setting definition from the schema */
-  definition: SettingDefinition;
+  definition: ActionSetting;
   /** Whether this setting is currently visible */
   isVisible: boolean;
   /** The action handler. No-ops if no handler is registered for this key. */
@@ -33,6 +33,11 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
   const definition = schemaCtx.getSettingByKey(key);
   if (!definition) {
     throw new Error(`Setting "${key}" not found in schema.`);
+  }
+  if (definition.type !== "action") {
+    throw new Error(
+      `Setting "${key}" is not an action. Use useSetteraSetting instead of useSetteraAction.`,
+    );
   }
 
   const isLoading = useStoreSelector(

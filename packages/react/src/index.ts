@@ -1,6 +1,6 @@
 // Unified component
 export { Settera } from "./settera.js";
-export type { SetteraProps } from "./settera.js";
+export type { SetteraProps, ValidationMode } from "./settera.js";
 
 // Store
 export { SetteraValuesStore } from "./stores/index.js";

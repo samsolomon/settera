@@ -15,6 +15,11 @@ import type { SetteraSchema } from "@settera/schema";
 import { SetteraSchemaContext, SetteraValuesContext } from "./context.js";
 import type { SetteraSchemaContextValue } from "./context.js";
 import { SetteraValuesStore } from "./stores/index.js";
+import type { ValidationMode } from "./stores/index.js";
+
+const IS_DEV = process.env.NODE_ENV !== "production";
+
+export type { ValidationMode };
 
 export interface SetteraProps {
   /** The settings schema */
@@ -30,6 +35,8 @@ export interface SetteraProps {
     string,
     (value: unknown) => string | null | Promise<string | null>
   >;
+  /** Save policy for sync validation failures. */
+  validationMode?: ValidationMode;
   children: React.ReactNode;
 }
 
@@ -43,21 +50,32 @@ export function Settera({
   onChange,
   onAction,
   onValidate,
+  validationMode = "valid-only",
   children,
 }: SetteraProps) {
   // ---- Schema ----
 
-  // Validate schema on mount (warn, don't throw)
+  const schemaErrors = useMemo(() => validateSchema(schema), [schema]);
+
+  if (IS_DEV && schemaErrors.length > 0) {
+    const details = schemaErrors
+      .slice(0, 5)
+      .map((error) => `${error.code} at ${error.path}: ${error.message}`)
+      .join("\n");
+    throw new Error(
+      `[settera] Invalid schema (${schemaErrors.length} error${schemaErrors.length === 1 ? "" : "s"}):\n${details}`,
+    );
+  }
+
+  // Validate schema on mount/update in production (warn, don't throw)
   useEffect(() => {
-    const errors = validateSchema(schema);
-    if (errors.length > 0) {
-      for (const error of errors) {
-        console.warn(
-          `[settera] Schema validation: ${error.code} at ${error.path} — ${error.message}`,
-        );
-      }
+    if (IS_DEV || schemaErrors.length === 0) return;
+    for (const error of schemaErrors) {
+      console.warn(
+        `[settera] Schema validation: ${error.code} at ${error.path} — ${error.message}`,
+      );
     }
-  }, [schema]);
+  }, [schemaErrors]);
 
   // Memoize schema context (stable after mount)
   const schemaContext: SetteraSchemaContextValue = useMemo(
@@ -106,6 +124,7 @@ export function Settera({
   store.setOnValidate(onValidate);
   store.setOnAction(onAction);
   store.setSchemaLookup(schemaContext.getSettingByKey);
+  store.setValidationMode(validationMode);
 
   // Emit after commit so subscribers (useSyncExternalStore) re-render
   // with the latest values.
