@@ -5,7 +5,6 @@ import {
   flattenSettings,
   getSettingByKey,
   getPageByKey,
-  resolveDependencies,
 } from "../index.js";
 import type {
   SetteraSchema,
@@ -26,7 +25,6 @@ describe("@settera/schema", () => {
     expect(typeof flattenSettings).toBe("function");
     expect(typeof getSettingByKey).toBe("function");
     expect(typeof getPageByKey).toBe("function");
-    expect(typeof resolveDependencies).toBe("function");
   });
 
   it("exports types that compile correctly", () => {

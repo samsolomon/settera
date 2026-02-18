@@ -224,14 +224,8 @@ export interface CompoundSetting extends BaseValueSettingFields {
   };
 }
 
-/** Field types allowed inside a repeatable compound item. */
-export type RepeatableFieldDefinition =
-  | TextSetting
-  | NumberSetting
-  | SelectSetting
-  | MultiSelectSetting
-  | DateSetting
-  | BooleanSetting;
+/** @deprecated Use CompoundFieldDefinition instead. */
+export type RepeatableFieldDefinition = CompoundFieldDefinition;
 
 export interface RepeatableSetting extends BaseValueSettingFields {
   type: "repeatable";
@@ -350,6 +344,7 @@ export interface SchemaValidationError {
     | "MISSING_REQUIRED_FIELD"
     | "DUPLICATE_KEY"
     | "INVALID_VISIBILITY_REF"
+    | "MULTIPLE_VISIBILITY_OPERATORS"
     | "COMPOUND_FIELD_DOT_KEY"
     | "EMPTY_OPTIONS"
     | "DUPLICATE_OPTION_VALUE"
@@ -376,4 +371,7 @@ export interface FlattenedSetting {
 
   /** Key of the section this setting belongs to */
   sectionKey: string;
+
+  /** Key of the subsection this setting belongs to (empty string when not in a subsection) */
+  subsectionKey: string;
 }

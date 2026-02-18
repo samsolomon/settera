@@ -4,7 +4,6 @@ import {
   flattenSettings,
   getSettingByKey,
   getPageByKey,
-  resolveDependencies,
   isFlattenedPage,
   resolvePageKey,
 } from "../traversal.js";
@@ -127,135 +126,6 @@ describe("getPageByKey", () => {
 
   it("returns undefined for unknown key", () => {
     expect(getPageByKey(referenceSchema, "nonexistent")).toBeUndefined();
-  });
-});
-
-describe("resolveDependencies", () => {
-  it("returns dependency map from visibleWhen conditions", () => {
-    const deps = resolveDependencies(referenceSchema);
-
-    // ssoProvider depends on ssoEnabled
-    expect(deps.get("security.ssoProvider")).toEqual(["security.ssoEnabled"]);
-
-    // ssoDomain depends on ssoEnabled AND ssoProvider
-    expect(deps.get("security.ssoDomain")).toEqual([
-      "security.ssoEnabled",
-      "security.ssoProvider",
-    ]);
-  });
-
-  it("does not include settings without visibleWhen", () => {
-    const deps = resolveDependencies(referenceSchema);
-    expect(deps.has("general.autoSave")).toBe(false);
-  });
-
-  it("returns empty map for schema with no dependencies", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "p1",
-          title: "P1",
-          sections: [
-            {
-              key: "s1",
-              title: "S1",
-              settings: [{ key: "a", title: "A", type: "boolean" }],
-            },
-          ],
-        },
-      ],
-    };
-    const deps = resolveDependencies(schema);
-    expect(deps.size).toBe(0);
-  });
-
-  it("includes section-level visibleWhen dependencies", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "p1",
-          title: "P1",
-          sections: [
-            {
-              key: "flags",
-              title: "Flags",
-              settings: [{ key: "advanced", title: "Advanced", type: "boolean" }],
-            },
-            {
-              key: "advanced-section",
-              title: "Advanced Section",
-              visibleWhen: { setting: "advanced", equals: true },
-              settings: [{ key: "debug", title: "Debug", type: "boolean" }],
-            },
-          ],
-        },
-      ],
-    };
-    const deps = resolveDependencies(schema);
-    expect(deps.get("section:advanced-section")).toEqual(["advanced"]);
-  });
-
-  it("includes subsection-level visibleWhen dependencies", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "p1",
-          title: "P1",
-          sections: [
-            {
-              key: "main",
-              title: "Main",
-              settings: [{ key: "mode", title: "Mode", type: "select", options: [{ value: "basic", label: "Basic" }, { value: "advanced", label: "Advanced" }] }],
-              subsections: [
-                {
-                  key: "advanced-opts",
-                  title: "Advanced Options",
-                  visibleWhen: { setting: "mode", equals: "advanced" },
-                  settings: [{ key: "debug", title: "Debug", type: "boolean" }],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    const deps = resolveDependencies(schema);
-    expect(deps.get("subsection:advanced-opts")).toEqual(["mode"]);
-  });
-
-  it("includes section-level OR group dependencies", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "p1",
-          title: "P1",
-          sections: [
-            {
-              key: "plans",
-              title: "Plans",
-              settings: [{ key: "plan", title: "Plan", type: "select", options: [{ value: "free", label: "Free" }, { value: "pro", label: "Pro" }] }],
-            },
-            {
-              key: "paid",
-              title: "Paid Features",
-              visibleWhen: {
-                or: [
-                  { setting: "plan", equals: "pro" },
-                  { setting: "plan", equals: "enterprise" },
-                ],
-              },
-              settings: [{ key: "feature", title: "Feature", type: "boolean" }],
-            },
-          ],
-        },
-      ],
-    };
-    const deps = resolveDependencies(schema);
-    expect(deps.get("section:paid")).toEqual(["plan", "plan"]);
   });
 });
 
@@ -720,5 +590,171 @@ describe("walkSchema", () => {
   it("does nothing with an empty visitor", () => {
     // Should not throw with no callbacks defined
     walkSchema(referenceSchema, {});
+  });
+
+  it("calls onSubsection with correct key and context", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "nested", title: "Nested", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const subsections: Array<{ key: string; ctx: SchemaWalkContext }> = [];
+    walkSchema(schema, {
+      onSubsection(subsection, ctx) {
+        subsections.push({ key: subsection.key, ctx: { ...ctx } });
+      },
+    });
+
+    expect(subsections).toHaveLength(1);
+    expect(subsections[0].key).toBe("sub1");
+    expect(subsections[0].ctx.pageKey).toBe("p1");
+    expect(subsections[0].ctx.sectionKey).toBe("s1");
+    expect(subsections[0].ctx.subsectionKey).toBe("sub1");
+    expect(subsections[0].ctx.path).toBe(
+      "pages[0].sections[0].subsections[0]",
+    );
+  });
+
+  it("stops walk when onSubsection returns false", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "a", title: "A", type: "boolean" },
+                  ],
+                },
+                {
+                  key: "sub2",
+                  title: "Sub 2",
+                  settings: [
+                    { key: "b", title: "B", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const visited: string[] = [];
+    walkSchema(schema, {
+      onSubsection(subsection) {
+        visited.push(subsection.key);
+        if (subsection.key === "sub1") return false;
+      },
+      onSetting(setting) {
+        visited.push(setting.key);
+      },
+    });
+
+    expect(visited).toEqual(["sub1"]);
+  });
+
+  it("sets subsectionKey to empty string for non-subsection settings", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [{ key: "direct", title: "Direct", type: "boolean" }],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "nested", title: "Nested", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const contexts: Array<{ key: string; subsectionKey: string }> = [];
+    walkSchema(schema, {
+      onSetting(setting, ctx) {
+        contexts.push({ key: setting.key, subsectionKey: ctx.subsectionKey });
+      },
+    });
+
+    expect(contexts).toEqual([
+      { key: "direct", subsectionKey: "" },
+      { key: "nested", subsectionKey: "sub1" },
+    ]);
+  });
+});
+
+describe("flattenSettings — subsectionKey", () => {
+  it("includes subsectionKey in flattened output", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "p1",
+          title: "P1",
+          sections: [
+            {
+              key: "s1",
+              title: "S1",
+              settings: [{ key: "direct", title: "Direct", type: "boolean" }],
+              subsections: [
+                {
+                  key: "sub1",
+                  title: "Sub 1",
+                  settings: [
+                    { key: "nested", title: "Nested", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const flat = flattenSettings(schema);
+    const direct = flat.find((f) => f.definition.key === "direct");
+    const nested = flat.find((f) => f.definition.key === "nested");
+    expect(direct?.subsectionKey).toBe("");
+    expect(nested?.subsectionKey).toBe("sub1");
   });
 });

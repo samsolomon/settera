@@ -1836,4 +1836,225 @@ describe("validateSchema", () => {
     const errors = validateSchema(schema);
     expect(errors.some((e) => e.code === "INVALID_VISIBILITY_REF")).toBe(true);
   });
+
+  // Multi-operator visibility conditions
+  it("rejects visibility condition with multiple operators", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "toggle", title: "Toggle", type: "boolean" },
+                {
+                  key: "dependent",
+                  title: "Dependent",
+                  type: "text",
+                  visibleWhen: {
+                    setting: "toggle",
+                    equals: true,
+                    notEquals: false,
+                  } as any,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MULTIPLE_VISIBILITY_OPERATORS")).toBe(
+      true,
+    );
+  });
+
+  it("accepts visibility condition with single operator", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "toggle", title: "Toggle", type: "boolean" },
+                {
+                  key: "dependent",
+                  title: "Dependent",
+                  type: "text",
+                  visibleWhen: { setting: "toggle", equals: true },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MULTIPLE_VISIBILITY_OPERATORS")).toBe(
+      false,
+    );
+  });
+
+  it("rejects multi-operator inside OR group", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "count",
+                  title: "Count",
+                  type: "number",
+                },
+                {
+                  key: "dependent",
+                  title: "Dependent",
+                  type: "text",
+                  visibleWhen: {
+                    or: [
+                      {
+                        setting: "count",
+                        greaterThan: 5,
+                        lessThan: 10,
+                      } as any,
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MULTIPLE_VISIBILITY_OPERATORS")).toBe(
+      true,
+    );
+  });
+
+  // Recursive compound field validation
+  it("detects empty options inside compound field", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "smtp",
+                  title: "SMTP",
+                  type: "compound",
+                  displayStyle: "inline",
+                  fields: [
+                    { key: "host", title: "Host", type: "text" },
+                    {
+                      key: "protocol",
+                      title: "Protocol",
+                      type: "select",
+                      options: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "EMPTY_OPTIONS")).toBe(true);
+    expect(errors.some((e) => e.path.includes("fields[1]"))).toBe(true);
+  });
+
+  // Recursive repeatable itemField validation
+  it("detects empty options inside repeatable itemField", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "items",
+                  title: "Items",
+                  type: "repeatable",
+                  itemType: "compound",
+                  itemFields: [
+                    { key: "name", title: "Name", type: "text" },
+                    {
+                      key: "category",
+                      title: "Category",
+                      type: "select",
+                      options: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "EMPTY_OPTIONS")).toBe(true);
+    expect(errors.some((e) => e.path.includes("itemFields[1]"))).toBe(true);
+  });
+
+  it("detects duplicate keys among repeatable itemFields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "items",
+                  title: "Items",
+                  type: "repeatable",
+                  itemType: "compound",
+                  itemFields: [
+                    { key: "name", title: "Name", type: "text" },
+                    { key: "name", title: "Name 2", type: "text" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_KEY")).toBe(true);
+    expect(errors.some((e) => e.path.includes("itemFields"))).toBe(true);
+  });
 });

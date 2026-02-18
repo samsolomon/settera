@@ -2,10 +2,9 @@ import type {
   SetteraSchema,
   PageDefinition,
   SectionDefinition,
+  SubsectionDefinition,
   SettingDefinition,
   FlattenedSetting,
-  VisibilityCondition,
-  VisibilityRule,
 } from "./types.js";
 
 // ---- Generic Schema Walker ----
@@ -19,6 +18,8 @@ export interface SchemaWalkContext {
   pageKey: string;
   /** Key of the enclosing section (empty string for page-level callbacks) */
   sectionKey: string;
+  /** Key of the enclosing subsection (empty string when not in a subsection) */
+  subsectionKey: string;
 }
 
 export interface SchemaVisitor {
@@ -26,6 +27,8 @@ export interface SchemaVisitor {
   onPage?(page: PageDefinition, ctx: SchemaWalkContext): void | false;
   /** Called for each section. Return `false` to stop the entire walk. */
   onSection?(section: SectionDefinition, ctx: SchemaWalkContext): void | false;
+  /** Called for each subsection. Return `false` to stop the entire walk. */
+  onSubsection?(subsection: SubsectionDefinition, ctx: SchemaWalkContext): void | false;
   /** Called for each setting (including those inside subsections). Return `false` to stop the entire walk. */
   onSetting?(setting: SettingDefinition, ctx: SchemaWalkContext): void | false;
 }
@@ -54,6 +57,7 @@ export function walkSchema(
           depth,
           pageKey: page.key,
           sectionKey: "",
+          subsectionKey: "",
         });
         if (result === false) return false;
       }
@@ -62,11 +66,12 @@ export function walkSchema(
         for (let si = 0; si < page.sections.length; si++) {
           const section = page.sections[si];
           const sectionPath = `${pagePath}.sections[${si}]`;
-          const sectionCtx = {
+          const sectionCtx: SchemaWalkContext = {
             path: sectionPath,
             depth,
             pageKey: page.key,
             sectionKey: section.key,
+            subsectionKey: "",
           };
 
           if (visitor.onSection) {
@@ -81,23 +86,39 @@ export function walkSchema(
                 depth,
                 pageKey: page.key,
                 sectionKey: section.key,
+                subsectionKey: "",
               });
               if (result === false) return false;
             }
           }
 
-          if (section.subsections && visitor.onSetting) {
+          if (section.subsections) {
             for (let ssi = 0; ssi < section.subsections.length; ssi++) {
               const subsection = section.subsections[ssi];
               const subPath = `${sectionPath}.subsections[${ssi}]`;
-              for (let i = 0; i < subsection.settings.length; i++) {
-                const result = visitor.onSetting(subsection.settings[i], {
-                  path: `${subPath}.settings[${i}]`,
+
+              if (visitor.onSubsection) {
+                const result = visitor.onSubsection(subsection, {
+                  path: subPath,
                   depth,
                   pageKey: page.key,
                   sectionKey: section.key,
+                  subsectionKey: subsection.key,
                 });
                 if (result === false) return false;
+              }
+
+              if (visitor.onSetting) {
+                for (let i = 0; i < subsection.settings.length; i++) {
+                  const result = visitor.onSetting(subsection.settings[i], {
+                    path: `${subPath}.settings[${i}]`,
+                    depth,
+                    pageKey: page.key,
+                    sectionKey: section.key,
+                    subsectionKey: subsection.key,
+                  });
+                  if (result === false) return false;
+                }
               }
             }
           }
@@ -129,6 +150,7 @@ export function flattenSettings(schema: SetteraSchema): FlattenedSetting[] {
         path: ctx.path,
         pageKey: ctx.pageKey,
         sectionKey: ctx.sectionKey,
+        subsectionKey: ctx.subsectionKey,
       });
     },
   });
@@ -195,55 +217,6 @@ export function resolvePageKey(page: PageDefinition, depth = 0): string {
 }
 
 /**
- * Build a dependency map from visibleWhen conditions.
- * Returns Map<dependentKey, controllerKeys[]>.
- *
- * Includes dependencies from settings, sections, and subsections.
- * Section/subsection keys are prefixed with "section:" or "subsection:"
- * to distinguish them from setting keys.
- */
-export function resolveDependencies(
-  schema: SetteraSchema,
-): Map<string, string[]> {
-  const deps = new Map<string, string[]>();
-
-  // Settings
-  const flattened = flattenSettings(schema);
-  for (const { definition } of flattened) {
-    if (!("visibleWhen" in definition) || !definition.visibleWhen) continue;
-
-    const controllers = extractControllerKeys(definition.visibleWhen);
-    if (controllers.length > 0) {
-      deps.set(definition.key, controllers);
-    }
-  }
-
-  // Sections and subsections
-  walkSchema(schema, {
-    onSection(section) {
-      if (section.visibleWhen) {
-        const controllers = extractControllerKeys(section.visibleWhen);
-        if (controllers.length > 0) {
-          deps.set(`section:${section.key}`, controllers);
-        }
-      }
-      if (section.subsections) {
-        for (const sub of section.subsections) {
-          if (sub.visibleWhen) {
-            const controllers = extractControllerKeys(sub.visibleWhen);
-            if (controllers.length > 0) {
-              deps.set(`subsection:${sub.key}`, controllers);
-            }
-          }
-        }
-      }
-    },
-  });
-
-  return deps;
-}
-
-/**
  * Build an O(1) lookup index from setting key to FlattenedSetting.
  */
 export function buildSettingIndex(
@@ -271,20 +244,3 @@ export function buildSectionIndex(
   return index;
 }
 
-/** Extract all controller setting keys from a visibleWhen value. */
-function extractControllerKeys(
-  visibleWhen: VisibilityRule | VisibilityRule[],
-): string[] {
-  const rules: VisibilityRule[] = Array.isArray(visibleWhen) ? visibleWhen : [visibleWhen];
-  const keys: string[] = [];
-  for (const rule of rules) {
-    if ("or" in rule) {
-      for (const condition of rule.or) {
-        keys.push(condition.setting);
-      }
-    } else {
-      keys.push(rule.setting);
-    }
-  }
-  return keys;
-}

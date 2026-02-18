@@ -1,4 +1,13 @@
-import type { SettingDefinition } from "./types.js";
+import type {
+  SettingDefinition,
+  TextSetting,
+  NumberSetting,
+  SelectSetting,
+  MultiSelectSetting,
+  DateSetting,
+  CompoundSetting,
+  RepeatableSetting,
+} from "./types.js";
 
 /**
  * Validate a setting value against the definition's validation rules.
@@ -30,15 +39,7 @@ export function validateSettingValue(
 }
 
 function validateText(
-  validation:
-    | {
-        required?: boolean;
-        minLength?: number;
-        maxLength?: number;
-        pattern?: string;
-        message?: string;
-      }
-    | undefined,
+  validation: TextSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;
@@ -81,9 +82,7 @@ function validateText(
 }
 
 function validateNumber(
-  validation:
-    | { required?: boolean; min?: number; max?: number; step?: number; message?: string }
-    | undefined,
+  validation: NumberSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;
@@ -128,7 +127,7 @@ function validateNumber(
 }
 
 function validateSelect(
-  validation: { required?: boolean; message?: string } | undefined,
+  validation: SelectSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;
@@ -143,14 +142,7 @@ function validateSelect(
 }
 
 function validateMultiSelect(
-  validation:
-    | {
-        required?: boolean;
-        minSelections?: number;
-        maxSelections?: number;
-        message?: string;
-      }
-    | undefined,
+  validation: MultiSelectSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;
@@ -182,14 +174,7 @@ function validateMultiSelect(
 }
 
 function validateDate(
-  validation:
-    | {
-        required?: boolean;
-        minDate?: string;
-        maxDate?: string;
-        message?: string;
-      }
-    | undefined,
+  validation: DateSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;
@@ -220,15 +205,7 @@ function validateDate(
 }
 
 function validateCompound(
-  validation:
-    | {
-        rules?: Array<{
-          when: string;
-          require?: string;
-          message: string;
-        }>;
-      }
-    | undefined,
+  validation: CompoundSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation?.rules || validation.rules.length === 0) return null;
@@ -260,13 +237,7 @@ export function validateConfirmText(
 }
 
 function validateRepeatable(
-  validation:
-    | {
-        minItems?: number;
-        maxItems?: number;
-        message?: string;
-      }
-    | undefined,
+  validation: RepeatableSetting["validation"],
   value: unknown,
 ): string | null {
   if (!validation) return null;

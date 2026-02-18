@@ -8,16 +8,26 @@ import type {
   VisibilityRule,
 } from "./types.js";
 
+interface ValidationContext {
+  errors: SchemaValidationError[];
+  settingKeys: Set<string>;
+  visibilityRefs: Array<{ path: string; setting: string }>;
+}
+
 /**
  * Validates a SetteraSchema and returns an array of errors.
  * Empty array = valid schema.
  */
 export function validateSchema(schema: SetteraSchema): SchemaValidationError[] {
-  const errors: SchemaValidationError[] = [];
+  const ctx: ValidationContext = {
+    errors: [],
+    settingKeys: new Set(),
+    visibilityRefs: [],
+  };
 
   // Version check
   if (schema.version !== "1.0") {
-    errors.push({
+    ctx.errors.push({
       path: "version",
       code: "INVALID_VERSION",
       message: `Expected version "1.0", got "${schema.version}".`,
@@ -26,38 +36,24 @@ export function validateSchema(schema: SetteraSchema): SchemaValidationError[] {
 
   // Must have pages
   if (!schema.pages || schema.pages.length === 0) {
-    errors.push({
+    ctx.errors.push({
       path: "pages",
       code: "MISSING_PAGES",
       message: "Schema must have at least one page.",
     });
-    return errors;
+    return ctx.errors;
   }
-
-  // Collect all setting keys for uniqueness + visibility ref checking
-  const allSettingKeys = new Set<string>();
-  const allVisibilityRefs: Array<{
-    path: string;
-    setting: string;
-  }> = [];
 
   // Validate pages
   const pageKeys = new Set<string>();
   for (let i = 0; i < schema.pages.length; i++) {
-    validatePage(
-      schema.pages[i],
-      `pages[${i}]`,
-      pageKeys,
-      allSettingKeys,
-      allVisibilityRefs,
-      errors,
-    );
+    validatePage(schema.pages[i], `pages[${i}]`, pageKeys, ctx);
   }
 
   // Check visibility references point to real settings
-  for (const ref of allVisibilityRefs) {
-    if (!allSettingKeys.has(ref.setting)) {
-      errors.push({
+  for (const ref of ctx.visibilityRefs) {
+    if (!ctx.settingKeys.has(ref.setting)) {
+      ctx.errors.push({
         path: ref.path,
         code: "INVALID_VISIBILITY_REF",
         message: `visibleWhen references unknown setting "${ref.setting}".`,
@@ -65,27 +61,25 @@ export function validateSchema(schema: SetteraSchema): SchemaValidationError[] {
     }
   }
 
-  return errors;
+  return ctx.errors;
 }
 
 function validatePage(
   page: PageDefinition,
   path: string,
   pageKeys: Set<string>,
-  allSettingKeys: Set<string>,
-  allVisibilityRefs: Array<{ path: string; setting: string }>,
-  errors: SchemaValidationError[],
+  ctx: ValidationContext,
 ): void {
   // Required fields
   if (!page.key) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.key`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Page must have a key.",
     });
   }
   if (!page.title) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.title`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Page must have a title.",
@@ -95,7 +89,7 @@ function validatePage(
   // Duplicate page key
   if (page.key) {
     if (pageKeys.has(page.key)) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.key`,
         code: "DUPLICATE_KEY",
         message: `Duplicate page key "${page.key}".`,
@@ -112,15 +106,13 @@ function validatePage(
         page.sections[i],
         `${path}.sections[${i}]`,
         sectionKeys,
-        allSettingKeys,
-        allVisibilityRefs,
-        errors,
+        ctx,
       );
     }
   }
 
   if (page.mode === "custom" && !page.renderer) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.renderer`,
       code: "MISSING_REQUIRED_FIELD",
       message: `Custom page "${page.key}" must define a renderer.`,
@@ -130,14 +122,7 @@ function validatePage(
   // Validate nested pages
   if (page.pages) {
     for (let i = 0; i < page.pages.length; i++) {
-      validatePage(
-        page.pages[i],
-        `${path}.pages[${i}]`,
-        pageKeys,
-        allSettingKeys,
-        allVisibilityRefs,
-        errors,
-      );
+      validatePage(page.pages[i], `${path}.pages[${i}]`, pageKeys, ctx);
     }
   }
 }
@@ -146,20 +131,18 @@ function validateSection(
   section: SectionDefinition,
   path: string,
   sectionKeys: Set<string>,
-  allSettingKeys: Set<string>,
-  allVisibilityRefs: Array<{ path: string; setting: string }>,
-  errors: SchemaValidationError[],
+  ctx: ValidationContext,
 ): void {
   // Required fields
   if (!section.key) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.key`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Section must have a key.",
     });
   }
   if (!section.title) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.title`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Section must have a title.",
@@ -169,7 +152,7 @@ function validateSection(
   // Duplicate section key within page
   if (section.key) {
     if (sectionKeys.has(section.key)) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.key`,
         code: "DUPLICATE_KEY",
         message: `Duplicate section key "${section.key}".`,
@@ -179,18 +162,12 @@ function validateSection(
   }
 
   // Collect section-level visibility refs
-  collectVisibilityRefs(section.visibleWhen, `${path}.visibleWhen`, allVisibilityRefs);
+  collectVisibilityRefs(section.visibleWhen, `${path}.visibleWhen`, ctx);
 
   // Validate settings
   if (section.settings) {
     for (let i = 0; i < section.settings.length; i++) {
-      validateSetting(
-        section.settings[i],
-        `${path}.settings[${i}]`,
-        allSettingKeys,
-        allVisibilityRefs,
-        errors,
-      );
+      validateSetting(section.settings[i], `${path}.settings[${i}]`, ctx);
     }
   }
 
@@ -202,14 +179,14 @@ function validateSection(
       const subPath = `${path}.subsections[${i}]`;
 
       if (!sub.key) {
-        errors.push({
+        ctx.errors.push({
           path: `${subPath}.key`,
           code: "MISSING_REQUIRED_FIELD",
           message: "Subsection must have a key.",
         });
       }
       if (!sub.title) {
-        errors.push({
+        ctx.errors.push({
           path: `${subPath}.title`,
           code: "MISSING_REQUIRED_FIELD",
           message: "Subsection must have a title.",
@@ -217,7 +194,7 @@ function validateSection(
       }
       if (sub.key) {
         if (subsectionKeys.has(sub.key)) {
-          errors.push({
+          ctx.errors.push({
             path: `${subPath}.key`,
             code: "DUPLICATE_KEY",
             message: `Duplicate subsection key "${sub.key}".`,
@@ -227,17 +204,11 @@ function validateSection(
       }
 
       // Collect subsection-level visibility refs
-      collectVisibilityRefs(sub.visibleWhen, `${subPath}.visibleWhen`, allVisibilityRefs);
+      collectVisibilityRefs(sub.visibleWhen, `${subPath}.visibleWhen`, ctx);
 
       if (sub.settings) {
         for (let j = 0; j < sub.settings.length; j++) {
-          validateSetting(
-            sub.settings[j],
-            `${subPath}.settings[${j}]`,
-            allSettingKeys,
-            allVisibilityRefs,
-            errors,
-          );
+          validateSetting(sub.settings[j], `${subPath}.settings[${j}]`, ctx);
         }
       }
     }
@@ -260,27 +231,26 @@ const VALID_SETTING_TYPES = [
 function validateSetting(
   setting: SettingDefinition,
   path: string,
-  allSettingKeys: Set<string>,
-  allVisibilityRefs: Array<{ path: string; setting: string }>,
-  errors: SchemaValidationError[],
+  ctx: ValidationContext,
+  localKeys?: Set<string>,
 ): void {
   // Required fields
   if (!setting.key) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.key`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Setting must have a key.",
     });
   }
   if (!setting.title) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.title`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Setting must have a title.",
     });
   }
   if (!setting.type) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.type`,
       code: "MISSING_REQUIRED_FIELD",
       message: "Setting must have a type.",
@@ -294,29 +264,32 @@ function validateSetting(
       setting.type as (typeof VALID_SETTING_TYPES)[number],
     )
   ) {
-    errors.push({
+    ctx.errors.push({
       path: `${path}.type`,
       code: "INVALID_TYPE",
       message: `Invalid setting type "${setting.type}".`,
     });
   }
 
-  // Duplicate setting key (global)
+  // Duplicate setting key — check against localKeys (scoped) or ctx.settingKeys (global)
+  const keySet = localKeys ?? ctx.settingKeys;
   if (setting.key) {
-    if (allSettingKeys.has(setting.key)) {
-      errors.push({
+    if (keySet.has(setting.key)) {
+      ctx.errors.push({
         path: `${path}.key`,
         code: "DUPLICATE_KEY",
-        message: `Duplicate setting key "${setting.key}".`,
+        message: localKeys
+          ? `Duplicate field key "${setting.key}".`
+          : `Duplicate setting key "${setting.key}".`,
       });
     }
-    allSettingKeys.add(setting.key);
+    keySet.add(setting.key);
   }
 
   // Type-specific validation
   if (setting.type === "select" || setting.type === "multiselect") {
     if (!setting.options || setting.options.length === 0) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.options`,
         code: "EMPTY_OPTIONS",
         message: `${setting.type} setting "${setting.key}" must have at least one option.`,
@@ -329,7 +302,7 @@ function validateSetting(
       for (let i = 0; i < setting.options.length; i++) {
         const val = setting.options[i].value;
         if (seen.has(val)) {
-          errors.push({
+          ctx.errors.push({
             path: `${path}.options[${i}].value`,
             code: "DUPLICATE_OPTION_VALUE",
             message: `Duplicate option value "${val}" in ${setting.type} setting "${setting.key}".`,
@@ -342,7 +315,7 @@ function validateSetting(
       if (setting.type === "select" && setting.default !== undefined) {
         const validValues = setting.options.map((o) => o.value);
         if (!validValues.includes(setting.default)) {
-          errors.push({
+          ctx.errors.push({
             path: `${path}.default`,
             code: "INVALID_DEFAULT",
             message: `Default "${setting.default}" is not a valid option for select setting "${setting.key}".`,
@@ -353,7 +326,7 @@ function validateSetting(
         const validValues = new Set(setting.options.map((o) => o.value));
         for (const val of setting.default) {
           if (!validValues.has(val)) {
-            errors.push({
+            ctx.errors.push({
               path: `${path}.default`,
               code: "INVALID_DEFAULT",
               message: `Default value "${val}" is not a valid option for multiselect setting "${setting.key}".`,
@@ -370,14 +343,14 @@ function validateSetting(
     const min = setting.validation?.min;
     const max = setting.validation?.max;
     if (min !== undefined && setting.default < min) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
         message: `Default ${setting.default} is below min ${min} for number setting "${setting.key}".`,
       });
     }
     if (max !== undefined && setting.default > max) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
         message: `Default ${setting.default} is above max ${max} for number setting "${setting.key}".`,
@@ -390,14 +363,14 @@ function validateSetting(
     const minDate = setting.validation?.minDate;
     const maxDate = setting.validation?.maxDate;
     if (minDate !== undefined && setting.default < minDate) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
         message: `Default "${setting.default}" is before minDate "${minDate}" for date setting "${setting.key}".`,
       });
     }
     if (maxDate !== undefined && setting.default > maxDate) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
         message: `Default "${setting.default}" is after maxDate "${maxDate}" for date setting "${setting.key}".`,
@@ -410,7 +383,7 @@ function validateSetting(
     try {
       new RegExp(setting.validation.pattern);
     } catch {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.validation.pattern`,
         code: "INVALID_PATTERN",
         message: `Invalid regex pattern "${setting.validation.pattern}" in text setting "${setting.key}".`,
@@ -420,14 +393,14 @@ function validateSetting(
 
   if (setting.type === "action") {
     if (!setting.buttonLabel) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.buttonLabel`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Action setting "${setting.key}" must have a buttonLabel.`,
       });
     }
     if (!setting.actionType) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.actionType`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Action setting "${setting.key}" must have an actionType.`,
@@ -436,13 +409,13 @@ function validateSetting(
 
     if (setting.actionType === "modal") {
       if (!setting.modal) {
-        errors.push({
+        ctx.errors.push({
           path: `${path}.modal`,
           code: "MISSING_REQUIRED_FIELD",
           message: `Action setting "${setting.key}" with actionType "modal" must define modal config.`,
         });
       } else if (!setting.modal.fields || setting.modal.fields.length === 0) {
-        errors.push({
+        ctx.errors.push({
           path: `${path}.modal.fields`,
           code: "MISSING_REQUIRED_FIELD",
           message: `Action setting "${setting.key}" modal must define at least one field.`,
@@ -450,13 +423,11 @@ function validateSetting(
       } else {
         const modalFieldKeys = new Set<string>();
         for (let i = 0; i < setting.modal.fields.length; i++) {
-          const modalField = setting.modal.fields[i];
           validateSetting(
-            modalField,
+            setting.modal.fields[i],
             `${path}.modal.fields[${i}]`,
+            ctx,
             modalFieldKeys,
-            allVisibilityRefs,
-            errors,
           );
         }
       }
@@ -465,7 +436,7 @@ function validateSetting(
 
   if (setting.type === "compound") {
     if (!setting.fields || setting.fields.length === 0) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.fields`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Compound setting "${setting.key}" must have at least one field.`,
@@ -475,27 +446,20 @@ function validateSetting(
       const fieldKeys = new Set<string>();
       for (let i = 0; i < setting.fields.length; i++) {
         const field = setting.fields[i];
+        // Compound-specific: dot-key check
         if (field.key && field.key.includes(".")) {
-          errors.push({
+          ctx.errors.push({
             path: `${path}.fields[${i}].key`,
             code: "COMPOUND_FIELD_DOT_KEY",
             message: `Compound field key "${field.key}" must not contain dots.`,
           });
         }
-        if (field.key) {
-          if (fieldKeys.has(field.key)) {
-            errors.push({
-              path: `${path}.fields[${i}].key`,
-              code: "DUPLICATE_KEY",
-              message: `Duplicate field key "${field.key}" in compound setting "${setting.key}".`,
-            });
-          }
-          fieldKeys.add(field.key);
-        }
+        // Recursive validation (handles key, title, type, duplicates, type-specific checks)
+        validateSetting(field, `${path}.fields[${i}]`, ctx, fieldKeys);
       }
     }
     if (!setting.displayStyle) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.displayStyle`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Compound setting "${setting.key}" must have a displayStyle.`,
@@ -508,14 +472,14 @@ function validateSetting(
       for (let i = 0; i < setting.validation.rules.length; i++) {
         const rule = setting.validation.rules[i];
         if (rule.when && !fieldKeys.has(rule.when)) {
-          errors.push({
+          ctx.errors.push({
             path: `${path}.validation.rules[${i}].when`,
             code: "INVALID_COMPOUND_RULE",
             message: `Compound rule "when" references unknown field "${rule.when}" in setting "${setting.key}".`,
           });
         }
         if (rule.require && !fieldKeys.has(rule.require)) {
-          errors.push({
+          ctx.errors.push({
             path: `${path}.validation.rules[${i}].require`,
             code: "INVALID_COMPOUND_RULE",
             message: `Compound rule "require" references unknown field "${rule.require}" in setting "${setting.key}".`,
@@ -528,7 +492,7 @@ function validateSetting(
   if (setting.type === "repeatable") {
     if (setting.itemType === "compound") {
       if (!setting.itemFields || setting.itemFields.length === 0) {
-        errors.push({
+        ctx.errors.push({
           path: `${path}.itemFields`,
           code: "INVALID_REPEATABLE_CONFIG",
           message: `Repeatable setting "${setting.key}" with itemType "compound" must have at least one itemField.`,
@@ -536,17 +500,25 @@ function validateSetting(
       }
     }
     if (setting.itemType === "text" && setting.itemFields && setting.itemFields.length > 0) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.itemFields`,
         code: "INVALID_REPEATABLE_CONFIG",
         message: `Repeatable setting "${setting.key}" with itemType "text" must not define itemFields.`,
       });
     }
+
+    // Recursive validation of repeatable itemFields
+    if (setting.itemType === "compound" && setting.itemFields && setting.itemFields.length > 0) {
+      const itemFieldKeys = new Set<string>();
+      for (let i = 0; i < setting.itemFields.length; i++) {
+        validateSetting(setting.itemFields[i], `${path}.itemFields[${i}]`, ctx, itemFieldKeys);
+      }
+    }
   }
 
   if (setting.type === "custom") {
     if (!setting.renderer) {
-      errors.push({
+      ctx.errors.push({
         path: `${path}.renderer`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Custom setting "${setting.key}" must have a renderer.`,
@@ -556,15 +528,34 @@ function validateSetting(
 
   // Collect visibility refs
   if ("visibleWhen" in setting && setting.visibleWhen) {
-    collectVisibilityRefs(setting.visibleWhen, `${path}.visibleWhen`, allVisibilityRefs);
+    collectVisibilityRefs(setting.visibleWhen, `${path}.visibleWhen`, ctx);
   }
 }
 
-/** Extract setting references from visibility rules (handles both conditions and OR groups). */
+const VISIBILITY_OPERATORS = [
+  "equals",
+  "notEquals",
+  "oneOf",
+  "greaterThan",
+  "lessThan",
+  "contains",
+  "isEmpty",
+] as const;
+
+/** Count how many visibility operators are defined on a condition. */
+function countOperators(condition: VisibilityCondition): number {
+  let count = 0;
+  for (const op of VISIBILITY_OPERATORS) {
+    if (condition[op] !== undefined) count++;
+  }
+  return count;
+}
+
+/** Extract setting references from visibility rules and validate operator usage. */
 function collectVisibilityRefs(
   visibleWhen: VisibilityRule | VisibilityRule[] | undefined,
   path: string,
-  allVisibilityRefs: Array<{ path: string; setting: string }>,
+  ctx: ValidationContext,
 ): void {
   if (!visibleWhen) return;
 
@@ -574,13 +565,27 @@ function collectVisibilityRefs(
       // OR group — collect refs from each inner condition
       for (const condition of rule.or) {
         if (condition.setting) {
-          allVisibilityRefs.push({ path, setting: condition.setting });
+          ctx.visibilityRefs.push({ path, setting: condition.setting });
+        }
+        if (countOperators(condition) > 1) {
+          ctx.errors.push({
+            path,
+            code: "MULTIPLE_VISIBILITY_OPERATORS",
+            message: `Visibility condition for "${condition.setting}" defines multiple operators. Use exactly one.`,
+          });
         }
       }
     } else {
       // Plain condition
       if (rule.setting) {
-        allVisibilityRefs.push({ path, setting: rule.setting });
+        ctx.visibilityRefs.push({ path, setting: rule.setting });
+      }
+      if (countOperators(rule) > 1) {
+        ctx.errors.push({
+          path,
+          code: "MULTIPLE_VISIBILITY_OPERATORS",
+          message: `Visibility condition for "${rule.setting}" defines multiple operators. Use exactly one.`,
+        });
       }
     }
   }

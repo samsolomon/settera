@@ -48,7 +48,6 @@ export {
   flattenSettings,
   getSettingByKey,
   getPageByKey,
-  resolveDependencies,
   isFlattenedPage,
   resolvePageKey,
   buildSettingIndex,
