@@ -251,7 +251,6 @@ const VALID_SETTING_TYPES = [
   "select",
   "multiselect",
   "date",
-  "color",
   "compound",
   "repeatable",
   "action",
@@ -551,16 +550,6 @@ function validateSetting(
         path: `${path}.renderer`,
         code: "MISSING_REQUIRED_FIELD",
         message: `Custom setting "${setting.key}" must have a renderer.`,
-      });
-    }
-  }
-
-  if (setting.type === "color") {
-    if (setting.format && !["hex", "rgb", "hsl"].includes(setting.format)) {
-      errors.push({
-        path: `${path}.format`,
-        code: "INVALID_TYPE",
-        message: `Invalid color format "${setting.format}" for color setting "${setting.key}". Must be "hex", "rgb", or "hsl".`,
       });
     }
   }

@@ -99,7 +99,6 @@ const schema: SetteraSchema = {
 | `select`      | Single-choice dropdown                                    | Instant                                                     |
 | `multiselect` | Multi-choice selection                                    | Instant                                                     |
 | `date`        | Date picker (native `<input type="date">`)                | On blur                                                     |
-| `color`       | Color picker (native `<input type="color">`)              | Instant                                                     |
 | `compound`    | Multi-field group (`inline`, `modal`, or `page`)          | Field-dependent (text/number on blur/Enter; others instant) |
 | `repeatable`  | Add/remove list of text or compound items                 | Field-dependent (text/number on blur/Enter; others instant) |
 | `action`      | Button that triggers callback or submit-only modal action | Callback: on click; Modal: on submit                        |
@@ -308,26 +307,6 @@ A date picker using native `<input type="date">`. Changes apply on blur.
 ```
 
 All date values use ISO format (`YYYY-MM-DD`).
-
-### Color
-
-A native color picker. Changes apply instantly.
-
-```typescript
-{
-  key: "appearance.accentColor",
-  title: "Accent Color",
-  description: "Primary accent color for the UI.",
-  type: "color",
-  default: "#3b82f6",
-  format: "hex",  // "hex" | "rgb" | "hsl" (hint for expected format)
-  validation: {
-    required: true,
-  },
-}
-```
-
-The value is a string. `format` is an optional hint indicating the expected color format.
 
 ### Compound
 
@@ -822,7 +801,7 @@ Settera is in active development. Here's what's been built and what's planned.
 
 ### Implemented
 
-- Core setting types: boolean, text, number, select, multiselect, date, color, compound, repeatable, action, custom
+- Core setting types: boolean, text, number, select, multiselect, date, compound, repeatable, action, custom
 - Compound `displayStyle` modes: `inline`, `modal`, `page`
 - Repeatable item types: `text`, `compound`
 - Action modes: `callback` and submit-only `modal`

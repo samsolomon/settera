@@ -740,37 +740,6 @@ export const demoSchema: SetteraSchema = {
       icon: "palette",
       sections: [
         {
-          key: "colors",
-          title: "Brand Colors",
-          description: "Define your brand palette. These colors are used throughout the app.",
-          settings: [
-            {
-              key: "branding.primaryColor",
-              title: "Primary Color",
-              description: "Main brand color used for buttons and links.",
-              type: "color",
-              format: "hex",
-              default: "#3b82f6",
-            },
-            {
-              key: "branding.secondaryColor",
-              title: "Secondary Color",
-              description: "Accent color for highlights and secondary actions.",
-              type: "color",
-              format: "hex",
-              default: "#8b5cf6",
-            },
-            {
-              key: "branding.dangerColor",
-              title: "Danger Color",
-              description: "Color used for destructive actions and error states.",
-              type: "color",
-              format: "hex",
-              default: "#ef4444",
-            },
-          ],
-        },
-        {
           key: "identity",
           title: "Brand Identity",
           collapsible: true,

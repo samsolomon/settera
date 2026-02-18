@@ -20,8 +20,6 @@ export function validateSettingValue(
       return validateMultiSelect(definition.validation, value);
     case "date":
       return validateDate(definition.validation, value);
-    case "color":
-      return validateColor(definition.validation, value);
     case "repeatable":
       return validateRepeatable(definition.validation, value);
     default:
@@ -214,22 +212,6 @@ function validateDate(
     return (
       validation.message ?? `Date must be on or before ${validation.maxDate}`
     );
-  }
-
-  return null;
-}
-
-function validateColor(
-  validation: { required?: boolean; message?: string } | undefined,
-  value: unknown,
-): string | null {
-  if (!validation) return null;
-
-  const str = typeof value === "string" ? value : "";
-  const isEmpty = str.length === 0;
-
-  if (validation.required && isEmpty) {
-    return validation.message ?? "This field is required";
   }
 
   return null;

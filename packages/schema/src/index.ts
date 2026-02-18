@@ -14,7 +14,6 @@ export type {
   SelectSetting,
   MultiSelectSetting,
   DateSetting,
-  ColorSetting,
   CompoundSetting,
   CompoundFieldDefinition,
   RepeatableSetting,

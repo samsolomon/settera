@@ -90,7 +90,6 @@ export type ValueSetting =
   | SelectSetting
   | MultiSelectSetting
   | DateSetting
-  | ColorSetting
   | CompoundSetting
   | RepeatableSetting
   | CustomSetting;
@@ -239,27 +238,6 @@ export interface DateSetting {
     required?: boolean;
     minDate?: string;
     maxDate?: string;
-    message?: string;
-  };
-}
-
-export interface ColorSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
-  type: "color";
-  default?: string;
-  /** Expected color format */
-  format?: "hex" | "rgb" | "hsl";
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
-  validation?: {
-    required?: boolean;
     message?: string;
   };
 }

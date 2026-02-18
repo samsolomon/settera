@@ -515,44 +515,6 @@ describe("validateSettingValue — number step", () => {
   });
 });
 
-// ---- Color Validation ----
-
-describe("validateSettingValue — color", () => {
-  function colorDef(validation?: Record<string, unknown>): SettingDefinition {
-    return {
-      key: "c",
-      title: "Color",
-      type: "color",
-      validation,
-    } as SettingDefinition;
-  }
-
-  it("returns null when no validation rules", () => {
-    expect(validateSettingValue(colorDef(), "#ff0000")).toBeNull();
-  });
-
-  it("returns error for required empty string", () => {
-    expect(validateSettingValue(colorDef({ required: true }), "")).toBe(
-      "This field is required",
-    );
-  });
-
-  it("returns null for required with value", () => {
-    expect(
-      validateSettingValue(colorDef({ required: true }), "#ff0000"),
-    ).toBeNull();
-  });
-
-  it("uses custom message", () => {
-    expect(
-      validateSettingValue(
-        colorDef({ required: true, message: "Pick a color" }),
-        "",
-      ),
-    ).toBe("Pick a color");
-  });
-});
-
 // ---- No-validation fallback ----
 
 describe("validateSettingValue — no-validation types", () => {

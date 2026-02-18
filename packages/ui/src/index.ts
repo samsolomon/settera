@@ -32,8 +32,6 @@ export { MultiSelect } from "./components/MultiSelect.js";
 export type { MultiSelectProps } from "./components/MultiSelect.js";
 export { DateInput } from "./components/DateInput.js";
 export type { DateInputProps } from "./components/DateInput.js";
-export { ColorInput } from "./components/ColorInput.js";
-export type { ColorInputProps } from "./components/ColorInput.js";
 export { CompoundInput } from "./components/CompoundInput.js";
 export type { CompoundInputProps } from "./components/CompoundInput.js";
 export { RepeatableInput } from "./components/ListInput.js";

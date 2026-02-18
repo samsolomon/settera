@@ -1640,63 +1640,6 @@ describe("validateSchema", () => {
     expect(errors).toEqual([]);
   });
 
-  // Color setting
-  it("accepts valid color setting", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "general",
-          title: "General",
-          sections: [
-            {
-              key: "main",
-              title: "Main",
-              settings: [
-                {
-                  key: "brand.color",
-                  title: "Brand Color",
-                  type: "color",
-                  default: "#ff0000",
-                  format: "hex",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    const errors = validateSchema(schema);
-    expect(errors).toEqual([]);
-  });
-
-  it("accepts color setting without format", () => {
-    const schema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "general",
-          title: "General",
-          sections: [
-            {
-              key: "main",
-              title: "Main",
-              settings: [
-                {
-                  key: "brand.color",
-                  title: "Brand Color",
-                  type: "color",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    const errors = validateSchema(schema);
-    expect(errors).toEqual([]);
-  });
-
   // Section-level visibility
   it("validates section visibleWhen referencing unknown setting", () => {
     const schema: SetteraSchema = {
