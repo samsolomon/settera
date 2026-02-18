@@ -1,8 +1,7 @@
 import { useContext, useCallback, useState, useRef, useEffect } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useStoreSelector } from "./useStoreSelector.js";
-import { evaluateVisibility } from "../visibility.js";
-import type { SettingDefinition } from "@settera/schema";
+import { evaluateVisibility, type SettingDefinition } from "@settera/schema";
 
 export interface UseSetteraActionResult {
   /** The setting definition from the schema */

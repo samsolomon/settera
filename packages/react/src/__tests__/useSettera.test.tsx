@@ -41,7 +41,7 @@ const schema: SetteraSchema = {
 };
 
 function SetteraConsumer() {
-  const { schema: s, values, setValue, validate } = useSettera();
+  const { schema: s, values, setValue } = useSettera();
   return (
     <div>
       <span data-testid="schema-version">{s.version}</span>
@@ -49,9 +49,6 @@ function SetteraConsumer() {
       <span data-testid="autoSave">{String(values.autoSave)}</span>
       <span data-testid="theme">{String(values.theme)}</span>
       <span data-testid="has-setValue">{typeof setValue}</span>
-      <span data-testid="has-validate">
-        {validate === undefined ? "undefined" : "defined"}
-      </span>
       <button onClick={() => setValue("theme", "dark")}>set-dark</button>
     </div>
   );
@@ -108,33 +105,6 @@ describe("useSettera", () => {
     );
     screen.getByText("set-dark").click();
     expect(onChange).toHaveBeenCalledWith("theme", "dark");
-  });
-
-  it("exposes onValidate when provided", () => {
-    const validator = vi.fn().mockReturnValue(null);
-    render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer
-          values={{}}
-          onChange={() => {}}
-          onValidate={{ autoSave: validator }}
-        >
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
-    );
-    expect(screen.getByTestId("has-validate").textContent).toBe("defined");
-  });
-
-  it("returns undefined for validate when no onValidate provided", () => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraConsumer />
-        </SetteraRenderer>
-      </SetteraProvider>,
-    );
-    expect(screen.getByTestId("has-validate").textContent).toBe("undefined");
   });
 
   it("throws when used outside SetteraProvider", () => {

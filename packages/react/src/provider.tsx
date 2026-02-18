@@ -2,9 +2,9 @@ import React, { useMemo, useEffect } from "react";
 import {
   validateSchema,
   flattenSettings,
-  getSettingByKey,
   getPageByKey,
-  resolveDependencies,
+  buildSettingIndex,
+  buildSectionIndex,
 } from "@settera/schema";
 import type { SetteraSchema } from "@settera/schema";
 import { SetteraSchemaContext } from "./context.js";
@@ -30,13 +30,18 @@ export function SetteraProvider({ schema, children }: SetteraProviderProps) {
 
   // Memoize schema context (stable after mount)
   const schemaContext: SetteraSchemaContextValue = useMemo(
-    () => ({
-      schema,
-      flatSettings: flattenSettings(schema),
-      getSettingByKey: (key: string) => getSettingByKey(schema, key),
-      getPageByKey: (key: string) => getPageByKey(schema, key),
-      dependencies: resolveDependencies(schema),
-    }),
+    () => {
+      const flat = flattenSettings(schema);
+      const settingIdx = buildSettingIndex(flat);
+      return {
+        schema,
+        flatSettings: flat,
+        getSettingByKey: (key: string) => settingIdx.get(key)?.definition,
+        getPageByKey: (key: string) => getPageByKey(schema, key),
+        settingIndex: settingIdx,
+        sectionIndex: buildSectionIndex(schema),
+      };
+    },
     [schema],
   );
 

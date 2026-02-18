@@ -243,6 +243,34 @@ export function resolveDependencies(
   return deps;
 }
 
+/**
+ * Build an O(1) lookup index from setting key to FlattenedSetting.
+ */
+export function buildSettingIndex(
+  flatSettings: FlattenedSetting[],
+): Map<string, FlattenedSetting> {
+  const index = new Map<string, FlattenedSetting>();
+  for (const entry of flatSettings) {
+    index.set(entry.definition.key, entry);
+  }
+  return index;
+}
+
+/**
+ * Build an O(1) lookup index from "pageKey:sectionKey" to SectionDefinition.
+ */
+export function buildSectionIndex(
+  schema: SetteraSchema,
+): Map<string, SectionDefinition> {
+  const index = new Map<string, SectionDefinition>();
+  walkSchema(schema, {
+    onSection(section, ctx) {
+      index.set(`${ctx.pageKey}:${section.key}`, section);
+    },
+  });
+  return index;
+}
+
 /** Extract all controller setting keys from a visibleWhen value. */
 function extractControllerKeys(
   visibleWhen: VisibilityRule | VisibilityRule[],

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  SCHEMA_VERSION,
   SetteraProvider,
   SetteraRenderer,
   Settera,
@@ -11,19 +10,12 @@ import {
   useSetteraSection,
   useStoreSelector,
   useStoreSlice,
-  evaluateVisibility,
-  validateSettingValue,
-  validateConfirmText,
   SetteraSchemaContext,
   SetteraValuesContext,
   SetteraValuesStore,
 } from "../index.js";
 
 describe("@settera/react", () => {
-  it("re-exports SCHEMA_VERSION as 1.0", () => {
-    expect(SCHEMA_VERSION).toBe("1.0");
-  });
-
   it("exports SetteraProvider", () => {
     expect(typeof SetteraProvider).toBe("function");
   });
@@ -47,12 +39,6 @@ describe("@settera/react", () => {
   it("exports store selector hooks", () => {
     expect(typeof useStoreSelector).toBe("function");
     expect(typeof useStoreSlice).toBe("function");
-  });
-
-  it("exports validation utilities", () => {
-    expect(typeof evaluateVisibility).toBe("function");
-    expect(typeof validateSettingValue).toBe("function");
-    expect(typeof validateConfirmText).toBe("function");
   });
 
   it("exports contexts", () => {

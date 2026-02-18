@@ -1,5 +1,5 @@
 import { useRef, useSyncExternalStore } from "react";
-import type { SetteraValuesStore } from "../store.js";
+import type { SetteraValuesStore } from "../stores/index.js";
 
 /**
  * Subscribe to a scalar/reference-stable selection from the store.

@@ -2,9 +2,12 @@ import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import type { SaveStatus } from "../context.js";
 import { useStoreSlice, useStoreSelector } from "./useStoreSelector.js";
-import { evaluateVisibility } from "../visibility.js";
-import { validateSettingValue } from "../validation.js";
-import type { SettingDefinition, ConfirmConfig } from "@settera/schema";
+import {
+  evaluateVisibility,
+  validateSettingValue,
+  type SettingDefinition,
+  type ValueSetting,
+} from "@settera/schema";
 
 export interface UseSetteraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
@@ -76,12 +79,12 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
   // Setter — runs sync validation automatically, with confirm interception
   const setValue = useCallback(
     (newValue: unknown) => {
-      if ("disabled" in definition && definition.disabled) return;
+      if (definition.disabled) return;
       if ("readonly" in definition && definition.readonly) return;
 
       const confirmConfig =
-        "confirm" in definition
-          ? (definition.confirm as ConfirmConfig | undefined)
+        definition.type !== "action"
+          ? (definition as ValueSetting).confirm
           : undefined;
 
       const applyValue = () => {
@@ -91,12 +94,10 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
       };
 
       if (confirmConfig) {
-        const dangerous =
-          "dangerous" in definition && (definition.dangerous as boolean);
         store.requestConfirm({
           key,
           config: confirmConfig,
-          dangerous: !!dangerous,
+          dangerous: !!definition.dangerous,
           onConfirm: applyValue,
           onCancel: () => {},
         });

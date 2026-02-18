@@ -1,4 +1,4 @@
-import type { VisibilityCondition, VisibilityRule, VisibilityValue } from "@settera/schema";
+import type { VisibilityCondition, VisibilityRule, VisibilityValue } from "./types.js";
 
 /**
  * Evaluate whether a setting should be visible based on its visibility rules

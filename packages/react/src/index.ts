@@ -1,16 +1,3 @@
-// Re-export schema essentials
-export {
-  SCHEMA_VERSION,
-  isFlattenedPage,
-  resolvePageKey,
-} from "@settera/schema";
-export type {
-  SetteraSchema,
-  SettingDefinition,
-  BooleanSetting,
-  VisibilityCondition,
-} from "@settera/schema";
-
 // Provider
 export { SetteraProvider } from "./provider.js";
 export type { SetteraProviderProps } from "./provider.js";
@@ -24,8 +11,8 @@ export { Settera } from "./settera.js";
 export type { SetteraProps } from "./settera.js";
 
 // Store
-export { SetteraValuesStore } from "./store.js";
-export type { SetteraValuesState } from "./store.js";
+export { SetteraValuesStore } from "./stores/index.js";
+export type { SetteraValuesState } from "./stores/index.js";
 
 // Contexts (for advanced usage)
 export {
@@ -51,9 +38,3 @@ export type { UseSetteraSectionResult } from "./hooks/useSetteraSection.js";
 
 // Store selector hooks
 export { useStoreSelector, useStoreSlice } from "./hooks/useStoreSelector.js";
-
-// Validation (pure function, useful for custom renderers)
-export { validateSettingValue, validateConfirmText } from "./validation.js";
-
-// Visibility (pure function, useful for custom renderers)
-export { evaluateVisibility } from "./visibility.js";

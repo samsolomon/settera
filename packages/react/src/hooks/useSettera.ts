@@ -23,6 +23,5 @@ export function useSettera() {
     schema: schemaCtx.schema,
     values,
     setValue: store.setValue,
-    validate: store.getOnValidate(),
   };
 }

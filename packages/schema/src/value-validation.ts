@@ -1,4 +1,4 @@
-import type { SettingDefinition } from "@settera/schema";
+import type { SettingDefinition } from "./types.js";
 
 /**
  * Validate a setting value against the definition's validation rules.

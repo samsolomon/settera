@@ -105,42 +105,42 @@ export interface SelectOption {
   group?: string;
 }
 
-// ---- Individual Setting Types ----
+// ---- Base Setting Interfaces ----
 
-export interface BooleanSetting {
+/** Fields shared by all setting types (value-bearing and actions). */
+export interface BaseSettingFields {
   key: string;
   title: string;
   description?: string;
   helpText?: string;
-  type: "boolean";
-  default?: boolean;
-  confirm?: ConfirmConfig;
   dangerous?: boolean;
   disabled?: boolean;
   badge?: string;
   deprecated?: string | boolean;
   visibleWhen?: VisibilityRule | VisibilityRule[];
+}
+
+/** Fields shared by all value-bearing settings (extends base with confirm). */
+export interface BaseValueSettingFields extends BaseSettingFields {
+  confirm?: ConfirmConfig;
+}
+
+// ---- Individual Setting Types ----
+
+export interface BooleanSetting extends BaseValueSettingFields {
+  type: "boolean";
+  default?: boolean;
   validation?: never;
 }
 
-export interface TextSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface TextSetting extends BaseValueSettingFields {
   type: "text";
   default?: string;
   placeholder?: string;
   inputType?: "text" | "email" | "url" | "password" | "textarea";
   /** Number of visible rows when inputType is "textarea" */
   rows?: number;
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
   readonly?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minLength?: number;
@@ -150,21 +150,11 @@ export interface TextSetting {
   };
 }
 
-export interface NumberSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface NumberSetting extends BaseValueSettingFields {
   type: "number";
   default?: number;
   placeholder?: string;
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
   readonly?: boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
-  badge?: string;
-  deprecated?: string | boolean;
   /** Display hint for rendering: standard input or slider */
   displayHint?: "input" | "slider";
   validation?: {
@@ -177,41 +167,21 @@ export interface NumberSetting {
   };
 }
 
-export interface SelectSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface SelectSetting extends BaseValueSettingFields {
   type: "select";
   options: SelectOption[];
   default?: string;
   placeholder?: string;
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     message?: string;
   };
 }
 
-export interface MultiSelectSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface MultiSelectSetting extends BaseValueSettingFields {
   type: "multiselect";
   options: SelectOption[];
   default?: string[];
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minSelections?: number;
@@ -220,20 +190,10 @@ export interface MultiSelectSetting {
   };
 }
 
-export interface DateSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface DateSetting extends BaseValueSettingFields {
   type: "date";
   default?: string;
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
   readonly?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     minDate?: string;
@@ -251,11 +211,7 @@ export type CompoundFieldDefinition =
   | DateSetting
   | BooleanSetting;
 
-export interface CompoundSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface CompoundSetting extends BaseValueSettingFields {
   type: "compound";
   displayStyle: "modal" | "page" | "inline";
   fields: CompoundFieldDefinition[];
@@ -266,12 +222,6 @@ export interface CompoundSetting {
       message: string;
     }>;
   };
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
 }
 
 /** Field types allowed inside a repeatable compound item. */
@@ -283,21 +233,11 @@ export type RepeatableFieldDefinition =
   | DateSetting
   | BooleanSetting;
 
-export interface RepeatableSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface RepeatableSetting extends BaseValueSettingFields {
   type: "repeatable";
   itemType: "text" | "compound";
   itemFields?: RepeatableFieldDefinition[];
   default?: unknown[];
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     minItems?: number;
     maxItems?: number;
@@ -305,11 +245,7 @@ export interface RepeatableSetting {
   };
 }
 
-export interface ActionSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface ActionSetting extends BaseSettingFields {
   type: "action";
   buttonLabel: string;
   actionType: "modal" | "callback";
@@ -321,11 +257,6 @@ export interface ActionSetting {
     fields: ModalActionFieldSetting[];
     initialValues?: Record<string, unknown>;
   };
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
 }
 
 export type ModalActionFieldSetting =
@@ -338,21 +269,11 @@ export type ModalActionFieldSetting =
   | CompoundSetting
   | RepeatableSetting;
 
-export interface CustomSetting {
-  key: string;
-  title: string;
-  description?: string;
-  helpText?: string;
+export interface CustomSetting extends BaseValueSettingFields {
   type: "custom";
   renderer: string;
   config?: Record<string, unknown>;
   default?: unknown;
-  confirm?: ConfirmConfig;
-  dangerous?: boolean;
-  disabled?: boolean;
-  badge?: string;
-  deprecated?: string | boolean;
-  visibleWhen?: VisibilityRule | VisibilityRule[];
   validation?: {
     required?: boolean;
     message?: string;

@@ -8,6 +8,8 @@ export type {
   SubsectionDefinition,
   SettingDefinition,
   ValueSetting,
+  BaseSettingFields,
+  BaseValueSettingFields,
   BooleanSetting,
   TextSetting,
   NumberSetting,
@@ -31,8 +33,14 @@ export type {
   FlattenedSetting,
 } from "./types.js";
 
-// Validation
+// Schema validation
 export { validateSchema } from "./validate.js";
+
+// Value validation (per-setting runtime validation)
+export { validateSettingValue, validateConfirmText } from "./value-validation.js";
+
+// Visibility
+export { evaluateVisibility } from "./visibility.js";
 
 // Traversal
 export {
@@ -43,6 +51,8 @@ export {
   resolveDependencies,
   isFlattenedPage,
   resolvePageKey,
+  buildSettingIndex,
+  buildSectionIndex,
 } from "./traversal.js";
 
 export type { SchemaWalkContext, SchemaVisitor } from "./traversal.js";

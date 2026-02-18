@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { validateSettingValue, validateConfirmText, type SettingDefinition } from "@settera/schema";
+import { validateSettingValue, validateConfirmText } from "../value-validation.js";
+import type { SettingDefinition } from "../types.js";
 
 // ---- Helpers ----
 

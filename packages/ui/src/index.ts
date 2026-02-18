@@ -1,6 +1,13 @@
-// Re-export essentials from react layer
+// Re-export essentials from schema layer
 export {
   SCHEMA_VERSION,
+  evaluateVisibility,
+  validateSettingValue,
+  validateConfirmText,
+} from "@settera/schema";
+
+// Re-export essentials from react layer
+export {
   SetteraProvider,
   SetteraRenderer,
   Settera,
@@ -9,9 +16,6 @@ export {
   useSetteraAction,
   useSetteraConfirm,
   useSetteraSection,
-  evaluateVisibility,
-  validateSettingValue,
-  validateConfirmText,
 } from "@settera/react";
 
 // Navigation provider and hooks (UI-specific)

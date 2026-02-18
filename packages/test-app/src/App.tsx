@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   SCHEMA_VERSION,
   getPageByKey,
+  evaluateVisibility,
   type PageDefinition,
   type SettingDefinition,
   type CompoundFieldDefinition,
@@ -12,7 +13,6 @@ import {
   useSettera,
   useSetteraAction,
   useSetteraSetting,
-  evaluateVisibility,
 } from "@settera/react";
 import {
   SetteraLayout,

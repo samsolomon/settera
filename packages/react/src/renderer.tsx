@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "./context.js";
-import { SetteraValuesStore } from "./store.js";
+import { SetteraValuesStore } from "./stores/index.js";
 
 export interface SetteraRendererProps {
   /** Current values object (flat keys) */

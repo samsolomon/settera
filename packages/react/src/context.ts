@@ -4,9 +4,10 @@ import type {
   SettingDefinition,
   FlattenedSetting,
   PageDefinition,
+  SectionDefinition,
   ConfirmConfig,
 } from "@settera/schema";
-import type { SetteraValuesStore } from "./store.js";
+import type { SetteraValuesStore } from "./stores/index.js";
 
 // ---- Schema Context (never re-renders after mount) ----
 
@@ -15,7 +16,8 @@ export interface SetteraSchemaContextValue {
   flatSettings: FlattenedSetting[];
   getSettingByKey: (key: string) => SettingDefinition | undefined;
   getPageByKey: (key: string) => PageDefinition | undefined;
-  dependencies: Map<string, string[]>;
+  settingIndex: Map<string, FlattenedSetting>;
+  sectionIndex: Map<string, SectionDefinition>;
 }
 
 export const SetteraSchemaContext =

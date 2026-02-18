@@ -1,8 +1,7 @@
 import { useContext } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useStoreSelector } from "./useStoreSelector.js";
-import { evaluateVisibility } from "../visibility.js";
-import type { SectionDefinition } from "@settera/schema";
+import { evaluateVisibility, type SectionDefinition } from "@settera/schema";
 
 export interface UseSetteraSectionResult {
   /** Whether this section is currently visible */
@@ -29,13 +28,11 @@ export function useSetteraSection(
     throw new Error("useSetteraSection must be used within a SetteraRenderer.");
   }
 
-  const page = schemaCtx.getPageByKey(pageKey);
-  if (!page) {
-    throw new Error(`Page "${pageKey}" not found in schema.`);
-  }
-
-  const definition = page.sections?.find((s) => s.key === sectionKey);
+  const definition = schemaCtx.sectionIndex.get(`${pageKey}:${sectionKey}`);
   if (!definition) {
+    if (!schemaCtx.getPageByKey(pageKey)) {
+      throw new Error(`Page "${pageKey}" not found in schema.`);
+    }
     throw new Error(
       `Section "${sectionKey}" not found in page "${pageKey}".`,
     );

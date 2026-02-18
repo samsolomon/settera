@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { evaluateVisibility, type VisibilityCondition, type VisibilityRule } from "@settera/schema";
+import { evaluateVisibility } from "../visibility.js";
+import type { VisibilityCondition, VisibilityRule } from "../types.js";
 
 describe("evaluateVisibility", () => {
   it("returns true when conditions is undefined", () => {
