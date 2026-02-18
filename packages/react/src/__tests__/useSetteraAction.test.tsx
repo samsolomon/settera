@@ -202,6 +202,53 @@ describe("useSetteraAction", () => {
     consoleSpy.mockRestore();
   });
 
+  it("shares loading state across multiple component instances", async () => {
+    let resolve: () => void;
+    const handler = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        }),
+    );
+
+    render(
+      <Settera
+        schema={schema}
+        values={{}}
+        onChange={() => {}}
+        onAction={{ resetAction: handler }}
+      >
+        <ActionDisplay settingKey="resetAction" />
+        <div data-testid="second-instance">
+          <ActionDisplay settingKey="resetAction" />
+        </div>
+      </Settera>,
+    );
+
+    const triggers = screen.getAllByTestId("trigger-resetAction");
+    const loadingStates = screen.getAllByTestId("loading-resetAction");
+
+    expect(loadingStates[0].textContent).toBe("idle");
+    expect(loadingStates[1].textContent).toBe("idle");
+
+    // Start the async action from the first instance
+    await act(async () => {
+      triggers[0].click();
+    });
+
+    // Both instances should show loading
+    expect(loadingStates[0].textContent).toBe("loading");
+    expect(loadingStates[1].textContent).toBe("loading");
+
+    // Resolve the promise
+    await act(async () => {
+      resolve!();
+    });
+
+    expect(loadingStates[0].textContent).toBe("idle");
+    expect(loadingStates[1].textContent).toBe("idle");
+  });
+
   it("prevents duplicate calls while async handler is in-flight", async () => {
     let resolve: () => void;
     const handler = vi.fn(

@@ -38,4 +38,18 @@ describe("CallbackRefs", () => {
     refs.setOnAction(map);
     expect(refs.getOnAction()).toBe(map);
   });
+
+  it("returns undefined for schemaLookup by default", () => {
+    const refs = new CallbackRefs();
+    expect(refs.getSchemaLookup()).toBeUndefined();
+  });
+
+  it("stores and returns schemaLookup", () => {
+    const refs = new CallbackRefs();
+    const fn = (key: string) => (key === "name" ? { key: "name", title: "Name", type: "text" as const } : undefined);
+    refs.setSchemaLookup(fn);
+    expect(refs.getSchemaLookup()).toBe(fn);
+    expect(refs.getSchemaLookup()!("name")).toEqual({ key: "name", title: "Name", type: "text" });
+    expect(refs.getSchemaLookup()!("missing")).toBeUndefined();
+  });
 });

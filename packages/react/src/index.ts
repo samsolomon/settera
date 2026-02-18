@@ -11,11 +11,9 @@ export {
   SetteraSchemaContext,
   SetteraValuesContext,
 } from "./context.js";
-export type {
-  SetteraSchemaContextValue,
-  PendingConfirm,
-  SaveStatus,
-} from "./context.js";
+export type { SetteraSchemaContextValue } from "./context.js";
+export type { SaveStatus } from "./stores/save-tracker.js";
+export type { PendingConfirm } from "./stores/confirm-manager.js";
 
 // Hooks
 export { useSettera } from "./hooks/useSettera.js";

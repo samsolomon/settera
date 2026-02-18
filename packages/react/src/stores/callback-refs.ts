@@ -1,5 +1,7 @@
+import type { SettingDefinition } from "@settera/schema";
+
 /**
- * Holds pass-through callback refs (onChange, onValidate, onAction).
+ * Holds pass-through callback refs (onChange, onValidate, onAction, schemaLookup).
  * These are updated every render but never trigger re-renders.
  */
 export class CallbackRefs {
@@ -10,6 +12,9 @@ export class CallbackRefs {
     | undefined;
   private _onAction:
     | Record<string, (payload?: unknown) => void | Promise<void>>
+    | undefined;
+  private _schemaLookup:
+    | ((key: string) => SettingDefinition | undefined)
     | undefined;
 
   setOnChange(fn: (key: string, value: unknown) => void | Promise<void>): void {
@@ -49,5 +54,17 @@ export class CallbackRefs {
     | Record<string, (payload?: unknown) => void | Promise<void>>
     | undefined {
     return this._onAction;
+  }
+
+  setSchemaLookup(
+    fn: (key: string) => SettingDefinition | undefined,
+  ): void {
+    this._schemaLookup = fn;
+  }
+
+  getSchemaLookup():
+    | ((key: string) => SettingDefinition | undefined)
+    | undefined {
+    return this._schemaLookup;
   }
 }

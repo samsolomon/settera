@@ -1,7 +1,8 @@
-import { useContext, useCallback, useState, useRef, useEffect } from "react";
+import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useStoreSelector } from "./useStoreSelector.js";
-import { evaluateVisibility, type SettingDefinition } from "@settera/schema";
+import { useVisibility } from "./useVisibility.js";
+import type { SettingDefinition } from "@settera/schema";
 
 export interface UseSetteraActionResult {
   /** The setting definition from the schema */
@@ -34,49 +35,17 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
     throw new Error(`Setting "${key}" not found in schema.`);
   }
 
-  const [isLoading, setIsLoading] = useState(false);
-  const mountedRef = useRef(true);
-  const inFlightRef = useRef(false);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
+  const isLoading = useStoreSelector(
+    store,
+    (state) => state.actionLoading[key] === true,
+  );
 
   const onAction = useCallback(
-    (payload?: unknown) => {
-      const currentHandler = store.getOnAction()?.[key];
-      if (!currentHandler || inFlightRef.current) return;
-      const result = currentHandler(payload);
-      if (result instanceof Promise) {
-        inFlightRef.current = true;
-        setIsLoading(true);
-        result
-          .catch((err: unknown) => {
-            console.error(`[settera] Action "${key}" failed:`, err);
-          })
-          .finally(() => {
-            inFlightRef.current = false;
-            if (mountedRef.current) {
-              setIsLoading(false);
-            }
-          });
-      }
-    },
+    (payload?: unknown) => store.invokeAction(key, payload),
     [store, key],
   );
 
-  // Subscribe to values for visibility
-  const hasVisibleWhen = definition.visibleWhen !== undefined;
-  const allValues = useStoreSelector(
-    store,
-    (state) => (hasVisibleWhen ? state.values : undefined),
-  );
-  const isVisible = hasVisibleWhen
-    ? evaluateVisibility(definition.visibleWhen, allValues!)
-    : true;
+  const isVisible = useVisibility(store, definition.visibleWhen);
 
   return {
     definition,

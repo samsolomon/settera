@@ -5,7 +5,6 @@ import type {
   FlattenedSetting,
   PageDefinition,
   SectionDefinition,
-  ConfirmConfig,
 } from "@settera/schema";
 import type { SetteraValuesStore } from "./stores/index.js";
 
@@ -24,16 +23,6 @@ export const SetteraSchemaContext =
   createContext<SetteraSchemaContextValue | null>(null);
 
 // ---- Values Context (now holds a stable store reference) ----
-
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
-
-export interface PendingConfirm {
-  key: string;
-  config: ConfirmConfig;
-  dangerous: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
 
 export const SetteraValuesContext =
   createContext<SetteraValuesStore | null>(null);

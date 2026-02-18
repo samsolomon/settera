@@ -1,14 +1,22 @@
-import type { PendingConfirm, SaveStatus } from "../context.js";
+import {
+  validateSettingValue,
+  type SettingDefinition,
+  type ValueSetting,
+} from "@settera/schema";
+import type { SaveStatus } from "./save-tracker.js";
+import type { PendingConfirm } from "./confirm-manager.js";
 import { CallbackRefs } from "./callback-refs.js";
 import { SaveTracker } from "./save-tracker.js";
 import { ErrorMap } from "./error-map.js";
 import { ConfirmManager } from "./confirm-manager.js";
+import { ActionTracker } from "./action-tracker.js";
 
 export interface SetteraValuesState {
   values: Record<string, unknown>;
   errors: Record<string, string>;
   saveStatus: Record<string, SaveStatus>;
   pendingConfirm: PendingConfirm | null;
+  actionLoading: Record<string, true>;
 }
 
 type Listener = () => void;
@@ -17,8 +25,8 @@ type Listener = () => void;
  * Composite store for SetteraValuesContext.
  *
  * Delegates to focused sub-stores (CallbackRefs, SaveTracker, ErrorMap,
- * ConfirmManager) while maintaining a single subscriber list and aggregated
- * state snapshot for useSyncExternalStore.
+ * ConfirmManager, ActionTracker) while maintaining a single subscriber list
+ * and aggregated state snapshot for useSyncExternalStore.
  */
 export class SetteraValuesStore {
   private _values: Record<string, unknown> = {};
@@ -29,6 +37,7 @@ export class SetteraValuesStore {
   private _saves: SaveTracker;
   private _errors: ErrorMap;
   private _confirms: ConfirmManager;
+  private _actions: ActionTracker;
 
   // Cached state snapshot — rebuilt on emit
   private _snapshot: SetteraValuesState;
@@ -38,6 +47,7 @@ export class SetteraValuesStore {
     this._saves = new SaveTracker(emit);
     this._errors = new ErrorMap(emit);
     this._confirms = new ConfirmManager(emit);
+    this._actions = new ActionTracker(emit);
     this._snapshot = this._buildSnapshot();
   }
 
@@ -47,6 +57,7 @@ export class SetteraValuesStore {
       errors: this._errors.getErrors(),
       saveStatus: this._saves.getSaveStatus(),
       pendingConfirm: this._confirms.getPendingConfirm(),
+      actionLoading: this._actions.getActionLoading(),
     };
   }
 
@@ -90,10 +101,81 @@ export class SetteraValuesStore {
   }
 
   setValue = (key: string, value: unknown): void => {
+    const definition = this._callbacks.getSchemaLookup()?.(key);
+
+    if (!definition) {
+      this._applyRawValue(key, value);
+      return;
+    }
+
+    if (definition.disabled) return;
+    if ("readonly" in definition && (definition as { readonly?: boolean }).readonly) return;
+
+    const confirmConfig =
+      definition.type !== "action"
+        ? (definition as ValueSetting).confirm
+        : undefined;
+
+    const applyValue = () => {
+      const syncError = validateSettingValue(definition, value);
+      this._errors.setError(key, syncError);
+      this._applyRawValue(key, value);
+    };
+
+    if (confirmConfig) {
+      this._confirms.requestConfirm({
+        key,
+        config: confirmConfig,
+        dangerous: !!definition.dangerous,
+        onConfirm: applyValue,
+        onCancel: () => {},
+      });
+    } else {
+      applyValue();
+    }
+  };
+
+  validate = async (key: string, valueOverride?: unknown): Promise<string | null> => {
+    if (this._confirms.getPendingConfirm()?.key === key) return null;
+
+    const definition = this._callbacks.getSchemaLookup()?.(key);
+    if (!definition) return null;
+
+    const currentValue =
+      valueOverride !== undefined ? valueOverride : this._values[key];
+    const syncError = validateSettingValue(definition, currentValue);
+    if (syncError) {
+      this._errors.setError(key, syncError);
+      return syncError;
+    }
+
+    this._errors.setError(key, null);
+
+    const asyncValidator = this._callbacks.getOnValidate()?.[key];
+    if (asyncValidator) {
+      const asyncError = await asyncValidator(currentValue);
+      if (asyncError) {
+        this._errors.setError(key, asyncError);
+        return asyncError;
+      }
+    }
+
+    return null;
+  };
+
+  private _applyRawValue(key: string, value: unknown): void {
     const result = this._callbacks.getOnChange()(key, value);
     if (result instanceof Promise) {
       this._saves.trackSave(key, result);
     }
+  }
+
+  // ---- Actions ----
+
+  invokeAction = (key: string, payload?: unknown): void => {
+    const handler = this._callbacks.getOnAction()?.[key];
+    if (!handler) return;
+    this._actions.invokeAction(key, handler, payload);
   };
 
   // ---- Errors ----
@@ -113,6 +195,10 @@ export class SetteraValuesStore {
   };
 
   // ---- Pass-through setters (no emit) ----
+
+  setSchemaLookup(fn: (key: string) => SettingDefinition | undefined): void {
+    this._callbacks.setSchemaLookup(fn);
+  }
 
   setOnChange(fn: (key: string, value: unknown) => void | Promise<void>): void {
     this._callbacks.setOnChange(fn);
@@ -155,5 +241,6 @@ export class SetteraValuesStore {
 
   destroy(): void {
     this._saves.destroy();
+    this._actions.destroy();
   }
 }

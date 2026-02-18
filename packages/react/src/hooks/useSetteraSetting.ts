@@ -1,13 +1,9 @@
 import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
-import type { SaveStatus } from "../context.js";
-import { useStoreSlice, useStoreSelector } from "./useStoreSelector.js";
-import {
-  evaluateVisibility,
-  validateSettingValue,
-  type SettingDefinition,
-  type ValueSetting,
-} from "@settera/schema";
+import type { SaveStatus } from "../stores/save-tracker.js";
+import { useStoreSlice } from "./useStoreSelector.js";
+import { useVisibility } from "./useVisibility.js";
+import type { SettingDefinition } from "@settera/schema";
 
 export interface UseSetteraSettingResult {
   /** Current value (falls back to definition.default via resolved values) */
@@ -63,87 +59,19 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
 
   const { value, error, saveStatus } = slice;
 
-  // Visibility — subscribe to full values only when visibleWhen exists
-  const hasVisibleWhen = definition.visibleWhen !== undefined;
-  const allValues = useStoreSelector(
-    store,
-    (state) => (hasVisibleWhen ? state.values : undefined),
-  );
-  const isVisible = hasVisibleWhen
-    ? evaluateVisibility(definition.visibleWhen, allValues!)
-    : true;
+  const isVisible = useVisibility(store, definition.visibleWhen);
 
   const isReadonly =
     "readonly" in definition && definition.readonly === true;
 
-  // Setter — runs sync validation automatically, with confirm interception
   const setValue = useCallback(
-    (newValue: unknown) => {
-      if (definition.disabled) return;
-      if ("readonly" in definition && definition.readonly) return;
-
-      const confirmConfig =
-        definition.type !== "action"
-          ? (definition as ValueSetting).confirm
-          : undefined;
-
-      const applyValue = () => {
-        const syncError = validateSettingValue(definition, newValue);
-        store.setError(key, syncError);
-        store.setValue(key, newValue);
-      };
-
-      if (confirmConfig) {
-        store.requestConfirm({
-          key,
-          config: confirmConfig,
-          dangerous: !!definition.dangerous,
-          onConfirm: applyValue,
-          onCancel: () => {},
-        });
-      } else {
-        applyValue();
-      }
-    },
-    [store, key, definition],
+    (newValue: unknown) => store.setValue(key, newValue),
+    [store, key],
   );
 
-  // Full validation pipeline: sync + async (for blur).
-  // Reads current value from store at call time — fixes stale closure issue.
-  // Suppressed when a confirm dialog is pending for this key.
   const validate = useCallback(
-    async (valueOverride?: unknown): Promise<string | null> => {
-      // Suppress validation while confirm is pending for this key
-      if (store.getState().pendingConfirm?.key === key) return null;
-
-      // Use explicit value when provided, otherwise read fresh from store
-      const currentValue =
-        valueOverride !== undefined
-          ? valueOverride
-          : store.getState().values[key];
-      const syncError = validateSettingValue(definition, currentValue);
-      if (syncError) {
-        store.setError(key, syncError);
-        return syncError;
-      }
-
-      // Sync passed — clear any previous error
-      store.setError(key, null);
-
-      // Run async validation if provided
-      const onValidate = store.getOnValidate();
-      const asyncValidator = onValidate?.[key];
-      if (asyncValidator) {
-        const asyncError = await asyncValidator(currentValue);
-        if (asyncError) {
-          store.setError(key, asyncError);
-          return asyncError;
-        }
-      }
-
-      return null;
-    },
-    [store, key, definition],
+    (valueOverride?: unknown) => store.validate(key, valueOverride),
+    [store, key],
   );
 
   return {

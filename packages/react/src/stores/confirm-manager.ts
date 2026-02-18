@@ -1,4 +1,12 @@
-import type { PendingConfirm } from "../context.js";
+import type { ConfirmConfig } from "@settera/schema";
+
+export interface PendingConfirm {
+  key: string;
+  config: ConfirmConfig;
+  dangerous: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
 
 /**
  * Manages confirm dialog state for settings with confirm config.

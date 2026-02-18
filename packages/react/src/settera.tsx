@@ -105,6 +105,7 @@ export function Settera({
   store.setOnChange(onChange);
   store.setOnValidate(onValidate);
   store.setOnAction(onAction);
+  store.setSchemaLookup(schemaContext.getSettingByKey);
 
   // Emit after commit so subscribers (useSyncExternalStore) re-render
   // with the latest values.

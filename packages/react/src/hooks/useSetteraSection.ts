@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
-import { useStoreSelector } from "./useStoreSelector.js";
-import { evaluateVisibility, type SectionDefinition } from "@settera/schema";
+import { useVisibility } from "./useVisibility.js";
+import type { SectionDefinition } from "@settera/schema";
 
 export interface UseSetteraSectionResult {
   /** Whether this section is currently visible */
@@ -38,15 +38,7 @@ export function useSetteraSection(
     );
   }
 
-  // Subscribe to values only when visibleWhen exists
-  const hasVisibleWhen = definition.visibleWhen !== undefined;
-  const allValues = useStoreSelector(
-    store,
-    (state) => (hasVisibleWhen ? state.values : undefined),
-  );
-  const isVisible = hasVisibleWhen
-    ? evaluateVisibility(definition.visibleWhen, allValues!)
-    : true;
+  const isVisible = useVisibility(store, definition.visibleWhen);
 
   return { isVisible, definition };
 }

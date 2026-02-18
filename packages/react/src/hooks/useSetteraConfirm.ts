@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { SetteraValuesContext } from "../context.js";
-import type { PendingConfirm } from "../context.js";
+import type { PendingConfirm } from "../stores/confirm-manager.js";
 import { useStoreSelector } from "./useStoreSelector.js";
 
 export interface UseSetteraConfirmResult {

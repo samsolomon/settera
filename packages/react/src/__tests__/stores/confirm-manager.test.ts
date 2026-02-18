@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { ConfirmManager } from "../../stores/confirm-manager.js";
-import type { PendingConfirm } from "../../context.js";
+import type { PendingConfirm } from "../../stores/confirm-manager.js";
 
 function makePending(overrides: Partial<PendingConfirm> = {}): PendingConfirm {
   return {

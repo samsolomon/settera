@@ -1,4 +1,4 @@
-import type { SaveStatus } from "../context.js";
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 /**
  * Tracks async save state per setting key.
