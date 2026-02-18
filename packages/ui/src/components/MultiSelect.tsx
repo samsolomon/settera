@@ -17,6 +17,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
   const options = definition.type === "multiselect" ? definition.options : [];
   const selectedValues = useMemo(
     () => (Array.isArray(value) ? (value as string[]) : []),
@@ -111,6 +112,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
             <Checkbox.Root
               id={checkboxId}
               checked={isChecked}
+              disabled={isDisabled}
               onCheckedChange={(checked: boolean | "indeterminate") =>
                 handleChange(opt.value, checked === true)
               }

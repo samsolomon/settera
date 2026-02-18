@@ -56,6 +56,7 @@ function ListTextItem({
   onMoveDown,
   isFirst,
   isLast,
+  disabled,
 }: {
   item: string;
   index: number;
@@ -66,6 +67,7 @@ function ListTextItem({
   onMoveDown: (index: number) => void;
   isFirst: boolean;
   isLast: boolean;
+  disabled?: boolean;
 }) {
   const handleCommit = useCallback(
     (local: string) => {
@@ -99,6 +101,7 @@ function ListTextItem({
         aria-label={`List item ${index + 1}`}
         {...inputProps}
         onChange={handleChange}
+        disabled={disabled}
         style={{
           fontSize: "var(--settera-input-font-size, 14px)",
           padding: "var(--settera-input-padding, 6px 10px)",
@@ -114,15 +117,15 @@ function ListTextItem({
         type="button"
         aria-label={`Move item ${index + 1} up`}
         onClick={() => onMoveUp(index)}
-        disabled={isFirst}
+        disabled={disabled || isFirst}
         style={{
           fontSize: "var(--settera-button-font-size, 13px)",
           padding: "4px 8px",
           borderRadius: "var(--settera-button-border-radius, 6px)",
           border: "var(--settera-button-border, 1px solid #d1d5db)",
           backgroundColor: "var(--settera-button-bg, white)",
-          cursor: isFirst ? "not-allowed" : "pointer",
-          opacity: isFirst ? 0.6 : 1,
+          cursor: disabled || isFirst ? "not-allowed" : "pointer",
+          opacity: disabled || isFirst ? 0.6 : 1,
         }}
       >
         Up
@@ -132,15 +135,15 @@ function ListTextItem({
         type="button"
         aria-label={`Move item ${index + 1} down`}
         onClick={() => onMoveDown(index)}
-        disabled={isLast}
+        disabled={disabled || isLast}
         style={{
           fontSize: "var(--settera-button-font-size, 13px)",
           padding: "4px 8px",
           borderRadius: "var(--settera-button-border-radius, 6px)",
           border: "var(--settera-button-border, 1px solid #d1d5db)",
           backgroundColor: "var(--settera-button-bg, white)",
-          cursor: isLast ? "not-allowed" : "pointer",
-          opacity: isLast ? 0.6 : 1,
+          cursor: disabled || isLast ? "not-allowed" : "pointer",
+          opacity: disabled || isLast ? 0.6 : 1,
         }}
       >
         Down
@@ -150,13 +153,15 @@ function ListTextItem({
         type="button"
         aria-label={`Remove item ${index + 1}`}
         onClick={() => onRemove(index)}
+        disabled={disabled}
         style={{
           fontSize: "var(--settera-button-font-size, 13px)",
           padding: "4px 8px",
           borderRadius: "var(--settera-button-border-radius, 6px)",
           border: "var(--settera-button-border, 1px solid #d1d5db)",
           backgroundColor: "var(--settera-button-bg, white)",
-          cursor: "pointer",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.6 : 1,
         }}
       >
         Remove
@@ -170,12 +175,15 @@ function RepeatableCompoundFieldControl({
   itemIndex,
   value,
   onChange,
+  parentDisabled,
 }: {
   field: RepeatableCompoundField;
   itemIndex: number;
   value: unknown;
   onChange: (itemIndex: number, fieldKey: string, nextValue: unknown) => void;
+  parentDisabled?: boolean;
 }) {
+  const effectiveDisabled = parentDisabled || Boolean(field.disabled);
   const inputStyle: React.CSSProperties = {
     fontSize: "var(--settera-input-font-size, 14px)",
     padding: "var(--settera-input-padding, 6px 10px)",
@@ -194,6 +202,7 @@ function RepeatableCompoundFieldControl({
         value={value}
         onChange={onChange}
         inputStyle={inputStyle}
+        disabled={effectiveDisabled}
       />
     );
   }
@@ -207,6 +216,7 @@ function RepeatableCompoundFieldControl({
         value={value}
         onChange={onChange}
         inputStyle={inputStyle}
+        disabled={effectiveDisabled}
       />
     );
   }
@@ -218,6 +228,7 @@ function RepeatableCompoundFieldControl({
         aria-label={`${field.title} ${itemIndex + 1}`}
         value={typeof value === "string" ? value : ""}
         onChange={(e) => onChange(itemIndex, field.key, e.target.value)}
+        disabled={effectiveDisabled}
         style={inputStyle}
       >
         <option value="">Select...</option>
@@ -254,6 +265,7 @@ function RepeatableCompoundFieldControl({
               <input
                 type="checkbox"
                 checked={checked}
+                disabled={effectiveDisabled}
                 onChange={(e) => {
                   const next = e.target.checked
                     ? [...selected, opt.value]
@@ -276,6 +288,7 @@ function RepeatableCompoundFieldControl({
         type="date"
         value={typeof value === "string" ? value : ""}
         onChange={(e) => onChange(itemIndex, field.key, e.target.value)}
+        disabled={effectiveDisabled}
         style={inputStyle}
       />
     );
@@ -288,6 +301,7 @@ function RepeatableCompoundFieldControl({
       type="checkbox"
       checked={Boolean(value)}
       onChange={(e) => onChange(itemIndex, booleanField.key, e.target.checked)}
+      disabled={effectiveDisabled}
       style={{ width: "16px", height: "16px" }}
     />
   );
@@ -299,12 +313,14 @@ function RepeatableCompoundTextField({
   value,
   onChange,
   inputStyle,
+  disabled,
 }: {
   field: TextSetting;
   itemIndex: number;
   value: unknown;
   onChange: (itemIndex: number, fieldKey: string, nextValue: unknown) => void;
   inputStyle: React.CSSProperties;
+  disabled?: boolean;
 }) {
   const committed = typeof value === "string" ? value : "";
   const { inputProps } = useBufferedInput(committed, (local) => {
@@ -316,6 +332,7 @@ function RepeatableCompoundTextField({
       aria-label={`${field.title} ${itemIndex + 1}`}
       {...inputProps}
       type={field.inputType ?? "text"}
+      disabled={disabled}
       style={inputStyle}
     />
   );
@@ -328,6 +345,7 @@ function RepeatableCompoundNumberField({
   value,
   onChange,
   inputStyle,
+  disabled,
 }: {
   fieldKey: string;
   fieldTitle: string;
@@ -335,6 +353,7 @@ function RepeatableCompoundNumberField({
   value: unknown;
   onChange: (itemIndex: number, fieldKey: string, nextValue: unknown) => void;
   inputStyle: React.CSSProperties;
+  disabled?: boolean;
 }) {
   const committed =
     value !== undefined && value !== null && !Number.isNaN(Number(value))
@@ -349,6 +368,7 @@ function RepeatableCompoundNumberField({
       aria-label={`${fieldTitle} ${itemIndex + 1}`}
       {...inputProps}
       type="number"
+      disabled={disabled}
       style={inputStyle}
     />
   );
@@ -362,6 +382,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
     return null;
   }
 
+  const isDisabled = Boolean(definition.disabled);
   const hasError = error !== null;
 
   const textItems = useMemo(
@@ -552,6 +573,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
             onMoveDown={(i) => moveItem(i, "down")}
             isFirst={index === 0}
             isLast={index === textItems.length - 1}
+            disabled={isDisabled}
           />
         ))}
 
@@ -584,6 +606,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                   itemIndex={index}
                   value={item[field.key]}
                   onChange={setCompoundField}
+                  parentDisabled={isDisabled}
                 />
               </label>
             ))}
@@ -592,7 +615,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
               type="button"
               aria-label={`Move item ${index + 1} up`}
               onClick={() => moveItem(index, "up")}
-              disabled={index === 0}
+              disabled={isDisabled || index === 0}
               style={{
                 alignSelf: "flex-start",
                 fontSize: "var(--settera-button-font-size, 13px)",
@@ -600,8 +623,8 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 borderRadius: "var(--settera-button-border-radius, 6px)",
                 border: "var(--settera-button-border, 1px solid #d1d5db)",
                 backgroundColor: "var(--settera-button-bg, white)",
-                cursor: index === 0 ? "not-allowed" : "pointer",
-                opacity: index === 0 ? 0.6 : 1,
+                cursor: isDisabled || index === 0 ? "not-allowed" : "pointer",
+                opacity: isDisabled || index === 0 ? 0.6 : 1,
               }}
             >
               Up
@@ -611,7 +634,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
               type="button"
               aria-label={`Move item ${index + 1} down`}
               onClick={() => moveItem(index, "down")}
-              disabled={index === compoundItems.length - 1}
+              disabled={isDisabled || index === compoundItems.length - 1}
               style={{
                 alignSelf: "flex-start",
                 fontSize: "var(--settera-button-font-size, 13px)",
@@ -620,10 +643,10 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 border: "var(--settera-button-border, 1px solid #d1d5db)",
                 backgroundColor: "var(--settera-button-bg, white)",
                 cursor:
-                  index === compoundItems.length - 1
+                  isDisabled || index === compoundItems.length - 1
                     ? "not-allowed"
                     : "pointer",
-                opacity: index === compoundItems.length - 1 ? 0.6 : 1,
+                opacity: isDisabled || index === compoundItems.length - 1 ? 0.6 : 1,
               }}
             >
               Down
@@ -633,6 +656,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
               type="button"
               aria-label={`Remove item ${index + 1}`}
               onClick={() => removeItem(index)}
+              disabled={isDisabled}
               style={{
                 alignSelf: "flex-start",
                 fontSize: "var(--settera-button-font-size, 13px)",
@@ -640,7 +664,8 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 borderRadius: "var(--settera-button-border-radius, 6px)",
                 border: "var(--settera-button-border, 1px solid #d1d5db)",
                 backgroundColor: "var(--settera-button-bg, white)",
-                cursor: "pointer",
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                opacity: isDisabled ? 0.6 : 1,
               }}
             >
               Remove
@@ -651,7 +676,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
       <button
         type="button"
         onClick={addItem}
-        disabled={Boolean(isAtMax)}
+        disabled={isDisabled || Boolean(isAtMax)}
         aria-label={`Add item to ${definition.title}`}
         style={{
           alignSelf: "flex-start",
@@ -660,8 +685,8 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           borderRadius: "var(--settera-button-border-radius, 6px)",
           border: "var(--settera-button-border, 1px solid #d1d5db)",
           backgroundColor: "var(--settera-button-bg, white)",
-          cursor: isAtMax ? "not-allowed" : "pointer",
-          opacity: isAtMax ? 0.6 : 1,
+          cursor: isDisabled || isAtMax ? "not-allowed" : "pointer",
+          opacity: isDisabled || isAtMax ? 0.6 : 1,
         }}
       >
         Add item

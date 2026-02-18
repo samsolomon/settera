@@ -21,6 +21,8 @@ export function Select({ settingKey }: SelectProps) {
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
+  const isDisabled =
+    "disabled" in definition && Boolean(definition.disabled);
   const options = definition.type === "select" ? definition.options : [];
   const isRequired =
     definition.type === "select" && definition.validation?.required;
@@ -61,6 +63,7 @@ export function Select({ settingKey }: SelectProps) {
     <RadixSelect.Root
       value={selectedValue}
       onValueChange={handleValueChange}
+      disabled={isDisabled}
     >
       <RadixSelect.Trigger
         data-settera-select-trigger="true"

@@ -40,6 +40,18 @@ const schema: SetteraSchema = {
               type: "number",
               dangerous: true,
             },
+            {
+              key: "disabled-num",
+              title: "Disabled Number",
+              type: "number",
+              disabled: true,
+            },
+            {
+              key: "readonly-num",
+              title: "Readonly Number",
+              type: "number",
+              readonly: true,
+            },
           ],
         },
       ],
@@ -249,5 +261,21 @@ describe("NumberInput", () => {
     await user.keyboard("{Escape}");
     await user.tab();
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled input", () => {
+      renderNumberInput("disabled-num", { "disabled-num": 42 });
+      const input = screen.getByLabelText("Disabled Number") as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+    });
+  });
+
+  describe("readonly", () => {
+    it("renders a readonly input", () => {
+      renderNumberInput("readonly-num", { "readonly-num": 42 });
+      const input = screen.getByLabelText("Readonly Number") as HTMLInputElement;
+      expect(input.readOnly).toBe(true);
+    });
   });
 });

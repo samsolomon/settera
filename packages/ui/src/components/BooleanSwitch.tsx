@@ -18,6 +18,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
 
   const checked = Boolean(value);
   const isDangerous = "dangerous" in definition && definition.dangerous;
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
 
   const handleCheckedChange = useCallback(
     (nextChecked: boolean) => {
@@ -36,6 +37,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
     <Switch.Root
       checked={checked}
       onCheckedChange={handleCheckedChange}
+      disabled={isDisabled}
       aria-label={definition.title}
       {...focusVisibleProps}
       style={{

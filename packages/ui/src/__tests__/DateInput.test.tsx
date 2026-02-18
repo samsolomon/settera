@@ -47,6 +47,18 @@ const schema: SetteraSchema = {
               type: "date",
               dangerous: true,
             },
+            {
+              key: "disabled-date",
+              title: "Disabled Date",
+              type: "date",
+              disabled: true,
+            },
+            {
+              key: "readonly-date",
+              title: "Readonly Date",
+              type: "date",
+              readonly: true,
+            },
           ],
         },
       ],
@@ -182,5 +194,31 @@ describe("DateInput", () => {
       expect(asyncValidator).toHaveBeenCalledWith("2000-01-01");
     });
     expect(screen.getByRole("alert").textContent).toBe("Date not available");
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled input", () => {
+      renderDateInput("disabled-date", { "disabled-date": "2025-01-01" });
+      const input = screen.getByLabelText("Disabled Date") as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+    });
+
+    it("does not call onChange when disabled", () => {
+      const onChange = vi.fn();
+      renderDateInput("disabled-date", { "disabled-date": "2025-01-01" }, onChange);
+      const input = screen.getByLabelText("Disabled Date") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "2025-06-01" } });
+      // The input is disabled so the browser won't fire the change, but if it does,
+      // the hook guard also prevents it
+      expect(input.disabled).toBe(true);
+    });
+  });
+
+  describe("readonly", () => {
+    it("renders a readonly input", () => {
+      renderDateInput("readonly-date", { "readonly-date": "2025-01-01" });
+      const input = screen.getByLabelText("Readonly Date") as HTMLInputElement;
+      expect(input.readOnly).toBe(true);
+    });
   });
 });

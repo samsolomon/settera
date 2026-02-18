@@ -54,6 +54,18 @@ const schema: SetteraSchema = {
               inputType: "url",
               placeholder: "https://example.com",
             },
+            {
+              key: "disabled-text",
+              title: "Disabled Text",
+              type: "text",
+              disabled: true,
+            },
+            {
+              key: "readonly-text",
+              title: "Readonly Text",
+              type: "text",
+              readonly: true,
+            },
           ],
         },
       ],
@@ -260,5 +272,40 @@ describe("TextInput", () => {
     await user.keyboard("{Escape}");
     await user.tab();
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled input", () => {
+      renderTextInput("disabled-text", { "disabled-text": "hello" });
+      const input = screen.getByLabelText("Disabled Text") as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+    });
+
+    it("does not call onChange when disabled", async () => {
+      const onChange = vi.fn();
+      renderTextInput("disabled-text", { "disabled-text": "hello" }, onChange);
+      const input = screen.getByLabelText("Disabled Text") as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+      // Cannot type into a disabled input; onChange should not fire
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("readonly", () => {
+    it("renders a readonly input", () => {
+      renderTextInput("readonly-text", { "readonly-text": "hello" });
+      const input = screen.getByLabelText("Readonly Text") as HTMLInputElement;
+      expect(input.readOnly).toBe(true);
+    });
+
+    it("does not call onChange on blur after typing", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      renderTextInput("readonly-text", { "readonly-text": "hello" }, onChange);
+      const input = screen.getByLabelText("Readonly Text") as HTMLInputElement;
+      await user.click(input);
+      await user.tab();
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 });

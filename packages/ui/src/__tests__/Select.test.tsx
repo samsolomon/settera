@@ -76,6 +76,16 @@ const schema: SetteraSchema = {
               ],
               default: "normal",
             },
+            {
+              key: "disabled-select",
+              title: "Disabled Select",
+              type: "select",
+              options: [
+                { value: "a", label: "A" },
+                { value: "b", label: "B" },
+              ],
+              disabled: true,
+            },
           ],
         },
       ],
@@ -245,6 +255,21 @@ describe("Select", () => {
 
     await waitFor(() => {
       expect(asyncValidator).toHaveBeenCalledWith("dark");
+    });
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled trigger", () => {
+      renderSelect("disabled-select", { "disabled-select": "a" });
+      const trigger = screen.getByRole("combobox") as HTMLButtonElement;
+      expect(trigger.disabled).toBe(true);
+    });
+
+    it("does not open when disabled", async () => {
+      const user = userEvent.setup();
+      renderSelect("disabled-select", { "disabled-select": "a" });
+      await user.click(screen.getByRole("combobox"));
+      expect(screen.queryByRole("listbox")).toBeNull();
     });
   });
 });

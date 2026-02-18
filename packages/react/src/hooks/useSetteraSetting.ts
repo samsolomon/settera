@@ -1,6 +1,7 @@
 import { useContext, useCallback } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import type { SaveStatus } from "../context.js";
+import { useStoreSlice, useStoreSelector } from "./useStoreSelector.js";
 import { evaluateVisibility } from "../visibility.js";
 import { validateSettingValue } from "../validation.js";
 import type { SettingDefinition, ConfirmConfig } from "@settera/schema";
@@ -29,12 +30,12 @@ export interface UseSetteraSettingResult {
  */
 export function useSetteraSetting(key: string): UseSetteraSettingResult {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const valuesCtx = useContext(SetteraValuesContext);
+  const store = useContext(SetteraValuesContext);
 
   if (!schemaCtx) {
     throw new Error("useSetteraSetting must be used within a SetteraProvider.");
   }
-  if (!valuesCtx) {
+  if (!store) {
     throw new Error("useSetteraSetting must be used within a SetteraRenderer.");
   }
 
@@ -43,15 +44,35 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
     throw new Error(`Setting "${key}" not found in schema.`);
   }
 
-  // Value from resolved values (defaults already merged by SetteraRenderer)
-  const value = valuesCtx.values[key];
+  // Per-key slice — only re-renders when this key's data changes.
+  // isConfirmPending is only tracked for settings with a confirm config,
+  // so confirm dialog open/close doesn't re-render unrelated settings.
+  const hasConfirm =
+    "confirm" in definition && definition.confirm !== undefined;
+  const slice = useStoreSlice(store, (state) => ({
+    value: state.values[key],
+    error: state.errors[key] ?? null,
+    saveStatus: (state.saveStatus[key] ?? "idle") as SaveStatus,
+    isConfirmPending: hasConfirm && state.pendingConfirm?.key === key,
+  }));
+
+  const { value, error, saveStatus } = slice;
+
+  // Visibility — subscribe to full values only when visibleWhen exists
+  const hasVisibleWhen = definition.visibleWhen !== undefined;
+  const allValues = useStoreSelector(
+    store,
+    (state) => (hasVisibleWhen ? state.values : undefined),
+  );
+  const isVisible = hasVisibleWhen
+    ? evaluateVisibility(definition.visibleWhen, allValues!)
+    : true;
 
   // Setter — runs sync validation automatically, with confirm interception
-  const contextSetValue = valuesCtx.setValue;
-  const contextSetError = valuesCtx.setError;
-  const requestConfirm = valuesCtx.requestConfirm;
   const setValue = useCallback(
     (newValue: unknown) => {
+      if ("disabled" in definition && definition.disabled) return;
+
       const confirmConfig =
         "confirm" in definition
           ? (definition.confirm as ConfirmConfig | undefined)
@@ -59,14 +80,14 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
 
       const applyValue = () => {
         const syncError = validateSettingValue(definition, newValue);
-        contextSetError(key, syncError);
-        contextSetValue(key, newValue);
+        store.setError(key, syncError);
+        store.setValue(key, newValue);
       };
 
       if (confirmConfig) {
         const dangerous =
           "dangerous" in definition && (definition.dangerous as boolean);
-        requestConfirm({
+        store.requestConfirm({
           key,
           config: confirmConfig,
           dangerous: !!dangerous,
@@ -77,61 +98,46 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
         applyValue();
       }
     },
-    [contextSetValue, contextSetError, key, definition, requestConfirm],
+    [store, key, definition],
   );
 
   // Full validation pipeline: sync + async (for blur).
-  // NOTE: Without valueOverride, validate() reads from the values closure which
-  // may be stale if called synchronously after setValue (React state hasn't
-  // flushed yet). Components should either call validate() on blur (TextInput,
-  // NumberInput) or pass the new value explicitly via valueOverride (Select).
-  // Suppressed when a confirm dialog is pending for this key to avoid showing
-  // validation errors for an uncommitted value.
-  const onValidate = valuesCtx.onValidate;
-  const pendingConfirmKey = valuesCtx.pendingConfirm?.key;
+  // Reads current value from store at call time — fixes stale closure issue.
+  // Suppressed when a confirm dialog is pending for this key.
   const validate = useCallback(
     async (valueOverride?: unknown): Promise<string | null> => {
       // Suppress validation while confirm is pending for this key
-      if (pendingConfirmKey === key) return null;
+      if (store.getState().pendingConfirm?.key === key) return null;
 
-      // Use explicit value when provided (avoids stale-closure after setValue)
+      // Use explicit value when provided, otherwise read fresh from store
       const currentValue =
-        valueOverride !== undefined ? valueOverride : value;
+        valueOverride !== undefined
+          ? valueOverride
+          : store.getState().values[key];
       const syncError = validateSettingValue(definition, currentValue);
       if (syncError) {
-        contextSetError(key, syncError);
+        store.setError(key, syncError);
         return syncError;
       }
 
       // Sync passed — clear any previous error
-      contextSetError(key, null);
+      store.setError(key, null);
 
       // Run async validation if provided
+      const onValidate = store.getOnValidate();
       const asyncValidator = onValidate?.[key];
       if (asyncValidator) {
         const asyncError = await asyncValidator(currentValue);
         if (asyncError) {
-          contextSetError(key, asyncError);
+          store.setError(key, asyncError);
           return asyncError;
         }
       }
 
       return null;
     },
-    [value, definition, key, contextSetError, onValidate, pendingConfirmKey],
+    [store, key, definition],
   );
-
-  // Error
-  const error = valuesCtx.errors[key] ?? null;
-
-  // Visibility — resolved values include defaults, so visibility works
-  // correctly even when the consumer hasn't explicitly set a value.
-  const isVisible = evaluateVisibility(
-    definition.visibleWhen,
-    valuesCtx.values,
-  );
-
-  const saveStatus: SaveStatus = valuesCtx.saveStatus[key] ?? "idle";
 
   return {
     value,

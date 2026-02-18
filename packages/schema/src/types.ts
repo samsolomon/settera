@@ -94,6 +94,7 @@ export interface BooleanSetting {
   default?: boolean;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: never;
 }
@@ -109,6 +110,8 @@ export interface TextSetting {
   inputType?: "text" | "email" | "url" | "password";
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;
@@ -129,6 +132,8 @@ export interface NumberSetting {
   placeholder?: string;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;
@@ -148,6 +153,7 @@ export interface SelectSetting {
   default?: string;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;
@@ -165,6 +171,7 @@ export interface MultiSelectSetting {
   default?: string[];
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;
@@ -183,6 +190,8 @@ export interface DateSetting {
   default?: string;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;
@@ -218,6 +227,7 @@ export interface CompoundSetting {
   };
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
 }
 
@@ -241,6 +251,7 @@ export interface RepeatableSetting {
   default?: unknown[];
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     minItems?: number;
@@ -266,6 +277,7 @@ export interface ActionSetting {
     initialValues?: Record<string, unknown>;
   };
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
 }
 
@@ -290,6 +302,7 @@ export interface CustomSetting {
   default?: unknown;
   confirm?: ConfirmConfig;
   dangerous?: boolean;
+  disabled?: boolean;
   visibleWhen?: VisibilityCondition | VisibilityCondition[];
   validation?: {
     required?: boolean;

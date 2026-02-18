@@ -43,6 +43,10 @@ export function DateInput({ settingKey }: DateInputProps) {
     setIsFocusVisible(true);
   }, []);
 
+  const isDisabled =
+    "disabled" in definition && Boolean(definition.disabled);
+  const isReadOnly =
+    "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
   return (
@@ -54,6 +58,8 @@ export function DateInput({ settingKey }: DateInputProps) {
       onFocus={handleFocus}
       min={minDate}
       max={maxDate}
+      disabled={isDisabled}
+      readOnly={isReadOnly}
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}

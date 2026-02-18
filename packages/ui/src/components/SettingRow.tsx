@@ -79,6 +79,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   if (!isVisible) return null;
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
+  const isDisabled = "disabled" in definition && definition.disabled;
   const showCopyButton = deepLinkCtx && (isHovered || isFocusVisible);
 
   const boxShadow = isHighlighted
@@ -92,6 +93,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
       id={`settera-setting-${settingKey}`}
       role="group"
       aria-label={definition.title}
+      aria-disabled={isDisabled || undefined}
       tabIndex={-1}
       data-setting-key={settingKey}
       onPointerDown={handlePointerDown}
@@ -101,7 +103,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
       onMouseLeave={handleMouseLeave}
       style={{
         padding: "var(--settera-row-padding-x, 0 16px)",
-        opacity: "var(--settera-row-opacity, 1)",
+        opacity: isDisabled ? 0.5 : "var(--settera-row-opacity, 1)",
         outline: "none",
         boxShadow,
         borderRadius: "var(--settera-row-focus-radius, 6px)",

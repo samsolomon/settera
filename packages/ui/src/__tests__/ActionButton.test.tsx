@@ -68,6 +68,14 @@ const schema: SetteraSchema = {
               },
             },
             {
+              key: "disabled-action",
+              title: "Disabled Action",
+              type: "action",
+              buttonLabel: "Disabled",
+              actionType: "callback",
+              disabled: true,
+            },
+            {
               key: "inviteAdvanced",
               title: "Invite Advanced",
               type: "action",
@@ -388,5 +396,21 @@ describe("ActionButton", () => {
     expect(
       screen.queryByRole("dialog", { name: "Invite teammate" }),
     ).toBeNull();
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled button", () => {
+      renderActionButton("disabled-action", { "disabled-action": () => {} });
+      const button = screen.getByRole("button") as HTMLButtonElement;
+      expect(button.disabled).toBe(true);
+    });
+
+    it("does not call handler on click when disabled", async () => {
+      const user = userEvent.setup();
+      const handler = vi.fn();
+      renderActionButton("disabled-action", { "disabled-action": handler });
+      await user.click(screen.getByRole("button"));
+      expect(handler).not.toHaveBeenCalled();
+    });
   });
 });

@@ -57,6 +57,10 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       ? definition.validation.max
       : undefined;
 
+  const isDisabled =
+    "disabled" in definition && Boolean(definition.disabled);
+  const isReadOnly =
+    "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
   return (
@@ -66,6 +70,8 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       placeholder={placeholder}
       min={min}
       max={max}
+      disabled={isDisabled}
+      readOnly={isReadOnly}
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}

@@ -40,6 +40,13 @@ const schema: SetteraSchema = {
                 message: "Are you sure you want to toggle?",
               },
             },
+            {
+              key: "disabled-toggle",
+              title: "Disabled Toggle",
+              type: "boolean",
+              disabled: true,
+              default: false,
+            },
           ],
         },
       ],
@@ -155,5 +162,21 @@ describe("BooleanSwitch", () => {
     // Click confirm
     await user.click(screen.getByText("Confirm"));
     expect(onChange).toHaveBeenCalledWith("confirmed", true);
+  });
+
+  describe("disabled", () => {
+    it("renders a disabled switch", () => {
+      renderSwitch("disabled-toggle", { "disabled-toggle": false });
+      const switchEl = screen.getByRole("switch") as HTMLButtonElement;
+      expect(switchEl.disabled).toBe(true);
+    });
+
+    it("does not toggle on click when disabled", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      renderSwitch("disabled-toggle", { "disabled-toggle": false }, onChange);
+      await user.click(screen.getByRole("switch"));
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 });

@@ -77,6 +77,16 @@ const schema: SetteraSchema = {
               ],
               dangerous: true,
             },
+            {
+              key: "disabled-multi",
+              title: "Disabled Multi",
+              type: "multiselect",
+              options: [
+                { value: "a", label: "A" },
+                { value: "b", label: "B" },
+              ],
+              disabled: true,
+            },
           ],
         },
       ],
@@ -259,5 +269,23 @@ describe("MultiSelect", () => {
       expect(asyncValidator).toHaveBeenCalledWith(["email", "sms"]);
     });
     expect(screen.getByRole("alert").textContent).toBe("Too many selected");
+  });
+
+  describe("disabled", () => {
+    it("renders disabled checkboxes", () => {
+      renderMultiSelect("disabled-multi", { "disabled-multi": [] });
+      const checkboxes = screen.getAllByRole("checkbox");
+      for (const checkbox of checkboxes) {
+        expect((checkbox as HTMLButtonElement).disabled).toBe(true);
+      }
+    });
+
+    it("does not call onChange when disabled", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      renderMultiSelect("disabled-multi", { "disabled-multi": [] }, onChange);
+      await user.click(screen.getByText("A"));
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 });

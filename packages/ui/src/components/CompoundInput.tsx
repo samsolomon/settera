@@ -29,6 +29,8 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
     return null;
   }
 
+  const isDisabled = Boolean(definition.disabled);
+
   const compoundValue = useMemo(
     () => (isObjectRecord(value) ? value : {}),
     [value],
@@ -73,13 +75,15 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
           <Dialog.Trigger asChild>
             <button
               type="button"
+              disabled={isDisabled}
               style={{
                 fontSize: "var(--settera-button-font-size, 13px)",
                 padding: "6px 10px",
                 borderRadius: "var(--settera-button-border-radius, 6px)",
                 border: "var(--settera-button-border, 1px solid #d1d5db)",
                 backgroundColor: "var(--settera-button-bg, white)",
-                cursor: "pointer",
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                opacity: isDisabled ? 0.6 : 1,
               }}
             >
               Edit {definition.title}
@@ -137,6 +141,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
                 fields={definition.fields}
                 getFieldValue={getFieldValue}
                 updateField={updateField}
+                parentDisabled={isDisabled}
               />
               <div
                 style={{
@@ -181,6 +186,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
         <button
           type="button"
           onClick={() => setIsPageOpen((open) => !open)}
+          disabled={isDisabled}
           aria-expanded={isPageOpen}
           aria-controls={`compound-page-panel-${settingKey}`}
           style={{
@@ -190,7 +196,8 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
             borderRadius: "var(--settera-button-border-radius, 6px)",
             border: "var(--settera-button-border, 1px solid #d1d5db)",
             backgroundColor: "var(--settera-button-bg, white)",
-            cursor: "pointer",
+            cursor: isDisabled ? "not-allowed" : "pointer",
+            opacity: isDisabled ? 0.6 : 1,
           }}
         >
           {isPageOpen ? "Close" : "Open"} {definition.title}
@@ -236,6 +243,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
         fields={definition.fields}
         getFieldValue={getFieldValue}
         updateField={updateField}
+        parentDisabled={isDisabled}
       />
     </div>
   );
@@ -246,11 +254,13 @@ function CompoundFields({
   fields,
   getFieldValue,
   updateField,
+  parentDisabled,
 }: {
   settingKey: string;
   fields: CompoundFieldDefinition[];
   getFieldValue: (field: CompoundField) => unknown;
   updateField: (fieldKey: string, nextFieldValue: unknown) => void;
+  parentDisabled?: boolean;
 }) {
   return (
     <>
@@ -271,7 +281,7 @@ function CompoundFields({
             }}
           >
             {field.title}
-            {renderFieldControl(field, fieldId, fieldValue, updateField)}
+            {renderFieldControl(field, fieldId, fieldValue, updateField, parentDisabled)}
           </label>
         );
       })}
@@ -284,10 +294,15 @@ function renderFieldControl(
   fieldId: string,
   fieldValue: unknown,
   onChange: (fieldKey: string, value: unknown) => void,
+  parentDisabled?: boolean,
 ) {
+  const effectiveDisabled = parentDisabled || Boolean(field.disabled);
+  const effectiveReadOnly =
+    "readonly" in field && Boolean(field.readonly);
+
   switch (field.type) {
     case "boolean":
-      return renderBooleanField(field, fieldId, fieldValue, onChange);
+      return renderBooleanField(field, fieldId, fieldValue, onChange, effectiveDisabled);
     case "text":
       return (
         <CompoundTextField
@@ -295,6 +310,8 @@ function renderFieldControl(
           fieldId={fieldId}
           fieldValue={fieldValue}
           onChange={onChange}
+          disabled={effectiveDisabled}
+          readOnly={effectiveReadOnly}
         />
       );
     case "number":
@@ -304,6 +321,8 @@ function renderFieldControl(
           fieldId={fieldId}
           fieldValue={fieldValue}
           onChange={onChange}
+          disabled={effectiveDisabled}
+          readOnly={effectiveReadOnly}
         />
       );
     case "date":
@@ -313,6 +332,8 @@ function renderFieldControl(
           fieldId={fieldId}
           fieldValue={fieldValue}
           onChange={onChange}
+          disabled={effectiveDisabled}
+          readOnly={effectiveReadOnly}
         />
       );
     case "select":
@@ -322,10 +343,11 @@ function renderFieldControl(
           fieldId={fieldId}
           fieldValue={fieldValue}
           onChange={onChange}
+          disabled={effectiveDisabled}
         />
       );
     case "multiselect":
-      return renderMultiSelectField(field, fieldId, fieldValue, onChange);
+      return renderMultiSelectField(field, fieldId, fieldValue, onChange, effectiveDisabled);
     default:
       return null;
   }
@@ -336,11 +358,15 @@ function CompoundTextField({
   fieldId,
   fieldValue,
   onChange,
+  disabled,
+  readOnly,
 }: {
   field: Extract<CompoundField, { type: "text" }>;
   fieldId: string;
   fieldValue: unknown;
   onChange: (fieldKey: string, value: unknown) => void;
+  disabled?: boolean;
+  readOnly?: boolean;
 }) {
   const committed = typeof fieldValue === "string" ? fieldValue : "";
 
@@ -360,6 +386,8 @@ function CompoundTextField({
       id={fieldId}
       type={field.inputType ?? "text"}
       {...inputProps}
+      disabled={disabled}
+      readOnly={readOnly}
       style={{
         ...inputStyles,
         boxShadow: isFocused
@@ -375,11 +403,15 @@ function CompoundNumberField({
   fieldId,
   fieldValue,
   onChange,
+  disabled,
+  readOnly,
 }: {
   field: Extract<CompoundField, { type: "number" }>;
   fieldId: string;
   fieldValue: unknown;
   onChange: (fieldKey: string, value: unknown) => void;
+  disabled?: boolean;
+  readOnly?: boolean;
 }) {
   const committed =
     fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "";
@@ -408,6 +440,8 @@ function CompoundNumberField({
       id={fieldId}
       type="number"
       {...inputProps}
+      disabled={disabled}
+      readOnly={readOnly}
       style={{
         ...inputStyles,
         boxShadow: isFocused
@@ -423,11 +457,15 @@ function CompoundDateField({
   fieldId,
   fieldValue,
   onChange,
+  disabled,
+  readOnly,
 }: {
   field: Extract<CompoundField, { type: "date" }>;
   fieldId: string;
   fieldValue: unknown;
   onChange: (fieldKey: string, value: unknown) => void;
+  disabled?: boolean;
+  readOnly?: boolean;
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -439,6 +477,8 @@ function CompoundDateField({
       onChange={(e) => onChange(field.key, e.target.value)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
+      disabled={disabled}
+      readOnly={readOnly}
       style={{
         ...inputStyles,
         boxShadow: isFocused
@@ -454,11 +494,13 @@ function CompoundSelectField({
   fieldId,
   fieldValue,
   onChange,
+  disabled,
 }: {
   field: SelectSetting;
   fieldId: string;
   fieldValue: unknown;
   onChange: (fieldKey: string, value: unknown) => void;
+  disabled?: boolean;
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -469,6 +511,7 @@ function CompoundSelectField({
       onChange={(e) => onChange(field.key, e.target.value)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
+      disabled={disabled}
       style={{
         ...inputStyles,
         boxShadow: isFocused
@@ -491,6 +534,7 @@ function renderBooleanField(
   fieldId: string,
   fieldValue: unknown,
   onChange: (fieldKey: string, value: unknown) => void,
+  disabled?: boolean,
 ) {
   return (
     <input
@@ -498,6 +542,7 @@ function renderBooleanField(
       type="checkbox"
       checked={Boolean(fieldValue)}
       onChange={(e) => onChange(field.key, e.target.checked)}
+      disabled={disabled}
       style={{
         width: "var(--settera-checkbox-size, 16px)",
         height: "var(--settera-checkbox-size, 16px)",
@@ -511,6 +556,7 @@ function renderMultiSelectField(
   fieldId: string,
   fieldValue: unknown,
   onChange: (fieldKey: string, value: unknown) => void,
+  disabled?: boolean,
 ) {
   const selected = Array.isArray(fieldValue)
     ? fieldValue.filter((item): item is string => typeof item === "string")
@@ -531,6 +577,7 @@ function renderMultiSelectField(
             <input
               type="checkbox"
               checked={checked}
+              disabled={disabled}
               onChange={(e) => {
                 const next = e.target.checked
                   ? [...selected, opt.value]

@@ -24,6 +24,8 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
+  const isDisabled =
+    "disabled" in definition && Boolean(definition.disabled);
   const buttonLabel =
     definition.type === "action" ? definition.buttonLabel : "Action";
 
@@ -68,17 +70,17 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
           onAction?.();
         }}
         {...focusVisibleProps}
-        disabled={!onAction || isLoading || (isModalAction && !hasModalConfig)}
+        disabled={isDisabled || !onAction || isLoading || (isModalAction && !hasModalConfig)}
         aria-label={definition.title}
         aria-busy={isLoading}
         isDangerous={isDangerous}
         isFocusVisible={isFocusVisible}
         style={{
           cursor:
-            !onAction || isLoading || (isModalAction && !hasModalConfig)
+            isDisabled || !onAction || isLoading || (isModalAction && !hasModalConfig)
               ? "not-allowed"
               : "pointer",
-          opacity: isLoading ? 0.7 : 1,
+          opacity: isDisabled || isLoading ? 0.7 : 1,
         }}
       >
         {isLoading ? "Loading…" : buttonLabel}

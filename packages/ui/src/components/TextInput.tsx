@@ -40,6 +40,10 @@ export function TextInput({ settingKey }: TextInputProps) {
       ? definition.validation.maxLength
       : undefined;
 
+  const isDisabled =
+    "disabled" in definition && Boolean(definition.disabled);
+  const isReadOnly =
+    "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
   return (
@@ -48,6 +52,8 @@ export function TextInput({ settingKey }: TextInputProps) {
       {...inputProps}
       placeholder={placeholder}
       maxLength={maxLength}
+      disabled={isDisabled}
+      readOnly={isReadOnly}
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}

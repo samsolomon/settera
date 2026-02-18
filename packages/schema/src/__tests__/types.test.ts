@@ -150,6 +150,38 @@ describe("ModalActionFieldSetting", () => {
   });
 });
 
+describe("disabled field", () => {
+  it("exists on all 10 setting types", () => {
+    expectTypeOf<BooleanSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<TextSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<NumberSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<SelectSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<MultiSelectSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<DateSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<CompoundSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<RepeatableSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<ActionSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<CustomSetting["disabled"]>().toEqualTypeOf<boolean | undefined>();
+  });
+});
+
+describe("readonly field", () => {
+  it("exists on TextSetting, NumberSetting, DateSetting", () => {
+    expectTypeOf<TextSetting["readonly"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<NumberSetting["readonly"]>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<DateSetting["readonly"]>().toEqualTypeOf<boolean | undefined>();
+  });
+
+  it("does not exist on BooleanSetting, SelectSetting, ActionSetting", () => {
+    type BooleanHasReadonly = "readonly" extends keyof BooleanSetting ? true : false;
+    type SelectHasReadonly = "readonly" extends keyof SelectSetting ? true : false;
+    type ActionHasReadonly = "readonly" extends keyof ActionSetting ? true : false;
+    expectTypeOf<BooleanHasReadonly>().toEqualTypeOf<false>();
+    expectTypeOf<SelectHasReadonly>().toEqualTypeOf<false>();
+    expectTypeOf<ActionHasReadonly>().toEqualTypeOf<false>();
+  });
+});
+
 describe("VisibilityValue", () => {
   it("accepts string, number, boolean, and null", () => {
     expectTypeOf<string>().toMatchTypeOf<VisibilityValue>();

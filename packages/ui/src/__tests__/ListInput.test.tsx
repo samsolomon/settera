@@ -43,6 +43,23 @@ const schema: SetteraSchema = {
                 },
               ],
             },
+            {
+              key: "disabled-tags",
+              title: "Disabled Tags",
+              type: "repeatable",
+              itemType: "text",
+              disabled: true,
+            },
+            {
+              key: "disabled-addresses",
+              title: "Disabled Addresses",
+              type: "repeatable",
+              itemType: "compound",
+              disabled: true,
+              itemFields: [
+                { key: "street", title: "Street", type: "text" },
+              ],
+            },
           ],
         },
       ],
@@ -237,5 +254,45 @@ describe("RepeatableInput", () => {
       { street: "Two", primary: true },
       { street: "One", primary: false },
     ]);
+  });
+
+  describe("disabled", () => {
+    it("disables text item inputs and buttons", () => {
+      renderRepeatableInput("disabled-tags", {
+        "disabled-tags": ["alpha", "beta"],
+      });
+      const inputs = screen.getAllByLabelText(
+        /List item/i,
+      ) as HTMLInputElement[];
+      for (const input of inputs) {
+        expect(input.disabled).toBe(true);
+      }
+      const removeButtons = screen.getAllByLabelText(
+        /Remove item/i,
+      ) as HTMLButtonElement[];
+      for (const btn of removeButtons) {
+        expect(btn.disabled).toBe(true);
+      }
+    });
+
+    it("disables add item button", () => {
+      renderRepeatableInput("disabled-tags", { "disabled-tags": ["alpha"] });
+      const addButton = screen.getByRole("button", {
+        name: "Add item to Disabled Tags",
+      }) as HTMLButtonElement;
+      expect(addButton.disabled).toBe(true);
+    });
+
+    it("disables compound item fields and buttons", () => {
+      renderRepeatableInput("disabled-addresses", {
+        "disabled-addresses": [{ street: "123 Main" }],
+      });
+      const streetInput = screen.getByLabelText("Street 1") as HTMLInputElement;
+      expect(streetInput.disabled).toBe(true);
+      const removeBtn = screen.getByLabelText(
+        "Remove item 1",
+      ) as HTMLButtonElement;
+      expect(removeBtn.disabled).toBe(true);
+    });
   });
 });

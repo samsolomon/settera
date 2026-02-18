@@ -69,6 +69,13 @@ const schema: SetteraSchema = {
               type: "boolean",
               default: false,
             },
+            {
+              key: "disabledSetting",
+              title: "Disabled Setting",
+              type: "boolean",
+              disabled: true,
+              default: false,
+            },
           ],
         },
       ],
@@ -200,6 +207,26 @@ describe("SettingRow", () => {
     expect(screen.queryByText(/ⓘ/)).toBeNull();
   });
 
+  // ---- Disabled state tests ----
+
+  it("applies reduced opacity when disabled", () => {
+    renderRow("disabledSetting", { disabledSetting: false });
+    const group = screen.getByRole("group", { name: "Disabled Setting" });
+    expect(group.style.opacity).toBe("0.5");
+  });
+
+  it("sets aria-disabled on group when disabled", () => {
+    renderRow("disabledSetting", { disabledSetting: false });
+    const group = screen.getByRole("group", { name: "Disabled Setting" });
+    expect(group.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("does not set aria-disabled on non-disabled settings", () => {
+    renderRow("toggle", { toggle: false });
+    const group = screen.getByRole("group", { name: "Auto Save" });
+    expect(group.getAttribute("aria-disabled")).toBeNull();
+  });
+
   it("shows copy feedback only when clipboard write succeeds", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
@@ -282,9 +309,9 @@ describe("SettingRow", () => {
 // ---- Save status indicator ----
 
 function SetValueButton() {
-  const ctx = React.useContext(SetteraValuesContext);
+  const store = React.useContext(SetteraValuesContext);
   return (
-    <button onClick={() => ctx!.setValue("toggle", true)}>save-setting</button>
+    <button onClick={() => store!.setValue("toggle", true)}>save-setting</button>
   );
 }
 
