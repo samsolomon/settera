@@ -16,6 +16,7 @@ import {
 } from "@settera/react";
 import {
   SetteraLayout,
+  SetteraNavigationProvider,
   useSetteraNavigation,
   type SetteraCustomPageProps,
   type SetteraCustomSettingProps,
@@ -450,7 +451,12 @@ function HeadlessActionButton({
     setIsModalOpen(false);
   };
 
-  if (isModal && isModalOpen && definition.type === "action" && definition.modal) {
+  if (
+    isModal &&
+    isModalOpen &&
+    definition.type === "action" &&
+    definition.modal
+  ) {
     const modal = definition.modal;
     return (
       <div
@@ -463,12 +469,16 @@ function HeadlessActionButton({
         }}
       >
         {modal.title && (
-          <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}>
+          <div
+            style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}
+          >
             {modal.title}
           </div>
         )}
         {modal.description && (
-          <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "12px" }}>
+          <div
+            style={{ fontSize: "12px", color: "#64748b", marginBottom: "12px" }}
+          >
             {modal.description}
           </div>
         )}
@@ -935,19 +945,17 @@ function HeadlessView({
                     />
                   )}
 
-                  {setting.type === "custom" && (() => {
-                    const Custom = customSettings?.[setting.renderer];
-                    return Custom ? (
-                      <Custom
-                        settingKey={setting.key}
-                        definition={setting}
-                      />
-                    ) : (
-                      <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-                        Missing renderer &ldquo;{setting.renderer}&rdquo;
-                      </span>
-                    );
-                  })()}
+                  {setting.type === "custom" &&
+                    (() => {
+                      const Custom = customSettings?.[setting.renderer];
+                      return Custom ? (
+                        <Custom settingKey={setting.key} definition={setting} />
+                      ) : (
+                        <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+                          Missing renderer &ldquo;{setting.renderer}&rdquo;
+                        </span>
+                      );
+                    })()}
                 </div>
               </div>
             );
@@ -1339,9 +1347,11 @@ export function App() {
             />
           )}
           {mode === "headless" && (
-            <HeadlessView
-              customSettings={{ signatureCard: SignatureCardSetting }}
-            />
+            <SetteraNavigationProvider>
+              <HeadlessView
+                customSettings={{ signatureCard: SignatureCardSetting }}
+              />
+            </SetteraNavigationProvider>
           )}
           {mode === "schema" && <SchemaView />}
         </Settera>
