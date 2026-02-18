@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { SetteraSearch } from "../components/SetteraSearch.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -26,9 +27,11 @@ const schema: SetteraSchema = {
 function renderSearch() {
   return render(
     <SetteraProvider schema={schema}>
-      <SetteraRenderer values={{}} onChange={() => {}}>
-        <SetteraSearch />
-      </SetteraRenderer>
+      <SetteraNavigationProvider>
+        <SetteraRenderer values={{}} onChange={() => {}}>
+          <SetteraSearch />
+        </SetteraRenderer>
+      </SetteraNavigationProvider>
     </SetteraProvider>,
   );
 }

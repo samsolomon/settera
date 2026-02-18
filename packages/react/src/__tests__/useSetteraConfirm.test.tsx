@@ -47,6 +47,18 @@ const schema: SetteraSchema = {
               type: "boolean",
               default: false,
             },
+            {
+              key: "destructive",
+              title: "Destructive",
+              type: "boolean",
+              default: false,
+              dangerous: true,
+              confirm: {
+                title: "Type DELETE to confirm",
+                message: "This action is irreversible.",
+                requireText: "DELETE",
+              },
+            },
           ],
         },
       ],
@@ -74,6 +86,9 @@ function ConfirmConsumer() {
       <span data-testid="pending-cancel-label">
         {pendingConfirm?.config.cancelLabel ?? ""}
       </span>
+      <span data-testid="pending-require-text">
+        {pendingConfirm?.config.requireText ?? ""}
+      </span>
       <button
         data-testid="resolve-true"
         onClick={() => resolveConfirm(true)}
@@ -85,6 +100,18 @@ function ConfirmConsumer() {
         onClick={() => resolveConfirm(false)}
       >
         cancel
+      </button>
+      <button
+        data-testid="resolve-with-text"
+        onClick={() => resolveConfirm(true, "DELETE")}
+      >
+        confirm-with-text
+      </button>
+      <button
+        data-testid="resolve-wrong-text"
+        onClick={() => resolveConfirm(true, "wrong")}
+      >
+        confirm-wrong-text
       </button>
     </div>
   );
@@ -109,6 +136,7 @@ function renderWithConfirm(
         <SettingTrigger settingKey="confirmed" />
         <SettingTrigger settingKey="confirmedB" />
         <SettingTrigger settingKey="normal" />
+        <SettingTrigger settingKey="destructive" />
       </SetteraRenderer>
     </SetteraProvider>,
   );
@@ -229,5 +257,70 @@ describe("useSetteraConfirm", () => {
         </SetteraProvider>,
       );
     }).toThrow("useSetteraConfirm must be used within a SetteraRenderer");
+  });
+
+  // ---- requireText enforcement ----
+
+  it("resolves normally when no requireText is set", () => {
+    const onChange = vi.fn();
+    renderWithConfirm(onChange);
+    act(() => screen.getByTestId("trigger-confirmed").click());
+    // confirmed has no requireText — resolve with true (no text) should work
+    act(() => screen.getByTestId("resolve-true").click());
+    expect(onChange).toHaveBeenCalledWith("confirmed", true);
+    expect(screen.getByTestId("pending-key").textContent).toBe("none");
+  });
+
+  it("exposes requireText from confirm config", () => {
+    renderWithConfirm();
+    act(() => screen.getByTestId("trigger-destructive").click());
+    expect(screen.getByTestId("pending-require-text").textContent).toBe(
+      "DELETE",
+    );
+  });
+
+  it("resolves when text matches requireText", () => {
+    const onChange = vi.fn();
+    renderWithConfirm(onChange);
+    act(() => screen.getByTestId("trigger-destructive").click());
+    expect(screen.getByTestId("pending-key").textContent).toBe("destructive");
+
+    act(() => screen.getByTestId("resolve-with-text").click());
+    expect(onChange).toHaveBeenCalledWith("destructive", true);
+    expect(screen.getByTestId("pending-key").textContent).toBe("none");
+  });
+
+  it("stays pending when text does not match requireText", () => {
+    const onChange = vi.fn();
+    renderWithConfirm(onChange);
+    act(() => screen.getByTestId("trigger-destructive").click());
+    expect(screen.getByTestId("pending-key").textContent).toBe("destructive");
+
+    act(() => screen.getByTestId("resolve-wrong-text").click());
+    // Should still be pending — wrong text
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByTestId("pending-key").textContent).toBe("destructive");
+  });
+
+  it("stays pending when text is missing but requireText is set", () => {
+    const onChange = vi.fn();
+    renderWithConfirm(onChange);
+    act(() => screen.getByTestId("trigger-destructive").click());
+
+    // resolve(true) with no text — should not resolve when requireText exists
+    act(() => screen.getByTestId("resolve-true").click());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByTestId("pending-key").textContent).toBe("destructive");
+  });
+
+  it("cancel always works regardless of requireText", () => {
+    const onChange = vi.fn();
+    renderWithConfirm(onChange);
+    act(() => screen.getByTestId("trigger-destructive").click());
+    expect(screen.getByTestId("pending-key").textContent).toBe("destructive");
+
+    act(() => screen.getByTestId("resolve-false").click());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByTestId("pending-key").textContent).toBe("none");
   });
 });

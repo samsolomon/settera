@@ -21,26 +21,6 @@ export interface SetteraSchemaContextValue {
 export const SetteraSchemaContext =
   createContext<SetteraSchemaContextValue | null>(null);
 
-// ---- Navigation Context (re-renders on page change) ----
-
-export interface SetteraNavigationContextValue {
-  activePage: string;
-  setActivePage: (key: string) => void;
-  expandedGroups: Set<string>;
-  toggleGroup: (key: string) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  matchingSettingKeys: Set<string>;
-  matchingPageKeys: Set<string>;
-  highlightedSettingKey: string | null;
-  setHighlightedSettingKey: (key: string | null) => void;
-  requestFocusContent: () => void;
-  registerFocusContentHandler: (handler: () => void) => () => void;
-}
-
-export const SetteraNavigationContext =
-  createContext<SetteraNavigationContextValue | null>(null);
-
 // ---- Values Context (now holds a stable store reference) ----
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";

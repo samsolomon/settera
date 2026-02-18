@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { SetteraSidebar } from "../components/SetteraSidebar.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -86,9 +87,11 @@ const schema: SetteraSchema = {
 function renderSidebar() {
   return render(
     <SetteraProvider schema={schema}>
-      <SetteraRenderer values={{}} onChange={() => {}}>
-        <SetteraSidebar />
-      </SetteraRenderer>
+      <SetteraNavigationProvider>
+        <SetteraRenderer values={{}} onChange={() => {}}>
+          <SetteraSidebar />
+        </SetteraRenderer>
+      </SetteraNavigationProvider>
     </SetteraProvider>,
   );
 }

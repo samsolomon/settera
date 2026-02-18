@@ -27,8 +27,8 @@ export function ConfirmDialog() {
   );
 
   const handleConfirm = useCallback(() => {
-    resolveConfirm(true);
-  }, [resolveConfirm]);
+    resolveConfirm(true, inputValue);
+  }, [resolveConfirm, inputValue]);
 
   const handleCancel = useCallback(() => {
     resolveConfirm(false);

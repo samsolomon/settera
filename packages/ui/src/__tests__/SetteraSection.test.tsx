@@ -2,11 +2,9 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  SetteraProvider,
-  SetteraRenderer,
-  useSetteraSearch,
-} from "@settera/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { SetteraSection } from "../components/SetteraSection.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -73,9 +71,11 @@ function renderSection(
 ) {
   return render(
     <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SetteraSection pageKey={pageKey} sectionKey={sectionKey} />
-      </SetteraRenderer>
+      <SetteraNavigationProvider>
+        <SetteraRenderer values={values} onChange={() => {}}>
+          <SetteraSection pageKey={pageKey} sectionKey={sectionKey} />
+        </SetteraRenderer>
+      </SetteraNavigationProvider>
     </SetteraProvider>,
   );
 }
@@ -128,10 +128,12 @@ describe("SetteraSection", () => {
 
     render(
       <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{ autoSave: true }} onChange={() => {}}>
-          <SearchTrigger />
-          <SetteraSection pageKey="general" sectionKey="behavior" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{ autoSave: true }} onChange={() => {}}>
+            <SearchTrigger />
+            <SetteraSection pageKey="general" sectionKey="behavior" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 
@@ -156,10 +158,12 @@ describe("SetteraSection", () => {
 
     render(
       <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SearchTrigger />
-          <SetteraSection pageKey="general" sectionKey="behavior" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SearchTrigger />
+            <SetteraSection pageKey="general" sectionKey="behavior" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 
@@ -181,10 +185,12 @@ describe("SetteraSection", () => {
 
     render(
       <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SearchTrigger />
-          <SetteraSection pageKey="general" sectionKey="withSubs" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SearchTrigger />
+            <SetteraSection pageKey="general" sectionKey="withSubs" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 

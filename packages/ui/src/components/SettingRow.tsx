@@ -5,7 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useSetteraSetting, useSetteraNavigation } from "@settera/react";
+import { useSetteraSetting } from "@settera/react";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 

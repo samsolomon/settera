@@ -6,8 +6,9 @@ import { useStoreSelector } from "./useStoreSelector.js";
 export interface UseSetteraConfirmResult {
   /** The currently pending confirm dialog, or null if none */
   pendingConfirm: PendingConfirm | null;
-  /** Resolve the pending confirm: true = confirm, false = cancel */
-  resolveConfirm: (confirmed: boolean) => void;
+  /** Resolve the pending confirm: true = confirm, false = cancel.
+   *  When config.requireText is set, pass the user's typed text as the second argument. */
+  resolveConfirm: (confirmed: boolean, text?: string) => void;
 }
 
 /**

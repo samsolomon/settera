@@ -91,6 +91,13 @@ const schema: SetteraSchema = {
                 required: true,
               },
             },
+            {
+              key: "readonlyField",
+              title: "Readonly Field",
+              type: "text",
+              readonly: true,
+              default: "locked",
+            },
           ],
         },
       ],
@@ -438,5 +445,57 @@ describe("useSetteraSetting", () => {
     await user.click(screen.getByText("toggle"));
     // Should apply immediately since no confirm
     expect(onChange).toHaveBeenCalledWith("autoSave", false);
+  });
+
+  // ---- Readonly tests ----
+
+  it("returns isReadonly true for readonly setting", () => {
+    function ReadonlyDisplay({ settingKey }: { settingKey: string }) {
+      const { isReadonly } = useSetteraSetting(settingKey);
+      return (
+        <span data-testid={`readonly-${settingKey}`}>
+          {String(isReadonly)}
+        </span>
+      );
+    }
+
+    renderWithProviders(
+      {},
+      () => {},
+      <ReadonlyDisplay settingKey="readonlyField" />,
+    );
+    expect(screen.getByTestId("readonly-readonlyField").textContent).toBe(
+      "true",
+    );
+  });
+
+  it("returns isReadonly false for non-readonly setting", () => {
+    function ReadonlyDisplay({ settingKey }: { settingKey: string }) {
+      const { isReadonly } = useSetteraSetting(settingKey);
+      return (
+        <span data-testid={`readonly-${settingKey}`}>
+          {String(isReadonly)}
+        </span>
+      );
+    }
+
+    renderWithProviders(
+      {},
+      () => {},
+      <ReadonlyDisplay settingKey="autoSave" />,
+    );
+    expect(screen.getByTestId("readonly-autoSave").textContent).toBe("false");
+  });
+
+  it("setValue is a no-op when setting is readonly", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithProviders(
+      { readonlyField: "locked" },
+      onChange,
+      <SettingDisplay settingKey="readonlyField" />,
+    );
+    await user.click(screen.getByText("toggle"));
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

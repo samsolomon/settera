@@ -2,11 +2,9 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  SetteraProvider,
-  SetteraRenderer,
-  useSetteraSearch,
-} from "@settera/react";
+import { SetteraProvider, SetteraRenderer } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { SetteraPage } from "../components/SetteraPage.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -65,9 +63,11 @@ const schema: SetteraSchema = {
 function renderPage(pageKey?: string, values: Record<string, unknown> = {}) {
   return render(
     <SetteraProvider schema={schema}>
-      <SetteraRenderer values={values} onChange={() => {}}>
-        <SetteraPage pageKey={pageKey} />
-      </SetteraRenderer>
+      <SetteraNavigationProvider>
+        <SetteraRenderer values={values} onChange={() => {}}>
+          <SetteraPage pageKey={pageKey} />
+        </SetteraRenderer>
+      </SetteraNavigationProvider>
     </SetteraProvider>,
   );
 }
@@ -119,10 +119,12 @@ describe("SetteraPage", () => {
 
     render(
       <SetteraProvider schema={schema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SearchTrigger />
-          <SetteraPage pageKey="general" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SearchTrigger />
+            <SetteraPage pageKey="general" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 
@@ -158,9 +160,11 @@ describe("SetteraPage", () => {
 
     render(
       <SetteraProvider schema={schemaWithDesc}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraPage pageKey="about" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SetteraPage pageKey="about" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 
@@ -194,16 +198,18 @@ describe("SetteraPage", () => {
 
     render(
       <SetteraProvider schema={customSchema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraPage
-            pageKey="users"
-            customPages={{
-              usersPage: ({ page }) => (
-                <div data-testid="users-page">Custom: {page.title}</div>
-              ),
-            }}
-          />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SetteraPage
+              pageKey="users"
+              customPages={{
+                usersPage: ({ page }) => (
+                  <div data-testid="users-page">Custom: {page.title}</div>
+                ),
+              }}
+            />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 
@@ -227,9 +233,11 @@ describe("SetteraPage", () => {
 
     render(
       <SetteraProvider schema={customSchema}>
-        <SetteraRenderer values={{}} onChange={() => {}}>
-          <SetteraPage pageKey="users" />
-        </SetteraRenderer>
+        <SetteraNavigationProvider>
+          <SetteraRenderer values={{}} onChange={() => {}}>
+            <SetteraPage pageKey="users" />
+          </SetteraRenderer>
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateSettingValue } from "../validation.js";
+import { validateSettingValue, validateConfirmText } from "../validation.js";
 import type { SettingDefinition } from "@settera/schema";
 
 // ---- Helpers ----
@@ -512,6 +512,131 @@ describe("validateSettingValue — number step", () => {
         7,
       ),
     ).toBe("Use increments of 5");
+  });
+});
+
+// ---- Compound Validation ----
+
+function compoundDef(validation?: Record<string, unknown>): SettingDefinition {
+  return {
+    key: "c",
+    title: "Compound",
+    type: "compound",
+    displayStyle: "inline",
+    fields: [
+      { key: "email", title: "Email", type: "text" },
+      { key: "notify", title: "Notify", type: "boolean" },
+      { key: "phone", title: "Phone", type: "text" },
+    ],
+    validation,
+  } as SettingDefinition;
+}
+
+describe("validateSettingValue — compound", () => {
+  it("returns null when no validation rules", () => {
+    expect(validateSettingValue(compoundDef(), { email: "a@b.com" })).toBeNull();
+  });
+
+  it("returns null when validation has no rules array", () => {
+    expect(validateSettingValue(compoundDef({}), { email: "a@b.com" })).toBeNull();
+  });
+
+  it("returns null when rules array is empty", () => {
+    expect(
+      validateSettingValue(compoundDef({ rules: [] }), { email: "a@b.com" }),
+    ).toBeNull();
+  });
+
+  it("returns error when rule is triggered (when truthy, require falsy)", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required when notifications are on" },
+      ],
+    });
+    expect(
+      validateSettingValue(def, { notify: true, email: "" }),
+    ).toBe("Email required when notifications are on");
+  });
+
+  it("returns null when rule condition is not triggered (when falsy)", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required when notifications are on" },
+      ],
+    });
+    expect(
+      validateSettingValue(def, { notify: false, email: "" }),
+    ).toBeNull();
+  });
+
+  it("returns null when rule condition is triggered but requirement is met", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required when notifications are on" },
+      ],
+    });
+    expect(
+      validateSettingValue(def, { notify: true, email: "a@b.com" }),
+    ).toBeNull();
+  });
+
+  it("returns first triggered error from multiple rules", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required" },
+        { when: "notify", require: "phone", message: "Phone required" },
+      ],
+    });
+    expect(
+      validateSettingValue(def, { notify: true, email: "", phone: "" }),
+    ).toBe("Email required");
+  });
+
+  it("returns second rule error when first rule passes", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required" },
+        { when: "notify", require: "phone", message: "Phone required" },
+      ],
+    });
+    expect(
+      validateSettingValue(def, { notify: true, email: "a@b.com", phone: "" }),
+    ).toBe("Phone required");
+  });
+
+  it("treats non-object value as empty record", () => {
+    const def = compoundDef({
+      rules: [
+        { when: "notify", require: "email", message: "Email required" },
+      ],
+    });
+    expect(validateSettingValue(def, "not-an-object")).toBeNull();
+    expect(validateSettingValue(def, null)).toBeNull();
+    expect(validateSettingValue(def, undefined)).toBeNull();
+  });
+});
+
+// ---- validateConfirmText ----
+
+describe("validateConfirmText", () => {
+  it("returns true when requireText is undefined", () => {
+    expect(validateConfirmText(undefined, "anything")).toBe(true);
+  });
+
+  it("returns true when requireText is empty string", () => {
+    expect(validateConfirmText("", "anything")).toBe(true);
+  });
+
+  it("returns true when input matches requireText exactly", () => {
+    expect(validateConfirmText("DELETE", "DELETE")).toBe(true);
+  });
+
+  it("returns false when input does not match requireText", () => {
+    expect(validateConfirmText("DELETE", "delete")).toBe(false);
+  });
+
+  it("returns false when input is empty but requireText is set", () => {
+    expect(validateConfirmText("DELETE", "")).toBe(false);
   });
 });
 

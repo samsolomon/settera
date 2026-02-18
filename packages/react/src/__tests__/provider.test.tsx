@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SetteraProvider } from "../provider.js";
-import { SetteraSchemaContext, SetteraNavigationContext } from "../context.js";
+import { SetteraSchemaContext } from "../context.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const minimalSchema: SetteraSchema = {
@@ -45,21 +45,6 @@ function SchemaConsumer() {
   );
 }
 
-function NavConsumer() {
-  const ctx = React.useContext(SetteraNavigationContext);
-  if (!ctx) return <div>no nav</div>;
-  return (
-    <div>
-      <span data-testid="active-page">{ctx.activePage}</span>
-      <button onClick={() => ctx.setActivePage("appearance")}>go</button>
-      <button onClick={() => ctx.toggleGroup("general")}>toggle</button>
-      <span data-testid="expanded">
-        {ctx.expandedGroups.has("general") ? "yes" : "no"}
-      </span>
-    </div>
-  );
-}
-
 describe("SetteraProvider", () => {
   it("provides schema context", () => {
     render(
@@ -71,44 +56,6 @@ describe("SetteraProvider", () => {
     expect(screen.getByTestId("flat-count").textContent).toBe("1");
     expect(screen.getByTestId("found-setting").textContent).toBe("Toggle");
     expect(screen.getByTestId("found-page").textContent).toBe("Appearance");
-  });
-
-  it("provides navigation context with first page as default", () => {
-    render(
-      <SetteraProvider schema={minimalSchema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
-    expect(screen.getByTestId("active-page").textContent).toBe("general");
-  });
-
-  it("allows page navigation", async () => {
-    const { user } = await import("@testing-library/user-event").then((m) => ({
-      user: m.default.setup(),
-    }));
-    render(
-      <SetteraProvider schema={minimalSchema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
-    await user.click(screen.getByText("go"));
-    expect(screen.getByTestId("active-page").textContent).toBe("appearance");
-  });
-
-  it("allows toggling expanded groups", async () => {
-    const { user } = await import("@testing-library/user-event").then((m) => ({
-      user: m.default.setup(),
-    }));
-    render(
-      <SetteraProvider schema={minimalSchema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
-    expect(screen.getByTestId("expanded").textContent).toBe("no");
-    await user.click(screen.getByText("toggle"));
-    expect(screen.getByTestId("expanded").textContent).toBe("yes");
-    await user.click(screen.getByText("toggle"));
-    expect(screen.getByTestId("expanded").textContent).toBe("no");
   });
 
   it("warns on invalid schema", () => {
@@ -146,38 +93,5 @@ describe("SetteraProvider", () => {
       </SetteraProvider>,
     );
     expect(screen.getByTestId("child").textContent).toBe("hello");
-  });
-
-  it("resolves initial activePage to child key when first page is flattened", () => {
-    const flattenedSchema: SetteraSchema = {
-      version: "1.0",
-      pages: [
-        {
-          key: "parent",
-          title: "Parent",
-          pages: [
-            {
-              key: "only-child",
-              title: "Only Child",
-              sections: [
-                {
-                  key: "s1",
-                  title: "S1",
-                  settings: [
-                    { key: "setting1", title: "Setting 1", type: "boolean" },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    render(
-      <SetteraProvider schema={flattenedSchema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
-    expect(screen.getByTestId("active-page").textContent).toBe("only-child");
   });
 });

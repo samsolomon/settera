@@ -13,8 +13,6 @@ export interface SetteraRendererProps {
   values: Record<string, unknown>;
   /** Called on every setting change (instant-apply). May return a Promise for async save tracking. */
   onChange: (key: string, value: unknown) => void | Promise<void>;
-  /** Optional batch change handler for compound settings */
-  onBatchChange?: (changes: Array<{ key: string; value: unknown }>) => void;
   /** Handlers for action-type settings */
   onAction?: Record<string, (payload?: unknown) => void | Promise<void>>;
   /** Custom validation callbacks */

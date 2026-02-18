@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useSetteraSearch } from "@settera/react";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 
 /**
  * Search input for filtering settings.

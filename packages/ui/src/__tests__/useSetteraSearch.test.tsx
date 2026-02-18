@@ -2,7 +2,8 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider } from "../provider.js";
+import { SetteraProvider } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -102,7 +103,9 @@ function SearchConsumer() {
 function renderSearch() {
   return render(
     <SetteraProvider schema={schema}>
-      <SearchConsumer />
+      <SetteraNavigationProvider>
+        <SearchConsumer />
+      </SetteraNavigationProvider>
     </SetteraProvider>,
   );
 }
@@ -194,9 +197,11 @@ describe("useSetteraSearch", () => {
     expect(screen.getByTestId("settingKeys").textContent).toBe("");
   });
 
-  it("throws when used outside SetteraProvider", () => {
-    expect(() => {
-      render(<SearchConsumer />);
-    }).toThrow("useSetteraSearch must be used within a SetteraProvider");
+  it("returns safe defaults when used outside SetteraNavigationProvider", () => {
+    render(<SearchConsumer />);
+    expect(screen.getByTestId("query").textContent).toBe("");
+    expect(screen.getByTestId("isSearching").textContent).toBe("false");
+    expect(screen.getByTestId("settingKeys").textContent).toBe("");
+    expect(screen.getByTestId("pageKeys").textContent).toBe("");
   });
 });

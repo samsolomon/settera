@@ -22,6 +22,8 @@ export function validateSettingValue(
       return validateDate(definition.validation, value);
     case "repeatable":
       return validateRepeatable(definition.validation, value);
+    case "compound":
+      return validateCompound(definition.validation, value);
     default:
       return null;
   }
@@ -215,6 +217,46 @@ function validateDate(
   }
 
   return null;
+}
+
+function validateCompound(
+  validation:
+    | {
+        rules?: Array<{
+          when: string;
+          require?: string;
+          message: string;
+        }>;
+      }
+    | undefined,
+  value: unknown,
+): string | null {
+  if (!validation?.rules || validation.rules.length === 0) return null;
+
+  const values =
+    value !== null && typeof value === "object" && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+
+  for (const rule of validation.rules) {
+    if (values[rule.when] && rule.require && !values[rule.require]) {
+      return rule.message;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validate that user-typed text matches the required confirmation text.
+ * Returns true when the input matches (or no requireText is defined).
+ */
+export function validateConfirmText(
+  requireText: string | undefined,
+  inputText: string,
+): boolean {
+  if (!requireText) return true;
+  return inputText === requireText;
 }
 
 function validateRepeatable(

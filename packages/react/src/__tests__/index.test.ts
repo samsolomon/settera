@@ -3,18 +3,20 @@ import {
   SCHEMA_VERSION,
   SetteraProvider,
   SetteraRenderer,
+  Settera,
   useSettera,
   useSetteraSetting,
   useSetteraAction,
-  useSetteraNavigation,
-  useSetteraSearch,
-  useRovingTabIndex,
-  useSetteraGlobalKeys,
+  useSetteraConfirm,
+  useSetteraSection,
+  useStoreSelector,
+  useStoreSlice,
   evaluateVisibility,
   validateSettingValue,
+  validateConfirmText,
   SetteraSchemaContext,
-  SetteraNavigationContext,
   SetteraValuesContext,
+  SetteraValuesStore,
 } from "../index.js";
 
 describe("@settera/react", () => {
@@ -30,30 +32,35 @@ describe("@settera/react", () => {
     expect(typeof SetteraRenderer).toBe("function");
   });
 
+  it("exports Settera (unified)", () => {
+    expect(typeof Settera).toBe("function");
+  });
+
   it("exports hooks", () => {
     expect(typeof useSettera).toBe("function");
     expect(typeof useSetteraSetting).toBe("function");
     expect(typeof useSetteraAction).toBe("function");
-    expect(typeof useSetteraNavigation).toBe("function");
-    expect(typeof useSetteraSearch).toBe("function");
+    expect(typeof useSetteraConfirm).toBe("function");
+    expect(typeof useSetteraSection).toBe("function");
   });
 
-  it("exports keyboard navigation hooks", () => {
-    expect(typeof useRovingTabIndex).toBe("function");
-    expect(typeof useSetteraGlobalKeys).toBe("function");
+  it("exports store selector hooks", () => {
+    expect(typeof useStoreSelector).toBe("function");
+    expect(typeof useStoreSlice).toBe("function");
   });
 
-  it("exports evaluateVisibility", () => {
+  it("exports validation utilities", () => {
     expect(typeof evaluateVisibility).toBe("function");
-  });
-
-  it("exports validateSettingValue", () => {
     expect(typeof validateSettingValue).toBe("function");
+    expect(typeof validateConfirmText).toBe("function");
   });
 
   it("exports contexts", () => {
     expect(SetteraSchemaContext).toBeDefined();
-    expect(SetteraNavigationContext).toBeDefined();
     expect(SetteraValuesContext).toBeDefined();
+  });
+
+  it("exports SetteraValuesStore", () => {
+    expect(typeof SetteraValuesStore).toBe("function");
   });
 });

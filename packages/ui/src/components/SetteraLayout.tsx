@@ -7,15 +7,13 @@ import React, {
   useState,
   useId,
 } from "react";
-import {
-  SetteraSchemaContext,
-  useSetteraSearch,
-  useSetteraNavigation,
-  useSetteraGlobalKeys,
-  useContentCardNavigation,
-  isTextInput,
-} from "@settera/react";
+import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import { useSetteraGlobalKeys, isTextInput } from "../hooks/useSetteraGlobalKeys.js";
+import { useContentCardNavigation } from "../hooks/useContentCardNavigation.js";
 import { SetteraSidebar } from "./SetteraSidebar.js";
 import { SetteraPage } from "./SetteraPage.js";
 import type { SetteraCustomPageProps } from "./SetteraPage.js";
@@ -84,8 +82,20 @@ function collectPageKeys(
 /**
  * Two-column layout shell: sidebar navigation + content area.
  * Switches to a mobile drawer navigation below mobileBreakpoint.
+ *
+ * Wraps children in SetteraNavigationProvider internally so all
+ * navigation hooks (useSetteraNavigation, useSetteraSearch) work
+ * without extra setup.
  */
-export function SetteraLayout({
+export function SetteraLayout(props: SetteraLayoutProps) {
+  return (
+    <SetteraNavigationProvider>
+      <SetteraLayoutInner {...props} />
+    </SetteraNavigationProvider>
+  );
+}
+
+function SetteraLayoutInner({
   renderIcon,
   children,
   mobileBreakpoint = 900,

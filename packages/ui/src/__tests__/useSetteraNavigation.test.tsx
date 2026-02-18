@@ -2,7 +2,8 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SetteraProvider } from "../provider.js";
+import { SetteraProvider } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import type { SetteraSchema } from "@settera/schema";
 
@@ -35,45 +36,39 @@ function NavConsumer() {
   );
 }
 
+function renderNav() {
+  return render(
+    <SetteraProvider schema={schema}>
+      <SetteraNavigationProvider>
+        <NavConsumer />
+      </SetteraNavigationProvider>
+    </SetteraProvider>,
+  );
+}
+
 describe("useSetteraNavigation", () => {
   it("returns the first page as active by default", () => {
-    render(
-      <SetteraProvider schema={schema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
+    renderNav();
     expect(screen.getByTestId("active").textContent).toBe("general");
   });
 
   it("navigates to a different page", async () => {
     const user = userEvent.setup();
-    render(
-      <SetteraProvider schema={schema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
+    renderNav();
     await user.click(screen.getByText("go-appearance"));
     expect(screen.getByTestId("active").textContent).toBe("appearance");
   });
 
   it("navigates to a nested page", async () => {
     const user = userEvent.setup();
-    render(
-      <SetteraProvider schema={schema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
+    renderNav();
     await user.click(screen.getByText("go-network"));
     expect(screen.getByTestId("active").textContent).toBe("advanced.network");
   });
 
   it("toggles expanded groups", async () => {
     const user = userEvent.setup();
-    render(
-      <SetteraProvider schema={schema}>
-        <NavConsumer />
-      </SetteraProvider>,
-    );
+    renderNav();
     expect(screen.getByTestId("expanded").textContent).toBe("");
     await user.click(screen.getByText("toggle-advanced"));
     expect(screen.getByTestId("expanded").textContent).toBe("advanced");
@@ -81,9 +76,44 @@ describe("useSetteraNavigation", () => {
     expect(screen.getByTestId("expanded").textContent).toBe("");
   });
 
-  it("throws when used outside SetteraProvider", () => {
-    expect(() => {
-      render(<NavConsumer />);
-    }).toThrow("useSetteraNavigation must be used within a SetteraProvider");
+  it("returns safe defaults when used outside SetteraNavigationProvider", () => {
+    render(<NavConsumer />);
+    expect(screen.getByTestId("active").textContent).toBe("");
+    expect(screen.getByTestId("expanded").textContent).toBe("");
+  });
+
+  it("resolves initial activePage to child key when first page is flattened", () => {
+    const flattenedSchema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "parent",
+          title: "Parent",
+          pages: [
+            {
+              key: "only-child",
+              title: "Only Child",
+              sections: [
+                {
+                  key: "s1",
+                  title: "S1",
+                  settings: [
+                    { key: "setting1", title: "Setting 1", type: "boolean" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    render(
+      <SetteraProvider schema={flattenedSchema}>
+        <SetteraNavigationProvider>
+          <NavConsumer />
+        </SetteraNavigationProvider>
+      </SetteraProvider>,
+    );
+    expect(screen.getByTestId("active").textContent).toBe("only-child");
   });
 });

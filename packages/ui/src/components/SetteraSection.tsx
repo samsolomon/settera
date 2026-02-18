@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { SetteraSchemaContext, useSetteraSearch } from "@settera/react";
+import { SetteraSchemaContext } from "@settera/react";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";

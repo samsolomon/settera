@@ -3,17 +3,29 @@ export {
   SCHEMA_VERSION,
   SetteraProvider,
   SetteraRenderer,
+  Settera,
   useSettera,
   useSetteraSetting,
   useSetteraAction,
-  useSetteraNavigation,
-  useSetteraSearch,
-  useRovingTabIndex,
-  useSetteraGlobalKeys,
   useSetteraConfirm,
+  useSetteraSection,
   evaluateVisibility,
   validateSettingValue,
+  validateConfirmText,
 } from "@settera/react";
+
+// Navigation provider and hooks (UI-specific)
+export { SetteraNavigationProvider } from "./providers/SetteraNavigationProvider.js";
+export type { SetteraNavigationProviderProps } from "./providers/SetteraNavigationProvider.js";
+export { SetteraNavigationContext } from "./contexts/SetteraNavigationContext.js";
+export type { SetteraNavigationContextValue } from "./contexts/SetteraNavigationContext.js";
+export { useSetteraNavigation } from "./hooks/useSetteraNavigation.js";
+export { useSetteraSearch } from "./hooks/useSetteraSearch.js";
+
+// Keyboard navigation hooks (UI-specific, DOM-dependent)
+export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";
+export { useSetteraGlobalKeys, isTextInput } from "./hooks/useSetteraGlobalKeys.js";
+export { useContentCardNavigation } from "./hooks/useContentCardNavigation.js";
 
 // UI Components
 export { BooleanSwitch } from "./components/BooleanSwitch.js";

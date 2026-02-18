@@ -11,12 +11,12 @@ import {
   SetteraRenderer,
   useSettera,
   useSetteraAction,
-  useSetteraNavigation,
   useSetteraSetting,
   evaluateVisibility,
 } from "@settera/react";
 import {
   SetteraLayout,
+  useSetteraNavigation,
   type SetteraCustomPageProps,
   type SetteraCustomSettingProps,
 } from "@settera/ui";

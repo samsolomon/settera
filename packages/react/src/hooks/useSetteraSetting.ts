@@ -15,6 +15,8 @@ export interface UseSetteraSettingResult {
   error: string | null;
   /** Whether this setting is currently visible */
   isVisible: boolean;
+  /** Whether this setting is readonly (value displayed but not editable) */
+  isReadonly: boolean;
   /** The setting definition from the schema */
   definition: SettingDefinition;
   /** Per-setting save status (idle/saving/saved/error) */
@@ -68,10 +70,14 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
     ? evaluateVisibility(definition.visibleWhen, allValues!)
     : true;
 
+  const isReadonly =
+    "readonly" in definition && definition.readonly === true;
+
   // Setter — runs sync validation automatically, with confirm interception
   const setValue = useCallback(
     (newValue: unknown) => {
       if ("disabled" in definition && definition.disabled) return;
+      if ("readonly" in definition && definition.readonly) return;
 
       const confirmConfig =
         "confirm" in definition
@@ -144,6 +150,7 @@ export function useSetteraSetting(key: string): UseSetteraSettingResult {
     setValue,
     error,
     isVisible,
+    isReadonly,
     definition,
     saveStatus,
     validate,

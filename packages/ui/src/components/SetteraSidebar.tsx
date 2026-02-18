@@ -6,12 +6,10 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import {
-  SetteraSchemaContext,
-  useSetteraNavigation,
-  useSetteraSearch,
-  useRovingTabIndex,
-} from "@settera/react";
+import { SetteraSchemaContext } from "@settera/react";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import { useRovingTabIndex } from "../hooks/useRovingTabIndex.js";
 import type { PageDefinition } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey } from "@settera/schema";
 import { SetteraSearch } from "./SetteraSearch.js";

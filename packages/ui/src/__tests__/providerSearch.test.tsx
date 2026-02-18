@@ -1,12 +1,13 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { SetteraProvider } from "../provider.js";
+import { SetteraProvider } from "@settera/react";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import type { SetteraSchema } from "@settera/schema";
 
 /**
- * Tests for the search matching logic in SetteraProvider.
+ * Tests for the search matching logic in SetteraNavigationProvider.
  *
  * The basic search tests live in useSetteraSearch.test.tsx.
  * This file covers the more complex walkSchema-based matching:
@@ -135,9 +136,18 @@ function SearchConsumer() {
   );
 }
 
+function renderSearchProvider() {
+  return render(
+    <SetteraProvider schema={schema}>
+      <SetteraNavigationProvider>
+        <SearchConsumer />
+      </SetteraNavigationProvider>
+    </SetteraProvider>,
+  );
+}
+
 function setSearch(query: string) {
   const input = screen.getByTestId("search-input");
-  // Use fireEvent for synchronous state updates (avoids multi-keystroke complexity)
   act(() => {
     Object.getOwnPropertyDescriptor(
       HTMLInputElement.prototype,
@@ -155,13 +165,9 @@ function pageKeys() {
   return screen.getByTestId("pageKeys").textContent!;
 }
 
-describe("Provider search — section title matching", () => {
+describe("Navigation search — section title matching", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("includes all settings in a section when section title matches", () => {
@@ -181,13 +187,9 @@ describe("Provider search — section title matching", () => {
   });
 });
 
-describe("Provider search — subsection title matching", () => {
+describe("Navigation search — subsection title matching", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("includes subsection settings when subsection title matches", () => {
@@ -196,16 +198,7 @@ describe("Provider search — subsection title matching", () => {
   });
 
   it("does not include sibling section settings when only subsection matches", () => {
-    setSearch("Advanced Behavior");
-    // "autoSave" and "sounds" are direct children of the "Behavior" section,
-    // not the "Advanced Behavior" subsection. The section title "Behavior"
-    // doesn't match "Advanced Behavior" exactly.
-    // However, "Behavior" is a substring of "Advanced Behavior", so the
-    // section title ALSO matches. Let's use a more specific query.
     setSearch("Advanced Behav");
-    // "Advanced Behav" matches the subsection title "Advanced Behavior"
-    // and also partially matches section title "Behavior"? No — "Behavior" does not
-    // contain "Advanced Behav". So only subsection matches.
     const keys = settingKeys();
     expect(keys).toContain("lazyLoad");
     expect(keys).not.toContain("sounds");
@@ -217,13 +210,9 @@ describe("Provider search — subsection title matching", () => {
   });
 });
 
-describe("Provider search — page title matching", () => {
+describe("Navigation search — page title matching", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("includes all settings on a page when page title matches", () => {
@@ -237,20 +226,15 @@ describe("Provider search — page title matching", () => {
   });
 });
 
-describe("Provider search — nested page propagation", () => {
+describe("Navigation search — nested page propagation", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("includes parent page when a child page setting matches", () => {
     setSearch("Telemetry");
     expect(settingKeys()).toContain("telemetry");
     expect(pageKeys()).toContain("general.privacy");
-    // Parent should also be included
     expect(pageKeys()).toContain("general");
   });
 
@@ -271,18 +255,13 @@ describe("Provider search — nested page propagation", () => {
 
   it("does not include sibling pages in propagation", () => {
     setSearch("Essential Only");
-    // Appearance is a sibling of general, should NOT be included
     expect(pageKeys()).not.toContain("appearance");
   });
 });
 
-describe("Provider search — setting description matching", () => {
+describe("Navigation search — setting description matching", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("matches setting by description text", () => {
@@ -296,13 +275,9 @@ describe("Provider search — setting description matching", () => {
   });
 });
 
-describe("Provider search — case insensitivity", () => {
+describe("Navigation search — case insensitivity", () => {
   beforeEach(() => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
   });
 
   it("matches section titles case-insensitively", () => {
@@ -321,23 +296,15 @@ describe("Provider search — case insensitivity", () => {
   });
 });
 
-describe("Provider search — empty and edge cases", () => {
+describe("Navigation search — empty and edge cases", () => {
   it("returns empty sets for empty query", () => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
     expect(settingKeys()).toBe("");
     expect(pageKeys()).toBe("");
   });
 
   it("returns empty sets when nothing matches", () => {
-    render(
-      <SetteraProvider schema={schema}>
-        <SearchConsumer />
-      </SetteraProvider>,
-    );
+    renderSearchProvider();
     setSearch("xyznonexistent");
     expect(settingKeys()).toBe("");
     expect(pageKeys()).toBe("");
@@ -350,11 +317,12 @@ describe("Provider search — empty and edge cases", () => {
     };
     render(
       <SetteraProvider schema={minimal}>
-        <SearchConsumer />
+        <SetteraNavigationProvider>
+          <SearchConsumer />
+        </SetteraNavigationProvider>
       </SetteraProvider>,
     );
     setSearch("Empty");
-    // Page title matches, but no settings to include
     expect(pageKeys()).toContain("empty");
     expect(settingKeys()).toBe("");
   });
