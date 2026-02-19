@@ -127,12 +127,6 @@ export function ActionPageContent({
           onClick={onBack}
           disabled={isLoading}
           style={{
-            fontSize: "13px",
-            padding: "6px 10px",
-            borderRadius: "6px",
-            border: "var(--settera-button-border, 1px solid #d1d5db)",
-            backgroundColor: "var(--settera-button-secondary-bg, white)",
-            color: "var(--settera-button-secondary-color, #374151)",
             cursor: isLoading ? "not-allowed" : "pointer",
           }}
         >
@@ -144,12 +138,8 @@ export function ActionPageContent({
           onClick={handleSubmit}
           disabled={isLoading}
           style={{
-            fontSize: "13px",
-            padding: "6px 10px",
-            borderRadius: "6px",
-            border: "var(--settera-button-border, 1px solid #d1d5db)",
-            backgroundColor: "var(--settera-button-primary-bg, #2563eb)",
-            color: "var(--settera-button-primary-color, white)",
+            backgroundColor: "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
+            color: "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
             cursor: isLoading ? "not-allowed" : "pointer",
           }}
         >

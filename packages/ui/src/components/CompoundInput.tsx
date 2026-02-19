@@ -64,7 +64,6 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
               type="button"
               disabled={isDisabled}
               style={{
-                padding: "6px 10px",
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
               }}
@@ -213,8 +212,6 @@ function CompoundPageButton({
         disabled={isDisabled}
         aria-label={`Open ${title}`}
         style={{
-          alignSelf: "flex-start",
-          padding: "6px 10px",
           cursor: isDisabled ? "not-allowed" : "pointer",
           opacity: isDisabled ? 0.6 : 1,
         }}

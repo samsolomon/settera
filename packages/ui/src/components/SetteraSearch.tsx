@@ -75,7 +75,7 @@ export function SetteraSearch() {
           width: "100%",
           padding: "var(--settera-search-input-padding, 8px 10px)",
           border:
-            "var(--settera-search-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
+            "var(--settera-search-border, 1px solid var(--settera-input, #e4e4e7))",
           borderRadius: "var(--settera-search-border-radius, 8px)",
           fontSize: "var(--settera-search-font-size, 13px)",
           backgroundColor:
