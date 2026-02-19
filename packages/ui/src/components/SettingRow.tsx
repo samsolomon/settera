@@ -9,6 +9,8 @@ import { useSetteraSetting } from "@settera/react";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
+import { PrimitiveButton } from "./SetteraPrimitives.js";
+import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";
 
 export interface SettingRowProps {
   settingKey: string;
@@ -171,7 +173,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               </span>
             )}
             {showCopyButton && (
-              <button
+              <PrimitiveButton
                 type="button"
                 tabIndex={-1}
                 data-settera-copy-link
@@ -228,14 +230,13 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                     <path d="M9.5 7.5a3 3 0 0 0-4.243 0l-2 2a3 3 0 0 0 4.243 4.243l1-1" />
                   </svg>
                 )}
-              </button>
+              </PrimitiveButton>
             )}
           </div>
           {"description" in definition && definition.description && (
             <div
               style={{
-                fontSize: "var(--settera-description-font-size, 13px)",
-                color: "var(--settera-description-color, #6b7280)",
+                ...descriptionTextStyle,
                 marginTop: "2px",
               }}
             >

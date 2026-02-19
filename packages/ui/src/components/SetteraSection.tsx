@@ -6,6 +6,13 @@ import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
+import { PrimitiveButton } from "./SetteraPrimitives.js";
+import {
+  cardShellStyle,
+  descriptionTextStyle,
+  sectionHeadingRowStyle,
+  sectionTitleStyle,
+} from "./SetteraFieldPrimitives.js";
 
 export interface SetteraSectionProps {
   pageKey: string;
@@ -91,31 +98,16 @@ export function SetteraSection({
         marginTop: "var(--settera-section-margin-top, 24px)",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "8px",
-          marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
-        }}
-      >
-        <h2
-          id={sectionTitleId}
-          tabIndex={-1}
-          style={{
-            fontSize: "var(--settera-section-title-font-size, 16px)",
-            fontWeight: "var(--settera-section-title-font-weight, 600)",
-            color: "var(--settera-section-title-color, #111827)",
-            margin: 0,
-          }}
-        >
+      <div style={sectionHeadingRowStyle}>
+        <h2 id={sectionTitleId} tabIndex={-1} style={sectionTitleStyle}>
           {section.title}
         </h2>
         {isCollapsible && (
-          <button
+          <PrimitiveButton
             type="button"
-            aria-label={isEffectivelyCollapsed ? "Expand section" : "Collapse section"}
+            aria-label={
+              isEffectivelyCollapsed ? "Expand section" : "Collapse section"
+            }
             aria-expanded={!isEffectivelyCollapsed}
             aria-controls={sectionContentId}
             onClick={() => setIsCollapsed((prev) => !prev)}
@@ -129,7 +121,7 @@ export function SetteraSection({
             }}
           >
             {isEffectivelyCollapsed ? "Expand" : "Collapse"}
-          </button>
+          </PrimitiveButton>
         )}
       </div>
       {!isEffectivelyCollapsed && (
@@ -137,8 +129,7 @@ export function SetteraSection({
           {section.description && (
             <p
               style={{
-                fontSize: "var(--settera-description-font-size, 13px)",
-                color: "var(--settera-description-color, #6b7280)",
+                ...descriptionTextStyle,
                 marginTop: 0,
                 marginBottom: "8px",
               }}
@@ -147,14 +138,7 @@ export function SetteraSection({
             </p>
           )}
           {visibleSettings.length > 0 && (
-            <div
-              style={{
-                border: "var(--settera-card-border, 1px solid #e5e7eb)",
-                borderRadius: "var(--settera-card-border-radius, 10px)",
-                backgroundColor: "var(--settera-card-bg, white)",
-                overflow: "hidden",
-              }}
-            >
+            <div style={cardShellStyle}>
               {visibleSettings.map((setting, i) => (
                 <SetteraSetting
                   key={setting.key}
@@ -181,11 +165,10 @@ export function SetteraSection({
                   id={`settera-subsection-${sub.key}`}
                   tabIndex={-1}
                   style={{
-                    fontSize: "var(--settera-section-title-font-size, 16px)",
-                    fontWeight: "var(--settera-section-title-font-weight, 600)",
-                    color: "var(--settera-section-title-color, #111827)",
+                    ...sectionTitleStyle,
                     marginTop: 0,
-                    marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
+                    marginBottom:
+                      "var(--settera-section-title-margin-bottom, 8px)",
                   }}
                 >
                   {sub.title}
@@ -193,8 +176,7 @@ export function SetteraSection({
                 {sub.description && (
                   <p
                     style={{
-                      fontSize: "var(--settera-description-font-size, 13px)",
-                      color: "var(--settera-description-color, #6b7280)",
+                      ...descriptionTextStyle,
                       marginTop: 0,
                       marginBottom: "8px",
                     }}
@@ -202,14 +184,7 @@ export function SetteraSection({
                     {parseDescriptionLinks(sub.description)}
                   </p>
                 )}
-                <div
-                  style={{
-                    border: "var(--settera-card-border, 1px solid #e5e7eb)",
-                    borderRadius: "var(--settera-card-border-radius, 10px)",
-                    backgroundColor: "var(--settera-card-bg, white)",
-                    overflow: "hidden",
-                  }}
-                >
+                <div style={cardShellStyle}>
                   {subSettings.map((setting, i) => (
                     <SetteraSetting
                       key={setting.key}

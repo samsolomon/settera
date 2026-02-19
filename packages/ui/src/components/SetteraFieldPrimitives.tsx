@@ -18,6 +18,39 @@ export const sectionPanelStyle: React.CSSProperties = {
   gap: "8px",
 };
 
+export const cardShellStyle: React.CSSProperties = {
+  border: "var(--settera-card-border, 1px solid #e5e7eb)",
+  borderRadius: "var(--settera-card-border-radius, 10px)",
+  backgroundColor: "var(--settera-card-bg, white)",
+  overflow: "hidden",
+};
+
+export const sectionHeadingRowStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "8px",
+  marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
+};
+
+export const sectionTitleStyle: React.CSSProperties = {
+  fontSize: "var(--settera-section-title-font-size, 16px)",
+  fontWeight: "var(--settera-section-title-font-weight, 600)",
+  color: "var(--settera-section-title-color, #111827)",
+  margin: 0,
+};
+
+export const descriptionTextStyle: React.CSSProperties = {
+  fontSize: "var(--settera-description-font-size, 13px)",
+  color: "var(--settera-description-color, #6b7280)",
+};
+
+export const mutedMessageStyle: React.CSSProperties = {
+  fontSize: "var(--settera-description-font-size, 13px)",
+  color: "var(--settera-description-color, #6b7280)",
+  fontStyle: "italic",
+};
+
 export const stackGapStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",

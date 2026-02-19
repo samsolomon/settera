@@ -6,6 +6,10 @@ import type { PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
+import {
+  mutedMessageStyle,
+  descriptionTextStyle,
+} from "./SetteraFieldPrimitives.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
@@ -78,8 +82,7 @@ export function SetteraPage({
       {page.description && (
         <p
           style={{
-            fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, #6b7280)",
+            ...descriptionTextStyle,
             marginTop: "4px",
             marginBottom: 0,
           }}
@@ -95,9 +98,7 @@ export function SetteraPage({
           data-testid={`missing-custom-page-${resolvedKey}`}
           style={{
             marginTop: "12px",
-            fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, #6b7280)",
-            fontStyle: "italic",
+            ...mutedMessageStyle,
           }}
         >
           Missing custom page renderer "{customPageRendererKey}".
@@ -108,9 +109,7 @@ export function SetteraPage({
           data-testid={`invalid-custom-page-${resolvedKey}`}
           style={{
             marginTop: "12px",
-            fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, #6b7280)",
-            fontStyle: "italic",
+            ...mutedMessageStyle,
           }}
         >
           Custom page "{resolvedKey}" is missing a renderer key.
