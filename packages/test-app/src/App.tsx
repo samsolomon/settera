@@ -33,7 +33,7 @@ const DEMO_MODE_QUERY_PARAM = "demoMode";
 const DEMO_MODE_OPTIONS: Array<{ key: DemoMode; label: string }> = [
   { key: "schema", label: "Schema" },
   { key: "headless", label: "Headless" },
-  { key: "ui", label: "Shadcn UI" },
+  { key: "ui", label: "UI" },
 ];
 
 const THEME_PRESET_OPTIONS: Array<{ key: ThemePreset; label: string }> = [
