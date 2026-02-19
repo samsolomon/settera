@@ -30,4 +30,4 @@ coverage/
 *.log
 
 # Nested repo
-settera/
+/settera/

@@ -1,0 +1,12 @@
+{
+  "name": "@settera/shadcn-registry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx build.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0"
+  }
+}

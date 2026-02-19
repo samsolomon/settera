@@ -1,0 +1,63 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "settera",
+  "homepage": "https://settera.dev",
+  "items": [
+    {
+      "name": "settera",
+      "type": "registry:block",
+      "title": "Settera Settings UI",
+      "description": "A complete settings page built with shadcn/ui components. Declare a schema, provide values, and render a full settings UI.",
+      "dependencies": [
+        "@settera/react",
+        "@settera/schema"
+      ],
+      "registryDependencies": [
+        "input",
+        "textarea",
+        "button",
+        "switch",
+        "select",
+        "checkbox",
+        "dialog",
+        "label",
+        "collapsible",
+        "sheet"
+      ],
+      "files": [
+        { "path": "src/settera/settera-navigation-provider.tsx", "type": "registry:component", "target": "components/settera/settera-navigation-provider.tsx" },
+        { "path": "src/settera/use-settera-navigation.ts", "type": "registry:component", "target": "components/settera/use-settera-navigation.ts" },
+        { "path": "src/settera/use-settera-search.ts", "type": "registry:component", "target": "components/settera/use-settera-search.ts" },
+        { "path": "src/settera/use-roving-tab-index.ts", "type": "registry:component", "target": "components/settera/use-roving-tab-index.ts" },
+        { "path": "src/settera/use-settera-global-keys.ts", "type": "registry:component", "target": "components/settera/use-settera-global-keys.ts" },
+        { "path": "src/settera/use-content-card-navigation.ts", "type": "registry:component", "target": "components/settera/use-content-card-navigation.ts" },
+        { "path": "src/settera/use-settera-layout-mobile-shell.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-mobile-shell.ts" },
+        { "path": "src/settera/use-settera-layout-highlight.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-highlight.ts" },
+        { "path": "src/settera/use-settera-layout-url-sync.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-url-sync.ts" },
+        { "path": "src/settera/use-settera-layout-main-keys.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-main-keys.ts" },
+        { "path": "src/settera/settera-text-input.tsx", "type": "registry:component", "target": "components/settera/settera-text-input.tsx" },
+        { "path": "src/settera/settera-number-input.tsx", "type": "registry:component", "target": "components/settera/settera-number-input.tsx" },
+        { "path": "src/settera/settera-boolean-switch.tsx", "type": "registry:component", "target": "components/settera/settera-boolean-switch.tsx" },
+        { "path": "src/settera/settera-select.tsx", "type": "registry:component", "target": "components/settera/settera-select.tsx" },
+        { "path": "src/settera/settera-multiselect.tsx", "type": "registry:component", "target": "components/settera/settera-multiselect.tsx" },
+        { "path": "src/settera/settera-date-input.tsx", "type": "registry:component", "target": "components/settera/settera-date-input.tsx" },
+        { "path": "src/settera/settera-field-control.tsx", "type": "registry:component", "target": "components/settera/settera-field-control.tsx" },
+        { "path": "src/settera/settera-compound-input.tsx", "type": "registry:component", "target": "components/settera/settera-compound-input.tsx" },
+        { "path": "src/settera/settera-repeatable-input.tsx", "type": "registry:component", "target": "components/settera/settera-repeatable-input.tsx" },
+        { "path": "src/settera/settera-action-button.tsx", "type": "registry:component", "target": "components/settera/settera-action-button.tsx" },
+        { "path": "src/settera/settera-action-modal.tsx", "type": "registry:component", "target": "components/settera/settera-action-modal.tsx" },
+        { "path": "src/settera/settera-action-modal-field.tsx", "type": "registry:component", "target": "components/settera/settera-action-modal-field.tsx" },
+        { "path": "src/settera/settera-action-page-content.tsx", "type": "registry:component", "target": "components/settera/settera-action-page-content.tsx" },
+        { "path": "src/settera/settera-subpage-content.tsx", "type": "registry:component", "target": "components/settera/settera-subpage-content.tsx" },
+        { "path": "src/settera/settera-setting-row.tsx", "type": "registry:component", "target": "components/settera/settera-setting-row.tsx" },
+        { "path": "src/settera/settera-setting.tsx", "type": "registry:component", "target": "components/settera/settera-setting.tsx" },
+        { "path": "src/settera/settera-section.tsx", "type": "registry:component", "target": "components/settera/settera-section.tsx" },
+        { "path": "src/settera/settera-page.tsx", "type": "registry:component", "target": "components/settera/settera-page.tsx" },
+        { "path": "src/settera/settera-search.tsx", "type": "registry:component", "target": "components/settera/settera-search.tsx" },
+        { "path": "src/settera/settera-sidebar.tsx", "type": "registry:component", "target": "components/settera/settera-sidebar.tsx" },
+        { "path": "src/settera/settera-layout.tsx", "type": "registry:component", "target": "components/settera/settera-layout.tsx" },
+        { "path": "src/settera/settera-confirm-dialog.tsx", "type": "registry:component", "target": "components/settera/settera-confirm-dialog.tsx" }
+      ]
+    }
+  ]
+}
