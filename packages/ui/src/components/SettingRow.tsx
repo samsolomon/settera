@@ -131,6 +131,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              minHeight: "24px",
               fontSize: "var(--settera-title-font-size, 14px)",
               fontWeight: "var(--settera-title-font-weight, 500)",
               color: isDangerous
