@@ -106,11 +106,11 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{
-        padding: "var(--settera-row-padding-x, 0 16px)",
-        opacity: isDisabled ? 0.5 : "var(--settera-row-opacity, 1)",
+        padding: "var(--settera-row-padding-inline, 0 16px)",
+        opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : "var(--settera-row-opacity, 1)",
         outline: "none",
         boxShadow,
-        borderRadius: "var(--settera-row-focus-radius, 6px)",
+        borderRadius: "var(--settera-row-focus-radius, 8px)",
         transition: isHighlighted ? "box-shadow 300ms ease" : undefined,
       }}
     >
@@ -119,7 +119,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          padding: "var(--settera-row-padding-y, 12px 0)",
+          padding: "var(--settera-row-padding-block, 12px 0)",
           borderBottom: isLast
             ? "none"
             : "var(--settera-row-border, 1px solid var(--settera-border, #e5e7eb))",
@@ -163,7 +163,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                   cursor: "pointer",
                   width: "24px",
                   height: "24px",
-                  borderRadius: "6px",
+                  borderRadius: "var(--settera-button-border-radius, 4px)",
                   padding: 0,
                   flexShrink: 0,
                 }}

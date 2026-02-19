@@ -52,7 +52,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         border: "var(--settera-switch-border, 1px solid transparent)",
         cursor: "pointer",
         padding: 0,
-        transition: "background-color 0.2s",
+        transition: "background-color 200ms",
         outline: "none",
         boxShadow: isFocusVisible
           ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
@@ -67,9 +67,9 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
           height: "var(--settera-switch-thumb-size, 20px)",
           borderRadius: "50%",
           backgroundColor: "var(--settera-switch-thumb-color, white)",
-          transition: "transform 0.2s",
+          transition: "transform 200ms",
           transform: checked ? "translateX(22px)" : "translateX(2px)",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+          boxShadow: "var(--settera-switch-thumb-shadow, 0 1px 3px rgba(0,0,0,0.2))",
         }}
       />
     </Switch.Root>

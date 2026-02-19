@@ -145,8 +145,8 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
                   : "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
                 borderRadius: "var(--settera-checkbox-border-radius, 4px)",
                 cursor: isDisabled ? "not-allowed" : "pointer",
-                opacity: isDisabled ? 0.5 : 1,
-                transition: "box-shadow 150ms, background-color 150ms, border-color 150ms",
+                opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
+                transition: "box-shadow 120ms, background-color 120ms, border-color 120ms",
               }}
             >
               <Checkbox.Indicator

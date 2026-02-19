@@ -13,6 +13,7 @@ import { useRovingTabIndex } from "../hooks/useRovingTabIndex.js";
 import type { PageDefinition } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey } from "@settera/schema";
 import { SetteraSearch } from "./SetteraSearch.js";
+import { BackButton } from "./SetteraPrimitives.js";
 
 export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
@@ -43,7 +44,6 @@ export function SetteraSidebar({
   backToApp,
   hideFooterHints,
 }: SetteraSidebarProps) {
-  const [isBackToAppHovered, setIsBackToAppHovered] = useState(false);
   const schemaCtx = useContext(SetteraSchemaContext);
   const {
     activePage,
@@ -325,103 +325,12 @@ export function SetteraSidebar({
             marginBottom: "var(--settera-sidebar-back-margin-bottom, 0px)",
           }}
         >
-          {backToApp.onClick ? (
-            <button
-              type="button"
-              onClick={backToApp.onClick}
-              onMouseEnter={() => setIsBackToAppHovered(true)}
-              onMouseLeave={() => setIsBackToAppHovered(false)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                border: "none",
-                background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-ghost-hover-bg, #f4f4f5))"
-                  : "var(--settera-sidebar-back-bg, transparent)",
-                borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-                padding: "6px 10px",
-                textAlign: "left",
-                fontSize: "14px",
-                fontWeight: 500,
-                color:
-                  "var(--settera-sidebar-back-color, var(--settera-description-color, var(--settera-muted-foreground, #6b7280)))",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                transition: "background-color 120ms ease",
-                marginLeft: "-10px",
-              }}
-            >
-              <svg
-                aria-hidden="true"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                style={{
-                  flexShrink: 0,
-                  color: "var(--settera-sidebar-chevron-color, #9ca3af)",
-                }}
-              >
-                <path
-                  d="M10 4l-4 4 4 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {backToApp.label ?? "Back to app"}
-            </button>
-          ) : (
-            <a
-              href={backToApp.href}
-              onMouseEnter={() => setIsBackToAppHovered(true)}
-              onMouseLeave={() => setIsBackToAppHovered(false)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-ghost-hover-bg, #f4f4f5))"
-                  : "var(--settera-sidebar-back-bg, transparent)",
-                border: "none",
-                borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-                padding: "6px 10px",
-                textAlign: "left",
-                fontSize: "14px",
-                fontWeight: 500,
-                color:
-                  "var(--settera-sidebar-back-color, var(--settera-description-color, var(--settera-muted-foreground, #6b7280)))",
-                textDecoration: "none",
-                fontFamily: "inherit",
-                boxSizing: "border-box",
-                transition: "background-color 120ms ease",
-                marginLeft: "-10px",
-              }}
-            >
-              <svg
-                aria-hidden="true"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                style={{
-                  flexShrink: 0,
-                  color: "var(--settera-sidebar-chevron-color, #9ca3af)",
-                }}
-              >
-                <path
-                  d="M10 4l-4 4 4 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {backToApp.label ?? "Back to app"}
-            </a>
-          )}
+          <BackButton
+            onClick={backToApp.onClick}
+            href={backToApp.onClick ? undefined : backToApp.href}
+          >
+            {backToApp.label ?? "Back to app"}
+          </BackButton>
         </div>
       )}
 
@@ -487,7 +396,7 @@ const hintKbdStyle: React.CSSProperties = {
     "var(--settera-kbd-bg, var(--settera-sidebar-accent, rgba(0, 0, 0, 0.05)))",
   border:
     "var(--settera-kbd-border, 1px solid var(--settera-sidebar-border-color, rgba(0, 0, 0, 0.08)))",
-  borderRadius: "3px",
+  borderRadius: "4px",
   padding: "1px 4px",
   fontSize: "inherit",
   fontFamily: "inherit",
@@ -640,7 +549,7 @@ function SidebarItem({
               marginLeft: "auto",
               flexShrink: 0,
               color: "var(--settera-sidebar-chevron-color, #9ca3af)",
-              transition: "transform 150ms ease",
+              transition: "transform 120ms ease",
               transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
             }}
           >

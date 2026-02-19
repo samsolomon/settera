@@ -87,7 +87,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
             isDisabled || isLoading || (isModalAction && !hasModalConfig) || (isPageAction && !hasPageConfig)
               ? "not-allowed"
               : "pointer",
-          opacity: isDisabled || isLoading ? 0.7 : 1,
+          // Disabled opacity is handled by PrimitiveButton via the disabled prop.
         }}
       >
         {isLoading ? "Loading…" : buttonLabel}

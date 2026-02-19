@@ -129,20 +129,23 @@ export function Select({ settingKey }: SelectProps) {
             border:
               "var(--settera-select-content-border, var(--settera-input-border, 1px solid var(--settera-input, #d1d5db)))",
             borderRadius:
-              "var(--settera-select-content-radius, var(--settera-input-border-radius, 6px))",
+              "var(--settera-select-content-radius, var(--settera-input-border-radius, 4px))",
             boxShadow:
               "var(--settera-select-content-shadow, 0 12px 28px rgba(0, 0, 0, 0.12))",
             overflow: "hidden",
-            zIndex: 1000,
+            zIndex: "var(--settera-z-overlay, 1000)" as unknown as number,
           }}
         >
+          {/* Radix manages data-highlighted internally with no per-item callback,
+              so inline styles can't target it. Scoped <style> is the pragmatic escape hatch. */}
+          <style>{`[data-slot="select-item"][data-highlighted] { background-color: var(--settera-select-item-highlight-bg, var(--settera-muted, #f4f4f5)); outline: none; }`}</style>
           <RadixSelect.Viewport style={{ padding: "4px" }}>
             {!isRequired && (
               <RadixSelect.Item
                 data-slot="select-item"
                 value={emptyOptionValue}
                 style={{
-                  borderRadius: "var(--settera-select-item-radius, 6px)",
+                  borderRadius: "var(--settera-select-item-radius, 4px)",
                   padding: "var(--settera-select-item-padding, 6px 8px)",
                   fontSize: "var(--settera-select-item-font-size, 13px)",
                   color: "var(--settera-select-item-muted-color, var(--settera-muted-foreground, #6b7280))",
@@ -160,7 +163,7 @@ export function Select({ settingKey }: SelectProps) {
                 key={opt.value}
                 value={opt.value}
                 style={{
-                  borderRadius: "var(--settera-select-item-radius, 6px)",
+                  borderRadius: "var(--settera-select-item-radius, 4px)",
                   padding: "var(--settera-select-item-padding, 6px 8px)",
                   fontSize: "var(--settera-select-item-font-size, 13px)",
                   color:

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
@@ -12,6 +12,7 @@ import {
 } from "./SetteraFieldPrimitives.js";
 import { SubpageContent } from "./SubpageContent.js";
 import type { SetteraActionPageProps } from "./SubpageContent.js";
+import { BackButton } from "./SetteraPrimitives.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
@@ -59,10 +60,9 @@ export function SetteraPage({
 
     return (
       <div>
-        <SubpageBackButton
-          parentPageTitle={returnPage?.title ?? "Back"}
-          onBack={closeSubpage}
-        />
+        <BackButton onClick={closeSubpage}>
+          {returnPage?.title ?? "Back"}
+        </BackButton>
         <div style={{ marginTop: "12px" }}>
           <SubpageContent
             settingKey={subpage.settingKey}
@@ -158,65 +158,5 @@ export function SetteraPage({
           />
         ))}
     </div>
-  );
-}
-
-// ---- Subpage Back Button ----
-
-function SubpageBackButton({
-  parentPageTitle,
-  onBack,
-}: {
-  parentPageTitle: string;
-  onBack: () => void;
-}) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <button
-      type="button"
-      onClick={onBack}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "6px",
-        border: "none",
-        background: isHovered
-          ? "var(--settera-ghost-hover-bg, #f4f4f5)"
-          : "transparent",
-        borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-        padding: "6px 10px",
-        fontSize: "14px",
-        fontWeight: 500,
-        color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
-        cursor: "pointer",
-        fontFamily: "inherit",
-        transition: "background-color 120ms ease",
-        marginLeft: "-10px",
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        style={{
-          flexShrink: 0,
-          color: "var(--settera-sidebar-chevron-color, #9ca3af)",
-        }}
-      >
-        <path
-          d="M10 4l-4 4 4 4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      {parentPageTitle}
-    </button>
   );
 }

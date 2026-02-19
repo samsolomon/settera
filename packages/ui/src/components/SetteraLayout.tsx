@@ -387,7 +387,7 @@ function SetteraLayoutInner({
                 backgroundColor: "var(--settera-mobile-drawer-bg, var(--settera-background, #f3f4f6))",
                 borderRight:
                   "var(--settera-mobile-drawer-border, 1px solid var(--settera-input, #d1d5db))",
-                boxShadow: "0 16px 40px rgba(0, 0, 0, 0.18)",
+                boxShadow: "var(--settera-mobile-drawer-shadow, 0 16px 40px rgba(0, 0, 0, 0.18))",
                 overflow: "hidden",
                 transform: overlayIsVisible
                   ? "translateX(0)"

@@ -53,7 +53,7 @@ export function ConfirmDialog() {
             position: "fixed",
             inset: 0,
             backgroundColor: "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
-            zIndex: "var(--settera-overlay-z-index, 1000)" as unknown as number,
+            zIndex: "var(--settera-z-overlay, 1000)" as unknown as number, // CSS var needs cast for React CSSProperties
           }}
         />
         <Dialog.Content
@@ -74,12 +74,12 @@ export function ConfirmDialog() {
             transform: "translate(-50%, -50%)",
             backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
             borderRadius: "var(--settera-dialog-border-radius, 8px)",
-            padding: "var(--settera-dialog-padding, 24px)",
-            maxWidth: "var(--settera-dialog-max-width, 420px)",
+            padding: "var(--settera-dialog-padding, 16px)",
+            maxWidth: "var(--settera-confirm-max-width, 420px)", // Separate from --settera-dialog-max-width (640px) — confirms are narrower
             width: "calc(100% - 24px)",
             boxShadow:
               "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
-            zIndex: "var(--settera-overlay-z-index, 1000)" as unknown as number,
+            zIndex: "var(--settera-z-dialog, 1001)" as unknown as number,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -98,7 +98,7 @@ export function ConfirmDialog() {
               style={{
                 margin: 0,
                 fontSize: "var(--settera-dialog-message-font-size, 14px)",
-                color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #4b5563))",
+                color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #6b7280))",
                 lineHeight: 1.5,
               }}
             >
@@ -147,11 +147,7 @@ export function ConfirmDialog() {
               type="button"
               onClick={handleCancel}
               style={{
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: 500,
                 border: "1px solid var(--settera-button-border-color, var(--settera-input, #d1d5db))",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
                 backgroundColor: "var(--settera-button-secondary-bg, var(--settera-card, white))",
                 color: "var(--settera-button-secondary-color, var(--settera-card-foreground, #374151))",
                 cursor: "pointer",
@@ -165,13 +161,9 @@ export function ConfirmDialog() {
               disabled={confirmDisabled}
 
               style={{
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: 500,
                 border: dangerous
                   ? "1px solid var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
                   : "none",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
                 backgroundColor: dangerous
                   ? "var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
                   : "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
@@ -179,7 +171,7 @@ export function ConfirmDialog() {
                   ? "var(--settera-button-dangerous-color, var(--settera-destructive-foreground, white))"
                   : "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
                 cursor: confirmDisabled ? "not-allowed" : "pointer",
-                opacity: confirmDisabled ? 0.5 : 1,
+                opacity: confirmDisabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
               }}
             >
               {confirmLabel}

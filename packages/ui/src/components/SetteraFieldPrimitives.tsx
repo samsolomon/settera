@@ -5,24 +5,24 @@ import { inputBaseStyle } from "./SetteraPrimitives.js";
 export const fieldShellStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "4px",
+  gap: "var(--settera-space-50, 4px)",
   fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, var(--settera-muted-foreground, #4b5563))",
+  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
 };
 
 export const sectionPanelStyle: React.CSSProperties = {
   border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
   borderRadius: "var(--settera-card-border-radius, 8px)",
   backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
-  padding: "8px",
+  padding: "var(--settera-space-100, 8px)",
   display: "flex",
   flexDirection: "column",
-  gap: "8px",
+  gap: "var(--settera-space-100, 8px)",
 };
 
 export const cardShellStyle: React.CSSProperties = {
   border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
-  borderRadius: "var(--settera-card-border-radius, 10px)",
+  borderRadius: "var(--settera-card-border-radius, 8px)",
   backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
   overflow: "hidden",
 };
@@ -56,13 +56,13 @@ export const mutedMessageStyle: React.CSSProperties = {
 export const stackGapStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "6px",
+  gap: "var(--settera-space-100, 8px)",
 };
 
 export const inlineRowStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "8px",
+  gap: "var(--settera-space-100, 8px)",
 };
 
 export const smallCheckboxStyle: React.CSSProperties = {
@@ -72,8 +72,8 @@ export const smallCheckboxStyle: React.CSSProperties = {
 
 export const smallActionButtonStyle: React.CSSProperties = {
   fontSize: "var(--settera-button-font-size, 13px)",
-  padding: "4px 8px",
-  borderRadius: "var(--settera-button-border-radius, 6px)",
+  padding: "var(--settera-space-50, 4px) var(--settera-space-100, 8px)",
+  borderRadius: "var(--settera-button-border-radius, 4px)",
   border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
   backgroundColor: "var(--settera-button-bg, var(--settera-card, white))",
   color: "var(--settera-button-color, var(--settera-card-foreground, #374151))",
@@ -165,8 +165,8 @@ export function PrimitiveCheckboxControl({
         boxShadow: "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
         outline: "none",
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        transition: "box-shadow 150ms, background-color 150ms, border-color 150ms",
+        opacity: disabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
+        transition: "box-shadow 120ms, background-color 120ms, border-color 120ms",
         ...style,
       }}
     >
@@ -215,7 +215,7 @@ export function PrimitiveCheckboxList({
         return (
           <label
             key={option.value}
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "var(--settera-space-100, 8px)" }}
           >
             <PrimitiveCheckboxControl
               aria-label={getAriaLabel?.(option.label)}

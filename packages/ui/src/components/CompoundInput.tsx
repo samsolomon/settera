@@ -323,7 +323,7 @@ function CompoundPageButton({
         aria-label={`Open ${title}`}
         style={{
           cursor: isDisabled ? "not-allowed" : "pointer",
-          opacity: isDisabled ? 0.6 : 1,
+          // Disabled opacity is handled by PrimitiveButton via the disabled prop.
         }}
       >
         Open {title}

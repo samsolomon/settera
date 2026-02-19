@@ -44,7 +44,7 @@ export function ActionModal({
             position: "fixed",
             inset: 0,
             backgroundColor: "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
-            zIndex: 1000,
+            zIndex: "var(--settera-z-overlay, 1000)" as unknown as number,
           }}
         />
         <Dialog.Content
@@ -82,14 +82,14 @@ export function ActionModal({
             transform: "translate(-50%, -50%)",
             backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
             borderRadius: "var(--settera-dialog-border-radius, 8px)",
-            padding: "var(--settera-dialog-padding, 20px)",
-            maxWidth: "640px",
+            padding: "var(--settera-dialog-padding, 16px)",
+            maxWidth: "var(--settera-dialog-max-width, 640px)",
             width: "calc(100% - 24px)",
             maxHeight: "calc(100vh - 40px)",
             overflow: "auto",
             boxShadow:
               "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
-            zIndex: 1001,
+            zIndex: "var(--settera-z-dialog, 1001)" as unknown as number,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
@@ -127,7 +127,7 @@ export function ActionModal({
                   flexDirection: "column",
                   gap: "4px",
                   fontSize: "13px",
-                  color: "var(--settera-description-color, var(--settera-muted-foreground, #4b5563))",
+                  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
                 }}
               >
                 {field.title}
@@ -155,9 +155,6 @@ export function ActionModal({
                 type="button"
                 disabled={isLoading}
                 style={{
-                  fontSize: "13px",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
                   border:
                     "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
                   backgroundColor:
@@ -176,9 +173,6 @@ export function ActionModal({
               onClick={handleSubmit}
               disabled={isLoading}
               style={{
-                fontSize: "13px",
-                padding: "6px 10px",
-                borderRadius: "6px",
                 border:
                   "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
                 backgroundColor:

@@ -88,7 +88,7 @@ export function SetteraSetting({
           data-testid={`missing-custom-setting-${settingKey}`}
           style={{
             fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, #6b7280)",
+            color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
             fontStyle: "italic",
           }}
         >
@@ -106,7 +106,7 @@ export function SetteraSetting({
           data-testid={`unsupported-${settingKey}`}
           style={{
             fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, #6b7280)",
+            color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
             fontStyle: "italic",
           }}
         >

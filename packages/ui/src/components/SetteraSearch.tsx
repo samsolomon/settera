@@ -21,7 +21,7 @@ const kbdStyle: React.CSSProperties = {
   color: "var(--settera-kbd-color, var(--settera-muted-foreground, #9ca3af))",
   backgroundColor: "var(--settera-kbd-bg, var(--settera-muted, #f4f4f5))",
   border: "none",
-  borderRadius: "var(--settera-kbd-border-radius, 2px)",
+  borderRadius: "var(--settera-kbd-border-radius, 4px)",
   padding: "0 4px",
 };
 
