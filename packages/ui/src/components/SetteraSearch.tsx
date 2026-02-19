@@ -1,7 +1,30 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
 import { useFocusVisible } from "../hooks/useFocusVisible.js";
+
+const kbdStyle: React.CSSProperties = {
+  position: "absolute",
+  right: "8px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "20px",
+  minWidth: "20px",
+  pointerEvents: "none",
+  userSelect: "none",
+  fontSize: "var(--settera-kbd-font-size, 12px)",
+  fontFamily: "inherit",
+  fontWeight: 500,
+  lineHeight: 1,
+  color: "var(--settera-kbd-color, var(--settera-muted-foreground, #9ca3af))",
+  backgroundColor: "var(--settera-kbd-bg, var(--settera-muted, #f4f4f5))",
+  border: "none",
+  borderRadius: "var(--settera-kbd-border-radius, 2px)",
+  padding: "0 4px",
+};
 
 /**
  * Search input for filtering settings.
@@ -10,6 +33,7 @@ import { useFocusVisible } from "../hooks/useFocusVisible.js";
 export function SetteraSearch() {
   const { query, setQuery } = useSetteraSearch();
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -19,6 +43,8 @@ export function SetteraSearch() {
     },
     [setQuery],
   );
+
+  const showKbd = !isFocused && query.length === 0;
 
   return (
     <div
@@ -33,10 +59,18 @@ export function SetteraSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
+        onPointerDown={focusVisibleProps.onPointerDown}
+        onFocus={(e) => {
+          setIsFocused(true);
+          focusVisibleProps.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          focusVisibleProps.onBlur?.(e);
+        }}
         placeholder="Search settings…"
         aria-label="Search settings"
         focusVisible={isFocusVisible}
-        {...focusVisibleProps}
         style={{
           width: "100%",
           padding: "var(--settera-search-input-padding, 8px 10px)",
@@ -52,6 +86,9 @@ export function SetteraSearch() {
           boxSizing: "border-box",
         }}
       />
+      {showKbd && (
+        <kbd style={kbdStyle}>/</kbd>
+      )}
       {query.length > 0 && (
         <PrimitiveButton
           type="button"

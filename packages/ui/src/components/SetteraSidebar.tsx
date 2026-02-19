@@ -22,6 +22,8 @@ export interface SetteraSidebarProps {
     href?: string;
     onClick?: () => void;
   };
+  /** Hide the keyboard shortcut hints in the sidebar footer (e.g. in mobile drawers). */
+  hideFooterHints?: boolean;
 }
 
 interface FlatItem {
@@ -39,6 +41,7 @@ export function SetteraSidebar({
   renderIcon,
   onNavigate,
   backToApp,
+  hideFooterHints,
 }: SetteraSidebarProps) {
   const [isBackToAppHovered, setIsBackToAppHovered] = useState(false);
   const schemaCtx = useContext(SetteraSchemaContext);
@@ -437,24 +440,79 @@ export function SetteraSidebar({
         Navigation
       </div>
 
-      {visiblePages.map((page) => (
-        <SidebarItem
-          key={page.key}
-          page={page}
-          depth={0}
-          activePage={activePage}
-          expandedGroups={expandedGroups}
-          onPageClick={handlePageClick}
-          onChildClick={handleChildClick}
-          renderIcon={renderIcon}
-          isSearching={isSearching}
-          matchingPageKeys={matchingPageKeys}
-          keyToIndex={keyToIndex}
-          getTabIndex={getTabIndex}
-          setButtonRef={setButtonRef}
-        />
-      ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+        {visiblePages.map((page) => (
+          <SidebarItem
+            key={page.key}
+            page={page}
+            depth={0}
+            activePage={activePage}
+            expandedGroups={expandedGroups}
+            onPageClick={handlePageClick}
+            onChildClick={handleChildClick}
+            renderIcon={renderIcon}
+            isSearching={isSearching}
+            matchingPageKeys={matchingPageKeys}
+            keyToIndex={keyToIndex}
+            getTabIndex={getTabIndex}
+            setButtonRef={setButtonRef}
+          />
+        ))}
+      </div>
+
+      {!hideFooterHints && <SidebarFooterHints />}
     </nav>
+  );
+}
+
+const hintBarStyle: React.CSSProperties = {
+  marginTop: "auto",
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "8px 8px 4px",
+  fontSize: "var(--settera-kbd-font-size, 11px)",
+  color:
+    "var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #9ca3af))",
+};
+
+const hintKbdStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minWidth: "16px",
+  backgroundColor:
+    "var(--settera-kbd-bg, var(--settera-sidebar-accent, rgba(0, 0, 0, 0.05)))",
+  border:
+    "var(--settera-kbd-border, 1px solid var(--settera-sidebar-border-color, rgba(0, 0, 0, 0.08)))",
+  borderRadius: "3px",
+  padding: "1px 4px",
+  fontSize: "inherit",
+  fontFamily: "inherit",
+  lineHeight: 1,
+  color:
+    "var(--settera-kbd-color, var(--settera-sidebar-muted-foreground, #9ca3af))",
+};
+
+function SidebarFooterHints() {
+  return (
+    <div aria-hidden="true" style={hintBarStyle}>
+      <span
+        style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+      >
+        <kbd style={hintKbdStyle}>/</kbd> Search
+      </span>
+      <span
+        style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+      >
+        <kbd style={hintKbdStyle}>↑↓</kbd> Navigate
+      </span>
+      <span
+        style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+      >
+        <kbd style={hintKbdStyle}>Esc</kbd> Back
+      </span>
+    </div>
   );
 }
 
