@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraSetting } from "@settera/react";
 import type {
@@ -8,6 +8,8 @@ import type {
   MultiSelectSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import { useCompoundDraft } from "../hooks/useCompoundDraft.js";
 import {
   PrimitiveButton,
   PrimitiveInput,
@@ -19,7 +21,6 @@ import {
   PrimitiveCheckboxControl,
   PrimitiveCheckboxList,
   PrimitiveSelectControl,
-  sectionPanelStyle,
   smallCheckboxStyle,
   stackGapStyle,
 } from "./SetteraFieldPrimitives.js";
@@ -30,15 +31,10 @@ export interface CompoundInputProps {
 
 type CompoundField = CompoundFieldDefinition;
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 export function CompoundInput({ settingKey }: CompoundInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPageOpen, setIsPageOpen] = useState(false);
 
   if (definition.type !== "compound") {
     return null;
@@ -46,35 +42,11 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
 
   const isDisabled = Boolean(definition.disabled);
 
-  const compoundValue = useMemo(
-    () => (isObjectRecord(value) ? value : {}),
-    [value],
-  );
-
-  const effectiveValue = useMemo(() => {
-    const merged: Record<string, unknown> = {};
-    for (const field of definition.fields) {
-      if ("default" in field && field.default !== undefined) {
-        merged[field.key] = field.default;
-      }
-    }
-    return { ...merged, ...compoundValue };
-  }, [compoundValue, definition.fields]);
-
-  const getFieldValue = useCallback(
-    (field: CompoundField): unknown => {
-      return effectiveValue[field.key];
-    },
-    [effectiveValue],
-  );
-
-  const updateField = useCallback(
-    (fieldKey: string, nextFieldValue: unknown) => {
-      const nextValue = { ...effectiveValue, [fieldKey]: nextFieldValue };
-      setValue(nextValue);
-      validate(nextValue);
-    },
-    [effectiveValue, setValue, validate],
+  const { getFieldValue, updateField } = useCompoundDraft(
+    value,
+    definition.fields,
+    setValue,
+    validate,
   );
 
   if (definition.displayStyle === "modal") {
@@ -183,49 +155,12 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
 
   if (definition.displayStyle === "page") {
     return (
-      <div
-        data-testid={`compound-${settingKey}`}
-        aria-invalid={error !== null}
-        aria-describedby={
-          error !== null ? `settera-error-${settingKey}` : undefined
-        }
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        <PrimitiveButton
-          type="button"
-          onClick={() => setIsPageOpen((open) => !open)}
-          disabled={isDisabled}
-          aria-expanded={isPageOpen}
-          aria-controls={`compound-page-panel-${settingKey}`}
-          style={{
-            alignSelf: "flex-start",
-            padding: "6px 10px",
-            cursor: isDisabled ? "not-allowed" : "pointer",
-            opacity: isDisabled ? 0.6 : 1,
-          }}
-        >
-          {isPageOpen ? "Close" : "Open"} {definition.title}
-        </PrimitiveButton>
-
-        {isPageOpen && (
-          <div
-            data-testid={`compound-page-panel-${settingKey}`}
-            id={`compound-page-panel-${settingKey}`}
-            style={{
-              ...sectionPanelStyle,
-              borderRadius: "10px",
-              padding: "12px",
-            }}
-          >
-            <CompoundFields
-              settingKey={settingKey}
-              fields={definition.fields}
-              getFieldValue={getFieldValue}
-              updateField={updateField}
-            />
-          </div>
-        )}
-      </div>
+      <CompoundPageButton
+        settingKey={settingKey}
+        title={definition.title}
+        isDisabled={isDisabled}
+        hasError={error !== null}
+      />
     );
   }
 
@@ -253,7 +188,44 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
   );
 }
 
-function CompoundFields({
+function CompoundPageButton({
+  settingKey,
+  title,
+  isDisabled,
+  hasError,
+}: {
+  settingKey: string;
+  title: string;
+  isDisabled: boolean;
+  hasError: boolean;
+}) {
+  const { openSubpage } = useSetteraNavigation();
+
+  return (
+    <div
+      data-testid={`compound-${settingKey}`}
+      aria-invalid={hasError}
+      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+    >
+      <PrimitiveButton
+        type="button"
+        onClick={() => openSubpage(settingKey)}
+        disabled={isDisabled}
+        aria-label={`Open ${title}`}
+        style={{
+          alignSelf: "flex-start",
+          padding: "6px 10px",
+          cursor: isDisabled ? "not-allowed" : "pointer",
+          opacity: isDisabled ? 0.6 : 1,
+        }}
+      >
+        Open {title}
+      </PrimitiveButton>
+    </div>
+  );
+}
+
+export function CompoundFields({
   settingKey,
   fields,
   getFieldValue,

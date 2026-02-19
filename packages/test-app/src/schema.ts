@@ -721,6 +721,68 @@ export const demoSchema: SetteraSchema = {
               actionType: "callback",
             },
             {
+              key: "actions.importData",
+              title: "Import Data",
+              description:
+                "Full-page form for importing data from an external source.",
+              type: "action",
+              buttonLabel: "Import Data",
+              actionType: "page",
+              page: {
+                title: "Import Data",
+                description:
+                  "Configure the import source and options, then submit to begin the import.",
+                submitLabel: "Start Import",
+                cancelLabel: "Cancel",
+                fields: [
+                  {
+                    key: "source",
+                    title: "Source",
+                    type: "select",
+                    options: [
+                      { value: "csv", label: "CSV File" },
+                      { value: "json", label: "JSON File" },
+                      { value: "api", label: "External API" },
+                    ],
+                    default: "csv",
+                  },
+                  {
+                    key: "url",
+                    title: "Source URL",
+                    type: "text",
+                    inputType: "url",
+                    placeholder: "https://example.com/data.csv",
+                  },
+                  {
+                    key: "overwrite",
+                    title: "Overwrite existing data",
+                    type: "boolean",
+                    default: false,
+                  },
+                  {
+                    key: "dryRun",
+                    title: "Dry run (preview only)",
+                    type: "boolean",
+                    default: true,
+                  },
+                ],
+              },
+            },
+            {
+              key: "actions.advancedExport",
+              title: "Advanced Export",
+              description:
+                "Custom full-page export wizard with a custom renderer.",
+              type: "action",
+              buttonLabel: "Advanced Export",
+              actionType: "page",
+              page: {
+                renderer: "advancedExportPage",
+                title: "Advanced Export",
+                description: "Custom renderer for advanced export options.",
+              },
+            },
+            {
               key: "actions.deleteAccount",
               title: "Delete Account",
               description:

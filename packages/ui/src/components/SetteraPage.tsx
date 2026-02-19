@@ -10,6 +10,8 @@ import {
   mutedMessageStyle,
   descriptionTextStyle,
 } from "./SetteraFieldPrimitives.js";
+import { SubpageContent } from "./SubpageContent.js";
+import type { SetteraActionPageProps } from "./SubpageContent.js";
 
 export interface SetteraPageProps {
   pageKey?: string;
@@ -18,7 +20,10 @@ export interface SetteraPageProps {
     string,
     React.ComponentType<SetteraCustomSettingProps>
   >;
+  customActionPages?: Record<string, React.ComponentType<SetteraActionPageProps>>;
 }
+
+export type { SetteraActionPageProps } from "./SubpageContent.js";
 
 export interface SetteraCustomPageProps {
   page: PageDefinition;
@@ -33,6 +38,7 @@ export function SetteraPage({
   pageKey,
   customPages,
   customSettings,
+  customActionPages,
 }: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage, subpage, closeSubpage } = useSetteraNavigation();
@@ -58,7 +64,11 @@ export function SetteraPage({
           onBack={closeSubpage}
         />
         <div style={{ marginTop: "12px" }}>
-          {/* Subpage content rendered by consumers (compound, action pages) */}
+          <SubpageContent
+            settingKey={subpage.settingKey}
+            onBack={closeSubpage}
+            customActionPages={customActionPages}
+          />
         </div>
       </div>
     );

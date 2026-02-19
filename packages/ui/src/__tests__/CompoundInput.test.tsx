@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
 import { CompoundInput } from "../components/CompoundInput.js";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -64,7 +65,9 @@ function renderCompound(
 ) {
   return render(
     <Settera schema={schema} values={values} onChange={() => {}}>
-      <CompoundInput settingKey={settingKey} />
+      <SetteraNavigationProvider>
+        <CompoundInput settingKey={settingKey} />
+      </SetteraNavigationProvider>
     </Settera>,
   );
 }
@@ -130,15 +133,12 @@ describe("CompoundInput", () => {
     expect(input.style.boxShadow).toContain("0 0 0 2px");
   });
 
-  it("renders page panel fields after opening and applies focus styles", async () => {
-    const user = userEvent.setup();
+  it("renders page compound as a navigation button (no inline fields)", () => {
     renderCompound("profilePage", { profilePage: { handle: "sam" } });
 
+    // Page compound shows an "Open" button instead of inline fields
+    expect(screen.getByRole("button", { name: /Open Profile Page/ })).toBeDefined();
+    // Fields are not rendered inline — they appear in the subpage view
     expect(screen.queryByLabelText("Handle")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Open Profile Page" }));
-
-    const input = screen.getByLabelText("Handle") as HTMLInputElement;
-    await user.click(input);
-    expect(input.style.boxShadow).toContain("0 0 0 2px");
   });
 });

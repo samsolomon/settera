@@ -4,6 +4,7 @@ import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
 import { ActionButton } from "../components/ActionButton.js";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -127,7 +128,9 @@ function renderActionButton(
 ) {
   return render(
     <Settera schema={schema} values={{}} onChange={() => {}} onAction={onAction}>
-      <ActionButton settingKey={settingKey} />
+      <SetteraNavigationProvider>
+        <ActionButton settingKey={settingKey} />
+      </SetteraNavigationProvider>
     </Settera>,
   );
 }

@@ -242,13 +242,24 @@ export interface RepeatableSetting extends BaseValueSettingFields {
 export interface ActionSetting extends BaseSettingFields {
   type: "action";
   buttonLabel: string;
-  actionType: "modal" | "callback";
+  actionType: "modal" | "callback" | "page";
   modal?: {
     title?: string;
     description?: string;
     submitLabel?: string;
     cancelLabel?: string;
     fields: ModalActionFieldSetting[];
+    initialValues?: Record<string, unknown>;
+  };
+  page?: {
+    title?: string;
+    description?: string;
+    /** Custom page component key (consumer-provided renderer) */
+    renderer?: string;
+    submitLabel?: string;
+    cancelLabel?: string;
+    /** Schema-defined form fields (same types as modal fields) */
+    fields?: ModalActionFieldSetting[];
     initialValues?: Record<string, unknown>;
   };
 }
@@ -351,7 +362,8 @@ export interface SchemaValidationError {
     | "INVALID_DEFAULT"
     | "INVALID_REPEATABLE_CONFIG"
     | "INVALID_PATTERN"
-    | "INVALID_COMPOUND_RULE";
+    | "INVALID_COMPOUND_RULE"
+    | "MISSING_ACTION_PAGE_CONFIG";
 
   /** Human-readable error message */
   message: string;

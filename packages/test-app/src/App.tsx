@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   SCHEMA_VERSION,
   getPageByKey,
@@ -20,6 +20,7 @@ import {
   SetteraLayout,
   type SetteraCustomPageProps,
   type SetteraCustomSettingProps,
+  type SetteraActionPageProps,
 } from "@settera/ui";
 import { demoSchema } from "./schema.js";
 
@@ -1183,6 +1184,108 @@ function SignatureCardSetting({
   );
 }
 
+function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPageProps) {
+  const { onAction, isLoading } = useSetteraAction(settingKey);
+  const [format, setFormat] = useState("json");
+  const [includeAttachments, setIncludeAttachments] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const sawLoadingRef = useRef(false);
+
+  // Close after async action completes (same pattern as ActionPageContent)
+  useEffect(() => {
+    if (isLoading) sawLoadingRef.current = true;
+    if (!isSubmitting) return;
+    if (sawLoadingRef.current && isLoading) return;
+    setIsSubmitting(false);
+    sawLoadingRef.current = false;
+    onBack();
+  }, [isLoading, isSubmitting, onBack]);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+      }}
+    >
+      <p
+        style={{
+          fontSize: "14px",
+          color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+          margin: 0,
+        }}
+      >
+        This is a custom-rendered action page for &ldquo;{definition.title}&rdquo;.
+        It demonstrates the <code>page.renderer</code> pattern.
+      </p>
+      <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "14px" }}>
+        Export Format
+        <select
+          value={format}
+          onChange={(e) => setFormat(e.target.value)}
+          style={{
+            fontSize: "14px",
+            padding: "8px 10px",
+            borderRadius: "8px",
+            border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
+            maxWidth: "200px",
+          }}
+        >
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+          <option value="xml">XML</option>
+        </select>
+      </label>
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
+        <input
+          type="checkbox"
+          checked={includeAttachments}
+          onChange={(e) => setIncludeAttachments(e.target.checked)}
+        />
+        Include attachments
+      </label>
+      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => {
+            onAction?.({ format, includeAttachments });
+            setIsSubmitting(true);
+          }}
+          style={{
+            border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+            borderRadius: "8px",
+            background: "var(--settera-button-primary-bg, var(--settera-foreground, #111827))",
+            color: "var(--settera-button-primary-color, #ffffff)",
+            padding: "8px 16px",
+            fontSize: "14px",
+            cursor: isLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          {isLoading ? "Exporting..." : "Start Export"}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={isLoading}
+          style={{
+            border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+            borderRadius: "8px",
+            background: "var(--settera-button-secondary-bg, var(--settera-card, #ffffff))",
+            color: "var(--settera-button-secondary-color, var(--settera-foreground, #374151))",
+            padding: "8px 16px",
+            fontSize: "14px",
+            cursor: isLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [colorMode, setColorMode] = useState<ColorMode>(readSystemColorMode);
@@ -1305,6 +1408,28 @@ export function App() {
         return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
           console.info("[test-app] Account deleted (just kidding).");
         });
+      case "actions.importData": {
+        const importConfig =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+        return new Promise<void>((r) => setTimeout(r, 1000)).then(() => {
+          console.info(
+            `[test-app] Import started (source: ${String(importConfig.source ?? "csv")}, overwrite: ${String(importConfig.overwrite ?? false)}, dryRun: ${String(importConfig.dryRun ?? true)}).`,
+          );
+        });
+      }
+      case "actions.advancedExport": {
+        const exportConfig =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+        return new Promise<void>((r) => setTimeout(r, 1500)).then(() => {
+          console.info(
+            `[test-app] Advanced export (format: ${String(exportConfig.format ?? "json")}, attachments: ${String(exportConfig.includeAttachments ?? false)}).`,
+          );
+        });
+      }
     }
   }, []);
 
@@ -1522,6 +1647,7 @@ export function App() {
               }}
               customPages={{ usersPage: UsersPage }}
               customSettings={{ signatureCard: SignatureCardSetting }}
+              customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}
           {mode === "headless" && (

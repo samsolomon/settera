@@ -2057,4 +2057,169 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "DUPLICATE_KEY")).toBe(true);
     expect(errors.some((e) => e.path.includes("itemFields"))).toBe(true);
   });
+
+  // Action page validation
+  it("rejects page action without page config", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.pageAction",
+                  title: "Page Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "page",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_ACTION_PAGE_CONFIG")).toBe(true);
+  });
+
+  it("rejects page action without renderer or fields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.pageAction",
+                  title: "Page Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "page",
+                  page: {
+                    title: "My Page",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_ACTION_PAGE_CONFIG")).toBe(true);
+  });
+
+  it("accepts page action with renderer", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.pageAction",
+                  title: "Page Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "page",
+                  page: {
+                    renderer: "customPage",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("accepts page action with fields", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.pageAction",
+                  title: "Page Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "page",
+                  page: {
+                    title: "Edit Profile",
+                    fields: [
+                      { key: "name", title: "Name", type: "text" },
+                      { key: "age", title: "Age", type: "number" },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("validates page action fields recursively", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.pageAction",
+                  title: "Page Action",
+                  type: "action",
+                  buttonLabel: "Open",
+                  actionType: "page",
+                  page: {
+                    fields: [
+                      { key: "role", title: "Role", type: "select", options: [] },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "EMPTY_OPTIONS")).toBe(true);
+    expect(errors.some((e) => e.path.includes("page.fields"))).toBe(true);
+  });
 });

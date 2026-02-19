@@ -432,6 +432,32 @@ function validateSetting(
         }
       }
     }
+
+    if (setting.actionType === "page") {
+      if (!setting.page) {
+        ctx.errors.push({
+          path: `${path}.page`,
+          code: "MISSING_ACTION_PAGE_CONFIG",
+          message: `Action setting "${setting.key}" with actionType "page" must define page config.`,
+        });
+      } else if (!setting.page.renderer && (!setting.page.fields || setting.page.fields.length === 0)) {
+        ctx.errors.push({
+          path: `${path}.page`,
+          code: "MISSING_ACTION_PAGE_CONFIG",
+          message: `Action setting "${setting.key}" page config must define either a renderer or fields.`,
+        });
+      } else if (setting.page.fields && setting.page.fields.length > 0) {
+        const pageFieldKeys = new Set<string>();
+        for (let i = 0; i < setting.page.fields.length; i++) {
+          validateSetting(
+            setting.page.fields[i],
+            `${path}.page.fields[${i}]`,
+            ctx,
+            pageFieldKeys,
+          );
+        }
+      }
+    }
   }
 
   if (setting.type === "compound") {

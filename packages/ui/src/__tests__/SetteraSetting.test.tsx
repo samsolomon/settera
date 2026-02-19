@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
 import { SetteraSetting } from "../components/SetteraSetting.js";
+import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import type { SetteraSchema } from "@settera/schema";
 
 const schema: SetteraSchema = {
@@ -145,10 +146,12 @@ function renderSetting(
 ) {
   return render(
     <Settera schema={schema} values={values} onChange={() => {}}>
-      <SetteraSetting
-        settingKey={settingKey}
-        customSettings={customSettings}
-      />
+      <SetteraNavigationProvider>
+        <SetteraSetting
+          settingKey={settingKey}
+          customSettings={customSettings}
+        />
+      </SetteraNavigationProvider>
     </Settera>,
   );
 }
@@ -249,7 +252,9 @@ describe("SetteraSetting", () => {
         values={{ profile: { nickname: "Sam", public: false } }}
         onChange={onChange}
       >
-        <SetteraSetting settingKey="profile" />
+        <SetteraNavigationProvider>
+          <SetteraSetting settingKey="profile" />
+        </SetteraNavigationProvider>
       </Settera>,
     );
 
@@ -274,7 +279,9 @@ describe("SetteraSetting", () => {
         values={{ profile: { nickname: "Sam" } }}
         onChange={onChange}
       >
-        <SetteraSetting settingKey="profile" />
+        <SetteraNavigationProvider>
+          <SetteraSetting settingKey="profile" />
+        </SetteraNavigationProvider>
       </Settera>,
     );
 
@@ -300,13 +307,12 @@ describe("SetteraSetting", () => {
     expect(screen.getByLabelText("Modal Nickname")).toBeDefined();
   });
 
-  it("renders page compound panel only after open button", async () => {
-    const user = userEvent.setup();
+  it("renders page compound as navigation button (no inline panel)", () => {
     renderSetting("profilePage", { profilePage: { nickname: "Sam" } });
 
-    expect(screen.queryByTestId("compound-page-panel-profilePage")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Open Profile Page" }));
-    expect(screen.getByTestId("compound-page-panel-profilePage")).toBeDefined();
-    expect(screen.getByLabelText("Page Nickname")).toBeDefined();
+    // Page compound shows a navigation button, not an inline panel
+    expect(screen.getByRole("button", { name: /Open Profile Page/ })).toBeDefined();
+    // Fields are rendered in the subpage, not inline
+    expect(screen.queryByLabelText("Page Nickname")).toBeNull();
   });
 });

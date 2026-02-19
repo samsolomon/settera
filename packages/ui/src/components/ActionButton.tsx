@@ -3,6 +3,7 @@ import type { ActionSetting } from "@settera/schema";
 import { useSetteraAction } from "@settera/react";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { useFocusVisible } from "../hooks/useFocusVisible.js";
+import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { ActionModal } from "./ActionModal.js";
 
 export interface ActionButtonProps {
@@ -17,6 +18,7 @@ export interface ActionButtonProps {
 export function ActionButton({ settingKey }: ActionButtonProps) {
   const { definition, onAction, isLoading } = useSetteraAction(settingKey);
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
+  const { openSubpage } = useSetteraNavigation();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasModalOpenRef = useRef(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +32,9 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
 
   const actionDefinition = definition as ActionSetting;
   const isModalAction = actionDefinition.actionType === "modal";
+  const isPageAction = actionDefinition.actionType === "page";
   const hasModalConfig = Boolean(actionDefinition.modal);
+  const hasPageConfig = Boolean(actionDefinition.page);
 
   const handleSubmitModal = useCallback(
     (payload: Record<string, unknown>) => {
@@ -60,6 +64,11 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
         ref={triggerRef}
         type="button"
         onClick={() => {
+          if (isPageAction) {
+            if (isLoading) return;
+            openSubpage(settingKey);
+            return;
+          }
           if (isModalAction) {
             if (isLoading) return;
             setIsModalOpen(true);
@@ -68,14 +77,14 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
           onAction();
         }}
         {...focusVisibleProps}
-        disabled={isDisabled || isLoading || (isModalAction && !hasModalConfig)}
+        disabled={isDisabled || isLoading || (isModalAction && !hasModalConfig) || (isPageAction && !hasPageConfig)}
         aria-label={definition.title}
         aria-busy={isLoading}
         tone={isDangerous ? "destructive" : "default"}
         focusVisible={isFocusVisible}
         style={{
           cursor:
-            isDisabled || isLoading || (isModalAction && !hasModalConfig)
+            isDisabled || isLoading || (isModalAction && !hasModalConfig) || (isPageAction && !hasPageConfig)
               ? "not-allowed"
               : "pointer",
           opacity: isDisabled || isLoading ? 0.7 : 1,

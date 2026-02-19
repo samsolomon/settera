@@ -10,7 +10,7 @@ import { useSetteraLayoutHighlight } from "../hooks/useSetteraLayoutHighlight.js
 import { useSetteraLayoutUrlSync } from "../hooks/useSetteraLayoutUrlSync.js";
 import { SetteraSidebar } from "./SetteraSidebar.js";
 import { SetteraPage } from "./SetteraPage.js";
-import type { SetteraCustomPageProps } from "./SetteraPage.js";
+import type { SetteraCustomPageProps, SetteraActionPageProps } from "./SetteraPage.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
@@ -36,6 +36,7 @@ export interface SetteraLayoutProps {
     string,
     React.ComponentType<SetteraCustomSettingProps>
   >;
+  customActionPages?: Record<string, React.ComponentType<SetteraActionPageProps>>;
   activeSettingQueryParam?: string;
 }
 
@@ -87,6 +88,7 @@ function SetteraLayoutInner({
   activePageQueryParam = "setteraPage",
   customPages,
   customSettings,
+  customActionPages,
   activeSettingQueryParam = "setting",
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -182,6 +184,7 @@ function SetteraLayoutInner({
           <SetteraPage
             customPages={customPages}
             customSettings={customSettings}
+            customActionPages={customActionPages}
           />
         )}
       </div>

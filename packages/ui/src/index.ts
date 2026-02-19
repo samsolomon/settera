@@ -74,6 +74,7 @@ export { SetteraPage } from "./components/SetteraPage.js";
 export type {
   SetteraPageProps,
   SetteraCustomPageProps,
+  SetteraActionPageProps,
 } from "./components/SetteraPage.js";
 export { SetteraSidebar } from "./components/SetteraSidebar.js";
 export type { SetteraSidebarProps } from "./components/SetteraSidebar.js";
