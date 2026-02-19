@@ -34,35 +34,21 @@ export function SetteraSection({
   }
 
   const page = schemaCtx.getPageByKey(pageKey);
-  if (!page) return null;
-
-  const section = page.sections?.find(
+  const section = page?.sections?.find(
     (s: SectionDefinition) => s.key === sectionKey,
   );
-  if (!section) return null;
 
-  if (!evaluateVisibility(section.visibleWhen, values)) {
-    return null;
-  }
-
-  const sectionContentId = `settera-section-content-${pageKey}-${sectionKey}`;
-  const sectionTitleId = `settera-section-${sectionKey}`;
-  const isCollapsible = section.collapsible === true;
-  const initialCollapsed = isCollapsible && section.defaultCollapsed === true;
+  const isCollapsible = section?.collapsible === true;
+  const initialCollapsed = isCollapsible && section?.defaultCollapsed === true;
   const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
 
   useEffect(() => {
     setIsCollapsed(initialCollapsed);
   }, [initialCollapsed, pageKey, sectionKey]);
 
-  // Filter settings during search
-  const visibleSettings = isSearching
-    ? (section.settings ?? []).filter((s) => matchingSettingKeys.has(s.key))
-    : (section.settings ?? []);
-
   const visibleSubsections = useMemo(
     () =>
-      (section.subsections ?? []).filter((sub) => {
+      (section?.subsections ?? []).filter((sub) => {
         if (!evaluateVisibility(sub.visibleWhen, values)) {
           return false;
         }
@@ -71,8 +57,19 @@ export function SetteraSection({
         }
         return sub.settings.some((s) => matchingSettingKeys.has(s.key));
       }),
-    [section.subsections, values, isSearching, matchingSettingKeys],
+    [section?.subsections, values, isSearching, matchingSettingKeys],
   );
+
+  if (!page || !section) return null;
+
+  if (!evaluateVisibility(section.visibleWhen, values)) {
+    return null;
+  }
+
+  // Filter settings during search
+  const visibleSettings = isSearching
+    ? (section.settings ?? []).filter((s) => matchingSettingKeys.has(s.key))
+    : (section.settings ?? []);
 
   // Hide entire section if no visible settings or subsections during search
   if (
@@ -83,6 +80,8 @@ export function SetteraSection({
     return null;
   }
 
+  const sectionContentId = `settera-section-content-${pageKey}-${sectionKey}`;
+  const sectionTitleId = `settera-section-${sectionKey}`;
   const isEffectivelyCollapsed = isCollapsible && isCollapsed && !isSearching;
 
   return (
