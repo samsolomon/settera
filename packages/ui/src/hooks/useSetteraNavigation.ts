@@ -4,9 +4,7 @@ import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.j
 const EMPTY_SET = new Set<string>();
 const NOOP = () => {};
 const NOOP_UNREGISTER = () => () => {};
-const isProduction = () =>
-  (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-    ?.NODE_ENV === "production";
+const isProduction = () => process.env.NODE_ENV === "production";
 
 /**
  * Access sidebar navigation state and controls.

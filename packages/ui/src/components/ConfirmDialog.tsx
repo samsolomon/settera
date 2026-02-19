@@ -158,7 +158,7 @@ export function ConfirmDialog() {
               type="button"
               onClick={handleConfirm}
               disabled={confirmDisabled}
-              tone={dangerous ? "destructive" : "default"}
+
               style={{
                 padding: "8px 16px",
                 fontSize: "14px",

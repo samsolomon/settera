@@ -12,9 +12,7 @@ import type { SetteraSchemaContextValue } from "./context.js";
 import { SetteraValuesStore } from "./stores/index.js";
 import type { ValidationMode } from "./stores/index.js";
 
-const IS_DEV =
-  (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-    ?.NODE_ENV !== "production";
+const IS_DEV = process.env.NODE_ENV !== "production";
 
 export type { ValidationMode };
 

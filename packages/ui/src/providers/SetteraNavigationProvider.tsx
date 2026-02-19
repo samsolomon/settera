@@ -45,8 +45,12 @@ function SetteraNavigationProviderInner({
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage, setActivePage } = useReactNavigation();
 
-  // schema is guaranteed to exist since SetteraNavigation checks for it
-  const { schema } = schemaCtx!;
+  if (!schemaCtx) {
+    throw new Error(
+      "SetteraNavigationProviderInner must be used within a Settera component.",
+    );
+  }
+  const { schema } = schemaCtx;
 
   // UI-specific state
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
