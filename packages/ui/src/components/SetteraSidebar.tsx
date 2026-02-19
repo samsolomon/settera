@@ -334,21 +334,22 @@ export function SetteraSidebar({
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                width: "100%",
-                border: "var(--settera-sidebar-back-border, none)",
+                gap: "6px",
+                border: "none",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-ghost-hover-bg, #f4f4f5))"
                   : "var(--settera-sidebar-back-bg, transparent)",
                 borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-                padding: "var(--settera-sidebar-item-padding, 8px 10px)",
+                padding: "6px 10px",
                 textAlign: "left",
-                fontSize: "inherit",
+                fontSize: "14px",
+                fontWeight: 500,
                 color:
-                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, var(--settera-foreground, #18181b)))",
+                  "var(--settera-sidebar-back-color, var(--settera-description-color, var(--settera-muted-foreground, #6b7280)))",
                 cursor: "pointer",
                 fontFamily: "inherit",
                 transition: "background-color 120ms ease",
+                marginLeft: "-10px",
               }}
             >
               <svg
@@ -380,22 +381,23 @@ export function SetteraSidebar({
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                width: "100%",
+                gap: "6px",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-ghost-hover-bg, #f4f4f5))"
                   : "var(--settera-sidebar-back-bg, transparent)",
-                border: "var(--settera-sidebar-back-border, none)",
+                border: "none",
                 borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-                padding: "var(--settera-sidebar-item-padding, 8px 10px)",
+                padding: "6px 10px",
                 textAlign: "left",
-                fontSize: "inherit",
+                fontSize: "14px",
+                fontWeight: 500,
                 color:
-                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, var(--settera-foreground, #18181b)))",
+                  "var(--settera-sidebar-back-color, var(--settera-description-color, var(--settera-muted-foreground, #6b7280)))",
                 textDecoration: "none",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
                 transition: "background-color 120ms ease",
+                marginLeft: "-10px",
               }}
             >
               <svg
