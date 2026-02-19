@@ -8,6 +8,22 @@ import type {
   BooleanSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
+import {
+  PrimitiveButton,
+  PrimitiveInput,
+  inputBaseStyle,
+} from "./SetteraPrimitives.js";
+import {
+  fieldShellStyle,
+  inlineRowStyle,
+  PrimitiveCheckboxControl,
+  PrimitiveCheckboxList,
+  PrimitiveSelectControl,
+  sectionPanelStyle,
+  smallActionButtonStyle,
+  smallCheckboxStyle,
+  stackGapStyle,
+} from "./SetteraFieldPrimitives.js";
 
 export interface RepeatableInputProps {
   settingKey: string;
@@ -90,82 +106,56 @@ function ListTextItem({
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-      }}
-    >
-      <input
+    <div style={inlineRowStyle}>
+      <PrimitiveInput
         aria-label={`List item ${index + 1}`}
         {...inputProps}
         onChange={handleChange}
         disabled={disabled}
-        style={{
-          fontSize: "var(--settera-input-font-size, 14px)",
-          padding: "var(--settera-input-padding, 6px 10px)",
-          borderRadius: "var(--settera-input-border-radius, 6px)",
-          border: "var(--settera-input-border, 1px solid #d1d5db)",
-          width: "var(--settera-input-width, 200px)",
-          color: "var(--settera-input-color, #111827)",
-          backgroundColor: "var(--settera-input-bg, white)",
-        }}
+        style={repeatableInputStyle}
       />
 
-      <button
+      <PrimitiveButton
         type="button"
         aria-label={`Move item ${index + 1} up`}
         onClick={() => onMoveUp(index)}
         disabled={disabled || isFirst}
         style={{
-          fontSize: "var(--settera-button-font-size, 13px)",
-          padding: "4px 8px",
-          borderRadius: "var(--settera-button-border-radius, 6px)",
-          border: "var(--settera-button-border, 1px solid #d1d5db)",
-          backgroundColor: "var(--settera-button-bg, white)",
+          ...smallActionButtonStyle,
           cursor: disabled || isFirst ? "not-allowed" : "pointer",
           opacity: disabled || isFirst ? 0.6 : 1,
         }}
       >
         Up
-      </button>
+      </PrimitiveButton>
 
-      <button
+      <PrimitiveButton
         type="button"
         aria-label={`Move item ${index + 1} down`}
         onClick={() => onMoveDown(index)}
         disabled={disabled || isLast}
         style={{
-          fontSize: "var(--settera-button-font-size, 13px)",
-          padding: "4px 8px",
-          borderRadius: "var(--settera-button-border-radius, 6px)",
-          border: "var(--settera-button-border, 1px solid #d1d5db)",
-          backgroundColor: "var(--settera-button-bg, white)",
+          ...smallActionButtonStyle,
           cursor: disabled || isLast ? "not-allowed" : "pointer",
           opacity: disabled || isLast ? 0.6 : 1,
         }}
       >
         Down
-      </button>
+      </PrimitiveButton>
 
-      <button
+      <PrimitiveButton
         type="button"
         aria-label={`Remove item ${index + 1}`}
         onClick={() => onRemove(index)}
         disabled={disabled}
         style={{
-          fontSize: "var(--settera-button-font-size, 13px)",
-          padding: "4px 8px",
-          borderRadius: "var(--settera-button-border-radius, 6px)",
-          border: "var(--settera-button-border, 1px solid #d1d5db)",
-          backgroundColor: "var(--settera-button-bg, white)",
+          ...smallActionButtonStyle,
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.6 : 1,
         }}
       >
         Remove
-      </button>
+      </PrimitiveButton>
     </div>
   );
 }
@@ -184,15 +174,7 @@ function RepeatableCompoundFieldControl({
   parentDisabled?: boolean;
 }) {
   const effectiveDisabled = parentDisabled || Boolean(field.disabled);
-  const inputStyle: React.CSSProperties = {
-    fontSize: "var(--settera-input-font-size, 14px)",
-    padding: "var(--settera-input-padding, 6px 10px)",
-    borderRadius: "var(--settera-input-border-radius, 6px)",
-    border: "var(--settera-input-border, 1px solid #d1d5db)",
-    width: "var(--settera-input-width, 200px)",
-    color: "var(--settera-input-color, #111827)",
-    backgroundColor: "var(--settera-input-bg, white)",
-  };
+  const inputStyle = repeatableInputStyle;
 
   if (field.type === "text") {
     return (
@@ -224,20 +206,14 @@ function RepeatableCompoundFieldControl({
   if (field.type === "select") {
     const selectField = field as SelectSetting;
     return (
-      <select
-        aria-label={`${field.title} ${itemIndex + 1}`}
+      <PrimitiveSelectControl
+        ariaLabel={`${field.title} ${itemIndex + 1}`}
         value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(itemIndex, field.key, e.target.value)}
+        options={selectField.options}
+        onChange={(nextValue) => onChange(itemIndex, field.key, nextValue)}
         disabled={effectiveDisabled}
         style={inputStyle}
-      >
-        <option value="">Select...</option>
-        {selectField.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      />
     );
   }
 
@@ -247,43 +223,24 @@ function RepeatableCompoundFieldControl({
       ? value.filter((item): item is string => typeof item === "string")
       : [];
     return (
-      <div
-        aria-label={`${field.title} ${itemIndex + 1}`}
-        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-      >
-        {multiField.options.map((opt) => {
-          const checked = selected.includes(opt.value);
-          return (
-            <label
-              key={opt.value}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={checked}
-                disabled={effectiveDisabled}
-                onChange={(e) => {
-                  const next = e.target.checked
-                    ? [...selected, opt.value]
-                    : selected.filter((v) => v !== opt.value);
-                  onChange(itemIndex, field.key, next);
-                }}
-              />
-              {opt.label}
-            </label>
-          );
-        })}
-      </div>
+      <PrimitiveCheckboxList
+        ariaLabel={`${field.title} ${itemIndex + 1}`}
+        options={multiField.options}
+        selected={selected}
+        disabled={effectiveDisabled}
+        onToggle={(optionValue, checked) => {
+          const next = checked
+            ? [...selected, optionValue]
+            : selected.filter((v) => v !== optionValue);
+          onChange(itemIndex, field.key, next);
+        }}
+      />
     );
   }
 
   if (field.type === "date") {
     return (
-      <input
+      <PrimitiveInput
         aria-label={`${field.title} ${itemIndex + 1}`}
         type="date"
         value={typeof value === "string" ? value : ""}
@@ -296,13 +253,14 @@ function RepeatableCompoundFieldControl({
 
   const booleanField = field as BooleanSetting;
   return (
-    <input
-      aria-label={`${booleanField.title} ${itemIndex + 1}`}
-      type="checkbox"
+    <PrimitiveCheckboxControl
+      ariaLabel={`${booleanField.title} ${itemIndex + 1}`}
       checked={Boolean(value)}
-      onChange={(e) => onChange(itemIndex, booleanField.key, e.target.checked)}
+      onChange={(nextChecked) =>
+        onChange(itemIndex, booleanField.key, nextChecked)
+      }
       disabled={effectiveDisabled}
-      style={{ width: "16px", height: "16px" }}
+      style={smallCheckboxStyle}
     />
   );
 }
@@ -328,7 +286,7 @@ function RepeatableCompoundTextField({
   });
 
   return (
-    <input
+    <PrimitiveInput
       aria-label={`${field.title} ${itemIndex + 1}`}
       {...inputProps}
       type={field.inputType ?? "text"}
@@ -364,7 +322,7 @@ function RepeatableCompoundNumberField({
   });
 
   return (
-    <input
+    <PrimitiveInput
       aria-label={`${fieldTitle} ${itemIndex + 1}`}
       {...inputProps}
       type="number"
@@ -582,24 +540,12 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           <div
             key={`${settingKey}-${index}`}
             style={{
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
+              ...sectionPanelStyle,
               padding: "10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
             }}
           >
             {(definition.itemFields ?? []).map((field) => (
-              <label
-                key={`${index}-${field.key}`}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  fontSize: "13px",
-                }}
-              >
+              <label key={`${index}-${field.key}`} style={fieldShellStyle}>
                 {field.title}
                 <RepeatableCompoundFieldControl
                   field={field}
@@ -611,86 +557,77 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
               </label>
             ))}
 
-            <button
+            <PrimitiveButton
               type="button"
               aria-label={`Move item ${index + 1} up`}
               onClick={() => moveItem(index, "up")}
               disabled={isDisabled || index === 0}
               style={{
                 alignSelf: "flex-start",
-                fontSize: "var(--settera-button-font-size, 13px)",
-                padding: "4px 8px",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
-                border: "var(--settera-button-border, 1px solid #d1d5db)",
-                backgroundColor: "var(--settera-button-bg, white)",
+                ...smallActionButtonStyle,
                 cursor: isDisabled || index === 0 ? "not-allowed" : "pointer",
                 opacity: isDisabled || index === 0 ? 0.6 : 1,
               }}
             >
               Up
-            </button>
+            </PrimitiveButton>
 
-            <button
+            <PrimitiveButton
               type="button"
               aria-label={`Move item ${index + 1} down`}
               onClick={() => moveItem(index, "down")}
               disabled={isDisabled || index === compoundItems.length - 1}
               style={{
                 alignSelf: "flex-start",
-                fontSize: "var(--settera-button-font-size, 13px)",
-                padding: "4px 8px",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
-                border: "var(--settera-button-border, 1px solid #d1d5db)",
-                backgroundColor: "var(--settera-button-bg, white)",
+                ...smallActionButtonStyle,
                 cursor:
                   isDisabled || index === compoundItems.length - 1
                     ? "not-allowed"
                     : "pointer",
-                opacity: isDisabled || index === compoundItems.length - 1 ? 0.6 : 1,
+                opacity:
+                  isDisabled || index === compoundItems.length - 1 ? 0.6 : 1,
               }}
             >
               Down
-            </button>
+            </PrimitiveButton>
 
-            <button
+            <PrimitiveButton
               type="button"
               aria-label={`Remove item ${index + 1}`}
               onClick={() => removeItem(index)}
               disabled={isDisabled}
               style={{
                 alignSelf: "flex-start",
-                fontSize: "var(--settera-button-font-size, 13px)",
-                padding: "4px 8px",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
-                border: "var(--settera-button-border, 1px solid #d1d5db)",
-                backgroundColor: "var(--settera-button-bg, white)",
+                ...smallActionButtonStyle,
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
               }}
             >
               Remove
-            </button>
+            </PrimitiveButton>
           </div>
         ))}
 
-      <button
+      <PrimitiveButton
         type="button"
         onClick={addItem}
         disabled={isDisabled || Boolean(isAtMax)}
         aria-label={`Add item to ${definition.title}`}
         style={{
           alignSelf: "flex-start",
-          fontSize: "var(--settera-button-font-size, 13px)",
           padding: "4px 10px",
-          borderRadius: "var(--settera-button-border-radius, 6px)",
-          border: "var(--settera-button-border, 1px solid #d1d5db)",
-          backgroundColor: "var(--settera-button-bg, white)",
           cursor: isDisabled || isAtMax ? "not-allowed" : "pointer",
           opacity: isDisabled || isAtMax ? 0.6 : 1,
         }}
       >
         Add item
-      </button>
+      </PrimitiveButton>
     </div>
   );
 }
+
+const repeatableInputStyle: React.CSSProperties = {
+  ...inputBaseStyle,
+  border: "var(--settera-input-border, 1px solid #d1d5db)",
+  width: "var(--settera-input-width, 200px)",
+};

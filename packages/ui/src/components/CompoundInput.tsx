@@ -8,6 +8,20 @@ import type {
   MultiSelectSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
+import {
+  PrimitiveButton,
+  PrimitiveInput,
+  inputBaseStyle,
+} from "./SetteraPrimitives.js";
+import {
+  fieldShellStyle,
+  PrimitiveCheckboxControl,
+  PrimitiveCheckboxList,
+  PrimitiveSelectControl,
+  sectionPanelStyle,
+  smallCheckboxStyle,
+  stackGapStyle,
+} from "./SetteraFieldPrimitives.js";
 
 export interface CompoundInputProps {
   settingKey: string;
@@ -73,21 +87,17 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
       >
         <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
           <Dialog.Trigger asChild>
-            <button
+            <PrimitiveButton
               type="button"
               disabled={isDisabled}
               style={{
-                fontSize: "var(--settera-button-font-size, 13px)",
                 padding: "6px 10px",
-                borderRadius: "var(--settera-button-border-radius, 6px)",
-                border: "var(--settera-button-border, 1px solid #d1d5db)",
-                backgroundColor: "var(--settera-button-bg, white)",
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
               }}
             >
               Edit {definition.title}
-            </button>
+            </PrimitiveButton>
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Overlay
@@ -151,19 +161,15 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
                 }}
               >
                 <Dialog.Close asChild>
-                  <button
+                  <PrimitiveButton
                     type="button"
                     style={{
-                      fontSize: "var(--settera-button-font-size, 13px)",
                       padding: "6px 10px",
-                      borderRadius: "var(--settera-button-border-radius, 6px)",
-                      border: "var(--settera-button-border, 1px solid #d1d5db)",
-                      backgroundColor: "var(--settera-button-bg, white)",
                       cursor: "pointer",
                     }}
                   >
                     Done
-                  </button>
+                  </PrimitiveButton>
                 </Dialog.Close>
               </div>
             </Dialog.Content>
@@ -183,7 +189,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
         }
         style={{ display: "flex", flexDirection: "column", gap: "8px" }}
       >
-        <button
+        <PrimitiveButton
           type="button"
           onClick={() => setIsPageOpen((open) => !open)}
           disabled={isDisabled}
@@ -191,24 +197,20 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
           aria-controls={`compound-page-panel-${settingKey}`}
           style={{
             alignSelf: "flex-start",
-            fontSize: "var(--settera-button-font-size, 13px)",
             padding: "6px 10px",
-            borderRadius: "var(--settera-button-border-radius, 6px)",
-            border: "var(--settera-button-border, 1px solid #d1d5db)",
-            backgroundColor: "var(--settera-button-bg, white)",
             cursor: isDisabled ? "not-allowed" : "pointer",
             opacity: isDisabled ? 0.6 : 1,
           }}
         >
           {isPageOpen ? "Close" : "Open"} {definition.title}
-        </button>
+        </PrimitiveButton>
 
         {isPageOpen && (
           <div
             data-testid={`compound-page-panel-${settingKey}`}
             id={`compound-page-panel-${settingKey}`}
             style={{
-              border: "1px solid #e5e7eb",
+              ...sectionPanelStyle,
               borderRadius: "10px",
               padding: "12px",
             }}
@@ -269,19 +271,15 @@ function CompoundFields({
         const fieldValue = getFieldValue(field);
 
         return (
-          <label
-            key={field.key}
-            htmlFor={fieldId}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-              fontSize: "var(--settera-description-font-size, 13px)",
-              color: "var(--settera-description-color, #4b5563)",
-            }}
-          >
+          <label key={field.key} htmlFor={fieldId} style={fieldShellStyle}>
             {field.title}
-            {renderFieldControl(field, fieldId, fieldValue, updateField, parentDisabled)}
+            {renderFieldControl(
+              field,
+              fieldId,
+              fieldValue,
+              updateField,
+              parentDisabled,
+            )}
           </label>
         );
       })}
@@ -297,12 +295,17 @@ function renderFieldControl(
   parentDisabled?: boolean,
 ) {
   const effectiveDisabled = parentDisabled || Boolean(field.disabled);
-  const effectiveReadOnly =
-    "readonly" in field && Boolean(field.readonly);
+  const effectiveReadOnly = "readonly" in field && Boolean(field.readonly);
 
   switch (field.type) {
     case "boolean":
-      return renderBooleanField(field, fieldId, fieldValue, onChange, effectiveDisabled);
+      return renderBooleanField(
+        field,
+        fieldId,
+        fieldValue,
+        onChange,
+        effectiveDisabled,
+      );
     case "text":
       return (
         <CompoundTextField
@@ -347,7 +350,13 @@ function renderFieldControl(
         />
       );
     case "multiselect":
-      return renderMultiSelectField(field, fieldId, fieldValue, onChange, effectiveDisabled);
+      return renderMultiSelectField(
+        field,
+        fieldId,
+        fieldValue,
+        onChange,
+        effectiveDisabled,
+      );
     default:
       return null;
   }
@@ -382,17 +391,15 @@ function CompoundTextField({
   const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
 
   return (
-    <input
+    <PrimitiveInput
       id={fieldId}
       type={field.inputType ?? "text"}
       {...inputProps}
       disabled={disabled}
       readOnly={readOnly}
+      focusVisible={isFocused}
       style={{
         ...inputStyles,
-        boxShadow: isFocused
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
       }}
     />
   );
@@ -436,17 +443,15 @@ function CompoundNumberField({
   const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
 
   return (
-    <input
+    <PrimitiveInput
       id={fieldId}
       type="number"
       {...inputProps}
       disabled={disabled}
       readOnly={readOnly}
+      focusVisible={isFocused}
       style={{
         ...inputStyles,
-        boxShadow: isFocused
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
       }}
     />
   );
@@ -470,7 +475,7 @@ function CompoundDateField({
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <input
+    <PrimitiveInput
       id={fieldId}
       type="date"
       value={typeof fieldValue === "string" ? fieldValue : ""}
@@ -479,11 +484,9 @@ function CompoundDateField({
       onBlur={() => setIsFocused(false)}
       disabled={disabled}
       readOnly={readOnly}
+      focusVisible={isFocused}
       style={{
         ...inputStyles,
-        boxShadow: isFocused
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
       }}
     />
   );
@@ -505,27 +508,19 @@ function CompoundSelectField({
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <select
+    <PrimitiveSelectControl
       id={fieldId}
       value={typeof fieldValue === "string" ? fieldValue : ""}
-      onChange={(e) => onChange(field.key, e.target.value)}
+      options={field.options}
+      onChange={(nextValue) => onChange(field.key, nextValue)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
+      focusVisible={isFocused}
       disabled={disabled}
       style={{
         ...inputStyles,
-        boxShadow: isFocused
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-          : "none",
       }}
-    >
-      <option value="">Select...</option>
-      {field.options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+    />
   );
 }
 
@@ -537,16 +532,12 @@ function renderBooleanField(
   disabled?: boolean,
 ) {
   return (
-    <input
+    <PrimitiveCheckboxControl
       id={fieldId}
-      type="checkbox"
       checked={Boolean(fieldValue)}
-      onChange={(e) => onChange(field.key, e.target.checked)}
+      onChange={(nextChecked) => onChange(field.key, nextChecked)}
       disabled={disabled}
-      style={{
-        width: "var(--settera-checkbox-size, 16px)",
-        height: "var(--settera-checkbox-size, 16px)",
-      }}
+      style={smallCheckboxStyle}
     />
   );
 }
@@ -563,42 +554,23 @@ function renderMultiSelectField(
     : [];
 
   return (
-    <div
-      id={fieldId}
-      style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-    >
-      {field.options.map((opt) => {
-        const checked = selected.includes(opt.value);
-        return (
-          <label
-            key={opt.value}
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-          >
-            <input
-              type="checkbox"
-              checked={checked}
-              disabled={disabled}
-              onChange={(e) => {
-                const next = e.target.checked
-                  ? [...selected, opt.value]
-                  : selected.filter((v) => v !== opt.value);
-                onChange(field.key, next);
-              }}
-            />
-            {opt.label}
-          </label>
-        );
-      })}
-    </div>
+    <PrimitiveCheckboxList
+      options={field.options}
+      selected={selected}
+      disabled={disabled}
+      style={stackGapStyle}
+      onToggle={(optionValue, checked) => {
+        const next = checked
+          ? [...selected, optionValue]
+          : selected.filter((v) => v !== optionValue);
+        onChange(field.key, next);
+      }}
+    />
   );
 }
 
 const inputStyles: React.CSSProperties = {
-  fontSize: "var(--settera-input-font-size, 14px)",
-  padding: "var(--settera-input-padding, 6px 10px)",
-  borderRadius: "var(--settera-input-border-radius, 6px)",
+  ...inputBaseStyle,
   border: "var(--settera-input-border, 1px solid #d1d5db)",
   width: "var(--settera-input-width, 200px)",
-  color: "var(--settera-input-color, #111827)",
-  backgroundColor: "var(--settera-input-bg, white)",
 };

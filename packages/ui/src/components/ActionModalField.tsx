@@ -5,6 +5,21 @@ import {
   isObjectRecord,
   type ModalActionFieldSetting,
 } from "./actionModalUtils.js";
+import {
+  PrimitiveButton,
+  PrimitiveInput,
+  inputBaseStyle,
+} from "./SetteraPrimitives.js";
+import {
+  fieldShellStyle,
+  PrimitiveCheckboxControl,
+  PrimitiveCheckboxList,
+  PrimitiveSelectControl,
+  sectionPanelStyle,
+  smallActionButtonStyle,
+  smallCheckboxStyle,
+  stackGapStyle,
+} from "./SetteraFieldPrimitives.js";
 
 export interface ActionModalFieldProps {
   field: ModalActionFieldSetting;
@@ -13,13 +28,9 @@ export interface ActionModalFieldProps {
 }
 
 const inputStyle: React.CSSProperties = {
-  fontSize: "var(--settera-input-font-size, 14px)",
-  padding: "var(--settera-input-padding, 6px 10px)",
-  borderRadius: "var(--settera-input-border-radius, 6px)",
+  ...inputBaseStyle,
   border: "var(--settera-input-border, 1px solid #d1d5db)",
   width: "100%",
-  color: "var(--settera-input-color, #111827)",
-  backgroundColor: "var(--settera-input-bg, white)",
   boxSizing: "border-box",
 };
 
@@ -54,7 +65,7 @@ function ActionModalNumberField({
   }, [draft, onChange]);
 
   return (
-    <input
+    <PrimitiveInput
       aria-label={title}
       type="number"
       value={draft}
@@ -78,7 +89,7 @@ export function ActionModalField({
   if (field.type === "text") {
     const textField = field as TextSetting;
     return (
-      <input
+      <PrimitiveInput
         aria-label={field.title}
         type={textField.inputType ?? "text"}
         value={typeof value === "string" ? value : ""}
@@ -100,7 +111,7 @@ export function ActionModalField({
 
   if (field.type === "date") {
     return (
-      <input
+      <PrimitiveInput
         aria-label={field.title}
         type="date"
         value={typeof value === "string" ? value : ""}
@@ -112,30 +123,23 @@ export function ActionModalField({
 
   if (field.type === "select") {
     return (
-      <select
-        aria-label={field.title}
+      <PrimitiveSelectControl
+        ariaLabel={field.title}
         value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(e.target.value)}
+        options={field.options}
+        onChange={(nextValue) => onChange(nextValue)}
         style={inputStyle}
-      >
-        <option value="">Select...</option>
-        {field.options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      />
     );
   }
 
   if (field.type === "boolean") {
     return (
-      <input
-        aria-label={field.title}
-        type="checkbox"
+      <PrimitiveCheckboxControl
+        ariaLabel={field.title}
         checked={Boolean(value)}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ width: "16px", height: "16px" }}
+        onChange={(nextChecked) => onChange(nextChecked)}
+        style={smallCheckboxStyle}
       />
     );
   }
@@ -146,34 +150,18 @@ export function ActionModalField({
       : [];
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        {field.options.map((opt) => {
-          const checked = selected.includes(opt.value);
-          return (
-            <label
-              key={opt.value}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <input
-                aria-label={`${field.title} ${opt.label}`}
-                type="checkbox"
-                checked={checked}
-                onChange={(e) => {
-                  const next = e.target.checked
-                    ? [...selected, opt.value]
-                    : selected.filter((v) => v !== opt.value);
-                  onChange(next);
-                }}
-              />
-              {opt.label}
-            </label>
-          );
-        })}
-      </div>
+      <PrimitiveCheckboxList
+        options={field.options}
+        selected={selected}
+        style={stackGapStyle}
+        getAriaLabel={(optionLabel) => `${field.title} ${optionLabel}`}
+        onToggle={(optionValue, checked) => {
+          const next = checked
+            ? [...selected, optionValue]
+            : selected.filter((v) => v !== optionValue);
+          onChange(next);
+        }}
+      />
     );
   }
 
@@ -183,26 +171,9 @@ export function ActionModalField({
       : (getDefaultFieldValue(field) as Record<string, unknown>);
 
     return (
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
-          padding: "8px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
+      <div style={sectionPanelStyle}>
         {field.fields.map((subField) => (
-          <label
-            key={subField.key}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-              fontSize: "13px",
-            }}
-          >
+          <label key={subField.key} style={fieldShellStyle}>
             {subField.title}
             <ActionModalField
               field={subField as ModalActionFieldSetting}
@@ -222,13 +193,13 @@ export function ActionModalField({
 
   if (repeatableField.itemType === "text") {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={stackGapStyle}>
         {items.map((item, index) => (
           <div
             key={`${repeatableField.key}-${index}`}
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
-            <input
+            <PrimitiveInput
               aria-label={`${field.title} item ${index + 1}`}
               value={typeof item === "string" ? item : ""}
               onChange={(e) => {
@@ -238,19 +209,24 @@ export function ActionModalField({
               }}
               style={inputStyle}
             />
-            <button
+            <PrimitiveButton
               type="button"
               onClick={() => {
                 onChange(items.filter((_, i) => i !== index));
               }}
+              style={smallActionButtonStyle}
             >
               Remove
-            </button>
+            </PrimitiveButton>
           </div>
         ))}
-        <button type="button" onClick={() => onChange([...items, ""])}>
+        <PrimitiveButton
+          type="button"
+          onClick={() => onChange([...items, ""])}
+          style={smallActionButtonStyle}
+        >
           Add item
-        </button>
+        </PrimitiveButton>
       </div>
     );
   }
@@ -258,31 +234,16 @@ export function ActionModalField({
   const compoundItemFields = repeatableField.itemFields ?? [];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <div style={stackGapStyle}>
       {items.map((item, index) => {
         const itemObj = isObjectRecord(item) ? item : {};
         return (
           <div
             key={`${repeatableField.key}-${index}`}
-            style={{
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              padding: "8px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-            }}
+            style={sectionPanelStyle}
           >
             {compoundItemFields.map((itemField) => (
-              <label
-                key={`${index}-${itemField.key}`}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  fontSize: "13px",
-                }}
-              >
+              <label key={`${index}-${itemField.key}`} style={fieldShellStyle}>
                 {itemField.title}
                 <ActionModalField
                   field={itemField as ModalActionFieldSetting}
@@ -295,16 +256,17 @@ export function ActionModalField({
                 />
               </label>
             ))}
-            <button
+            <PrimitiveButton
               type="button"
               onClick={() => onChange(items.filter((_, i) => i !== index))}
+              style={smallActionButtonStyle}
             >
               Remove
-            </button>
+            </PrimitiveButton>
           </div>
         );
       })}
-      <button
+      <PrimitiveButton
         type="button"
         onClick={() => {
           const defaults: Record<string, unknown> = {};
@@ -315,9 +277,10 @@ export function ActionModalField({
           }
           onChange([...items, defaults]);
         }}
+        style={smallActionButtonStyle}
       >
         Add item
-      </button>
+      </PrimitiveButton>
     </div>
   );
 }
