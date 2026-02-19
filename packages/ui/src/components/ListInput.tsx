@@ -207,7 +207,7 @@ function RepeatableCompoundFieldControl({
     const selectField = field as SelectSetting;
     return (
       <PrimitiveSelectControl
-        ariaLabel={`${field.title} ${itemIndex + 1}`}
+        aria-label={`${field.title} ${itemIndex + 1}`}
         value={typeof value === "string" ? value : ""}
         options={selectField.options}
         onChange={(nextValue) => onChange(itemIndex, field.key, nextValue)}
@@ -224,7 +224,7 @@ function RepeatableCompoundFieldControl({
       : [];
     return (
       <PrimitiveCheckboxList
-        ariaLabel={`${field.title} ${itemIndex + 1}`}
+        aria-label={`${field.title} ${itemIndex + 1}`}
         options={multiField.options}
         selected={selected}
         disabled={effectiveDisabled}
@@ -254,7 +254,7 @@ function RepeatableCompoundFieldControl({
   const booleanField = field as BooleanSetting;
   return (
     <PrimitiveCheckboxControl
-      ariaLabel={`${booleanField.title} ${itemIndex + 1}`}
+      aria-label={`${booleanField.title} ${itemIndex + 1}`}
       checked={Boolean(value)}
       onChange={(nextChecked) =>
         onChange(itemIndex, booleanField.key, nextChecked)

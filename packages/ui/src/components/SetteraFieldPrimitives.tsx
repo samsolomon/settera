@@ -10,8 +10,9 @@ export const fieldShellStyle: React.CSSProperties = {
 };
 
 export const sectionPanelStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: "8px",
+  border: "var(--settera-card-border, 1px solid #e5e7eb)",
+  borderRadius: "var(--settera-card-border-radius, 8px)",
+  backgroundColor: "var(--settera-card-bg, white)",
   padding: "8px",
   display: "flex",
   flexDirection: "column",
@@ -64,14 +65,17 @@ export const inlineRowStyle: React.CSSProperties = {
 };
 
 export const smallCheckboxStyle: React.CSSProperties = {
-  width: "16px",
-  height: "16px",
+  width: "var(--settera-checkbox-size, 16px)",
+  height: "var(--settera-checkbox-size, 16px)",
 };
 
 export const smallActionButtonStyle: React.CSSProperties = {
   fontSize: "var(--settera-button-font-size, 13px)",
   padding: "4px 8px",
   borderRadius: "var(--settera-button-border-radius, 6px)",
+  border: "var(--settera-button-border, 1px solid #d1d5db)",
+  backgroundColor: "var(--settera-button-bg, white)",
+  color: "var(--settera-button-color, #374151)",
 };
 
 export interface SelectOptionLike {
@@ -79,38 +83,30 @@ export interface SelectOptionLike {
   label: string;
 }
 
-export function PrimitiveSelectControl({
-  id,
-  ariaLabel,
-  value,
-  options,
-  onChange,
-  disabled,
-  onFocus,
-  onBlur,
-  focusVisible,
-  style,
-}: {
-  id?: string;
-  ariaLabel?: string;
+type PrimitiveSelectControlProps = Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "value" | "onChange"
+> & {
   value: string;
   options: SelectOptionLike[];
   onChange: (nextValue: string) => void;
-  disabled?: boolean;
-  onFocus?: () => void;
-  onBlur?: () => void;
   focusVisible?: boolean;
-  style?: React.CSSProperties;
-}) {
+};
+
+export function PrimitiveSelectControl({
+  value,
+  options,
+  onChange,
+  focusVisible,
+  style,
+  ...props
+}: PrimitiveSelectControlProps) {
   return (
     <select
-      id={id}
-      aria-label={ariaLabel}
+      {...props}
+      data-slot="select"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      onFocus={onFocus}
-      onBlur={onBlur}
       style={{
         ...inputBaseStyle,
         border: "var(--settera-input-border, 1px solid #d1d5db)",
@@ -132,28 +128,25 @@ export function PrimitiveSelectControl({
 }
 
 export function PrimitiveCheckboxControl({
-  id,
-  ariaLabel,
   checked,
   onChange,
-  disabled,
   style,
-}: {
-  id?: string;
-  ariaLabel?: string;
+  ...props
+}: Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type" | "checked" | "onChange"
+> & {
   checked: boolean;
   onChange: (nextChecked: boolean) => void;
-  disabled?: boolean;
   style?: React.CSSProperties;
 }) {
   return (
     <input
-      id={id}
-      aria-label={ariaLabel}
+      {...props}
+      data-slot="checkbox"
       type="checkbox"
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
-      disabled={disabled}
       style={{ ...smallCheckboxStyle, ...style }}
     />
   );
@@ -162,22 +155,27 @@ export function PrimitiveCheckboxControl({
 export function PrimitiveCheckboxList({
   options,
   selected,
-  ariaLabel,
+  "aria-label": ariaLabel,
   disabled,
   onToggle,
   getAriaLabel,
   style,
+  ...props
 }: {
   options: SelectOptionLike[];
   selected: string[];
-  ariaLabel?: string;
   disabled?: boolean;
   onToggle: (optionValue: string, checked: boolean) => void;
   getAriaLabel?: (optionLabel: string) => string;
   style?: React.CSSProperties;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div aria-label={ariaLabel} style={{ ...stackGapStyle, ...style }}>
+    <div
+      {...props}
+      data-slot="checkbox-list"
+      aria-label={ariaLabel}
+      style={{ ...stackGapStyle, ...style }}
+    >
       {options.map((option) => {
         const checked = selected.includes(option.value);
         return (
@@ -186,7 +184,7 @@ export function PrimitiveCheckboxList({
             style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
             <PrimitiveCheckboxControl
-              ariaLabel={getAriaLabel?.(option.label)}
+              aria-label={getAriaLabel?.(option.label)}
               checked={checked}
               disabled={disabled}
               onChange={(nextChecked) => onToggle(option.value, nextChecked)}

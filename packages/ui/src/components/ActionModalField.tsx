@@ -124,7 +124,7 @@ export function ActionModalField({
   if (field.type === "select") {
     return (
       <PrimitiveSelectControl
-        ariaLabel={field.title}
+        aria-label={field.title}
         value={typeof value === "string" ? value : ""}
         options={field.options}
         onChange={(nextValue) => onChange(nextValue)}
@@ -136,7 +136,7 @@ export function ActionModalField({
   if (field.type === "boolean") {
     return (
       <PrimitiveCheckboxControl
-        ariaLabel={field.title}
+        aria-label={field.title}
         checked={Boolean(value)}
         onChange={(nextChecked) => onChange(nextChecked)}
         style={smallCheckboxStyle}
