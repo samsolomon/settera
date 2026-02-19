@@ -26,7 +26,6 @@ import { demoSchema } from "./schema.js";
 
 type DemoMode = "schema" | "headless" | "ui";
 type ColorMode = "light" | "dark";
-type ThemePreset = "default" | "brand" | "dense";
 
 const DEMO_MODE_QUERY_PARAM = "demoMode";
 
@@ -36,11 +35,6 @@ const DEMO_MODE_OPTIONS: Array<{ key: DemoMode; label: string }> = [
   { key: "ui", label: "UI" },
 ];
 
-const THEME_PRESET_OPTIONS: Array<{ key: ThemePreset; label: string }> = [
-  { key: "default", label: "Default" },
-  { key: "brand", label: "Brand" },
-  { key: "dense", label: "Dense" },
-];
 
 function readModeFromUrl(): DemoMode {
   if (typeof window === "undefined") return "ui";
@@ -1289,7 +1283,6 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [colorMode, setColorMode] = useState<ColorMode>(readSystemColorMode);
-  const [themePreset, setThemePreset] = useState<ThemePreset>("default");
   const [values, setValues] = useState<Record<string, unknown>>({});
 
   const appThemeVars = useMemo<React.CSSProperties>(() => {
@@ -1334,42 +1327,8 @@ export function App() {
             "--settera-sidebar-accent-foreground": "#18181b",
           } as React.CSSProperties);
 
-    const presetTheme: React.CSSProperties =
-      themePreset === "brand"
-        ? colorMode === "dark"
-          ? ({
-              "--settera-focus-ring-color": "#0ea5e9",
-              "--settera-sidebar-accent": "#082f49",
-              "--settera-sidebar-accent-hover": "#0c4a6e",
-              "--settera-sidebar-accent-foreground": "#e0f2fe",
-              "--settera-button-primary-bg": "#0ea5e9",
-              "--settera-button-primary-color": "#082f49",
-            } as React.CSSProperties)
-          : ({
-              "--settera-focus-ring-color": "#0284c7",
-              "--settera-sidebar-accent": "#e0f2fe",
-              "--settera-sidebar-accent-hover": "#bae6fd",
-              "--settera-sidebar-accent-foreground": "#0c4a6e",
-              "--settera-button-primary-bg": "#0284c7",
-              "--settera-button-primary-color": "#f8fafc",
-            } as React.CSSProperties)
-        : themePreset === "dense"
-          ? ({
-              "--settera-page-padding": "12px 16px",
-              "--settera-page-padding-mobile": "8px 12px",
-              "--settera-section-margin-top": "16px",
-              "--settera-row-padding-y": "8px 0",
-              "--settera-row-padding-x": "0 12px",
-              "--settera-input-padding": "4px 8px",
-              "--settera-button-padding": "5px 10px",
-              "--settera-sidebar-padding": "10px",
-              "--settera-sidebar-item-padding": "5px 8px",
-              "--settera-sidebar-item-height": "30px",
-            } as React.CSSProperties)
-          : {};
-
-    return { ...baseTheme, ...presetTheme };
-  }, [colorMode, themePreset]);
+    return baseTheme;
+  }, [colorMode]);
 
   const handleChange = useCallback((key: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -1577,58 +1536,6 @@ export function App() {
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setValues({})}
-            style={{
-              border:
-                colorMode === "dark"
-                  ? "1px solid #3f3f46"
-                  : "1px solid #d1d5db",
-              borderRadius: "8px",
-              background: colorMode === "dark" ? "#18181b" : "#ffffff",
-              padding: "6px 10px",
-              fontSize: "12px",
-              color: colorMode === "dark" ? "#e4e4e7" : "#374151",
-              cursor: "pointer",
-            }}
-          >
-            Reset values
-          </button>
-
-          <label
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: colorMode === "dark" ? "#a1a1aa" : "#475569",
-            }}
-          >
-            Preset
-            <select
-              aria-label="Theme preset"
-              value={themePreset}
-              onChange={(e) => setThemePreset(e.target.value as ThemePreset)}
-              style={{
-                border:
-                  colorMode === "dark"
-                    ? "1px solid #3f3f46"
-                    : "1px solid #d1d5db",
-                borderRadius: "8px",
-                background: colorMode === "dark" ? "#18181b" : "#ffffff",
-                color: colorMode === "dark" ? "#e4e4e7" : "#374151",
-                fontSize: "12px",
-                padding: "6px 8px",
-              }}
-            >
-              {THEME_PRESET_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
       </header>
       <div style={{ flex: 1, overflow: "hidden" }}>
