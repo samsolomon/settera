@@ -37,11 +37,11 @@ function AppSettings() {
 
 Settera is split into three independent packages. Use only what you need.
 
-| Package           | Purpose                                                                                                             | Dependencies                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `@settera/schema` | Pure TypeScript types and schema validation. No React.                                                              | None                            |
+| Package           | Purpose                                                                                                                     | Dependencies                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `@settera/schema` | Pure TypeScript types and schema validation. No React.                                                                      | None                            |
 | `@settera/react`  | Unified `Settera` component, store, and headless hooks. Handles validation, save tracking, confirm dialogs, and visibility. | `@settera/schema`, React        |
-| `@settera/ui`     | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI.                                | `@settera/react`, `@radix-ui/*` |
+| `@settera/ui`     | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI.                                        | `@settera/react`, `@radix-ui/*` |
 
 **Building with your own design system?** Use `@settera/schema` + `@settera/react` and write your own components.
 
@@ -54,6 +54,67 @@ Settera is split into three independent packages. Use only what you need.
 - Use it directly with default styles (CSS variables + inline styles).
 - If your app uses Tailwind/shadcn, map Settera CSS variables to your design tokens.
 - If your app uses another system (DaisyUI, Chakra, custom CSS), keep using `@settera/ui` or build custom UI on `@settera/react`.
+
+### Theming Tokens (`@settera/ui`)
+
+`@settera/ui` uses CSS variables as a public theming API. You can set these on any ancestor of `SetteraLayout`.
+
+Recommended semantic tokens:
+
+| Token                                                                                                 | Purpose                           |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `--settera-page-bg`                                                                                   | Main page background              |
+| `--settera-card-bg` / `--settera-card-border`                                                         | Card surfaces and card borders    |
+| `--settera-title-color` / `--settera-description-color` / `--settera-help-color`                      | Primary, secondary, and help text |
+| `--settera-input-bg` / `--settera-input-border` / `--settera-input-color`                             | Input surfaces                    |
+| `--settera-button-bg` / `--settera-button-border` / `--settera-button-color`                          | Button surfaces                   |
+| `--settera-focus-ring-color`                                                                          | Focus ring color across controls  |
+| `--settera-sidebar-background` / `--settera-sidebar-border-color`                                     | Sidebar surface and border        |
+| `--settera-sidebar-foreground` / `--settera-sidebar-muted-foreground`                                 | Sidebar text colors               |
+| `--settera-sidebar-accent` / `--settera-sidebar-accent-foreground` / `--settera-sidebar-accent-hover` | Sidebar active/hover states       |
+
+Example theme override:
+
+```css
+.my-settings-theme {
+  --settera-page-bg: #fcfcfd;
+  --settera-card-bg: #ffffff;
+  --settera-card-border: 1px solid #e4e4e7;
+
+  --settera-title-color: #18181b;
+  --settera-description-color: #52525b;
+  --settera-help-color: #71717a;
+
+  --settera-input-bg: #ffffff;
+  --settera-input-border: 1px solid #d4d4d8;
+  --settera-input-color: #18181b;
+  --settera-focus-ring-color: #a1a1aa;
+
+  --settera-sidebar-background: #fafafa;
+  --settera-sidebar-border-color: #e4e4e7;
+  --settera-sidebar-foreground: #18181b;
+  --settera-sidebar-muted-foreground: #71717a;
+  --settera-sidebar-accent: #f4f4f5;
+  --settera-sidebar-accent-foreground: #18181b;
+  --settera-sidebar-accent-hover: #f4f4f5;
+}
+```
+
+#### Compatibility Mapping
+
+Legacy variables are still supported. Prefer semantic tokens for new themes.
+
+| Legacy token                     | Semantic token                        |
+| -------------------------------- | ------------------------------------- |
+| `--settera-sidebar-bg`           | `--settera-sidebar-background`        |
+| `--settera-sidebar-item-color`   | `--settera-sidebar-foreground`        |
+| `--settera-sidebar-group-color`  | `--settera-sidebar-muted-foreground`  |
+| `--settera-sidebar-icon-color`   | `--settera-sidebar-muted-foreground`  |
+| `--settera-sidebar-hover-bg`     | `--settera-sidebar-accent-hover`      |
+| `--settera-sidebar-active-bg`    | `--settera-sidebar-accent`            |
+| `--settera-sidebar-active-color` | `--settera-sidebar-accent-foreground` |
+| `--settera-search-bg`            | `--settera-sidebar-input-bg`          |
+| `--settera-search-border`        | `--settera-sidebar-border-color`      |
 
 ### UI API Stability
 
@@ -600,7 +661,9 @@ Action handlers are provided via the `onAction` prop on `Settera`:
         // For callback actions, payload is undefined.
         // For modal actions, payload contains submitted modal field values.
         const opts = (payload ?? {}) as { format?: string };
-        return fetchUserData().then((data) => downloadAs(data, opts.format ?? "json"));
+        return fetchUserData().then((data) =>
+          downloadAs(data, opts.format ?? "json"),
+        );
       }
       case "actions.deleteAccount":
         return deleteAccount();
@@ -743,15 +806,15 @@ Show or hide settings, sections, or subsections based on other settings' values:
 
 **Condition operators:**
 
-| Operator      | Description                                        | Example                                    |
-| ------------- | -------------------------------------------------- | ------------------------------------------ |
-| `equals`      | Value equals the given value                       | `{ setting: "mode", equals: "advanced" }`  |
-| `notEquals`   | Value does not equal the given value               | `{ setting: "mode", notEquals: "basic" }`  |
-| `oneOf`       | Value is one of the given values                   | `{ setting: "plan", oneOf: ["pro","ent"] }`|
-| `greaterThan` | Numeric value is greater than                      | `{ setting: "count", greaterThan: 5 }`     |
-| `lessThan`    | Numeric value is less than                         | `{ setting: "count", lessThan: 100 }`      |
-| `contains`    | Array value contains the item (for multiselect)    | `{ setting: "tags", contains: "vip" }`     |
-| `isEmpty`     | Value is empty (`true`) or not empty (`false`)     | `{ setting: "name", isEmpty: false }`      |
+| Operator      | Description                                     | Example                                     |
+| ------------- | ----------------------------------------------- | ------------------------------------------- |
+| `equals`      | Value equals the given value                    | `{ setting: "mode", equals: "advanced" }`   |
+| `notEquals`   | Value does not equal the given value            | `{ setting: "mode", notEquals: "basic" }`   |
+| `oneOf`       | Value is one of the given values                | `{ setting: "plan", oneOf: ["pro","ent"] }` |
+| `greaterThan` | Numeric value is greater than                   | `{ setting: "count", greaterThan: 5 }`      |
+| `lessThan`    | Numeric value is less than                      | `{ setting: "count", lessThan: 100 }`       |
+| `contains`    | Array value contains the item (for multiselect) | `{ setting: "tags", contains: "vip" }`      |
+| `isEmpty`     | Value is empty (`true`) or not empty (`false`)  | `{ setting: "name", isEmpty: false }`       |
 
 **AND conditions** — pass an array. All must be true:
 
@@ -759,7 +822,7 @@ Show or hide settings, sections, or subsections based on other settings' values:
 visibleWhen: [
   { setting: "mode", equals: "advanced" },
   { setting: "count", greaterThan: 0 },
-]
+];
 ```
 
 **OR conditions** — use a `{ or: [...] }` group. At least one must be true:
