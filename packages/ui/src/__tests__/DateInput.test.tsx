@@ -168,13 +168,13 @@ describe("DateInput", () => {
 
   it("runs async validation on blur", async () => {
     const user = userEvent.setup();
-    const asyncValidator = vi.fn().mockResolvedValue("Date not available");
+    const asyncValidator = vi.fn(() => Promise.resolve("Date not available"));
     render(
       <Settera
         schema={schema}
         values={{ birthday: "2000-01-01" }}
         onChange={() => {}}
-        onValidate={{ birthday: asyncValidator }}
+        onValidate={asyncValidator}
       >
         <SettingRow settingKey="birthday">
           <DateInput settingKey="birthday" />
@@ -186,7 +186,7 @@ describe("DateInput", () => {
     await user.tab();
 
     await waitFor(() => {
-      expect(asyncValidator).toHaveBeenCalledWith("2000-01-01");
+      expect(asyncValidator).toHaveBeenCalledWith("birthday", "2000-01-01");
     });
     expect(screen.getByRole("alert").textContent).toBe("Date not available");
   });

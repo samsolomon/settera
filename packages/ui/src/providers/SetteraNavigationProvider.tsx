@@ -5,8 +5,12 @@ import React, {
   useRef,
   useContext,
 } from "react";
-import { SetteraSchemaContext } from "@settera/react";
-import { resolvePageKey, walkSchema } from "@settera/schema";
+import {
+  SetteraNavigation,
+  useSetteraNavigation as useReactNavigation,
+  SetteraSchemaContext,
+} from "@settera/react";
+import { walkSchema } from "@settera/schema";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import type { SetteraNavigationContextValue } from "../contexts/SetteraNavigationContext.js";
 
@@ -17,24 +21,34 @@ export interface SetteraNavigationProviderProps {
 /**
  * Provides navigation state (active page, expanded groups, search, highlight)
  * for the settings UI. Must be nested inside a Settera component (needs schema context).
+ *
+ * Composes with SetteraNavigation from @settera/react for activePage/setActivePage,
+ * adding UI-specific state (search, expanded groups, highlight, focus).
  */
 export function SetteraNavigationProvider({
   children,
 }: SetteraNavigationProviderProps) {
-  const schemaCtx = useContext(SetteraSchemaContext);
-
-  if (!schemaCtx) {
-    throw new Error(
-      "SetteraNavigationProvider must be used within a Settera component.",
-    );
-  }
-
-  const { schema } = schemaCtx;
-
-  // Navigation state
-  const [activePage, setActivePage] = useState<string>(
-    schema.pages[0] ? resolvePageKey(schema.pages[0]) : "",
+  return (
+    <SetteraNavigation>
+      <SetteraNavigationProviderInner>
+        {children}
+      </SetteraNavigationProviderInner>
+    </SetteraNavigation>
   );
+}
+
+function SetteraNavigationProviderInner({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const schemaCtx = useContext(SetteraSchemaContext);
+  const { activePage, setActivePage } = useReactNavigation();
+
+  // schema is guaranteed to exist since SetteraNavigation checks for it
+  const { schema } = schemaCtx!;
+
+  // UI-specific state
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     () => new Set(),
   );
@@ -163,6 +177,7 @@ export function SetteraNavigationProvider({
     }),
     [
       activePage,
+      setActivePage,
       expandedGroups,
       toggleGroup,
       searchQuery,

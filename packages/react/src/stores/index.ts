@@ -167,10 +167,10 @@ export class SetteraValuesStore {
 
     this._errors.setError(key, null);
 
-    const asyncValidator = this._callbacks.getOnValidate()?.[key];
-    if (asyncValidator) {
+    const onValidate = this._callbacks.getOnValidate();
+    if (onValidate) {
       try {
-        const asyncError = await asyncValidator(currentValue);
+        const asyncError = await onValidate(key, currentValue);
         if (asyncError) {
           this._errors.setError(key, asyncError);
           return asyncError;
@@ -198,9 +198,9 @@ export class SetteraValuesStore {
   // ---- Actions ----
 
   invokeAction = (key: string, payload?: unknown): void => {
-    const handler = this._callbacks.getOnAction()?.[key];
-    if (!handler) return;
-    this._actions.invokeAction(key, handler, payload);
+    const onAction = this._callbacks.getOnAction();
+    if (!onAction) return;
+    this._actions.invokeAction(key, (p) => onAction(key, p), payload);
   };
 
   // ---- Errors ----
@@ -230,22 +230,19 @@ export class SetteraValuesStore {
   }
 
   setOnValidate(
-    map:
-      | Record<
-          string,
-          (value: unknown) => string | null | Promise<string | null>
-        >
+    fn:
+      | ((key: string, value: unknown) => string | null | Promise<string | null>)
       | undefined,
   ): void {
-    this._callbacks.setOnValidate(map);
+    this._callbacks.setOnValidate(fn);
   }
 
   setOnAction(
-    map:
-      | Record<string, (payload?: unknown) => void | Promise<void>>
+    fn:
+      | ((key: string, payload?: unknown) => void | Promise<void>)
       | undefined,
   ): void {
-    this._callbacks.setOnAction(map);
+    this._callbacks.setOnAction(fn);
   }
 
   setValidationMode(mode: ValidationMode): void {
@@ -255,13 +252,13 @@ export class SetteraValuesStore {
   // ---- Pass-through getters ----
 
   getOnValidate():
-    | Record<string, (value: unknown) => string | null | Promise<string | null>>
+    | ((key: string, value: unknown) => string | null | Promise<string | null>)
     | undefined {
     return this._callbacks.getOnValidate();
   }
 
   getOnAction():
-    | Record<string, (payload?: unknown) => void | Promise<void>>
+    | ((key: string, payload?: unknown) => void | Promise<void>)
     | undefined {
     return this._callbacks.getOnAction();
   }

@@ -235,13 +235,13 @@ describe("Select", () => {
 
   it("runs async validation on change (not just blur)", async () => {
     const user = userEvent.setup();
-    const asyncValidator = vi.fn().mockResolvedValue("Invalid choice");
+    const asyncValidator = vi.fn(() => Promise.resolve("Invalid choice"));
     render(
       <Settera
         schema={schema}
         values={{ theme: "light" }}
         onChange={() => {}}
-        onValidate={{ theme: asyncValidator }}
+        onValidate={asyncValidator}
       >
         <Select settingKey="theme" />
       </Settera>,
@@ -251,7 +251,7 @@ describe("Select", () => {
     await user.click(await screen.findByRole("option", { name: "Dark" }));
 
     await waitFor(() => {
-      expect(asyncValidator).toHaveBeenCalledWith("dark");
+      expect(asyncValidator).toHaveBeenCalledWith("theme", "dark");
     });
   });
 

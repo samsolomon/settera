@@ -8,10 +8,10 @@ export class CallbackRefs {
   private _onChange: (key: string, value: unknown) => void | Promise<void> =
     () => {};
   private _onValidate:
-    | Record<string, (value: unknown) => string | null | Promise<string | null>>
+    | ((key: string, value: unknown) => string | null | Promise<string | null>)
     | undefined;
   private _onAction:
-    | Record<string, (payload?: unknown) => void | Promise<void>>
+    | ((key: string, payload?: unknown) => void | Promise<void>)
     | undefined;
   private _schemaLookup:
     | ((key: string) => SettingDefinition | undefined)
@@ -22,22 +22,19 @@ export class CallbackRefs {
   }
 
   setOnValidate(
-    map:
-      | Record<
-          string,
-          (value: unknown) => string | null | Promise<string | null>
-        >
+    fn:
+      | ((key: string, value: unknown) => string | null | Promise<string | null>)
       | undefined,
   ): void {
-    this._onValidate = map;
+    this._onValidate = fn;
   }
 
   setOnAction(
-    map:
-      | Record<string, (payload?: unknown) => void | Promise<void>>
+    fn:
+      | ((key: string, payload?: unknown) => void | Promise<void>)
       | undefined,
   ): void {
-    this._onAction = map;
+    this._onAction = fn;
   }
 
   getOnChange(): (key: string, value: unknown) => void | Promise<void> {
@@ -45,13 +42,13 @@ export class CallbackRefs {
   }
 
   getOnValidate():
-    | Record<string, (value: unknown) => string | null | Promise<string | null>>
+    | ((key: string, value: unknown) => string | null | Promise<string | null>)
     | undefined {
     return this._onValidate;
   }
 
   getOnAction():
-    | Record<string, (payload?: unknown) => void | Promise<void>>
+    | ((key: string, payload?: unknown) => void | Promise<void>)
     | undefined {
     return this._onAction;
   }

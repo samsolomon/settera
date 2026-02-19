@@ -30,13 +30,10 @@ export interface SetteraProps {
   values: Record<string, unknown>;
   /** Called on every setting change (instant-apply). May return a Promise for async save tracking. */
   onChange: (key: string, value: unknown) => void | Promise<void>;
-  /** Handlers for action-type settings */
-  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>;
-  /** Custom validation callbacks */
-  onValidate?: Record<
-    string,
-    (value: unknown) => string | null | Promise<string | null>
-  >;
+  /** Handler for action-type settings */
+  onAction?: (key: string, payload?: unknown) => void | Promise<void>;
+  /** Custom validation callback */
+  onValidate?: (key: string, value: unknown) => string | null | Promise<string | null>;
   /** Save policy for sync validation failures. */
   validationMode?: ValidationMode;
   children: React.ReactNode;

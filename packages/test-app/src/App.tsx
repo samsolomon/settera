@@ -10,14 +10,14 @@ import {
 } from "@settera/schema";
 import {
   Settera,
+  SetteraNavigation,
   useSettera,
   useSetteraAction,
+  useSetteraNavigation,
   useSetteraSetting,
 } from "@settera/react";
 import {
   SetteraLayout,
-  SetteraNavigationProvider,
-  useSetteraNavigation,
   type SetteraCustomPageProps,
   type SetteraCustomSettingProps,
 } from "@settera/ui";
@@ -1178,49 +1178,53 @@ export function App() {
     return new Promise<void>((resolve) => setTimeout(resolve, 800));
   }, []);
 
-  const onAction: Record<string, (payload?: unknown) => void | Promise<void>> =
-    {
-      "actions.export": async (payload) => {
-        await new Promise((r) => setTimeout(r, 1500));
+  const handleAction = useCallback((key: string, payload?: unknown) => {
+    switch (key) {
+      case "actions.export": {
         const config =
           typeof payload === "object" && payload !== null
             ? (payload as Record<string, unknown>)
             : {};
-        alert(
-          `Data export started (${String(config.format ?? "json")}, include private: ${String(config.includePrivate ?? false)}).`,
-        );
-      },
-      "actions.clearCache": () => {
+        return new Promise<void>((r) => setTimeout(r, 1500)).then(() => {
+          alert(
+            `Data export started (${String(config.format ?? "json")}, include private: ${String(config.includePrivate ?? false)}).`,
+          );
+        });
+      }
+      case "actions.clearCache":
         alert("Cache cleared!");
-      },
-      "actions.inviteTeam": async (payload) => {
-        await new Promise((r) => setTimeout(r, 1200));
+        return;
+      case "actions.inviteTeam": {
         const data =
           typeof payload === "object" && payload !== null
             ? (payload as Record<string, unknown>)
             : {};
-        alert(
-          `Invites queued (${String(data.seatCount ?? 0)} seats, ${Array.isArray(data.emails) ? data.emails.length : 0} email targets).`,
-        );
-      },
-      "actions.deleteAccount": async () => {
-        await new Promise((r) => setTimeout(r, 2000));
-        alert("Account deleted (just kidding).");
-      },
-    };
-
-  const onValidate: Record<
-    string,
-    (value: unknown) => string | null | Promise<string | null>
-  > = {
-    "profile.email": async (value) => {
-      await new Promise((r) => setTimeout(r, 500));
-      if (value === "taken@example.com") {
-        return "This email is already in use";
+        return new Promise<void>((r) => setTimeout(r, 1200)).then(() => {
+          alert(
+            `Invites queued (${String(data.seatCount ?? 0)} seats, ${Array.isArray(data.emails) ? data.emails.length : 0} email targets).`,
+          );
+        });
       }
-      return null;
-    },
-  };
+      case "actions.deleteAccount":
+        return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
+          alert("Account deleted (just kidding).");
+        });
+    }
+  }, []);
+
+  const handleValidate = useCallback((key: string, value: unknown) => {
+    switch (key) {
+      case "profile.email":
+        return new Promise<string | null>((r) => setTimeout(r, 500)).then(() => {
+          if (value === "taken@example.com") {
+            return "This email is already in use";
+          }
+          return null;
+        });
+      default:
+        return null;
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1333,8 +1337,8 @@ export function App() {
           schema={demoSchema}
           values={values}
           onChange={handleChange}
-          onAction={onAction}
-          onValidate={onValidate}
+          onAction={handleAction}
+          onValidate={handleValidate}
         >
           {mode === "ui" && (
             <SetteraLayout
@@ -1347,11 +1351,11 @@ export function App() {
             />
           )}
           {mode === "headless" && (
-            <SetteraNavigationProvider>
+            <SetteraNavigation>
               <HeadlessView
                 customSettings={{ signatureCard: SignatureCardSetting }}
               />
-            </SetteraNavigationProvider>
+            </SetteraNavigation>
           )}
           {mode === "schema" && <SchemaView />}
         </Settera>

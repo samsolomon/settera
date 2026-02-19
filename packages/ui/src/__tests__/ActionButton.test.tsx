@@ -123,7 +123,7 @@ const schema: SetteraSchema = {
 
 function renderActionButton(
   settingKey: string,
-  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>,
+  onAction?: (key: string, payload?: unknown) => void | Promise<void>,
 ) {
   return render(
     <Settera schema={schema} values={{}} onChange={() => {}} onAction={onAction}>
@@ -134,21 +134,22 @@ function renderActionButton(
 
 describe("ActionButton", () => {
   it("renders a button element", () => {
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     expect(screen.getByRole("button")).toBeDefined();
   });
 
   it("displays buttonLabel text", () => {
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     expect(screen.getByText("Reset All Data")).toBeDefined();
   });
 
   it("calls handler on click", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderActionButton("reset", { reset: handler });
+    renderActionButton("reset", handler);
     await user.click(screen.getByRole("button"));
     expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith("reset", undefined);
   });
 
   it("tracks loading state for async handler", async () => {
@@ -159,7 +160,7 @@ describe("ActionButton", () => {
           resolve = r;
         }),
     );
-    renderActionButton("reset", { reset: handler });
+    renderActionButton("reset", handler);
 
     const button = screen.getByRole("button");
     expect(button.getAttribute("aria-busy")).toBe("false");
@@ -169,7 +170,7 @@ describe("ActionButton", () => {
     });
 
     expect(button.getAttribute("aria-busy")).toBe("true");
-    expect(screen.getByText("Loading…")).toBeDefined();
+    expect(screen.getByText("Loading\u2026")).toBeDefined();
 
     await act(async () => {
       resolve!();
@@ -193,7 +194,7 @@ describe("ActionButton", () => {
           resolve = r;
         }),
     );
-    renderActionButton("reset", { reset: handler });
+    renderActionButton("reset", handler);
 
     await act(async () => {
       screen.getByRole("button").click();
@@ -208,38 +209,38 @@ describe("ActionButton", () => {
   });
 
   it("has aria-label from definition title", () => {
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     expect(screen.getByLabelText("Reset Data")).toBeDefined();
   });
 
   it("has aria-busy='false' when idle", () => {
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false");
   });
 
   it("shows focus ring on keyboard focus", async () => {
     const user = userEvent.setup();
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     await user.tab();
     const button = screen.getByRole("button");
     expect(button.style.boxShadow).toContain("0 0 0 2px");
   });
 
   it("applies dangerous styling", () => {
-    renderActionButton("danger", { danger: () => {} });
+    renderActionButton("danger", () => {});
     const button = screen.getByRole("button");
     expect(button.style.color).toContain("--settera-dangerous-color");
   });
 
   it("does not apply dangerous styling to normal buttons", () => {
-    renderActionButton("reset", { reset: () => {} });
+    renderActionButton("reset", () => {});
     const button = screen.getByRole("button");
     expect(button.style.color).not.toContain("--settera-dangerous-color");
   });
 
   it("opens modal action dialog", async () => {
     const user = userEvent.setup();
-    renderActionButton("invite", { invite: () => {} });
+    renderActionButton("invite", () => {});
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     expect(
@@ -251,7 +252,7 @@ describe("ActionButton", () => {
 
   it("returns focus to trigger when modal closes", async () => {
     const user = userEvent.setup();
-    renderActionButton("invite", { invite: () => {} });
+    renderActionButton("invite", () => {});
 
     const trigger = screen.getByRole("button", { name: "Invite User" });
     await user.click(trigger);
@@ -262,7 +263,7 @@ describe("ActionButton", () => {
 
   it("closes modal on Escape when idle", async () => {
     const user = userEvent.setup();
-    renderActionButton("invite", { invite: () => {} });
+    renderActionButton("invite", () => {});
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     expect(
@@ -278,7 +279,7 @@ describe("ActionButton", () => {
   it("does not call modal action handler before submit", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderActionButton("invite", { invite: handler });
+    renderActionButton("invite", handler);
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     await user.type(screen.getByLabelText("Email"), "sam@example.com");
@@ -288,7 +289,7 @@ describe("ActionButton", () => {
   it("submits modal payload on explicit submit", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderActionButton("invite", { invite: handler });
+    renderActionButton("invite", handler);
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     await user.type(screen.getByLabelText("Email"), "sam@example.com");
@@ -297,7 +298,7 @@ describe("ActionButton", () => {
     await user.type(screen.getByLabelText("Quota"), "1.5");
     await user.click(screen.getByRole("button", { name: "Send invite" }));
 
-    expect(handler).toHaveBeenCalledWith({
+    expect(handler).toHaveBeenCalledWith("invite", {
       email: "sam@example.com",
       role: "admin",
       quota: 1.5,
@@ -307,7 +308,7 @@ describe("ActionButton", () => {
   it("cancels modal without calling handler", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderActionButton("invite", { invite: handler });
+    renderActionButton("invite", handler);
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     await user.type(screen.getByLabelText("Email"), "sam@example.com");
@@ -318,7 +319,7 @@ describe("ActionButton", () => {
 
   it("resets modal draft after cancel and reopen", async () => {
     const user = userEvent.setup();
-    renderActionButton("invite", { invite: () => {} });
+    renderActionButton("invite", () => {});
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     const email = screen.getByLabelText("Email") as HTMLInputElement;
@@ -334,7 +335,7 @@ describe("ActionButton", () => {
   it("submits nested modal payload shapes", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderActionButton("inviteAdvanced", { inviteAdvanced: handler });
+    renderActionButton("inviteAdvanced", handler);
 
     await user.click(screen.getByRole("button", { name: "Invite Advanced" }));
     await user.type(screen.getByLabelText("Name"), "Sam");
@@ -343,7 +344,7 @@ describe("ActionButton", () => {
     await user.type(screen.getByLabelText("Tags item 2"), "beta");
     await user.click(screen.getByRole("button", { name: "Submit advanced" }));
 
-    expect(handler).toHaveBeenCalledWith({
+    expect(handler).toHaveBeenCalledWith("inviteAdvanced", {
       profile: { name: "Sam", active: false },
       tags: ["alpha", "beta"],
     });
@@ -358,7 +359,7 @@ describe("ActionButton", () => {
           resolve = r;
         }),
     );
-    renderActionButton("invite", { invite: handler });
+    renderActionButton("invite", handler);
 
     await user.click(screen.getByRole("button", { name: "Invite User" }));
     await user.type(screen.getByLabelText("Email"), "sam@example.com");
@@ -369,7 +370,7 @@ describe("ActionButton", () => {
       screen.getByRole("dialog", { name: "Invite teammate" }),
     ).toBeDefined();
     const loadingSubmit = screen.getByRole("button", {
-      name: "Loading…",
+      name: "Loading\u2026",
     }) as HTMLButtonElement;
     expect(loadingSubmit.disabled).toBe(true);
 
@@ -398,7 +399,7 @@ describe("ActionButton", () => {
 
   describe("disabled", () => {
     it("renders a disabled button", () => {
-      renderActionButton("disabled-action", { "disabled-action": () => {} });
+      renderActionButton("disabled-action", () => {});
       const button = screen.getByRole("button") as HTMLButtonElement;
       expect(button.disabled).toBe(true);
     });
@@ -406,7 +407,7 @@ describe("ActionButton", () => {
     it("does not call handler on click when disabled", async () => {
       const user = userEvent.setup();
       const handler = vi.fn();
-      renderActionButton("disabled-action", { "disabled-action": handler });
+      renderActionButton("disabled-action", handler);
       await user.click(screen.getByRole("button"));
       expect(handler).not.toHaveBeenCalled();
     });

@@ -170,9 +170,9 @@ describe("store.validate", () => {
       { key: "name", title: "Name", type: "text" },
     ]);
     store.setValues({ name: "taken" });
-    store.setOnValidate({
-      name: async (value) => (value === "taken" ? "Name already taken" : null),
-    });
+    store.setOnValidate(
+      (key, value) => key === "name" && value === "taken" ? Promise.resolve("Name already taken") : null,
+    );
     const error = await store.validate("name");
     expect(error).toBe("Name already taken");
     expect(store.getState().errors["name"]).toBe("Name already taken");
@@ -184,11 +184,12 @@ describe("store.validate", () => {
       { key: "name", title: "Name", type: "text" },
     ]);
     store.setValues({ name: "boom" });
-    store.setOnValidate({
-      name: async () => {
-        throw new Error("network down");
+    store.setOnValidate(
+      (key) => {
+        if (key === "name") throw new Error("network down");
+        return null;
       },
-    });
+    );
     const error = await store.validate("name");
     expect(error).toBe("Validation failed");
     expect(store.getState().errors["name"]).toBe("Validation failed");

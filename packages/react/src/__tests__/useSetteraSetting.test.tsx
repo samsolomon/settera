@@ -138,10 +138,7 @@ function renderWithSettera(
   onChange: (key: string, value: unknown) => void,
   children: React.ReactNode,
   extra?: {
-    onValidate?: Record<
-      string,
-      (value: unknown) => string | null | Promise<string | null>
-    >;
+    onValidate?: (key: string, value: unknown) => string | null | Promise<string | null>;
   },
 ) {
   return render(
@@ -287,31 +284,31 @@ describe("useSetteraSetting", () => {
   });
 
   it("validate() runs sync + async pipeline", async () => {
-    const asyncValidator = vi.fn().mockResolvedValue("Username taken");
+    const asyncValidator = vi.fn(() => Promise.resolve("Username taken"));
     renderWithSettera(
       { asyncField: "hello" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
-      { onValidate: { asyncField: asyncValidator } },
+      { onValidate: asyncValidator },
     );
 
     await act(async () => {
       screen.getByTestId("validate-asyncField").click();
     });
 
-    expect(asyncValidator).toHaveBeenCalledWith("hello");
+    expect(asyncValidator).toHaveBeenCalledWith("asyncField", "hello");
     expect(screen.getByTestId("error-asyncField").textContent).toBe(
       "Username taken",
     );
   });
 
   it("validate() skips async when sync fails", async () => {
-    const asyncValidator = vi.fn().mockResolvedValue(null);
+    const asyncValidator = vi.fn(() => Promise.resolve(null));
     renderWithSettera(
       { asyncField: "" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
-      { onValidate: { asyncField: asyncValidator } },
+      { onValidate: asyncValidator },
     );
 
     await act(async () => {
@@ -325,19 +322,19 @@ describe("useSetteraSetting", () => {
   });
 
   it("validate() clears error when both sync and async pass", async () => {
-    const asyncValidator = vi.fn().mockResolvedValue(null);
+    const asyncValidator = vi.fn(() => Promise.resolve(null));
     renderWithSettera(
       { asyncField: "valid" },
       () => {},
       <SettingDisplay settingKey="asyncField" />,
-      { onValidate: { asyncField: asyncValidator } },
+      { onValidate: asyncValidator },
     );
 
     await act(async () => {
       screen.getByTestId("validate-asyncField").click();
     });
 
-    expect(asyncValidator).toHaveBeenCalledWith("valid");
+    expect(asyncValidator).toHaveBeenCalledWith("asyncField", "valid");
     expect(screen.getByTestId("error-asyncField").textContent).toBe("");
   });
 

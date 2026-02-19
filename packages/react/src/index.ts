@@ -26,5 +26,9 @@ export type { UseSetteraConfirmResult } from "./hooks/useSetteraConfirm.js";
 export { useSetteraSection } from "./hooks/useSetteraSection.js";
 export type { UseSetteraSectionResult } from "./hooks/useSetteraSection.js";
 
+// Navigation
+export { SetteraNavigation, SetteraNavigationContext, useSetteraNavigation } from "./navigation.js";
+export type { SetteraNavigationContextValue, SetteraNavigationProps } from "./navigation.js";
+
 // Store selector hooks
 export { useStoreSelector, useStoreSlice } from "./hooks/useStoreSelector.js";

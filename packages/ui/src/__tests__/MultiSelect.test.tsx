@@ -242,13 +242,13 @@ describe("MultiSelect", () => {
 
   it("runs async validation on change", async () => {
     const user = userEvent.setup();
-    const asyncValidator = vi.fn().mockResolvedValue("Too many selected");
+    const asyncValidator = vi.fn(() => Promise.resolve("Too many selected"));
     render(
       <Settera
         schema={schema}
         values={{ channels: ["email"] }}
         onChange={() => {}}
-        onValidate={{ channels: asyncValidator }}
+        onValidate={asyncValidator}
       >
         <SettingRow settingKey="channels">
           <MultiSelect settingKey="channels" />
@@ -259,7 +259,7 @@ describe("MultiSelect", () => {
     await user.click(screen.getByText("SMS"));
 
     await waitFor(() => {
-      expect(asyncValidator).toHaveBeenCalledWith(["email", "sms"]);
+      expect(asyncValidator).toHaveBeenCalledWith("channels", ["email", "sms"]);
     });
     expect(screen.getByRole("alert").textContent).toBe("Too many selected");
   });

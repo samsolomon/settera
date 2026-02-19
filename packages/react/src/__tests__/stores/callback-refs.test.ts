@@ -22,9 +22,9 @@ describe("CallbackRefs", () => {
 
   it("stores and returns onValidate", () => {
     const refs = new CallbackRefs();
-    const map = { name: () => null };
-    refs.setOnValidate(map);
-    expect(refs.getOnValidate()).toBe(map);
+    const fn = vi.fn(() => null);
+    refs.setOnValidate(fn as (key: string, value: unknown) => null);
+    expect(refs.getOnValidate()).toBe(fn);
   });
 
   it("returns undefined for onAction by default", () => {
@@ -34,9 +34,9 @@ describe("CallbackRefs", () => {
 
   it("stores and returns onAction", () => {
     const refs = new CallbackRefs();
-    const map = { reset: vi.fn() };
-    refs.setOnAction(map);
-    expect(refs.getOnAction()).toBe(map);
+    const fn = vi.fn();
+    refs.setOnAction(fn as (key: string, payload?: unknown) => void);
+    expect(refs.getOnAction()).toBe(fn);
   });
 
   it("returns undefined for schemaLookup by default", () => {

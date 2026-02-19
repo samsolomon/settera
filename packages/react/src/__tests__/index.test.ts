@@ -1,11 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
   Settera,
+  SetteraNavigation,
+  SetteraNavigationContext,
   useSettera,
   useSetteraSetting,
   useSetteraAction,
   useSetteraConfirm,
   useSetteraSection,
+  useSetteraNavigation,
   useStoreSelector,
   useStoreSlice,
   SetteraSchemaContext,
@@ -34,9 +37,15 @@ describe("@settera/react", () => {
   it("exports contexts", () => {
     expect(SetteraSchemaContext).toBeDefined();
     expect(SetteraValuesContext).toBeDefined();
+    expect(SetteraNavigationContext).toBeDefined();
   });
 
   it("exports SetteraValuesStore", () => {
     expect(typeof SetteraValuesStore).toBe("function");
+  });
+
+  it("exports navigation", () => {
+    expect(typeof SetteraNavigation).toBe("function");
+    expect(typeof useSetteraNavigation).toBe("function");
   });
 });

@@ -66,7 +66,7 @@ function ActionDisplay({ settingKey }: { settingKey: string }) {
 
 function renderAction(
   settingKey: string,
-  onAction?: Record<string, (payload?: unknown) => void | Promise<void>>,
+  onAction?: (key: string, payload?: unknown) => void | Promise<void>,
   values: Record<string, unknown> = {},
 ) {
   return render(
@@ -101,9 +101,11 @@ describe("useSetteraAction", () => {
   it("calls sync handler on click", async () => {
     const user = userEvent.setup();
     const handler = vi.fn();
-    renderAction("resetAction", { resetAction: handler });
+    renderAction("resetAction", handler);
     await user.click(screen.getByTestId("trigger-resetAction"));
     expect(handler).toHaveBeenCalledOnce();
+    // First arg is the key; second is the payload (click event forwarded from onClick={onAction})
+    expect(handler.mock.calls[0][0]).toBe("resetAction");
   });
 
   it("forwards payload to handler", () => {
@@ -127,14 +129,14 @@ describe("useSetteraAction", () => {
         schema={schema}
         values={{}}
         onChange={() => {}}
-        onAction={{ resetAction: handler }}
+        onAction={handler}
       >
         <PayloadTrigger />
       </Settera>,
     );
 
     screen.getByTestId("payload-trigger").click();
-    expect(handler).toHaveBeenCalledWith(payload);
+    expect(handler).toHaveBeenCalledWith("resetAction", payload);
   });
 
   it("tracks loading state for async handler", async () => {
@@ -145,7 +147,7 @@ describe("useSetteraAction", () => {
           resolve = r;
         }),
     );
-    renderAction("resetAction", { resetAction: handler });
+    renderAction("resetAction", handler);
 
     expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
 
@@ -191,7 +193,7 @@ describe("useSetteraAction", () => {
   it("recovers loading state when async handler rejects", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const handler = vi.fn().mockRejectedValue(new Error("boom"));
-    renderAction("resetAction", { resetAction: handler });
+    renderAction("resetAction", handler);
 
     expect(screen.getByTestId("loading-resetAction").textContent).toBe("idle");
 
@@ -224,7 +226,7 @@ describe("useSetteraAction", () => {
         schema={schema}
         values={{}}
         onChange={() => {}}
-        onAction={{ resetAction: handler }}
+        onAction={handler}
       >
         <ActionDisplay settingKey="resetAction" />
         <div data-testid="second-instance">
@@ -265,7 +267,7 @@ describe("useSetteraAction", () => {
           resolve = r;
         }),
     );
-    renderAction("resetAction", { resetAction: handler });
+    renderAction("resetAction", handler);
 
     // Start async action
     await act(async () => {

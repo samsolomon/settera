@@ -213,20 +213,18 @@ describe("Settera — values context", () => {
   });
 
   it("provides onAction and onValidate to context", () => {
-    const onAction = { clearCache: vi.fn() };
-    const onValidate = {
-      apiKey: () => null,
-    };
+    const onAction = vi.fn();
+    const onValidate = vi.fn(() => null);
 
     function ActionConsumer() {
       const store = React.useContext(SetteraValuesContext);
       return (
         <div>
           <span data-testid="has-action">
-            {store?.getOnAction()?.clearCache ? "yes" : "no"}
+            {store?.getOnAction() ? "yes" : "no"}
           </span>
           <span data-testid="has-validate">
-            {store?.getOnValidate()?.apiKey ? "yes" : "no"}
+            {store?.getOnValidate() ? "yes" : "no"}
           </span>
         </div>
       );
