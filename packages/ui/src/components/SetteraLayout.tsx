@@ -163,7 +163,7 @@ function SetteraLayoutInner({
         padding: isMobile
           ? "var(--settera-page-padding-mobile, 16px)"
           : "var(--settera-page-padding, 24px 32px)",
-        backgroundColor: "var(--settera-page-bg, #f9fafb)",
+        backgroundColor: "var(--settera-page-bg, var(--settera-background, #f9fafb))",
         overflowY: "auto",
         outline: "none",
       }}
@@ -227,8 +227,8 @@ function SetteraLayoutInner({
               minHeight: "var(--settera-mobile-topbar-height, 52px)",
               padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
               borderBottom:
-                "var(--settera-mobile-topbar-border, 1px solid #e5e7eb)",
-              backgroundColor: "var(--settera-mobile-topbar-bg, #f9fafb)",
+                "var(--settera-mobile-topbar-border, 1px solid var(--settera-border, #e5e7eb))",
+              backgroundColor: "var(--settera-mobile-topbar-bg, var(--settera-background, #f9fafb))",
             }}
           >
             <button
@@ -245,9 +245,9 @@ function SetteraLayoutInner({
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "8px",
-                border: "var(--settera-mobile-menu-border, 1px solid #d1d5db)",
-                backgroundColor: "var(--settera-mobile-menu-bg, #ffffff)",
-                color: "var(--settera-mobile-menu-color, #111827)",
+                border: "var(--settera-mobile-menu-border, 1px solid var(--settera-input, #d1d5db))",
+                backgroundColor: "var(--settera-mobile-menu-bg, var(--settera-card, #ffffff))",
+                color: "var(--settera-mobile-menu-color, var(--settera-foreground, #111827))",
                 cursor: "pointer",
                 flexShrink: 0,
               }}
@@ -270,7 +270,7 @@ function SetteraLayoutInner({
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    color: "var(--settera-breadcrumb-muted, #6b7280)",
+                    color: "var(--settera-breadcrumb-muted, var(--settera-muted-foreground, #6b7280))",
                     minWidth: 0,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -305,7 +305,7 @@ function SetteraLayoutInner({
                               style={{
                                 fontSize: "13px",
                                 color:
-                                  "var(--settera-breadcrumb-current, #111827)",
+                                  "var(--settera-breadcrumb-current, var(--settera-foreground, #111827))",
                                 fontWeight: 600,
                               }}
                             >
@@ -374,9 +374,9 @@ function SetteraLayoutInner({
                 zIndex: 21,
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "var(--settera-mobile-drawer-bg, #f3f4f6)",
+                backgroundColor: "var(--settera-mobile-drawer-bg, var(--settera-background, #f3f4f6))",
                 borderRight:
-                  "var(--settera-mobile-drawer-border, 1px solid #d1d5db)",
+                  "var(--settera-mobile-drawer-border, 1px solid var(--settera-input, #d1d5db))",
                 boxShadow: "0 16px 40px rgba(0, 0, 0, 0.18)",
                 overflow: "hidden",
                 transform: overlayIsVisible

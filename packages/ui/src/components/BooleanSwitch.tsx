@@ -29,9 +29,9 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
 
   const trackColor = checked
     ? isDangerous
-      ? "var(--settera-switch-dangerous-color, #dc2626)"
-      : "var(--settera-switch-active-color, #2563eb)"
-    : "var(--settera-switch-inactive-color, #d1d5db)";
+      ? "var(--settera-switch-dangerous-color, var(--settera-destructive, #dc2626))"
+      : "var(--settera-switch-active-color, var(--settera-primary, #2563eb))"
+    : "var(--settera-switch-inactive-color, var(--settera-input, #d1d5db))";
 
   return (
     <Switch.Root
@@ -55,7 +55,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         transition: "background-color 0.2s",
         outline: "none",
         boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
           : "none",
       }}
     >

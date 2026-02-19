@@ -75,17 +75,17 @@ export function Select({ settingKey }: SelectProps) {
         style={{
           ...inputBaseStyle,
           border: hasError
-            ? "1px solid var(--settera-error-color, #dc2626)"
-            : "var(--settera-input-border, 1px solid #d1d5db)",
+            ? "1px solid var(--settera-error-color, var(--settera-destructive, #dc2626))"
+            : "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
           boxShadow: isFocusVisible
-            ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+            ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
             : "none",
           minWidth: "var(--settera-select-min-width, 160px)",
           color: isDangerous
-            ? "var(--settera-dangerous-color, #dc2626)"
-            : "var(--settera-input-color, #111827)",
+            ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+            : "var(--settera-input-color, var(--settera-foreground, #111827))",
           backgroundColor:
-            "var(--settera-select-trigger-bg, var(--settera-input-bg, white))",
+            "var(--settera-select-trigger-bg, var(--settera-input-bg, var(--settera-card, white)))",
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
@@ -96,7 +96,7 @@ export function Select({ settingKey }: SelectProps) {
         <RadixSelect.Value placeholder={isRequired ? "" : "Select…"} />
         <RadixSelect.Icon
           style={{
-            color: "var(--settera-select-icon-color, #6b7280)",
+            color: "var(--settera-select-icon-color, var(--settera-muted-foreground, #6b7280))",
             flexShrink: 0,
           }}
         >
@@ -125,9 +125,9 @@ export function Select({ settingKey }: SelectProps) {
           style={{
             fontFamily: SETTERA_SYSTEM_FONT,
             backgroundColor:
-              "var(--settera-select-content-bg, var(--settera-input-bg, white))",
+              "var(--settera-select-content-bg, var(--settera-input-bg, var(--settera-card, white)))",
             border:
-              "var(--settera-select-content-border, var(--settera-input-border, 1px solid #d1d5db))",
+              "var(--settera-select-content-border, var(--settera-input-border, 1px solid var(--settera-input, #d1d5db)))",
             borderRadius:
               "var(--settera-select-content-radius, var(--settera-input-border-radius, 6px))",
             boxShadow:
@@ -145,7 +145,7 @@ export function Select({ settingKey }: SelectProps) {
                   borderRadius: "var(--settera-select-item-radius, 6px)",
                   padding: "var(--settera-select-item-padding, 6px 8px)",
                   fontSize: "var(--settera-select-item-font-size, 13px)",
-                  color: "var(--settera-select-item-muted-color, #6b7280)",
+                  color: "var(--settera-select-item-muted-color, var(--settera-muted-foreground, #6b7280))",
                   cursor: "pointer",
                   userSelect: "none",
                 }}
@@ -164,7 +164,7 @@ export function Select({ settingKey }: SelectProps) {
                   padding: "var(--settera-select-item-padding, 6px 8px)",
                   fontSize: "var(--settera-select-item-font-size, 13px)",
                   color:
-                    "var(--settera-select-item-color, var(--settera-input-color, #111827))",
+                    "var(--settera-select-item-color, var(--settera-input-color, var(--settera-foreground, #111827)))",
                   cursor: "pointer",
                   userSelect: "none",
                 }}

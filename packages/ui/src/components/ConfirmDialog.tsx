@@ -72,7 +72,7 @@ export function ConfirmDialog() {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "var(--settera-dialog-bg, white)",
+            backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
             borderRadius: "var(--settera-dialog-border-radius, 8px)",
             padding: "var(--settera-dialog-padding, 24px)",
             maxWidth: "var(--settera-dialog-max-width, 420px)",
@@ -87,7 +87,7 @@ export function ConfirmDialog() {
               margin: "0 0 8px 0",
               fontSize: "var(--settera-dialog-title-font-size, 16px)",
               fontWeight: "var(--settera-dialog-title-font-weight, 600)",
-              color: "var(--settera-dialog-title-color, #111827)",
+              color: "var(--settera-dialog-title-color, var(--settera-popover-foreground, #111827))",
             }}
           >
             {title}
@@ -96,7 +96,7 @@ export function ConfirmDialog() {
             style={{
               margin: "0 0 16px 0",
               fontSize: "var(--settera-dialog-message-font-size, 14px)",
-              color: "var(--settera-dialog-message-color, #4b5563)",
+              color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #4b5563))",
               lineHeight: 1.5,
             }}
           >
@@ -108,7 +108,7 @@ export function ConfirmDialog() {
                 style={{
                   display: "block",
                   fontSize: "var(--settera-dialog-label-font-size, 13px)",
-                  color: "var(--settera-dialog-label-color, #6b7280)",
+                  color: "var(--settera-dialog-label-color, var(--settera-muted-foreground, #6b7280))",
                   marginBottom: "4px",
                 }}
               >
@@ -124,7 +124,7 @@ export function ConfirmDialog() {
                   padding: "8px 12px",
                   fontSize: "14px",
                   border:
-                    "1px solid var(--settera-input-border-color, #d1d5db)",
+                    "1px solid var(--settera-input-border-color, var(--settera-input, #d1d5db))",
                   borderRadius: "var(--settera-input-border-radius, 6px)",
                   boxSizing: "border-box",
                 }}
@@ -146,10 +146,10 @@ export function ConfirmDialog() {
                 padding: "8px 16px",
                 fontSize: "14px",
                 fontWeight: 500,
-                border: "1px solid var(--settera-button-border-color, #d1d5db)",
+                border: "1px solid var(--settera-button-border-color, var(--settera-input, #d1d5db))",
                 borderRadius: "var(--settera-button-border-radius, 6px)",
-                backgroundColor: "var(--settera-button-secondary-bg, white)",
-                color: "var(--settera-button-secondary-color, #374151)",
+                backgroundColor: "var(--settera-button-secondary-bg, var(--settera-card, white))",
+                color: "var(--settera-button-secondary-color, var(--settera-card-foreground, #374151))",
                 cursor: "pointer",
               }}
             >
@@ -165,15 +165,15 @@ export function ConfirmDialog() {
                 fontSize: "14px",
                 fontWeight: 500,
                 border: dangerous
-                  ? "1px solid var(--settera-button-dangerous-bg, #dc2626)"
+                  ? "1px solid var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
                   : "none",
                 borderRadius: "var(--settera-button-border-radius, 6px)",
                 backgroundColor: dangerous
-                  ? "var(--settera-button-dangerous-bg, #dc2626)"
-                  : "var(--settera-button-primary-bg, #2563eb)",
+                  ? "var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
+                  : "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
                 color: dangerous
-                  ? "var(--settera-button-dangerous-color, white)"
-                  : "var(--settera-button-primary-color, white)",
+                  ? "var(--settera-button-dangerous-color, var(--settera-destructive-foreground, white))"
+                  : "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
                 cursor: confirmDisabled ? "not-allowed" : "pointer",
                 opacity: confirmDisabled ? 0.5 : 1,
               }}

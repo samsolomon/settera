@@ -7,13 +7,13 @@ export const fieldShellStyle: React.CSSProperties = {
   flexDirection: "column",
   gap: "4px",
   fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, #4b5563)",
+  color: "var(--settera-description-color, var(--settera-muted-foreground, #4b5563))",
 };
 
 export const sectionPanelStyle: React.CSSProperties = {
-  border: "var(--settera-card-border, 1px solid #e5e7eb)",
+  border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
   borderRadius: "var(--settera-card-border-radius, 8px)",
-  backgroundColor: "var(--settera-card-bg, white)",
+  backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
   padding: "8px",
   display: "flex",
   flexDirection: "column",
@@ -21,9 +21,9 @@ export const sectionPanelStyle: React.CSSProperties = {
 };
 
 export const cardShellStyle: React.CSSProperties = {
-  border: "var(--settera-card-border, 1px solid #e5e7eb)",
+  border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
   borderRadius: "var(--settera-card-border-radius, 10px)",
-  backgroundColor: "var(--settera-card-bg, white)",
+  backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
   overflow: "hidden",
 };
 
@@ -38,18 +38,18 @@ export const sectionHeadingRowStyle: React.CSSProperties = {
 export const sectionTitleStyle: React.CSSProperties = {
   fontSize: "var(--settera-section-title-font-size, 16px)",
   fontWeight: "var(--settera-section-title-font-weight, 600)",
-  color: "var(--settera-section-title-color, #111827)",
+  color: "var(--settera-section-title-color, var(--settera-foreground, #111827))",
   margin: 0,
 };
 
 export const descriptionTextStyle: React.CSSProperties = {
   fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, #6b7280)",
+  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
 };
 
 export const mutedMessageStyle: React.CSSProperties = {
   fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, #6b7280)",
+  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
   fontStyle: "italic",
 };
 
@@ -74,9 +74,9 @@ export const smallActionButtonStyle: React.CSSProperties = {
   fontSize: "var(--settera-button-font-size, 13px)",
   padding: "4px 8px",
   borderRadius: "var(--settera-button-border-radius, 6px)",
-  border: "var(--settera-button-border, 1px solid #d1d5db)",
-  backgroundColor: "var(--settera-button-bg, white)",
-  color: "var(--settera-button-color, #374151)",
+  border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+  backgroundColor: "var(--settera-button-bg, var(--settera-card, white))",
+  color: "var(--settera-button-color, var(--settera-card-foreground, #374151))",
 };
 
 export interface SelectOptionLike {
@@ -110,10 +110,10 @@ export function PrimitiveSelectControl({
       onChange={(e) => onChange(e.target.value)}
       style={{
         ...inputBaseStyle,
-        border: "var(--settera-input-border, 1px solid #d1d5db)",
+        border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
         outline: "none",
         boxShadow: focusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
           : "none",
         ...style,
       }}
@@ -157,10 +157,10 @@ export function PrimitiveCheckboxControl({
         justifyContent: "center",
         border: checked
           ? "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
-          : "var(--settera-checkbox-border, 1px solid #d1d5db)",
+          : "var(--settera-checkbox-border, 1px solid var(--settera-input, #d1d5db))",
         backgroundColor: checked
           ? "var(--settera-checkbox-checked-bg, #18181b)"
-          : "var(--settera-checkbox-bg, #ffffff)",
+          : "var(--settera-checkbox-bg, var(--settera-card, #ffffff))",
         borderRadius: "var(--settera-checkbox-border-radius, 4px)",
         boxShadow: "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
         outline: "none",

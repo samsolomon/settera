@@ -119,7 +119,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                backgroundColor: "var(--settera-dialog-bg, white)",
+                backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
                 borderRadius: "var(--settera-dialog-border-radius, 8px)",
                 padding: "var(--settera-dialog-padding, 20px)",
                 maxWidth: "560px",
@@ -134,7 +134,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
                   margin: "0 0 12px 0",
                   fontSize: "16px",
                   fontWeight: 600,
-                  color: "var(--settera-title-color, #111827)",
+                  color: "var(--settera-title-color, var(--settera-foreground, #111827))",
                 }}
               >
                 {definition.title}
@@ -143,7 +143,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
                 style={{
                   margin: "0 0 12px 0",
                   fontSize: "13px",
-                  color: "var(--settera-description-color, #6b7280)",
+                  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
                 }}
               >
                 {definition.description ?? `Edit ${definition.title}.`}
@@ -573,6 +573,6 @@ function renderMultiSelectField(
 
 const inputStyles: React.CSSProperties = {
   ...inputBaseStyle,
-  border: "var(--settera-input-border, 1px solid #d1d5db)",
+  border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
   width: "var(--settera-input-width, 200px)",
 };

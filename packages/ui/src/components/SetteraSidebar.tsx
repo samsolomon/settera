@@ -305,9 +305,9 @@ export function SetteraSidebar({
       style={{
         width: "var(--settera-sidebar-width, 280px)",
         backgroundColor:
-          "var(--settera-sidebar-bg, var(--settera-sidebar-background, #fafafa))",
+          "var(--settera-sidebar-bg, var(--settera-sidebar-background, var(--settera-background, #fafafa)))",
         borderRight:
-          "var(--settera-sidebar-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
+          "var(--settera-sidebar-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
         fontSize: "var(--settera-sidebar-font-size, 14px)",
         padding: "var(--settera-sidebar-padding, 12px)",
         overflowY: "auto",
@@ -335,14 +335,14 @@ export function SetteraSidebar({
                 width: "100%",
                 border: "var(--settera-sidebar-back-border, none)",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
                   : "var(--settera-sidebar-back-bg, transparent)",
                 borderRadius: "var(--settera-sidebar-item-radius, 8px)",
                 padding: "var(--settera-sidebar-item-padding, 8px 10px)",
                 textAlign: "left",
                 fontSize: "inherit",
                 color:
-                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, #18181b))",
+                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, var(--settera-foreground, #18181b)))",
                 cursor: "pointer",
                 fontFamily: "inherit",
                 transition: "background-color 120ms ease",
@@ -380,7 +380,7 @@ export function SetteraSidebar({
                 gap: "8px",
                 width: "100%",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
                   : "var(--settera-sidebar-back-bg, transparent)",
                 border: "var(--settera-sidebar-back-border, none)",
                 borderRadius: "var(--settera-sidebar-item-radius, 8px)",
@@ -388,7 +388,7 @@ export function SetteraSidebar({
                 textAlign: "left",
                 fontSize: "inherit",
                 color:
-                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, #18181b))",
+                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, var(--settera-foreground, #18181b)))",
                 textDecoration: "none",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
@@ -429,7 +429,7 @@ export function SetteraSidebar({
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           color:
-            "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, #71717a))",
+            "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
           fontWeight: 600,
           padding: "2px 8px",
         }}
@@ -536,13 +536,13 @@ function SidebarItem({
           border: "none",
           borderRadius: "var(--settera-sidebar-item-radius, 8px)",
           background: isActive
-            ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, #f4f4f5))"
+            ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
             : isHovered
               ? "var(--settera-sidebar-hover-bg, var(--settera-sidebar-accent-hover, #f4f4f5))"
               : "transparent",
           color: isActive
-            ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, #18181b))"
-            : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, #3f3f46))",
+            ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, var(--settera-foreground, #18181b)))"
+            : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, var(--settera-foreground, #3f3f46)))",
           fontWeight: 500,
           fontSize: "inherit",
           textAlign: "left",
@@ -561,7 +561,7 @@ function SidebarItem({
               alignItems: "center",
               justifyContent: "center",
               color:
-                "var(--settera-sidebar-icon-color, var(--settera-sidebar-muted-foreground, #71717a))",
+                "var(--settera-sidebar-icon-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
               flexShrink: 0,
             }}
           >
@@ -601,7 +601,7 @@ function SidebarItem({
             marginLeft: "var(--settera-sidebar-sub-margin, 16px)",
             paddingLeft: "var(--settera-sidebar-sub-padding, 8px)",
             borderLeft:
-              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
+              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
             display: "flex",
             flexDirection: "column",
             gap: "var(--settera-sidebar-sub-gap, 1px)",

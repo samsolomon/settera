@@ -22,7 +22,7 @@ export const inputBaseStyle: React.CSSProperties = {
   padding: "var(--settera-input-padding, 6px 10px)",
   borderRadius: "var(--settera-input-border-radius, 6px)",
   width: "var(--settera-input-width, 200px)",
-  backgroundColor: "var(--settera-input-bg, white)",
+  backgroundColor: "var(--settera-input-bg, var(--settera-card, white))",
   outline: "none",
 };
 
@@ -31,7 +31,7 @@ export const buttonBaseStyle: React.CSSProperties = {
   fontWeight: "var(--settera-button-font-weight, 500)",
   padding: "var(--settera-button-padding, 6px 16px)",
   borderRadius: "var(--settera-button-border-radius, 6px)",
-  backgroundColor: "var(--settera-button-bg, white)",
+  backgroundColor: "var(--settera-button-bg, var(--settera-card, white))",
   transition: "opacity 0.2s",
   outline: "none",
 };
@@ -55,14 +55,14 @@ export const PrimitiveInput = React.forwardRef<
       style={{
         ...inputBaseStyle,
         border: invalid
-          ? "1px solid var(--settera-error-color, #dc2626)"
-          : "var(--settera-input-border, 1px solid #d1d5db)",
+          ? "1px solid var(--settera-error-color, var(--settera-destructive, #dc2626))"
+          : "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
         boxShadow: focusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
           : "none",
         color: isDestructive
-          ? "var(--settera-dangerous-color, #dc2626)"
-          : "var(--settera-input-color, #111827)",
+          ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+          : "var(--settera-input-color, var(--settera-foreground, #111827))",
         ...style,
       }}
     />
@@ -87,17 +87,17 @@ export const PrimitiveButton = React.forwardRef<
       style={{
         ...buttonBaseStyle,
         border: isDestructive
-          ? "1px solid var(--settera-dangerous-color, #dc2626)"
-          : "var(--settera-button-border, 1px solid #d1d5db)",
+          ? "1px solid var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+          : "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
         boxShadow: focusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
           : "none",
         color: isDestructive
-          ? "var(--settera-dangerous-color, #dc2626)"
-          : "var(--settera-button-color, #374151)",
+          ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+          : "var(--settera-button-color, var(--settera-card-foreground, #374151))",
         backgroundColor: isDestructive
           ? "var(--settera-button-dangerous-bg, #fef2f2)"
-          : "var(--settera-button-bg, white)",
+          : "var(--settera-button-bg, var(--settera-card, white))",
         ...style,
       }}
     />

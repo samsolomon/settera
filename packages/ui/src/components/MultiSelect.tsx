@@ -104,8 +104,8 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
               gap: "var(--settera-checkbox-gap, 8px)",
               fontSize: "var(--settera-input-font-size, 14px)",
               color: isDangerous
-                ? "var(--settera-dangerous-color, #dc2626)"
-                : "var(--settera-input-color, #111827)",
+                ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+                : "var(--settera-input-color, var(--settera-foreground, #111827))",
               cursor: "pointer",
             }}
           >
@@ -131,17 +131,17 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
                 justifyContent: "center",
                 border: isChecked
                   ? isDangerous
-                    ? "1px solid var(--settera-dangerous-color, #dc2626)"
+                    ? "1px solid var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
                     : "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
-                  : "var(--settera-checkbox-border, 1px solid #d1d5db)",
+                  : "var(--settera-checkbox-border, 1px solid var(--settera-input, #d1d5db))",
                 backgroundColor: isChecked
                   ? isDangerous
-                    ? "var(--settera-dangerous-color, #dc2626)"
+                    ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
                     : "var(--settera-checkbox-checked-bg, #18181b)"
-                  : "var(--settera-checkbox-bg, #ffffff)",
+                  : "var(--settera-checkbox-bg, var(--settera-card, #ffffff))",
                 outline: "none",
                 boxShadow: isFocused
-                  ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+                  ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
                   : "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
                 borderRadius: "var(--settera-checkbox-border-radius, 4px)",
                 cursor: isDisabled ? "not-allowed" : "pointer",

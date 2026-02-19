@@ -89,7 +89,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const boxShadow = isHighlighted
     ? "0 0 0 2px var(--settera-highlight-color, #f59e0b)"
     : isFocusVisible
-      ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
+      ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
       : "none";
 
   return (
@@ -122,7 +122,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
           padding: "var(--settera-row-padding-y, 12px 0)",
           borderBottom: isLast
             ? "none"
-            : "var(--settera-row-border, 1px solid #e5e7eb)",
+            : "var(--settera-row-border, 1px solid var(--settera-border, #e5e7eb))",
         }}
       >
         <div style={{ flex: 1, marginRight: "16px" }}>
@@ -135,8 +135,8 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               fontSize: "var(--settera-title-font-size, 14px)",
               fontWeight: "var(--settera-title-font-weight, 500)",
               color: isDangerous
-                ? "var(--settera-dangerous-color, #dc2626)"
-                : "var(--settera-title-color, #111827)",
+                ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
+                : "var(--settera-title-color, var(--settera-foreground, #111827))",
             }}
           >
             {definition.title}
@@ -155,11 +155,11 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                   justifyContent: "center",
                   border: "none",
                   background: isCopyHovered
-                    ? "var(--settera-ghost-hover-bg, #f4f4f5)"
+                    ? "var(--settera-ghost-hover-bg, var(--settera-muted, #f4f4f5))"
                     : "transparent",
                   color: isCopyHovered
-                    ? "var(--settera-ghost-hover-color, #18181b)"
-                    : "var(--settera-copy-link-color, #9ca3af)",
+                    ? "var(--settera-ghost-hover-color, var(--settera-foreground, #18181b))"
+                    : "var(--settera-copy-link-color, var(--settera-muted-foreground, #9ca3af))",
                   cursor: "pointer",
                   width: "24px",
                   height: "24px",
@@ -205,7 +205,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                 aria-label="Saving"
                 style={{
                   fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-saving-color, #6b7280)",
+                  color: "var(--settera-save-saving-color, var(--settera-muted-foreground, #6b7280))",
                   fontWeight: 400,
                 }}
               >
@@ -229,7 +229,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                 aria-label="Save failed"
                 style={{
                   fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-error-color, #dc2626)",
+                  color: "var(--settera-save-error-color, var(--settera-destructive, #dc2626))",
                   fontWeight: 400,
                 }}
               >
@@ -251,7 +251,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
             <div
               style={{
                 fontSize: "var(--settera-help-font-size, 12px)",
-                color: "var(--settera-help-color, #9ca3af)",
+                color: "var(--settera-help-color, var(--settera-muted-foreground, #9ca3af))",
                 marginTop: "4px",
               }}
             >
@@ -265,7 +265,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               id={`settera-error-${settingKey}`}
               style={{
                 fontSize: "var(--settera-error-font-size, 13px)",
-                color: "var(--settera-error-color, #dc2626)",
+                color: "var(--settera-error-color, var(--settera-destructive, #dc2626))",
                 marginTop: "4px",
               }}
             >

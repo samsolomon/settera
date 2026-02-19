@@ -74,7 +74,7 @@ export function SetteraPage({
         style={{
           fontSize: "var(--settera-page-title-font-size, 20px)",
           fontWeight: 600,
-          color: "var(--settera-page-title-color, #111827)",
+          color: "var(--settera-page-title-color, var(--settera-foreground, #111827))",
           margin: 0,
         }}
       >

@@ -80,7 +80,7 @@ export function ActionModal({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "var(--settera-dialog-bg, white)",
+            backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
             borderRadius: "var(--settera-dialog-border-radius, 8px)",
             padding: "var(--settera-dialog-padding, 20px)",
             maxWidth: "640px",
@@ -97,7 +97,7 @@ export function ActionModal({
               margin: "0 0 12px 0",
               fontSize: "16px",
               fontWeight: 600,
-              color: "var(--settera-title-color, #111827)",
+              color: "var(--settera-title-color, var(--settera-foreground, #111827))",
             }}
           >
             {modalConfig.title ?? definition.title}
@@ -106,7 +106,7 @@ export function ActionModal({
             style={{
               margin: "0 0 12px 0",
               fontSize: "13px",
-              color: "var(--settera-description-color, #6b7280)",
+              color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
             }}
           >
             {modalConfig.description ?? "Review the fields and submit."}
@@ -123,7 +123,7 @@ export function ActionModal({
                   flexDirection: "column",
                   gap: "4px",
                   fontSize: "13px",
-                  color: "var(--settera-description-color, #4b5563)",
+                  color: "var(--settera-description-color, var(--settera-muted-foreground, #4b5563))",
                 }}
               >
                 {field.title}
@@ -155,11 +155,11 @@ export function ActionModal({
                   padding: "6px 10px",
                   borderRadius: "6px",
                   border:
-                    "var(--settera-button-border, 1px solid #d1d5db)",
+                    "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
                   backgroundColor:
-                    "var(--settera-button-secondary-bg, white)",
+                    "var(--settera-button-secondary-bg, var(--settera-card, white))",
                   color:
-                    "var(--settera-button-secondary-color, #374151)",
+                    "var(--settera-button-secondary-color, var(--settera-card-foreground, #374151))",
                   cursor: isLoading ? "not-allowed" : "pointer",
                 }}
               >
@@ -176,11 +176,11 @@ export function ActionModal({
                 padding: "6px 10px",
                 borderRadius: "6px",
                 border:
-                  "var(--settera-button-border, 1px solid #d1d5db)",
+                  "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
                 backgroundColor:
-                  "var(--settera-button-primary-bg, #2563eb)",
+                  "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
                 color:
-                  "var(--settera-button-primary-color, white)",
+                  "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
                 cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >
