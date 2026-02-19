@@ -82,28 +82,31 @@ export function ConfirmDialog() {
             zIndex: "var(--settera-overlay-z-index, 1000)" as unknown as number,
           }}
         >
-          <Dialog.Title
-            style={{
-              margin: "0 0 8px 0",
-              fontSize: "var(--settera-dialog-title-font-size, 16px)",
-              fontWeight: "var(--settera-dialog-title-font-weight, 600)",
-              color: "var(--settera-dialog-title-color, var(--settera-popover-foreground, #111827))",
-            }}
-          >
-            {title}
-          </Dialog.Title>
-          <Dialog.Description
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "var(--settera-dialog-message-font-size, 14px)",
-              color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #4b5563))",
-              lineHeight: 1.5,
-            }}
-          >
-            {config.message}
-          </Dialog.Description>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <Dialog.Title
+              style={{
+                margin: 0,
+                fontSize: "var(--settera-dialog-title-font-size, 18px)",
+                fontWeight: "var(--settera-dialog-title-font-weight, 600)",
+                lineHeight: 1.3,
+                color: "var(--settera-dialog-title-color, var(--settera-popover-foreground, #111827))",
+              }}
+            >
+              {title}
+            </Dialog.Title>
+            <Dialog.Description
+              style={{
+                margin: 0,
+                fontSize: "var(--settera-dialog-message-font-size, 14px)",
+                color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #4b5563))",
+                lineHeight: 1.5,
+              }}
+            >
+              {config.message}
+            </Dialog.Description>
+          </div>
           {requireText && (
-            <div style={{ marginBottom: "16px" }}>
+            <div style={{ marginTop: "16px" }}>
               <label
                 style={{
                   display: "block",
@@ -136,6 +139,7 @@ export function ConfirmDialog() {
               display: "flex",
               justifyContent: "flex-end",
               gap: "8px",
+              marginTop: "16px",
             }}
           >
             <PrimitiveButton

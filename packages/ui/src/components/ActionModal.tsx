@@ -92,25 +92,29 @@ export function ActionModal({
             zIndex: 1001,
           }}
         >
-          <Dialog.Title
-            style={{
-              margin: "0 0 12px 0",
-              fontSize: "16px",
-              fontWeight: 600,
-              color: "var(--settera-title-color, var(--settera-foreground, #111827))",
-            }}
-          >
-            {modalConfig.title ?? definition.title}
-          </Dialog.Title>
-          <Dialog.Description
-            style={{
-              margin: "0 0 12px 0",
-              fontSize: "13px",
-              color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
-            }}
-          >
-            {modalConfig.description ?? "Review the fields and submit."}
-          </Dialog.Description>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
+            <Dialog.Title
+              style={{
+                margin: 0,
+                fontSize: "18px",
+                fontWeight: 600,
+                lineHeight: 1.3,
+                color: "var(--settera-title-color, var(--settera-foreground, #111827))",
+              }}
+            >
+              {modalConfig.title ?? definition.title}
+            </Dialog.Title>
+            <Dialog.Description
+              style={{
+                margin: 0,
+                fontSize: "14px",
+                lineHeight: 1.5,
+                color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+              }}
+            >
+              {modalConfig.description ?? "Review the fields and submit."}
+            </Dialog.Description>
+          </div>
 
           <div
             style={{ display: "flex", flexDirection: "column", gap: "10px" }}
@@ -140,7 +144,7 @@ export function ActionModal({
 
           <div
             style={{
-              marginTop: "14px",
+              marginTop: "16px",
               display: "flex",
               justifyContent: "flex-end",
               gap: "8px",
