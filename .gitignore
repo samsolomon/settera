@@ -29,5 +29,8 @@ coverage/
 # Logs
 *.log
 
+# Claude Code
+.claude/
+
 # Nested repo
 /settera/
