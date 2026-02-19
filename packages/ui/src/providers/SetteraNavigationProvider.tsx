@@ -10,7 +10,7 @@ import {
   useSetteraNavigation as useReactNavigation,
   SetteraSchemaContext,
 } from "@settera/react";
-import { walkSchema } from "@settera/schema";
+import { searchSchema } from "@settera/schema";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import type { SetteraNavigationContextValue } from "../contexts/SetteraNavigationContext.js";
 
@@ -99,74 +99,10 @@ function SetteraNavigationProviderInner({
   }, [closeSubpage]);
 
   const { matchingSettingKeys, matchingPageKeys } = useMemo(() => {
-    const settingKeys = new Set<string>();
-    const pageKeys = new Set<string>();
-
     if (!searchQuery) {
-      return { matchingSettingKeys: settingKeys, matchingPageKeys: pageKeys };
+      return { matchingSettingKeys: new Set<string>(), matchingPageKeys: new Set<string>() };
     }
-
-    const q = searchQuery.toLowerCase();
-
-    const matchedPages = new Set<string>();
-    const matchedSections = new Set<string>();
-    const subsectionMatchedSettings = new Set<string>();
-    const parentMap = new Map<string, string>();
-
-    walkSchema(schema, {
-      onPage(page) {
-        if (page.pages) {
-          for (const child of page.pages) {
-            parentMap.set(child.key, page.key);
-          }
-        }
-        if (page.title?.toLowerCase().includes(q)) {
-          matchedPages.add(page.key);
-          pageKeys.add(page.key);
-        }
-      },
-      onSection(section, ctx) {
-        if (section.title?.toLowerCase().includes(q)) {
-          matchedSections.add(`${ctx.pageKey}:${section.key}`);
-        }
-        if (section.subsections) {
-          for (const sub of section.subsections) {
-            if (sub.title.toLowerCase().includes(q)) {
-              for (const setting of sub.settings) {
-                subsectionMatchedSettings.add(setting.key);
-              }
-            }
-          }
-        }
-      },
-      onSetting(setting, ctx) {
-        const pageMatched = matchedPages.has(ctx.pageKey);
-        const sectionMatched = matchedSections.has(
-          `${ctx.pageKey}:${ctx.sectionKey}`,
-        );
-        const subMatched = subsectionMatchedSettings.has(setting.key);
-        const titleMatch =
-          setting.title?.toLowerCase().includes(q) ?? false;
-        const descMatch =
-          setting.description?.toLowerCase().includes(q) ?? false;
-
-        if (pageMatched || sectionMatched || subMatched || titleMatch || descMatch) {
-          settingKeys.add(setting.key);
-          pageKeys.add(ctx.pageKey);
-        }
-      },
-    });
-
-    // Propagate: if a child page matched, include all ancestor pages
-    for (const key of [...pageKeys]) {
-      let current = key;
-      while (parentMap.has(current)) {
-        const parent = parentMap.get(current)!;
-        pageKeys.add(parent);
-        current = parent;
-      }
-    }
-
+    const { settingKeys, pageKeys } = searchSchema(schema, searchQuery);
     return { matchingSettingKeys: settingKeys, matchingPageKeys: pageKeys };
   }, [searchQuery, schema]);
 

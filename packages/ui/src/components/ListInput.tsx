@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo, useRef } from "react";
-import { useSetteraSetting } from "@settera/react";
+import { useSetteraSetting, useBufferedInput, isObjectRecord } from "@settera/react";
 import type { RepeatableFieldDefinition } from "@settera/schema";
-import { isObjectRecord } from "../utils/isObjectRecord.js";
-import { useBufferedInput } from "../hooks/useBufferedInput.js";
 import {
   PrimitiveButton,
   PrimitiveInput,

@@ -55,3 +55,7 @@ export {
 } from "./traversal.js";
 
 export type { SchemaWalkContext, SchemaVisitor } from "./traversal.js";
+
+// Search
+export { searchSchema } from "./search.js";
+export type { SearchSchemaResult } from "./search.js";

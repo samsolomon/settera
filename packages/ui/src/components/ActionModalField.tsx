@@ -4,7 +4,7 @@ import {
   getDefaultFieldValue,
   isObjectRecord,
   type ModalActionFieldSetting,
-} from "./actionModalUtils.js";
+} from "@settera/react";
 import {
   PrimitiveButton,
   PrimitiveInput,

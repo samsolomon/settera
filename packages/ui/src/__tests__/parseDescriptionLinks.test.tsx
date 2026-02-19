@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
+import { parseDescriptionLinks } from "@settera/react";
 
 describe("parseDescriptionLinks", () => {
   it("returns the original string when no links present", () => {

@@ -56,8 +56,8 @@ export { ConfirmDialog } from "./components/ConfirmDialog.js";
 export { SetteraDeepLinkContext } from "./contexts/SetteraDeepLinkContext.js";
 export type { SetteraDeepLinkContextValue } from "./contexts/SetteraDeepLinkContext.js";
 
-// Utilities
-export { parseDescriptionLinks } from "./utils/parseDescriptionLinks.js";
+// Utilities (re-exported from @settera/react)
+export { parseDescriptionLinks } from "@settera/react";
 
 // Search
 export { SetteraSearch } from "./components/SetteraSearch.js";

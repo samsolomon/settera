@@ -6,7 +6,8 @@ import { Settera } from "@settera/react";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { SetteraPage } from "../components/SetteraPage.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
-import type { SetteraSchema, SetteraActionPageProps } from "../index.js";
+import type { SetteraSchema } from "@settera/schema";
+import type { SetteraActionPageProps } from "../index.js";
 
 // ---- Test Schema ----
 

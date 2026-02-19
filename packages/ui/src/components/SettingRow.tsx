@@ -5,9 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useSetteraSetting } from "@settera/react";
+import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
-import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";

@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { SetteraSchemaContext, useSettera } from "@settera/react";
+import { SetteraSchemaContext, useSettera, parseDescriptionLinks } from "@settera/react";
 import { evaluateVisibility } from "@settera/schema";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
-import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import {
   cardShellStyle,

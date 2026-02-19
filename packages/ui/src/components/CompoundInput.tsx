@@ -1,10 +1,8 @@
 import React, { useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useSetteraSetting } from "@settera/react";
+import { useSetteraSetting, useCompoundDraft, useSaveAndClose } from "@settera/react";
 import type { CompoundFieldDefinition } from "@settera/schema";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
-import { useCompoundDraft } from "../hooks/useCompoundDraft.js";
-import { useSaveAndClose } from "../hooks/useSaveAndClose.js";
 import {
   PrimitiveButton,
   SETTERA_SYSTEM_FONT,

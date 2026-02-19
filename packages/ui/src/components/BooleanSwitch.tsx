@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { useSetteraSetting } from "@settera/react";
-import { useFocusVisible } from "../hooks/useFocusVisible.js";
+import { useSetteraSetting, useFocusVisible } from "@settera/react";
 
 export interface BooleanSwitchProps {
   settingKey: string;

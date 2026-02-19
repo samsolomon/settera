@@ -1,5 +1,4 @@
 import type { ActionSetting } from "@settera/schema";
-import { isObjectRecord } from "../utils/isObjectRecord.js";
 
 export type ModalActionFieldSetting = NonNullable<
   NonNullable<ActionSetting["modal"]>["fields"]
@@ -41,5 +40,3 @@ export function buildModalDraft(
   }
   return { ...defaults, ...(initialValues ?? {}) };
 }
-
-export { isObjectRecord } from "../utils/isObjectRecord.js";

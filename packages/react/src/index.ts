@@ -32,3 +32,16 @@ export type { SetteraNavigationContextValue, SetteraNavigationProps, SubpageStat
 
 // Store selector hooks
 export { useStoreSelector, useStoreSlice } from "./hooks/useStoreSelector.js";
+
+// Behavioral hooks (shared across UI implementations)
+export { useBufferedInput } from "./hooks/useBufferedInput.js";
+export { useFocusVisible } from "./hooks/useFocusVisible.js";
+export { useCompoundDraft } from "./hooks/useCompoundDraft.js";
+export { useActionModalDraft } from "./hooks/useActionModalDraft.js";
+export { useSaveAndClose } from "./hooks/useSaveAndClose.js";
+
+// Utilities
+export { parseDescriptionLinks } from "./utils/parseDescriptionLinks.js";
+export { isObjectRecord } from "./utils/isObjectRecord.js";
+export { buildModalDraft, getDefaultFieldValue } from "./utils/actionModalUtils.js";
+export type { ModalActionFieldSetting } from "./utils/actionModalUtils.js";

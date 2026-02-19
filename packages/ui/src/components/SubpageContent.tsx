@@ -1,12 +1,9 @@
 import React, { useCallback, useContext } from "react";
-import { SetteraSchemaContext, useSetteraSetting } from "@settera/react";
+import { SetteraSchemaContext, useSetteraSetting, useCompoundDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
 import type { ActionSetting, CompoundFieldDefinition } from "@settera/schema";
-import { useCompoundDraft } from "../hooks/useCompoundDraft.js";
-import { useSaveAndClose } from "../hooks/useSaveAndClose.js";
 import { ActionPageContent } from "./ActionPageContent.js";
 import { CompoundFields } from "./CompoundInput.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
-import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import {
   mutedMessageStyle,
   descriptionTextStyle,

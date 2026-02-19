@@ -1,12 +1,9 @@
 import React, { useCallback } from "react";
 import type { ActionSetting } from "@settera/schema";
-import { useSetteraAction } from "@settera/react";
+import { useSetteraAction, useActionModalDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
 import { ActionModalField } from "./ActionModalField.js";
-import { useActionModalDraft } from "../hooks/useActionModalDraft.js";
-import { useSaveAndClose } from "../hooks/useSaveAndClose.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";
-import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 
 export interface ActionPageContentProps {
   settingKey: string;

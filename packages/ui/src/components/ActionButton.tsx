@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ActionSetting } from "@settera/schema";
-import { useSetteraAction } from "@settera/react";
+import { useSetteraAction, useFocusVisible } from "@settera/react";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
-import { useFocusVisible } from "../hooks/useFocusVisible.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { ActionModal } from "./ActionModal.js";
 

@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import * as RadixSelect from "@radix-ui/react-select";
-import { useSetteraSetting } from "@settera/react";
-import { useFocusVisible } from "../hooks/useFocusVisible.js";
+import { useSetteraSetting, useFocusVisible } from "@settera/react";
 import { inputBaseStyle, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface SelectProps {

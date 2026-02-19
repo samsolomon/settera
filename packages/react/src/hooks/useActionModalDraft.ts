@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import {
   buildModalDraft,
   type ModalActionFieldSetting,
-} from "../components/actionModalUtils.js";
+} from "../utils/actionModalUtils.js";
 
 export function useActionModalDraft(
   fields: ModalActionFieldSetting[] | undefined,

@@ -2,7 +2,7 @@ import React, { useCallback, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { ActionSetting } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
-import { useActionModalDraft } from "../hooks/useActionModalDraft.js";
+import { useActionModalDraft } from "@settera/react";
 import { PrimitiveButton, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface ActionModalProps {

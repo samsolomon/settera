@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
-import { useSetteraSetting } from "@settera/react";
+import { useSetteraSetting, useBufferedInput } from "@settera/react";
 import { PrimitiveInput } from "./SetteraPrimitives.js";
-import { useBufferedInput } from "../hooks/useBufferedInput.js";
 
 export interface NumberInputProps {
   settingKey: string;

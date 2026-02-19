@@ -6,7 +6,7 @@ import type {
   MultiSelectSetting,
   TextSetting,
 } from "@settera/schema";
-import { useBufferedInput } from "../hooks/useBufferedInput.js";
+import { useBufferedInput } from "@settera/react";
 import {
   PrimitiveInput,
   inputBaseStyle,
