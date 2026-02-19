@@ -104,6 +104,7 @@ function SetteraLayoutInner({
     registerFocusContentHandler,
     subpage,
     openSubpage,
+    closeSubpage,
   } = useSetteraNavigation();
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
@@ -128,6 +129,8 @@ function SetteraLayoutInner({
     clearSearch,
     searchQuery,
     registerFocusContentHandler,
+    closeSubpage,
+    subpageSettingKey: subpage?.settingKey ?? null,
   });
 
   const { setPendingScrollKey, scrollToSetting } = useSetteraLayoutHighlight({

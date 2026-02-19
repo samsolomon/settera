@@ -9,6 +9,8 @@ export interface UseSetteraLayoutMainKeysOptions {
   clearSearch: () => void;
   searchQuery: string;
   registerFocusContentHandler: (handler: () => void) => () => void;
+  closeSubpage?: (() => void) | null;
+  subpageSettingKey?: string | null;
 }
 
 /** @internal SetteraLayout implementation detail; not part of public API. */
@@ -18,8 +20,10 @@ export function useSetteraLayoutMainKeys({
   clearSearch,
   searchQuery,
   registerFocusContentHandler,
+  closeSubpage,
+  subpageSettingKey,
 }: UseSetteraLayoutMainKeysOptions) {
-  useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery });
+  useSetteraGlobalKeys({ containerRef, clearSearch, searchQuery, closeSubpage, subpageSettingKey });
   const { onKeyDown: cardNavKeyDown } = useContentCardNavigation({ mainRef });
 
   // Register handler so sidebar Enter can focus the first card in content.

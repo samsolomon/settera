@@ -5,6 +5,8 @@ export interface UseSetteraGlobalKeysOptions {
   containerRef: RefObject<HTMLElement | null>;
   clearSearch: () => void;
   searchQuery: string;
+  closeSubpage?: (() => void) | null;
+  subpageSettingKey?: string | null;
 }
 
 /**
@@ -33,19 +35,29 @@ export function isTextInput(el: EventTarget | null): boolean {
  *
  * - `/` — Focus the search input (blocked when typing in text inputs)
  * - `Cmd+K` / `Ctrl+K` — Focus the search input (works everywhere)
- * - `Escape` — Clear search (when search has a query)
+ * - `Escape` — Close subpage / clear search / blur input (layered priority)
  * - `F6` / `Shift+F6` — Cycle focus between sidebar and content panes
  */
 export function useSetteraGlobalKeys(
   options: UseSetteraGlobalKeysOptions,
 ): void {
-  const { containerRef, clearSearch, searchQuery } = options;
+  const { containerRef, clearSearch, searchQuery, closeSubpage, subpageSettingKey } = options;
 
-  // Use a ref for searchQuery so the effect doesn't re-run on every keystroke
+  // Use refs for volatile values so the effect doesn't re-run on every change
   const searchQueryRef = useRef(searchQuery);
   useEffect(() => {
     searchQueryRef.current = searchQuery;
   }, [searchQuery]);
+
+  const closeSubpageRef = useRef(closeSubpage);
+  useEffect(() => {
+    closeSubpageRef.current = closeSubpage;
+  }, [closeSubpage]);
+
+  const subpageSettingKeyRef = useRef(subpageSettingKey);
+  useEffect(() => {
+    subpageSettingKeyRef.current = subpageSettingKey;
+  }, [subpageSettingKey]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -80,26 +92,40 @@ export function useSetteraGlobalKeys(
       // Escape — layered priority:
       // 1. Dialog open → bail, let dialog handle it
       // 2. Search input focused → bail, let SetteraSearch handle it
-      // 3. Text/number input in content → blur, focus enclosing card
-      // 4. Control inside a card (non-text) → drill out to enclosing card
-      // 5. Focus on card or <main> → return to sidebar
-      // 6. Search query active → clear search
+      // 4. Text/number input in content → blur, focus enclosing card
+      // 5. Control inside a card (non-text) → drill out to enclosing card
+      // 6. Focus on card or <main> → return to sidebar
+      // 7. Search query active → clear search
       if (e.key === "Escape") {
         // 1. Dialog open — let the dialog handle Escape
         if (container.querySelector('[role="dialog"], [role="alertdialog"]'))
           return;
 
+        // 2. Subpage open — navigate back and focus the originating setting card
+        if (subpageSettingKeyRef.current && closeSubpageRef.current) {
+          e.preventDefault();
+          const settingKey = subpageSettingKeyRef.current;
+          closeSubpageRef.current();
+          requestAnimationFrame(() => {
+            const card = container.querySelector<HTMLElement>(
+              `[data-setting-key="${CSS.escape(settingKey)}"]`,
+            );
+            if (card) card.focus();
+          });
+          return;
+        }
+
         const searchInput = container.querySelector('input[role="searchbox"]');
         const activeEl = document.activeElement as HTMLElement | null;
 
-        // 2. Search input focused — let SetteraSearch handle it
+        // 3. Search input focused — let SetteraSearch handle it
         if (activeEl === searchInput) return;
 
         const main = container.querySelector<HTMLElement>("main");
         const sidebar =
           container.querySelector<HTMLElement>('nav[role="tree"]');
 
-        // 3. Text/number input in content → blur, focus enclosing card
+        // 4. Text/number input in content → blur, focus enclosing card
         if (
           main &&
           activeEl &&
@@ -117,7 +143,7 @@ export function useSetteraGlobalKeys(
           return;
         }
 
-        // 4. Control inside a card (non-text) → drill out to enclosing card
+        // 5. Control inside a card (non-text) → drill out to enclosing card
         if (main && activeEl && main.contains(activeEl)) {
           const card = activeEl.closest<HTMLElement>("[data-setting-key]");
           if (card && activeEl !== card) {
@@ -127,7 +153,7 @@ export function useSetteraGlobalKeys(
           }
         }
 
-        // 5. Focus on card or <main> → return to sidebar
+        // 6. Focus on card or <main> → return to sidebar
         if (main && sidebar && main.contains(activeEl)) {
           e.preventDefault();
           const target =
@@ -136,7 +162,7 @@ export function useSetteraGlobalKeys(
           return;
         }
 
-        // 6. Search query active — clear search
+        // 7. Search query active — clear search
         if (searchQueryRef.current) {
           e.preventDefault();
           clearSearch();
