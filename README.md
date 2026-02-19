@@ -8,9 +8,7 @@ Settera is a schema-driven settings framework. Define your settings in a schema,
 
 Stop spending cycles on settings infrastructure and focus on your core product.
 
-## Why Settera?
-
-Building a settings page seems simple until you need keyboard navigation, search filtering, conditional visibility, compound settings with scoped editing, validation, and responsive layouts. Settera handles all of this from a single schema definition.
+## Quick Start
 
 ```tsx
 import { Settera } from "@settera/react";
@@ -33,36 +31,11 @@ function AppSettings() {
 }
 ```
 
-## Architecture
-
-Settera is split into three independent packages. Use only what you need.
-
-| Package           | Purpose                                                                                                                     | Dependencies                    |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `@settera/schema` | Pure TypeScript types and schema validation. No React.                                                                      | None                            |
-| `@settera/react`  | Unified `Settera` component, store, and headless hooks. Handles validation, save tracking, confirm dialogs, and visibility. | `@settera/schema`, React        |
-| `@settera/ui`     | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI.                                        | `@settera/react`, `@radix-ui/*` |
-
-**Building with your own design system?** Use `@settera/schema` + `@settera/react` and write your own components.
-
-**Want settings working in an afternoon?** Use `@settera/ui` which includes everything.
-
-### Styling Approach (`@settera/ui`)
-
-`@settera/ui` is framework-agnostic at runtime. It does **not** require Tailwind, shadcn, or DaisyUI.
-
-- Use it directly with default styles (CSS variables + inline styles).
-- If your app uses Tailwind/shadcn, map Settera CSS variables to your design tokens.
-- If your app uses another system (DaisyUI, Chakra, custom CSS), keep using `@settera/ui` or build custom UI on `@settera/react`.
-
-### UI API Stability
-
-`@settera/ui` exports stable component and hook entrypoints from `packages/ui/src/index.ts`.  
-Internal `SetteraLayout` helper hooks (`useSetteraLayout*`) are implementation details and intentionally not part of the public API.
-
-## Schema Example
+## Schema
 
 Settings are defined as a JSON/TypeScript schema. The schema drives the entire UI — sidebar navigation, sections, controls, validation, and conditional visibility.
+
+### Schema Structure
 
 ```typescript
 const schema: SetteraSchema = {
@@ -104,20 +77,20 @@ const schema: SetteraSchema = {
 };
 ```
 
-## Setting Types
+### Setting Types
 
-| Type          | Description                                               | Apply behavior                                              |
-| ------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
-| `boolean`     | Toggle switch                                             | Instant                                                     |
-| `text`        | Single-line or multi-line text input                      | On blur / Enter                                             |
-| `number`      | Numeric input with optional min/max/step                  | On blur / Enter                                             |
-| `select`      | Single-choice dropdown                                    | Instant                                                     |
-| `multiselect` | Multi-choice selection                                    | Instant                                                     |
-| `date`        | Date picker (native `<input type="date">`)                | On blur                                                     |
-| `compound`    | Multi-field group (`inline`, `modal`, or `page`)          | Field-dependent (text/number on blur/Enter; others instant) |
-| `repeatable`  | Add/remove list of text or compound items                 | Field-dependent (text/number on blur/Enter; others instant) |
-| `action`      | Button that triggers callback or submit-only modal action | Callback: on click; Modal: on submit                        |
-| `custom`      | Developer-provided renderer                               | Developer-defined                                           |
+| Type | Description | Apply behavior |
+| --- | --- | --- |
+| [`boolean`](#boolean) | Toggle switch | Instant |
+| [`text`](#text) | Single-line or multi-line text input | On blur / Enter |
+| [`number`](#number) | Numeric input with optional min/max/step | On blur / Enter |
+| [`select`](#select) | Single-choice dropdown | Instant |
+| [`multiselect`](#multiselect) | Multi-choice selection | Instant |
+| [`date`](#date) | Date picker (native `<input type="date">`) | On blur |
+| [`compound`](#compound) | Multi-field group (`inline`, `modal`, or `page`) | Field-dependent |
+| [`repeatable`](#repeatable) | Add/remove list of text or compound items | Field-dependent |
+| [`action`](#action) | Button that triggers callback or modal action | On click / submit |
+| [`custom`](#custom) | Developer-provided renderer | Developer-defined |
 
 ### Common Properties
 
@@ -690,43 +663,7 @@ Use custom pages for app-specific screens (for example Users, Billing, Audit Log
 />
 ```
 
-## Features
-
-### Schema-driven rendering
-
-Define settings once in a schema. The sidebar, page layout, sections, and controls are all generated automatically.
-
-### Collapsible sections
-
-Sections can be collapsed to reduce visual clutter:
-
-```typescript
-{
-  key: "advanced",
-  title: "Advanced Options",
-  collapsible: true,
-  defaultCollapsed: true,  // Starts collapsed
-  settings: [/* ... */],
-}
-```
-
-Set `collapsible: true` to allow the user to toggle the section. When `defaultCollapsed` is also `true`, the section renders collapsed on first load.
-
-### Keyboard navigation
-
-Three-tier keyboard model designed for casual users through power users:
-
-- **Tab** flows linearly through settings
-- **F6** cycles between sidebar and content
-- **Ctrl+Arrow** jumps between section headings
-- **/** or **Cmd+K** opens search
-- Full roving tabindex in the sidebar (arrow keys, Home/End)
-
-### Client-side search
-
-Search filters the sidebar and content area by matching against setting titles, descriptions, section titles, and page titles. Substring match, case-insensitive.
-
-### Conditional visibility
+### Conditional Visibility
 
 Show or hide settings, sections, or subsections based on other settings' values:
 
@@ -745,15 +682,15 @@ Show or hide settings, sections, or subsections based on other settings' values:
 
 **Condition operators:**
 
-| Operator      | Description                                     | Example                                     |
-| ------------- | ----------------------------------------------- | ------------------------------------------- |
-| `equals`      | Value equals the given value                    | `{ setting: "mode", equals: "advanced" }`   |
-| `notEquals`   | Value does not equal the given value            | `{ setting: "mode", notEquals: "basic" }`   |
-| `oneOf`       | Value is one of the given values                | `{ setting: "plan", oneOf: ["pro","ent"] }` |
-| `greaterThan` | Numeric value is greater than                   | `{ setting: "count", greaterThan: 5 }`      |
-| `lessThan`    | Numeric value is less than                      | `{ setting: "count", lessThan: 100 }`       |
-| `contains`    | Array value contains the item (for multiselect) | `{ setting: "tags", contains: "vip" }`      |
-| `isEmpty`     | Value is empty (`true`) or not empty (`false`)  | `{ setting: "name", isEmpty: false }`       |
+| Operator | Description | Example |
+| --- | --- | --- |
+| `equals` | Value equals the given value | `{ setting: "mode", equals: "advanced" }` |
+| `notEquals` | Value does not equal the given value | `{ setting: "mode", notEquals: "basic" }` |
+| `oneOf` | Value is one of the given values | `{ setting: "plan", oneOf: ["pro","ent"] }` |
+| `greaterThan` | Numeric value is greater than | `{ setting: "count", greaterThan: 5 }` |
+| `lessThan` | Numeric value is less than | `{ setting: "count", lessThan: 100 }` |
+| `contains` | Array value contains the item (for multiselect) | `{ setting: "tags", contains: "vip" }` |
+| `isEmpty` | Value is empty (`true`) or not empty (`false`) | `{ setting: "name", isEmpty: false }` |
 
 **AND conditions** — pass an array. All must be true:
 
@@ -777,66 +714,171 @@ visibleWhen: {
 
 Sections and subsections also support `visibleWhen` to conditionally show or hide entire groups of settings.
 
-### Validation
+## Features
 
-Schema-level validators (required, min/max, pattern, minLength/maxLength, etc.) plus async callback validators for custom logic like API key verification.
+- **Schema-driven rendering** — sidebar, page layout, sections, and controls are all generated from a single schema definition
+- **Keyboard navigation** — Tab flows through settings, F6 cycles sidebar/content, Ctrl+Arrow jumps sections, / or Cmd+K opens search
+- **Client-side search** — filters sidebar and content by matching setting titles, descriptions, section titles, and page titles
+- **Conditional visibility** — show or hide settings, sections, or subsections based on other values
+- **Validation** — schema-level validators (required, min/max, pattern, etc.) plus async callback validators for custom logic
+- **Confirmation dialogs** — any setting can require confirmation before applying, with optional text confirmation for dangerous actions
+- **Responsive layout** — desktop sidebar + content; below 768px switches to full-screen drill-down with back buttons (breakpoint is configurable)
+- **Collapsible sections** — sections support `collapsible` and `defaultCollapsed` to reduce visual clutter
+- **Deep-linking** — query params for page + setting with copy-link affordance
+- **Custom registries** — `customSettings` and `customPages` on `SetteraLayout` for app-specific extensions
 
-### Confirmation dialogs
+## React API
 
-Any setting can require confirmation before applying, with optional text confirmation for dangerous actions.
+### Settera Component
 
-### Responsive layout
-
-Desktop shows a sidebar + content layout. Below 768px, it switches to full-screen drill-down navigation with back buttons. The breakpoint is configurable.
-
-### Custom registries
-
-`@settera/ui` supports two extension registries:
-
-- `customSettings` on `SetteraLayout` for `type: "custom"` settings
-- `customPages` on `SetteraLayout` for pages with `mode: "custom"`
-
-## Headless Hooks
-
-For developers building custom UIs, the React layer exposes composable hooks:
+The main provider component. Wraps your settings UI and manages all state.
 
 ```tsx
-import {
-  useSettera,
-  useSetteraSetting,
-  useSetteraNavigation,
-  useSetteraSearch,
-} from "@settera/react";
-
-const { schema, values, setValue } = useSettera();
-const { value, setValue, error, isVisible } =
-  useSetteraSetting("general.autoSave");
-const { activePage, setActivePage } = useSetteraNavigation();
-const { query, setQuery, filteredPages } = useSetteraSearch();
+<Settera
+  schema={schema}
+  values={values}
+  onChange={(key, value) => { /* save */ }}
+  onAction={(key, payload?) => { /* handle action */ }}
+  onValidate={(key, value) => { /* async validation */ }}
+  validationMode="valid-only"
+>
+  {children}
+</Settera>
 ```
 
-## Current Status
+| Prop | Type | Description |
+| --- | --- | --- |
+| `schema` | `SetteraSchema` | The settings schema |
+| `values` | `Record<string, unknown>` | Current values (flat keys) |
+| `onChange` | `(key: string, value: unknown) => void \| Promise<void>` | Called on every change. Return a Promise for async save tracking. |
+| `onAction` | `(key: string, payload?: unknown) => void \| Promise<void>` | Handler for action-type settings. Return a Promise for loading state. |
+| `onValidate` | `(key: string, value: unknown) => string \| null \| Promise<string \| null>` | Async validation callback, called on blur. Return an error string or null. |
+| `validationMode` | `"valid-only" \| "eager-save"` | `"valid-only"` (default) blocks saves with sync errors. `"eager-save"` allows invalid values through. |
 
-Settera is in active development. Here's what's been built and what's planned.
+### Hooks
 
-### Implemented
+#### useSettera()
 
-- Core setting types: boolean, text, number, select, multiselect, date, compound, repeatable, action, custom
-- Compound `displayStyle` modes: `inline`, `modal`, `page`
-- Repeatable item types: `text`, `compound`
-- Action modes: `callback` and submit-only `modal`
-- Custom extension points: `customSettings` and `customPages`
-- Deep-linking to page + setting query params and copy-link affordance
-- `disabled` and `readonly` setting states
-- Collapsible sections with `collapsible` / `defaultCollapsed`
-- `badge` and `deprecated` setting metadata
-- Extended visibility operators: `notEquals`, `oneOf`, `greaterThan`, `lessThan`, `contains`, `isEmpty`, OR groups
+Access the full schema and raw values.
 
-### In progress / next
+```typescript
+const { schema, values, setValue } = useSettera();
+```
 
-- Additional repeatable UX polish (for example reorder controls)
-- Accessibility and keyboard polish passes for complex nested modal content
-- Documentation site/API reference
+| Return | Type | Description |
+| --- | --- | --- |
+| `schema` | `SetteraSchema` | The full schema object |
+| `values` | `Record<string, unknown>` | Current values merged with defaults |
+| `setValue` | `(key: string, value: unknown) => void` | Set a value (runs full pipeline) |
+
+#### useSetteraSetting(key)
+
+Read and write a single setting.
+
+```typescript
+const {
+  value, setValue, error, isVisible,
+  isReadonly, definition, saveStatus, validate,
+} = useSetteraSetting("general.autoSave");
+```
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `value` | `unknown` | Current value (falls back to schema default) |
+| `setValue` | `(value: unknown) => void` | Set new value (validation, confirm, onChange) |
+| `error` | `string \| null` | Current validation error |
+| `isVisible` | `boolean` | Whether `visibleWhen` resolves to true |
+| `isReadonly` | `boolean` | Whether the setting is readonly |
+| `definition` | `ValueSetting` | The setting definition from the schema |
+| `saveStatus` | `"idle" \| "saving" \| "saved" \| "error"` | Async save tracking state |
+| `validate` | `(valueOverride?: unknown) => Promise<string \| null>` | Run sync + async validation (call on blur) |
+
+#### useSetteraAction(key)
+
+Access an action setting.
+
+```typescript
+const { definition, isVisible, onAction, isLoading } =
+  useSetteraAction("actions.export");
+```
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `definition` | `ActionSetting` | The action definition from the schema |
+| `isVisible` | `boolean` | Whether `visibleWhen` resolves to true |
+| `onAction` | `(payload?: unknown) => void` | Invoke the action |
+| `isLoading` | `boolean` | True while an async handler is in-flight |
+
+#### useSetteraConfirm()
+
+Render confirmation dialogs.
+
+```typescript
+const { pendingConfirm, resolveConfirm } = useSetteraConfirm();
+```
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `pendingConfirm` | `PendingConfirm \| null` | The pending confirm dialog, or null |
+| `resolveConfirm` | `(confirmed: boolean, text?: string) => void` | Confirm or cancel. Pass typed text when `requireText` is set. |
+
+#### useSetteraSection(pageKey, sectionKey)
+
+Check section visibility.
+
+```typescript
+const { isVisible, definition } =
+  useSetteraSection("general", "behavior");
+```
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `isVisible` | `boolean` | Whether the section is visible |
+| `definition` | `SectionDefinition` | The section definition from the schema |
+
+### Navigation
+
+`SetteraNavigation` manages page state. Nest it inside `Settera`:
+
+```tsx
+<Settera schema={schema} values={values} onChange={handleChange}>
+  <SetteraNavigation>
+    <YourUI />
+  </SetteraNavigation>
+</Settera>
+```
+
+Access navigation state with `useSetteraNavigation()`:
+
+```typescript
+const {
+  activePage, setActivePage, pages,
+  subpage, openSubpage, closeSubpage,
+} = useSetteraNavigation();
+```
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `activePage` | `string` | Key of the active page |
+| `setActivePage` | `(key: string) => void` | Navigate to a page (auto-closes subpages) |
+| `pages` | `PageDefinition[]` | Pages array from the schema |
+| `subpage` | `SubpageState \| null` | Active subpage, or null |
+| `openSubpage` | `(settingKey: string) => void` | Open a subpage for a compound setting |
+| `closeSubpage` | `() => void` | Close the active subpage |
+
+## Architecture
+
+Settera is split into three independent packages. Use only what you need.
+
+| Package | Purpose | Dependencies |
+| --- | --- | --- |
+| `@settera/schema` | Pure TypeScript types and schema validation. No React. | None |
+| `@settera/react` | Unified `Settera` component, store, and headless hooks. Handles validation, save tracking, confirm dialogs, and visibility. | `@settera/schema`, React |
+| `@settera/ui` | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI. | `@settera/react`, `@radix-ui/*` |
+
+**Building with your own design system?** Use `@settera/schema` + `@settera/react` and write your own components.
+
+**Want settings working in an afternoon?** Use `@settera/ui` which includes everything.
 
 ## Development
 
