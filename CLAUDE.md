@@ -52,6 +52,8 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Store pipeline**: `store.setValue(key, value)` runs the full pipeline — disabled/readonly guards, sync validation, confirm interception, then `onChange`. Direct store calls and hook calls go through the same path.
 - **Save flow**: `onChange(key, value)` is instant-apply. If it returns a Promise, state tracks `idle → saving → saved → idle` (2s auto-reset). Race-safe via generation counter per key.
 - **Validation**: Sync validation runs in `store.setValue` on every change (`validateSettingValue`). Async validators (`onValidate`) run via `store.validate` on blur.
+- **Navigation** (`SetteraNavigation`): Headless provider that manages `activePage` state and exposes `pages` from schema. `useSetteraNavigation()` returns `{ activePage, setActivePage, pages }`. The UI layer's `SetteraNavigationProvider` composes on top, adding search, expanded groups, and highlight.
+- **Callback signatures**: All callbacks use single-function form — `onChange(key, value)`, `onAction(key, payload?)`, `onValidate(key, value)`. No Record-based dispatch.
 - **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd. Shared `useVisibility` hook used by setting, action, and section hooks.
 
 ### UI (`@settera/ui`)
