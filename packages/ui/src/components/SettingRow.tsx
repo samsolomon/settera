@@ -140,39 +140,6 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
             }}
           >
             {definition.title}
-            {saveStatus === "saving" && (
-              <span
-                aria-label="Saving"
-                style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-saving-color, #6b7280)",
-                }}
-              >
-                Saving...
-              </span>
-            )}
-            {saveStatus === "saved" && (
-              <span
-                aria-label="Saved"
-                style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-saved-color, #16a34a)",
-                }}
-              >
-                Saved
-              </span>
-            )}
-            {saveStatus === "error" && (
-              <span
-                aria-label="Save failed"
-                style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-error-color, #dc2626)",
-                }}
-              >
-                Save failed
-              </span>
-            )}
             {showCopyButton && (
               <PrimitiveButton
                 type="button"
@@ -232,6 +199,42 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                   </svg>
                 )}
               </PrimitiveButton>
+            )}
+            {saveStatus === "saving" && (
+              <span
+                aria-label="Saving"
+                style={{
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
+                  color: "var(--settera-save-saving-color, #6b7280)",
+                  fontWeight: 400,
+                }}
+              >
+                Saving...
+              </span>
+            )}
+            {saveStatus === "saved" && (
+              <span
+                aria-label="Saved"
+                style={{
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
+                  color: "var(--settera-save-saved-color, #16a34a)",
+                  fontWeight: 400,
+                }}
+              >
+                Saved
+              </span>
+            )}
+            {saveStatus === "error" && (
+              <span
+                aria-label="Save failed"
+                style={{
+                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
+                  color: "var(--settera-save-error-color, #dc2626)",
+                  fontWeight: 400,
+                }}
+              >
+                Save failed
+              </span>
             )}
           </div>
           {"description" in definition && definition.description && (

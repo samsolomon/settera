@@ -12,6 +12,7 @@ import {
   PrimitiveButton,
   PrimitiveInput,
   inputBaseStyle,
+  SETTERA_SYSTEM_FONT,
 } from "./SetteraPrimitives.js";
 import {
   fieldShellStyle,
@@ -113,6 +114,7 @@ export function CompoundInput({ settingKey }: CompoundInputProps) {
               aria-label={`Edit ${definition.title}`}
               onEscapeKeyDown={(e) => e.stopPropagation()}
               style={{
+                fontFamily: SETTERA_SYSTEM_FONT,
                 position: "fixed",
                 top: "50%",
                 left: "50%",

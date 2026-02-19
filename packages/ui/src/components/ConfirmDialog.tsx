@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraConfirm } from "@settera/react";
-import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
+import { PrimitiveButton, PrimitiveInput, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 /**
  * Modal confirmation dialog.
@@ -67,6 +67,7 @@ export function ConfirmDialog() {
             cancelRef.current?.focus();
           }}
           style={{
+            fontFamily: SETTERA_SYSTEM_FONT,
             position: "fixed",
             top: "50%",
             left: "50%",

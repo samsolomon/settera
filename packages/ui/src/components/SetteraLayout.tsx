@@ -13,6 +13,7 @@ import { SetteraPage } from "./SetteraPage.js";
 import type { SetteraCustomPageProps } from "./SetteraPage.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
+import { SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 
 export interface SetteraBackToAppConfig {
@@ -207,8 +208,7 @@ function SetteraLayoutInner({
           flexDirection: isMobile ? "column" : "row",
           height: "100%",
           position: "relative",
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: SETTERA_SYSTEM_FONT,
         }}
       >
         {!isMobile && (

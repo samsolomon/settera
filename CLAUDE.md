@@ -60,6 +60,8 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - All components use **inline styles** exclusively — no CSS files or modules.
 - Hover/focus states use React state (`onMouseEnter`/`onMouseLeave`, `onFocus`/`onBlur`) with inline styles.
 - Uses Radix UI primitives for select, switch, checkbox, and dialog.
+- **Theming**: Components reference `--settera-*` CSS custom properties with light-mode fallback values (e.g. `color: "var(--settera-title-color, #111827)"`). Consumers set tokens on a parent element to theme — no dark mode built in, just token overrides. All color, spacing, and sizing values should use tokens; never hardcode colors without a `var()` wrapper.
+- **Shared primitives**: `SetteraPrimitives.tsx` exports `PrimitiveInput`/`PrimitiveButton` (base slot components with token-aware styles). `SetteraFieldPrimitives.tsx` exports shared style objects (`cardShellStyle`, `sectionTitleStyle`, `descriptionTextStyle`, etc.).
 
 ## Testing Conventions
 
@@ -74,3 +76,4 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - ESM throughout (`"type": "module"`)
 - Dual CJS/ESM output via tsup
 - React 18+ (peer dep allows 18 or 19)
+- **Dev-only code**: Use `process.env.NODE_ENV !== "production"` directly — not `globalThis` indirection — so bundlers can tree-shake. Ambient types are declared in `packages/react/src/env.d.ts` and `packages/ui/src/env.d.ts`.

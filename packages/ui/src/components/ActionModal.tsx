@@ -3,7 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import type { ActionSetting } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "../hooks/useActionModalDraft.js";
-import { PrimitiveButton } from "./SetteraPrimitives.js";
+import { PrimitiveButton, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface ActionModalProps {
   definition: ActionSetting;
@@ -75,6 +75,7 @@ export function ActionModal({
             }
           }}
           style={{
+            fontFamily: SETTERA_SYSTEM_FONT,
             position: "fixed",
             top: "50%",
             left: "50%",

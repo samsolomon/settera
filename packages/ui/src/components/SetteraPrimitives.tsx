@@ -1,5 +1,9 @@
 import React from "react";
 
+/** System font stack used as the concrete fallback for portaled content. */
+export const SETTERA_SYSTEM_FONT =
+  'var(--settera-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)';
+
 type PrimitiveTone = "default" | "destructive";
 
 export interface PrimitiveInputProps extends React.InputHTMLAttributes<HTMLInputElement> {

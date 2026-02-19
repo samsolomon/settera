@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import * as RadixSelect from "@radix-ui/react-select";
 import { useSetteraSetting } from "@settera/react";
 import { useFocusVisible } from "../hooks/useFocusVisible.js";
-import { inputBaseStyle } from "./SetteraPrimitives.js";
+import { inputBaseStyle, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface SelectProps {
   settingKey: string;
@@ -125,6 +125,7 @@ export function Select({ settingKey }: SelectProps) {
           sideOffset={6}
           onEscapeKeyDown={handleEscapeKeyDown}
           style={{
+            fontFamily: SETTERA_SYSTEM_FONT,
             backgroundColor:
               "var(--settera-select-content-bg, var(--settera-input-bg, white))",
             border:
