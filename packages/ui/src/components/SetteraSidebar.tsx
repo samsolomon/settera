@@ -333,7 +333,7 @@ export function SetteraSidebar({
                 alignItems: "center",
                 gap: "8px",
                 width: "100%",
-                border: "var(--settera-sidebar-back-border, 1px solid #e5e7eb)",
+                border: "var(--settera-sidebar-back-border, none)",
                 background: isBackToAppHovered
                   ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
                   : "var(--settera-sidebar-back-bg, transparent)",
@@ -345,8 +345,7 @@ export function SetteraSidebar({
                   "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, #18181b))",
                 cursor: "pointer",
                 fontFamily: "inherit",
-                transition:
-                  "background-color 120ms ease, border-color 120ms ease",
+                transition: "background-color 120ms ease",
               }}
             >
               <svg
@@ -383,7 +382,7 @@ export function SetteraSidebar({
                 background: isBackToAppHovered
                   ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
                   : "var(--settera-sidebar-back-bg, transparent)",
-                border: "var(--settera-sidebar-back-border, 1px solid #e5e7eb)",
+                border: "var(--settera-sidebar-back-border, none)",
                 borderRadius: "var(--settera-sidebar-item-radius, 8px)",
                 padding: "var(--settera-sidebar-item-padding, 8px 10px)",
                 textAlign: "left",
@@ -393,8 +392,7 @@ export function SetteraSidebar({
                 textDecoration: "none",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
-                transition:
-                  "background-color 120ms ease, border-color 120ms ease",
+                transition: "background-color 120ms ease",
               }}
             >
               <svg
