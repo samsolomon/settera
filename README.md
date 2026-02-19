@@ -68,6 +68,7 @@ Recommended semantic tokens:
 | `--settera-title-color` / `--settera-description-color` / `--settera-help-color`                      | Primary, secondary, and help text |
 | `--settera-input-bg` / `--settera-input-border` / `--settera-input-color`                             | Input surfaces                    |
 | `--settera-button-bg` / `--settera-button-border` / `--settera-button-color`                          | Button surfaces                   |
+| `--settera-muted` / `--settera-muted-foreground`                                                      | Muted surfaces and text (kbd, badges) |
 | `--settera-focus-ring-color`                                                                          | Focus ring color across controls  |
 | `--settera-sidebar-background` / `--settera-sidebar-border-color`                                     | Sidebar surface and border        |
 | `--settera-sidebar-foreground` / `--settera-sidebar-muted-foreground`                                 | Sidebar text colors               |
@@ -84,6 +85,9 @@ Example theme override:
   --settera-title-color: #18181b;
   --settera-description-color: #52525b;
   --settera-help-color: #71717a;
+
+  --settera-muted: #f4f4f5;
+  --settera-muted-foreground: #71717a;
 
   --settera-input-bg: #ffffff;
   --settera-input-border: 1px solid #d4d4d8;
@@ -216,6 +220,17 @@ Use this section when you want deeper control than the recommended semantic set.
 | `--settera-mobile-topbar-height` / `--settera-mobile-topbar-bg` / `--settera-mobile-topbar-border`                                               | Mobile topbar styles                 |
 | `--settera-mobile-menu-bg` / `--settera-mobile-menu-border` / `--settera-mobile-menu-color`                                                      | Mobile menu button styles            |
 | `--settera-mobile-drawer-width` / `--settera-mobile-drawer-bg` / `--settera-mobile-drawer-border`                                                | Mobile drawer styles                 |
+
+**Keyboard hints (kbd)**
+
+| Token                          | Purpose                            |
+| ------------------------------ | ---------------------------------- |
+| `--settera-kbd-font-size`      | Kbd badge font size (default 12px) |
+| `--settera-kbd-color`          | Kbd badge text color               |
+| `--settera-kbd-bg`             | Kbd badge background               |
+| `--settera-kbd-border-radius`  | Kbd badge corner radius            |
+| `--settera-muted`              | Base muted surface (kbd fallback)  |
+| `--settera-muted-foreground`   | Base muted text (kbd fallback)     |
 
 **Breadcrumbs and highlights**
 
