@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
+import { useFocusVisible } from "../hooks/useFocusVisible.js";
 
 /**
  * Search input for filtering settings.
@@ -8,6 +9,7 @@ import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
  */
 export function SetteraSearch() {
   const { query, setQuery } = useSetteraSearch();
+  const { isFocusVisible, focusVisibleProps } = useFocusVisible();
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -33,6 +35,8 @@ export function SetteraSearch() {
         onKeyDown={handleKeyDown}
         placeholder="Search settings…"
         aria-label="Search settings"
+        focusVisible={isFocusVisible}
+        {...focusVisibleProps}
         style={{
           width: "100%",
           padding: "var(--settera-search-input-padding, 8px 10px)",
