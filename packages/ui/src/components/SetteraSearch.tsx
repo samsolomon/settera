@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
-import { useFocusVisible } from "../hooks/useFocusVisible.js";
 
 const kbdStyle: React.CSSProperties = {
   position: "absolute",
@@ -32,7 +31,6 @@ const kbdStyle: React.CSSProperties = {
  */
 export function SetteraSearch() {
   const { query, setQuery } = useSetteraSearch();
-  const { isFocusVisible, focusVisibleProps } = useFocusVisible();
   const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -59,18 +57,11 @@ export function SetteraSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        onPointerDown={focusVisibleProps.onPointerDown}
-        onFocus={(e) => {
-          setIsFocused(true);
-          focusVisibleProps.onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setIsFocused(false);
-          focusVisibleProps.onBlur?.(e);
-        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder="Search settings…"
         aria-label="Search settings"
-        focusVisible={isFocusVisible}
+        focusVisible={isFocused}
         style={{
           width: "100%",
           padding: "var(--settera-search-input-padding, 8px 10px)",
