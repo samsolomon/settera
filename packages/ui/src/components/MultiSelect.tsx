@@ -125,35 +125,42 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
               style={{
                 width: "var(--settera-checkbox-size, 16px)",
                 height: "var(--settera-checkbox-size, 16px)",
+                flexShrink: 0,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                border: "var(--settera-checkbox-border, 1px solid #9ca3af)",
+                border: isChecked
+                  ? isDangerous
+                    ? "1px solid var(--settera-dangerous-color, #dc2626)"
+                    : "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
+                  : "var(--settera-checkbox-border, 1px solid #d1d5db)",
                 backgroundColor: isChecked
                   ? isDangerous
                     ? "var(--settera-dangerous-color, #dc2626)"
-                    : "var(--settera-checkbox-checked-bg, #111827)"
+                    : "var(--settera-checkbox-checked-bg, #18181b)"
                   : "var(--settera-checkbox-bg, #ffffff)",
                 outline: "none",
                 boxShadow: isFocused
                   ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
-                  : "none",
-                borderRadius: "var(--settera-checkbox-border-radius, 3px)",
-                cursor: "pointer",
+                  : "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
+                borderRadius: "var(--settera-checkbox-border-radius, 4px)",
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                opacity: isDisabled ? 0.5 : 1,
+                transition: "box-shadow 150ms, background-color 150ms, border-color 150ms",
               }}
             >
               <Checkbox.Indicator
                 data-slot="checkbox-indicator"
                 aria-hidden="true"
                 style={{
-                  color: isDangerous
-                    ? "var(--settera-checkbox-indicator-color, #ffffff)"
-                    : "var(--settera-checkbox-indicator-color, #ffffff)",
-                  fontSize: "12px",
-                  lineHeight: 1,
+                  display: "grid",
+                  placeContent: "center",
+                  color: "var(--settera-checkbox-indicator-color, #ffffff)",
                 }}
               >
-                ✓
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               </Checkbox.Indicator>
             </Checkbox.Root>
             {opt.label}

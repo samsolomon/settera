@@ -1,4 +1,5 @@
 import React from "react";
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { inputBaseStyle } from "./SetteraPrimitives.js";
 
 export const fieldShellStyle: React.CSSProperties = {
@@ -130,25 +131,58 @@ export function PrimitiveSelectControl({
 export function PrimitiveCheckboxControl({
   checked,
   onChange,
+  disabled,
   style,
   ...props
-}: Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "type" | "checked" | "onChange"
-> & {
+}: {
   checked: boolean;
   onChange: (nextChecked: boolean) => void;
+  disabled?: boolean;
+  id?: string;
   style?: React.CSSProperties;
+  "aria-label"?: string;
 }) {
   return (
-    <input
+    <CheckboxPrimitive.Root
       {...props}
       data-slot="checkbox"
-      type="checkbox"
       checked={checked}
-      onChange={(e) => onChange(e.target.checked)}
-      style={{ ...smallCheckboxStyle, ...style }}
-    />
+      disabled={disabled}
+      onCheckedChange={(c) => onChange(c === true)}
+      style={{
+        ...smallCheckboxStyle,
+        flexShrink: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: checked
+          ? "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
+          : "var(--settera-checkbox-border, 1px solid #d1d5db)",
+        backgroundColor: checked
+          ? "var(--settera-checkbox-checked-bg, #18181b)"
+          : "var(--settera-checkbox-bg, #ffffff)",
+        borderRadius: "var(--settera-checkbox-border-radius, 4px)",
+        boxShadow: "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
+        outline: "none",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        transition: "box-shadow 150ms, background-color 150ms, border-color 150ms",
+        ...style,
+      }}
+    >
+      <CheckboxPrimitive.Indicator
+        data-slot="checkbox-indicator"
+        style={{
+          display: "grid",
+          placeContent: "center",
+          color: "var(--settera-checkbox-indicator-color, #ffffff)",
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </CheckboxPrimitive.Indicator>
+    </CheckboxPrimitive.Root>
   );
 }
 
