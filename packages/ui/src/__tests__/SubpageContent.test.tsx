@@ -148,7 +148,14 @@ describe("SubpageContent", () => {
       expect(checkbox).toBeDefined();
     });
 
-    it("updates compound fields instantly on blur", () => {
+    it("renders Save and Cancel buttons", () => {
+      renderWithSubpage("publicCard");
+
+      expect(screen.getByText("Save")).toBeDefined();
+      expect(screen.getByText("Cancel")).toBeDefined();
+    });
+
+    it("does not save until Save is clicked", () => {
       const onChange = vi.fn();
       render(
         <Settera schema={schema} values={{ publicCard: { headline: "Hi" } }} onChange={onChange}>
@@ -164,13 +171,73 @@ describe("SubpageContent", () => {
       });
 
       const input = screen.getByLabelText("Headline") as HTMLInputElement;
-      // Buffered inputs commit on change+blur via fireEvent
       fireEvent.change(input, { target: { value: "Hello" } });
       fireEvent.blur(input);
+
+      // onChange should NOT be called yet — changes are buffered in draft
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("saves draft and navigates back on Save click", () => {
+      const onChange = vi.fn();
+      render(
+        <Settera schema={schema} values={{ publicCard: { headline: "Hi" } }} onChange={onChange}>
+          <SetteraNavigationProvider>
+            <SubpageOpener settingKey="publicCard" />
+            <SetteraPage />
+          </SetteraNavigationProvider>
+        </Settera>,
+      );
+
+      act(() => {
+        screen.getByTestId("open-subpage").click();
+      });
+
+      const input = screen.getByLabelText("Headline") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "Hello" } });
+      fireEvent.blur(input);
+
+      act(() => {
+        screen.getByText("Save").click();
+      });
 
       expect(onChange).toHaveBeenCalledWith("publicCard", expect.objectContaining({
         headline: "Hello",
       }));
+
+      // Should navigate back — Save button should be gone
+      expect(screen.getByText("General")).toBeDefined();
+      expect(screen.queryByText("Save")).toBeNull();
+    });
+
+    it("discards changes and navigates back on Cancel click", () => {
+      const onChange = vi.fn();
+      render(
+        <Settera schema={schema} values={{ publicCard: { headline: "Hi" } }} onChange={onChange}>
+          <SetteraNavigationProvider>
+            <SubpageOpener settingKey="publicCard" />
+            <SetteraPage />
+          </SetteraNavigationProvider>
+        </Settera>,
+      );
+
+      act(() => {
+        screen.getByTestId("open-subpage").click();
+      });
+
+      const input = screen.getByLabelText("Headline") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "Hello" } });
+      fireEvent.blur(input);
+
+      act(() => {
+        screen.getByText("Cancel").click();
+      });
+
+      // onChange should NOT have been called
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Should navigate back
+      expect(screen.getByText("General")).toBeDefined();
     });
   });
 

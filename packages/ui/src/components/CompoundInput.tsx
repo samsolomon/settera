@@ -231,12 +231,14 @@ export function CompoundFields({
   getFieldValue,
   updateField,
   parentDisabled,
+  fullWidth,
 }: {
   settingKey: string;
   fields: CompoundFieldDefinition[];
   getFieldValue: (field: CompoundField) => unknown;
   updateField: (fieldKey: string, nextFieldValue: unknown) => void;
   parentDisabled?: boolean;
+  fullWidth?: boolean;
 }) {
   return (
     <>
@@ -253,6 +255,7 @@ export function CompoundFields({
               fieldValue,
               updateField,
               parentDisabled,
+              fullWidth,
             )}
           </label>
         );
@@ -267,6 +270,7 @@ function renderFieldControl(
   fieldValue: unknown,
   onChange: (fieldKey: string, value: unknown) => void,
   parentDisabled?: boolean,
+  fullWidth?: boolean,
 ) {
   const effectiveDisabled = parentDisabled || Boolean(field.disabled);
   const effectiveReadOnly = "readonly" in field && Boolean(field.readonly);
@@ -289,6 +293,7 @@ function renderFieldControl(
           onChange={onChange}
           disabled={effectiveDisabled}
           readOnly={effectiveReadOnly}
+          fullWidth={fullWidth}
         />
       );
     case "number":
@@ -300,6 +305,7 @@ function renderFieldControl(
           onChange={onChange}
           disabled={effectiveDisabled}
           readOnly={effectiveReadOnly}
+          fullWidth={fullWidth}
         />
       );
     case "date":
@@ -311,6 +317,7 @@ function renderFieldControl(
           onChange={onChange}
           disabled={effectiveDisabled}
           readOnly={effectiveReadOnly}
+          fullWidth={fullWidth}
         />
       );
     case "select":
@@ -321,6 +328,7 @@ function renderFieldControl(
           fieldValue={fieldValue}
           onChange={onChange}
           disabled={effectiveDisabled}
+          fullWidth={fullWidth}
         />
       );
     case "multiselect":
@@ -343,6 +351,7 @@ function CompoundTextField({
   onChange,
   disabled,
   readOnly,
+  fullWidth,
 }: {
   field: Extract<CompoundField, { type: "text" }>;
   fieldId: string;
@@ -350,6 +359,7 @@ function CompoundTextField({
   onChange: (fieldKey: string, value: unknown) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  fullWidth?: boolean;
 }) {
   const committed = typeof fieldValue === "string" ? fieldValue : "";
 
@@ -374,6 +384,7 @@ function CompoundTextField({
       focusVisible={isFocused}
       style={{
         ...inputStyles,
+        ...(fullWidth && { width: "100%" }),
       }}
     />
   );
@@ -386,6 +397,7 @@ function CompoundNumberField({
   onChange,
   disabled,
   readOnly,
+  fullWidth,
 }: {
   field: Extract<CompoundField, { type: "number" }>;
   fieldId: string;
@@ -393,6 +405,7 @@ function CompoundNumberField({
   onChange: (fieldKey: string, value: unknown) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  fullWidth?: boolean;
 }) {
   const committed =
     fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "";
@@ -426,6 +439,7 @@ function CompoundNumberField({
       focusVisible={isFocused}
       style={{
         ...inputStyles,
+        ...(fullWidth && { width: "100%" }),
       }}
     />
   );
@@ -438,6 +452,7 @@ function CompoundDateField({
   onChange,
   disabled,
   readOnly,
+  fullWidth,
 }: {
   field: Extract<CompoundField, { type: "date" }>;
   fieldId: string;
@@ -445,6 +460,7 @@ function CompoundDateField({
   onChange: (fieldKey: string, value: unknown) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  fullWidth?: boolean;
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -461,6 +477,7 @@ function CompoundDateField({
       focusVisible={isFocused}
       style={{
         ...inputStyles,
+        ...(fullWidth && { width: "100%" }),
       }}
     />
   );
@@ -472,12 +489,14 @@ function CompoundSelectField({
   fieldValue,
   onChange,
   disabled,
+  fullWidth,
 }: {
   field: SelectSetting;
   fieldId: string;
   fieldValue: unknown;
   onChange: (fieldKey: string, value: unknown) => void;
   disabled?: boolean;
+  fullWidth?: boolean;
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -493,6 +512,7 @@ function CompoundSelectField({
       disabled={disabled}
       style={{
         ...inputStyles,
+        ...(fullWidth && { width: "100%" }),
       }}
     />
   );

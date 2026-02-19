@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SetteraSchemaContext, useSetteraSetting } from "@settera/react";
 import type { ActionSetting, CompoundFieldDefinition } from "@settera/schema";
 import { ActionPageContent } from "./ActionPageContent.js";
 import { CompoundFields } from "./CompoundInput.js";
-import { useCompoundDraft } from "../hooks/useCompoundDraft.js";
+import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
 import {
   mutedMessageStyle,
@@ -45,6 +45,7 @@ export function SubpageContent({
       <CompoundSubpage
         settingKey={settingKey}
         definition={setting}
+        onBack={onBack}
       />
     );
   }
@@ -80,22 +81,71 @@ export function SubpageContent({
   return null;
 }
 
-// ---- Compound Subpage (instant-apply fields) ----
+// ---- Compound Subpage (draft-based with Save / Cancel) ----
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 function CompoundSubpage({
   settingKey,
   definition,
+  onBack,
 }: {
   settingKey: string;
   definition: { title: string; description?: string; fields: CompoundFieldDefinition[] };
+  onBack: () => void;
 }) {
-  const { value, setValue, validate } = useSetteraSetting(settingKey);
-  const { getFieldValue, updateField } = useCompoundDraft(
-    value,
-    definition.fields,
-    setValue,
-    validate,
+  const { value, setValue, saveStatus } = useSetteraSetting(settingKey);
+  const [isSaving, setIsSaving] = useState(false);
+  const sawSavingRef = useRef(false);
+
+  // Build effective value (defaults merged with stored value) — used only for initializing draft
+  const effectiveValue = useMemo(() => {
+    const compoundValue = isObjectRecord(value) ? value : {};
+    const merged: Record<string, unknown> = {};
+    for (const field of definition.fields) {
+      if ("default" in field && field.default !== undefined) {
+        merged[field.key] = field.default;
+      }
+    }
+    return { ...merged, ...compoundValue };
+  }, [value, definition.fields]);
+
+  // Local draft — initialized from effective value, updated only locally
+  const [draft, setDraft] = useState<Record<string, unknown>>(effectiveValue);
+
+  const getFieldValue = useCallback(
+    (field: CompoundFieldDefinition): unknown => draft[field.key],
+    [draft],
   );
+
+  const updateField = useCallback(
+    (fieldKey: string, nextFieldValue: unknown) => {
+      setDraft((prev) => ({ ...prev, [fieldKey]: nextFieldValue }));
+    },
+    [],
+  );
+
+  const handleSave = useCallback(() => {
+    setValue(draft);
+    setIsSaving(true);
+  }, [draft, setValue]);
+
+  // Track save completion and navigate back
+  useEffect(() => {
+    if (saveStatus === "saving") {
+      sawSavingRef.current = true;
+    }
+    if (!isSaving) return;
+    // For async saves: wait until saving completes
+    if (sawSavingRef.current && saveStatus === "saving") return;
+    setIsSaving(false);
+    sawSavingRef.current = false;
+    onBack();
+  }, [saveStatus, isSaving, onBack]);
+
+  const isLoading = isSaving && saveStatus === "saving";
 
   return (
     <div>
@@ -126,7 +176,50 @@ function CompoundSubpage({
           fields={definition.fields}
           getFieldValue={getFieldValue}
           updateField={updateField}
+          fullWidth
         />
+      </div>
+
+      <div
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          gap: "8px",
+        }}
+      >
+        <PrimitiveButton
+          type="button"
+          onClick={onBack}
+          disabled={isLoading}
+          style={{
+            fontSize: "13px",
+            padding: "6px 10px",
+            borderRadius: "6px",
+            border: "var(--settera-button-border, 1px solid #d1d5db)",
+            backgroundColor: "var(--settera-button-secondary-bg, white)",
+            color: "var(--settera-button-secondary-color, #374151)",
+            cursor: isLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          Cancel
+        </PrimitiveButton>
+
+        <PrimitiveButton
+          type="button"
+          onClick={handleSave}
+          disabled={isLoading}
+          style={{
+            fontSize: "13px",
+            padding: "6px 10px",
+            borderRadius: "6px",
+            border: "var(--settera-button-border, 1px solid #d1d5db)",
+            backgroundColor: "var(--settera-button-primary-bg, #2563eb)",
+            color: "var(--settera-button-primary-color, white)",
+            cursor: isLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          {isLoading ? "Saving\u2026" : "Save"}
+        </PrimitiveButton>
       </div>
     </div>
   );
