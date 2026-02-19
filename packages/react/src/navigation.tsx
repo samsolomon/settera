@@ -1,7 +1,16 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 import { resolvePageKey } from "@settera/schema";
 import type { PageDefinition } from "@settera/schema";
 import { SetteraSchemaContext } from "./context.js";
+
+// ---- Types ----
+
+export interface SubpageState {
+  /** Key of the setting that opened this subpage */
+  settingKey: string;
+  /** Page key to return to when closing */
+  returnPage: string;
+}
 
 // ---- Context ----
 
@@ -12,6 +21,12 @@ export interface SetteraNavigationContextValue {
   setActivePage: (key: string) => void;
   /** The pages array from the schema */
   pages: PageDefinition[];
+  /** Currently active subpage, or null if none */
+  subpage: SubpageState | null;
+  /** Open a subpage for the given setting key */
+  openSubpage: (settingKey: string) => void;
+  /** Close the active subpage */
+  closeSubpage: () => void;
 }
 
 export const SetteraNavigationContext =
@@ -38,17 +53,39 @@ export function SetteraNavigation({ children }: SetteraNavigationProps) {
 
   const { schema } = schemaCtx;
 
-  const [activePage, setActivePage] = useState<string>(
+  const [activePage, setActivePageRaw] = useState<string>(
     schema.pages[0] ? resolvePageKey(schema.pages[0]) : "",
   );
+
+  const [subpage, setSubpage] = useState<SubpageState | null>(null);
+
+  // When setActivePage is called, auto-close any open subpage
+  const setActivePage = useCallback((key: string) => {
+    setSubpage(null);
+    setActivePageRaw(key);
+  }, []);
+
+  const openSubpage = useCallback((settingKey: string) => {
+    setActivePageRaw((currentPage) => {
+      setSubpage({ settingKey, returnPage: currentPage });
+      return currentPage;
+    });
+  }, []);
+
+  const closeSubpage = useCallback(() => {
+    setSubpage(null);
+  }, []);
 
   const value: SetteraNavigationContextValue = useMemo(
     () => ({
       activePage,
       setActivePage,
       pages: schema.pages,
+      subpage,
+      openSubpage,
+      closeSubpage,
     }),
-    [activePage, schema.pages],
+    [activePage, setActivePage, schema.pages, subpage, openSubpage, closeSubpage],
   );
 
   return (

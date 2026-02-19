@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { SetteraSchemaContextValue } from "@settera/react";
+import type { SetteraSchemaContextValue, SubpageState } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import type { SetteraDeepLinkContextValue } from "../contexts/SetteraDeepLinkContext.js";
 
@@ -25,7 +25,11 @@ export interface UseSetteraLayoutUrlSyncOptions {
   activeSettingQueryParam: string;
   scrollToSetting: (key: string) => void;
   setPendingScrollKey: (key: string | null) => void;
+  subpage: SubpageState | null;
+  openSubpage: (settingKey: string) => void;
 }
+
+const SUBPAGE_QUERY_PARAM = "subpage";
 
 /** @internal SetteraLayout implementation detail; not part of public API. */
 export function useSetteraLayoutUrlSync({
@@ -37,6 +41,8 @@ export function useSetteraLayoutUrlSync({
   activeSettingQueryParam,
   scrollToSetting,
   setPendingScrollKey,
+  subpage,
+  openSubpage,
 }: UseSetteraLayoutUrlSyncOptions) {
   const didInitUrlSyncRef = useRef(false);
   const initialSettingKeyRef = useRef<string | null | undefined>(undefined);
@@ -156,6 +162,60 @@ export function useSetteraLayoutUrlSync({
     scrollToSetting,
     setPendingScrollKey,
   ]);
+
+  // --- Subpage URL sync ---
+
+  const initialSubpageKeyRef = useRef<string | null | undefined>(undefined);
+
+  // Capture the initial subpage key from URL during render
+  if (
+    initialSubpageKeyRef.current === undefined &&
+    syncActivePageWithUrl &&
+    typeof window !== "undefined"
+  ) {
+    initialSubpageKeyRef.current =
+      new URL(window.location.href).searchParams.get(SUBPAGE_QUERY_PARAM) ??
+      null;
+  }
+
+  // Write subpage state to URL
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!syncActivePageWithUrl) return;
+    if (!didInitUrlSyncRef.current) return;
+
+    const url = new URL(window.location.href);
+    const currentParam = url.searchParams.get(SUBPAGE_QUERY_PARAM);
+
+    if (subpage) {
+      if (currentParam !== subpage.settingKey) {
+        url.searchParams.set(SUBPAGE_QUERY_PARAM, subpage.settingKey);
+        window.history.replaceState(window.history.state, "", url);
+      }
+    } else {
+      if (currentParam) {
+        url.searchParams.delete(SUBPAGE_QUERY_PARAM);
+        window.history.replaceState(window.history.state, "", url);
+      }
+    }
+  }, [subpage, syncActivePageWithUrl]);
+
+  // Read subpage from URL on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!syncActivePageWithUrl || !schemaCtx) return;
+
+    const subpageKey = initialSubpageKeyRef.current;
+    if (subpageKey !== undefined && subpageKey !== null) {
+      initialSubpageKeyRef.current = undefined;
+      // Verify the setting exists before opening the subpage
+      const setting = schemaCtx.getSettingByKey(subpageKey);
+      if (setting) {
+        openSubpage(subpageKey);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncActivePageWithUrl, schemaCtx, openSubpage]);
 
   const deepLinkContextValue =
     useMemo<SetteraDeepLinkContextValue | null>(() => {

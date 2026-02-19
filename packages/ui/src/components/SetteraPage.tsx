@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
@@ -26,7 +26,7 @@ export interface SetteraCustomPageProps {
 }
 
 /**
- * Renders all sections for a page.
+ * Renders all sections for a page, or subpage content when a subpage is active.
  * Defaults to the active page from navigation context, but accepts an explicit pageKey override.
  */
 export function SetteraPage({
@@ -35,11 +35,33 @@ export function SetteraPage({
   customSettings,
 }: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const { activePage } = useSetteraNavigation();
+  const { activePage, subpage, closeSubpage } = useSetteraNavigation();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
     throw new Error("SetteraPage must be used within a Settera component.");
+  }
+
+  // When a subpage is active, render subpage content instead
+  if (subpage) {
+    const returnPage = schemaCtx.getPageByKey(subpage.returnPage);
+    const setting = schemaCtx.getSettingByKey(subpage.settingKey);
+
+    if (!setting) {
+      return null;
+    }
+
+    return (
+      <div>
+        <SubpageBackButton
+          parentPageTitle={returnPage?.title ?? "Back"}
+          onBack={closeSubpage}
+        />
+        <div style={{ marginTop: "12px" }}>
+          {/* Subpage content rendered by consumers (compound, action pages) */}
+        </div>
+      </div>
+    );
   }
 
   const resolvedKey = pageKey ?? activePage;
@@ -126,5 +148,65 @@ export function SetteraPage({
           />
         ))}
     </div>
+  );
+}
+
+// ---- Subpage Back Button ----
+
+function SubpageBackButton({
+  parentPageTitle,
+  onBack,
+}: {
+  parentPageTitle: string;
+  onBack: () => void;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        border: "none",
+        background: isHovered
+          ? "var(--settera-ghost-hover-bg, #f4f4f5)"
+          : "transparent",
+        borderRadius: "var(--settera-sidebar-item-radius, 8px)",
+        padding: "6px 10px",
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+        cursor: "pointer",
+        fontFamily: "inherit",
+        transition: "background-color 120ms ease",
+        marginLeft: "-10px",
+      }}
+    >
+      <svg
+        aria-hidden="true"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        style={{
+          flexShrink: 0,
+          color: "var(--settera-sidebar-chevron-color, #9ca3af)",
+        }}
+      >
+        <path
+          d="M10 4l-4 4 4 4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      {parentPageTitle}
+    </button>
   );
 }

@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import type { SubpageState } from "@settera/react";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 
 const EMPTY_SET = new Set<string>();
@@ -35,6 +36,9 @@ export function useSetteraNavigation() {
       setHighlightedSettingKey: NOOP as (key: string | null) => void,
       requestFocusContent: NOOP,
       registerFocusContentHandler: NOOP_UNREGISTER as (handler: () => void) => () => void,
+      subpage: null as SubpageState | null,
+      openSubpage: NOOP as (settingKey: string) => void,
+      closeSubpage: NOOP,
     };
   }
 
@@ -51,5 +55,8 @@ export function useSetteraNavigation() {
     setHighlightedSettingKey: ctx.setHighlightedSettingKey,
     requestFocusContent: ctx.requestFocusContent,
     registerFocusContentHandler: ctx.registerFocusContentHandler,
+    subpage: ctx.subpage,
+    openSubpage: ctx.openSubpage,
+    closeSubpage: ctx.closeSubpage,
   };
 }

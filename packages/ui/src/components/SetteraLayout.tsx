@@ -100,6 +100,8 @@ function SetteraLayoutInner({
     setActivePage,
     setHighlightedSettingKey,
     registerFocusContentHandler,
+    subpage,
+    openSubpage,
   } = useSetteraNavigation();
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
@@ -142,6 +144,8 @@ function SetteraLayoutInner({
     activeSettingQueryParam,
     scrollToSetting,
     setPendingScrollKey,
+    subpage,
+    openSubpage,
   });
 
   const resolvedMobileTitle =

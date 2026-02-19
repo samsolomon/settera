@@ -43,7 +43,7 @@ function SetteraNavigationProviderInner({
   children: React.ReactNode;
 }) {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const { activePage, setActivePage } = useReactNavigation();
+  const { activePage, setActivePage, subpage, openSubpage, closeSubpage } = useReactNavigation();
 
   if (!schemaCtx) {
     throw new Error(
@@ -89,8 +89,14 @@ function SetteraNavigationProviderInner({
     string | null
   >(null);
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState("");
+  // Search state — close subpage when search activates
+  const [searchQuery, setSearchQueryRaw] = useState("");
+  const setSearchQuery = useCallback((query: string) => {
+    setSearchQueryRaw(query);
+    if (query.length > 0) {
+      closeSubpage();
+    }
+  }, [closeSubpage]);
 
   const { matchingSettingKeys, matchingPageKeys } = useMemo(() => {
     const settingKeys = new Set<string>();
@@ -178,6 +184,9 @@ function SetteraNavigationProviderInner({
       setHighlightedSettingKey,
       requestFocusContent,
       registerFocusContentHandler,
+      subpage,
+      openSubpage,
+      closeSubpage,
     }),
     [
       activePage,
@@ -185,11 +194,15 @@ function SetteraNavigationProviderInner({
       expandedGroups,
       toggleGroup,
       searchQuery,
+      setSearchQuery,
       matchingSettingKeys,
       matchingPageKeys,
       highlightedSettingKey,
       requestFocusContent,
       registerFocusContentHandler,
+      subpage,
+      openSubpage,
+      closeSubpage,
     ],
   );
 

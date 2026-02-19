@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import type { SubpageState } from "@settera/react";
 
 export interface SetteraNavigationContextValue {
   activePage: string;
@@ -13,6 +14,9 @@ export interface SetteraNavigationContextValue {
   setHighlightedSettingKey: (key: string | null) => void;
   requestFocusContent: () => void;
   registerFocusContentHandler: (handler: () => void) => () => void;
+  subpage: SubpageState | null;
+  openSubpage: (settingKey: string) => void;
+  closeSubpage: () => void;
 }
 
 export const SetteraNavigationContext =
