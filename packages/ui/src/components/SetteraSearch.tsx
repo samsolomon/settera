@@ -34,11 +34,15 @@ export function SetteraSearch() {
         aria-label="Search settings"
         style={{
           width: "100%",
-          padding: "var(--settera-search-input-padding, 6px 10px)",
-          border: "var(--settera-search-border, 1px solid #e5e7eb)",
-          borderRadius: "var(--settera-search-border-radius, 6px)",
+          padding: "var(--settera-search-input-padding, 8px 10px)",
+          border:
+            "var(--settera-search-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
+          borderRadius: "var(--settera-search-border-radius, 8px)",
           fontSize: "var(--settera-search-font-size, 13px)",
-          backgroundColor: "var(--settera-search-bg, white)",
+          backgroundColor:
+            "var(--settera-search-bg, var(--settera-sidebar-input-bg, transparent))",
+          color:
+            "var(--settera-search-color, var(--settera-sidebar-foreground, #3f3f46))",
           fontFamily: "inherit",
           boxSizing: "border-box",
         }}
@@ -58,7 +62,8 @@ export function SetteraSearch() {
             fontSize: "14px",
             lineHeight: 1,
             padding: "2px",
-            color: "var(--settera-search-placeholder-color, #9ca3af)",
+            color:
+              "var(--settera-search-placeholder-color, var(--settera-sidebar-muted-foreground, #9ca3af))",
           }}
         >
           ×

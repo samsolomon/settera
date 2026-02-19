@@ -24,6 +24,7 @@ import {
 import { demoSchema } from "./schema.js";
 
 type DemoMode = "schema" | "headless" | "ui";
+type ColorMode = "light" | "dark";
 
 const DEMO_MODE_QUERY_PARAM = "demoMode";
 
@@ -41,6 +42,13 @@ function readModeFromUrl(): DemoMode {
   return mode === "schema" || mode === "headless" || mode === "ui"
     ? mode
     : "ui";
+}
+
+function readSystemColorMode(): ColorMode {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function flattenPages(
@@ -1170,7 +1178,54 @@ function SignatureCardSetting({
 
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
+  const [colorMode, setColorMode] = useState<ColorMode>(readSystemColorMode);
   const [values, setValues] = useState<Record<string, unknown>>({});
+
+  const appThemeVars = useMemo<React.CSSProperties>(() => {
+    if (colorMode === "dark") {
+      return {
+        colorScheme: "dark",
+        background: "#09090b",
+        color: "#e4e4e7",
+        "--settera-page-bg": "#09090b",
+        "--settera-page-title-color": "#f4f4f5",
+        "--settera-description-color": "#a1a1aa",
+        "--settera-card-bg": "#18181b",
+        "--settera-card-border": "1px solid #27272a",
+        "--settera-label-color": "#f4f4f5",
+        "--settera-help-color": "#a1a1aa",
+        "--settera-input-bg": "#09090b",
+        "--settera-input-border": "1px solid #3f3f46",
+        "--settera-input-color": "#e4e4e7",
+        "--settera-focus-ring": "0 0 0 2px rgba(161, 161, 170, 0.45)",
+        "--settera-sidebar-background": "#09090b",
+        "--settera-sidebar-foreground": "#e4e4e7",
+        "--settera-sidebar-muted-foreground": "#a1a1aa",
+        "--settera-sidebar-border-color": "#27272a",
+        "--settera-sidebar-accent": "#18181b",
+        "--settera-sidebar-accent-hover": "#27272a",
+        "--settera-sidebar-accent-foreground": "#fafafa",
+        "--settera-mobile-topbar-bg": "#09090b",
+        "--settera-mobile-topbar-border": "1px solid #27272a",
+        "--settera-mobile-drawer-bg": "#09090b",
+        "--settera-mobile-drawer-border": "1px solid #27272a",
+      } as React.CSSProperties;
+    }
+
+    return {
+      colorScheme: "light",
+      background: "#ffffff",
+      color: "#111827",
+      "--settera-page-bg": "#ffffff",
+      "--settera-sidebar-background": "#fafafa",
+      "--settera-sidebar-foreground": "#18181b",
+      "--settera-sidebar-muted-foreground": "#71717a",
+      "--settera-sidebar-border-color": "#e4e4e7",
+      "--settera-sidebar-accent": "#f4f4f5",
+      "--settera-sidebar-accent-hover": "#f4f4f5",
+      "--settera-sidebar-accent-foreground": "#18181b",
+    } as React.CSSProperties;
+  }, [colorMode]);
 
   const handleChange = useCallback((key: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -1215,12 +1270,14 @@ export function App() {
   const handleValidate = useCallback((key: string, value: unknown) => {
     switch (key) {
       case "profile.email":
-        return new Promise<string | null>((r) => setTimeout(r, 500)).then(() => {
-          if (value === "taken@example.com") {
-            return "This email is already in use";
-          }
-          return null;
-        });
+        return new Promise<string | null>((r) => setTimeout(r, 500)).then(
+          () => {
+            if (value === "taken@example.com") {
+              return "This email is already in use";
+            }
+            return null;
+          },
+        );
       default:
         return null;
     }
@@ -1244,16 +1301,38 @@ export function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setColorMode(event.matches ? "dark" : "light");
+    };
+
+    setColorMode(media.matches ? "dark" : "light");
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        ...appThemeVars,
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <header
         style={{
           padding: "12px 24px",
-          borderBottom: "1px solid #e5e7eb",
+          borderBottom:
+            colorMode === "dark" ? "1px solid #27272a" : "1px solid #e5e7eb",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "16px",
+          background: colorMode === "dark" ? "#09090b" : "#ffffff",
+          color: colorMode === "dark" ? "#f4f4f5" : "#111827",
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         }}
@@ -1265,7 +1344,7 @@ export function App() {
           <p
             style={{
               fontSize: "12px",
-              color: "#9ca3af",
+              color: colorMode === "dark" ? "#a1a1aa" : "#9ca3af",
               margin: "2px 0 0",
             }}
           >
@@ -1280,9 +1359,12 @@ export function App() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              border: "1px solid #cbd5e1",
+              border:
+                colorMode === "dark"
+                  ? "1px solid #3f3f46"
+                  : "1px solid #cbd5e1",
               borderRadius: "10px",
-              background: "#f8fafc",
+              background: colorMode === "dark" ? "#18181b" : "#f8fafc",
               padding: "2px",
             }}
           >
@@ -1298,14 +1380,28 @@ export function App() {
                   style={{
                     border: "none",
                     borderRadius: "8px",
-                    background: isActive ? "#ffffff" : "transparent",
+                    background:
+                      isActive && colorMode === "dark"
+                        ? "#27272a"
+                        : isActive
+                          ? "#ffffff"
+                          : "transparent",
                     boxShadow: isActive
-                      ? "0 1px 2px rgba(15, 23, 42, 0.12)"
+                      ? colorMode === "dark"
+                        ? "none"
+                        : "0 1px 2px rgba(15, 23, 42, 0.12)"
                       : "none",
                     padding: "6px 10px",
                     fontSize: "12px",
                     fontWeight: isActive ? 600 : 500,
-                    color: isActive ? "#111827" : "#475569",
+                    color:
+                      isActive && colorMode === "dark"
+                        ? "#fafafa"
+                        : isActive
+                          ? "#111827"
+                          : colorMode === "dark"
+                            ? "#a1a1aa"
+                            : "#475569",
                     cursor: "pointer",
                   }}
                 >
@@ -1319,12 +1415,15 @@ export function App() {
             type="button"
             onClick={() => setValues({})}
             style={{
-              border: "1px solid #d1d5db",
+              border:
+                colorMode === "dark"
+                  ? "1px solid #3f3f46"
+                  : "1px solid #d1d5db",
               borderRadius: "8px",
-              background: "#ffffff",
+              background: colorMode === "dark" ? "#18181b" : "#ffffff",
               padding: "6px 10px",
               fontSize: "12px",
-              color: "#374151",
+              color: colorMode === "dark" ? "#e4e4e7" : "#374151",
               cursor: "pointer",
             }}
           >

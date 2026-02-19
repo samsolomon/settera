@@ -303,21 +303,23 @@ export function SetteraSidebar({
       data-settera-nav
       onKeyDown={handleNavKeyDown}
       style={{
-        width: "var(--settera-sidebar-width, 240px)",
-        backgroundColor: "var(--settera-sidebar-bg, #f3f4f6)",
-        borderRight: "var(--settera-sidebar-border, 1px solid #e5e7eb)",
+        width: "var(--settera-sidebar-width, 280px)",
+        backgroundColor:
+          "var(--settera-sidebar-bg, var(--settera-sidebar-background, #fafafa))",
+        borderRight:
+          "var(--settera-sidebar-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
         fontSize: "var(--settera-sidebar-font-size, 14px)",
-        padding: "var(--settera-sidebar-padding, 8px)",
+        padding: "var(--settera-sidebar-padding, 12px)",
         overflowY: "auto",
         display: "flex",
         flexDirection: "column",
-        gap: "var(--settera-sidebar-gap, 4px)",
+        gap: "var(--settera-sidebar-gap, 10px)",
       }}
     >
       {backToApp && (
         <div
           style={{
-            marginBottom: "var(--settera-sidebar-back-margin-bottom, 2px)",
+            marginBottom: "var(--settera-sidebar-back-margin-bottom, 0px)",
           }}
         >
           {backToApp.onClick ? (
@@ -331,18 +333,20 @@ export function SetteraSidebar({
                 alignItems: "center",
                 gap: "8px",
                 width: "100%",
-                border: "none",
+                border: "var(--settera-sidebar-back-border, 1px solid #e5e7eb)",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
-                  : "transparent",
-                borderRadius: "var(--settera-sidebar-item-radius, 6px)",
-                padding: "var(--settera-sidebar-item-padding, 8px)",
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
+                  : "var(--settera-sidebar-back-bg, transparent)",
+                borderRadius: "var(--settera-sidebar-item-radius, 8px)",
+                padding: "var(--settera-sidebar-item-padding, 8px 10px)",
                 textAlign: "left",
                 fontSize: "inherit",
-                color: "var(--settera-sidebar-back-color, #374151)",
+                color:
+                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, #18181b))",
                 cursor: "pointer",
                 fontFamily: "inherit",
-                transition: "background-color 150ms ease",
+                transition:
+                  "background-color 120ms ease, border-color 120ms ease",
               }}
             >
               <svg
@@ -377,17 +381,20 @@ export function SetteraSidebar({
                 gap: "8px",
                 width: "100%",
                 background: isBackToAppHovered
-                  ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
-                  : "transparent",
-                borderRadius: "var(--settera-sidebar-item-radius, 6px)",
-                padding: "var(--settera-sidebar-item-padding, 8px)",
+                  ? "var(--settera-sidebar-back-hover-bg, var(--settera-sidebar-accent, #f4f4f5))"
+                  : "var(--settera-sidebar-back-bg, transparent)",
+                border: "var(--settera-sidebar-back-border, 1px solid #e5e7eb)",
+                borderRadius: "var(--settera-sidebar-item-radius, 8px)",
+                padding: "var(--settera-sidebar-item-padding, 8px 10px)",
                 textAlign: "left",
                 fontSize: "inherit",
-                color: "var(--settera-sidebar-back-color, #374151)",
+                color:
+                  "var(--settera-sidebar-back-color, var(--settera-sidebar-foreground, #18181b))",
                 textDecoration: "none",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
-                transition: "background-color 150ms ease",
+                transition:
+                  "background-color 120ms ease, border-color 120ms ease",
               }}
             >
               <svg
@@ -414,7 +421,24 @@ export function SetteraSidebar({
           )}
         </div>
       )}
+
       <SetteraSearch />
+
+      <div
+        aria-hidden="true"
+        style={{
+          fontSize: "11px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color:
+            "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, #71717a))",
+          fontWeight: 600,
+          padding: "2px 8px",
+        }}
+      >
+        Navigation
+      </div>
+
       {visiblePages.map((page) => (
         <SidebarItem
           key={page.key}
@@ -476,7 +500,7 @@ function SidebarItem({
     ? hasChildren &&
       page.pages!.some((child) => matchingPageKeys.has(child.key))
     : expandedGroups.has(page.key);
-  const paddingLeft = 8;
+  const paddingLeft = depth === 0 ? 8 : 12;
 
   // During search, filter children to only matching pages
   const visibleChildren = hasChildren
@@ -508,26 +532,43 @@ function SidebarItem({
           alignItems: "center",
           gap: "var(--settera-sidebar-item-gap, 8px)",
           width: "100%",
-          padding: `var(--settera-sidebar-item-padding, 8px)`,
+          minHeight: "var(--settera-sidebar-item-height, 34px)",
+          padding: `var(--settera-sidebar-item-padding, 6px 8px)`,
+          paddingLeft: `${paddingLeft + depth * 12}px`,
           border: "none",
-          borderRadius: "var(--settera-sidebar-item-radius, 6px)",
+          borderRadius: "var(--settera-sidebar-item-radius, 8px)",
           background: isActive
-            ? "var(--settera-sidebar-active-bg, #d1d5db)"
+            ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, #f4f4f5))"
             : isHovered
-              ? "var(--settera-sidebar-hover-bg, #e5e7eb)"
+              ? "var(--settera-sidebar-hover-bg, var(--settera-sidebar-accent-hover, #f4f4f5))"
               : "transparent",
           color: isActive
-            ? "var(--settera-sidebar-active-color, #111827)"
-            : "inherit",
-          fontWeight: 400,
+            ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, #18181b))"
+            : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, #3f3f46))",
+          fontWeight: isActive ? 600 : 500,
           fontSize: "inherit",
           textAlign: "left",
           cursor: "pointer",
           fontFamily: "inherit",
+          transition: "background-color 120ms ease, color 120ms ease",
         }}
       >
         {depth === 0 && page.icon && renderIcon && (
-          <span aria-hidden="true">{renderIcon(page.icon)}</span>
+          <span
+            aria-hidden="true"
+            style={{
+              width: "16px",
+              height: "16px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color:
+                "var(--settera-sidebar-icon-color, var(--settera-sidebar-muted-foreground, #71717a))",
+              flexShrink: 0,
+            }}
+          >
+            {renderIcon(page.icon)}
+          </span>
         )}
         {page.title}
         {hasChildren && (
@@ -559,12 +600,11 @@ function SidebarItem({
         <div
           role="group"
           style={{
-            marginLeft: "var(--settera-sidebar-sub-margin, 14px)",
-            paddingLeft: "var(--settera-sidebar-sub-padding, 10px)",
-            borderLeft: "var(--settera-sidebar-tree-line, 1px solid #e5e7eb)",
+            marginLeft: "var(--settera-sidebar-sub-margin, 4px)",
+            paddingLeft: "var(--settera-sidebar-sub-padding, 0px)",
             display: "flex",
             flexDirection: "column",
-            gap: "var(--settera-sidebar-sub-gap, 2px)",
+            gap: "var(--settera-sidebar-sub-gap, 1px)",
             paddingTop: "2px",
             paddingBottom: "2px",
           }}
