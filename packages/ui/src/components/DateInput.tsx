@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
-import { ControlInput } from "./ControlPrimitives.js";
+import { PrimitiveInput } from "./SetteraPrimitives.js";
 
 export interface DateInputProps {
   settingKey: string;
@@ -43,14 +43,12 @@ export function DateInput({ settingKey }: DateInputProps) {
     setIsFocusVisible(true);
   }, []);
 
-  const isDisabled =
-    "disabled" in definition && Boolean(definition.disabled);
-  const isReadOnly =
-    "readonly" in definition && Boolean(definition.readonly);
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
+  const isReadOnly = "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
   return (
-    <ControlInput
+    <PrimitiveInput
       type="date"
       value={typeof value === "string" ? value : ""}
       onChange={handleChange}
@@ -63,9 +61,9 @@ export function DateInput({ settingKey }: DateInputProps) {
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      hasError={hasError}
-      isDangerous={isDangerous}
-      isFocusVisible={isFocusVisible}
+      invalid={hasError}
+      tone={isDangerous ? "destructive" : "default"}
+      focusVisible={isFocusVisible}
     />
   );
 }

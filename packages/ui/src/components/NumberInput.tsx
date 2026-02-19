@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useSetteraSetting } from "@settera/react";
-import { ControlInput } from "./ControlPrimitives.js";
+import { PrimitiveInput } from "./SetteraPrimitives.js";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
 
 export interface NumberInputProps {
@@ -57,14 +57,12 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       ? definition.validation.max
       : undefined;
 
-  const isDisabled =
-    "disabled" in definition && Boolean(definition.disabled);
-  const isReadOnly =
-    "readonly" in definition && Boolean(definition.readonly);
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
+  const isReadOnly = "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
   return (
-    <ControlInput
+    <PrimitiveInput
       type="number"
       {...inputProps}
       placeholder={placeholder}
@@ -75,9 +73,9 @@ export function NumberInput({ settingKey }: NumberInputProps) {
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      hasError={hasError}
-      isDangerous={isDangerous}
-      isFocusVisible={isFocused}
+      invalid={hasError}
+      tone={isDangerous ? "destructive" : "default"}
+      focusVisible={isFocused}
     />
   );
 }

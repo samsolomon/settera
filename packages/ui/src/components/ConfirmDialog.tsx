@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraConfirm } from "@settera/react";
+import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
 
 /**
  * Modal confirmation dialog.
@@ -112,7 +113,7 @@ export function ConfirmDialog() {
               >
                 Type <strong>{requireText}</strong> to confirm
               </label>
-              <input
+              <PrimitiveInput
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
@@ -124,7 +125,6 @@ export function ConfirmDialog() {
                   border:
                     "1px solid var(--settera-input-border-color, #d1d5db)",
                   borderRadius: "var(--settera-input-border-radius, 6px)",
-                  outline: "none",
                   boxSizing: "border-box",
                 }}
               />
@@ -137,8 +137,9 @@ export function ConfirmDialog() {
               gap: "8px",
             }}
           >
-            <button
+            <PrimitiveButton
               ref={cancelRef}
+              type="button"
               onClick={handleCancel}
               style={{
                 padding: "8px 16px",
@@ -152,15 +153,19 @@ export function ConfirmDialog() {
               }}
             >
               {cancelLabel}
-            </button>
-            <button
+            </PrimitiveButton>
+            <PrimitiveButton
+              type="button"
               onClick={handleConfirm}
               disabled={confirmDisabled}
+              tone={dangerous ? "destructive" : "default"}
               style={{
                 padding: "8px 16px",
                 fontSize: "14px",
                 fontWeight: 500,
-                border: "none",
+                border: dangerous
+                  ? "1px solid var(--settera-button-dangerous-bg, #dc2626)"
+                  : "none",
                 borderRadius: "var(--settera-button-border-radius, 6px)",
                 backgroundColor: dangerous
                   ? "var(--settera-button-dangerous-bg, #dc2626)"
@@ -173,7 +178,7 @@ export function ConfirmDialog() {
               }}
             >
               {confirmLabel}
-            </button>
+            </PrimitiveButton>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

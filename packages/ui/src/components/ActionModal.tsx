@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import type { ActionSetting } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "../hooks/useActionModalDraft.js";
+import { PrimitiveButton } from "./SetteraPrimitives.js";
 
 export interface ActionModalProps {
   definition: ActionSetting;
@@ -145,7 +146,7 @@ export function ActionModal({
             }}
           >
             <Dialog.Close asChild>
-              <button
+              <PrimitiveButton
                 type="button"
                 disabled={isLoading}
                 style={{
@@ -158,10 +159,10 @@ export function ActionModal({
                 }}
               >
                 {modalConfig.cancelLabel ?? "Cancel"}
-              </button>
+              </PrimitiveButton>
             </Dialog.Close>
 
-            <button
+            <PrimitiveButton
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
@@ -175,7 +176,7 @@ export function ActionModal({
               }}
             >
               {isLoading ? "Loading…" : (modalConfig.submitLabel ?? "Submit")}
-            </button>
+            </PrimitiveButton>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

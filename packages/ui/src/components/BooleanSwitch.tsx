@@ -35,6 +35,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
 
   return (
     <Switch.Root
+      data-slot="switch"
       checked={checked}
       onCheckedChange={handleCheckedChange}
       disabled={isDisabled}
@@ -48,7 +49,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         height: "var(--settera-switch-height, 24px)",
         borderRadius: "var(--settera-switch-border-radius, 12px)",
         backgroundColor: trackColor,
-        border: "none",
+        border: "var(--settera-switch-border, 1px solid transparent)",
         cursor: "pointer",
         padding: 0,
         transition: "background-color 0.2s",
@@ -59,6 +60,7 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
       }}
     >
       <Switch.Thumb
+        data-slot="switch-thumb"
         style={{
           display: "block",
           width: "var(--settera-switch-thumb-size, 20px)",

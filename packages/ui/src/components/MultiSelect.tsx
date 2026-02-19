@@ -110,6 +110,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
             }}
           >
             <Checkbox.Root
+              data-slot="checkbox"
               id={checkboxId}
               checked={isChecked}
               disabled={isDisabled}
@@ -128,7 +129,11 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
                 alignItems: "center",
                 justifyContent: "center",
                 border: "var(--settera-checkbox-border, 1px solid #9ca3af)",
-                backgroundColor: "var(--settera-checkbox-bg, #ffffff)",
+                backgroundColor: isChecked
+                  ? isDangerous
+                    ? "var(--settera-dangerous-color, #dc2626)"
+                    : "var(--settera-checkbox-checked-bg, #111827)"
+                  : "var(--settera-checkbox-bg, #ffffff)",
                 outline: "none",
                 boxShadow: isFocused
                   ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
@@ -138,11 +143,12 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
               }}
             >
               <Checkbox.Indicator
+                data-slot="checkbox-indicator"
                 aria-hidden="true"
                 style={{
                   color: isDangerous
-                    ? "var(--settera-dangerous-color, #dc2626)"
-                    : "var(--settera-input-color, #111827)",
+                    ? "var(--settera-checkbox-indicator-color, #ffffff)"
+                    : "var(--settera-checkbox-indicator-color, #ffffff)",
                   fontSize: "12px",
                   lineHeight: 1,
                 }}

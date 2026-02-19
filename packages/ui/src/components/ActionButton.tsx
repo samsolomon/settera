@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ActionSetting } from "@settera/schema";
 import { useSetteraAction } from "@settera/react";
-import { ControlButton } from "./ControlPrimitives.js";
+import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { useFocusVisible } from "../hooks/useFocusVisible.js";
 import { ActionModal } from "./ActionModal.js";
 
@@ -24,8 +24,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
-  const isDisabled =
-    "disabled" in definition && Boolean(definition.disabled);
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
   const buttonLabel =
     definition.type === "action" ? definition.buttonLabel : "Action";
 
@@ -57,7 +56,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
 
   return (
     <>
-      <ControlButton
+      <PrimitiveButton
         ref={triggerRef}
         type="button"
         onClick={() => {
@@ -72,8 +71,8 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
         disabled={isDisabled || isLoading || (isModalAction && !hasModalConfig)}
         aria-label={definition.title}
         aria-busy={isLoading}
-        isDangerous={isDangerous}
-        isFocusVisible={isFocusVisible}
+        tone={isDangerous ? "destructive" : "default"}
+        focusVisible={isFocusVisible}
         style={{
           cursor:
             isDisabled || isLoading || (isModalAction && !hasModalConfig)
@@ -83,7 +82,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
         }}
       >
         {isLoading ? "Loading…" : buttonLabel}
-      </ControlButton>
+      </PrimitiveButton>
 
       {isModalAction && hasModalConfig && (
         <ActionModal

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import * as RadixSelect from "@radix-ui/react-select";
 import { useSetteraSetting } from "@settera/react";
 import { useFocusVisible } from "../hooks/useFocusVisible.js";
+import { inputBaseStyle } from "./SetteraPrimitives.js";
 
 export interface SelectProps {
   settingKey: string;
@@ -21,8 +22,7 @@ export function Select({ settingKey }: SelectProps) {
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
-  const isDisabled =
-    "disabled" in definition && Boolean(definition.disabled);
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
   const options = definition.type === "select" ? definition.options : [];
   const isRequired =
     definition.type === "select" && definition.validation?.required;
@@ -66,19 +66,17 @@ export function Select({ settingKey }: SelectProps) {
       disabled={isDisabled}
     >
       <RadixSelect.Trigger
+        data-slot="select-trigger"
         data-settera-select-trigger="true"
         {...focusVisibleProps}
         aria-label={definition.title}
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         style={{
-          fontSize: "var(--settera-input-font-size, 14px)",
-          padding: "var(--settera-input-padding, 6px 10px)",
-          borderRadius: "var(--settera-input-border-radius, 6px)",
+          ...inputBaseStyle,
           border: hasError
             ? "1px solid var(--settera-error-color, #dc2626)"
             : "var(--settera-input-border, 1px solid #d1d5db)",
-          outline: "none",
           boxShadow: isFocusVisible
             ? "0 0 0 2px var(--settera-focus-ring-color, #93c5fd)"
             : "none",
@@ -86,7 +84,8 @@ export function Select({ settingKey }: SelectProps) {
           color: isDangerous
             ? "var(--settera-dangerous-color, #dc2626)"
             : "var(--settera-input-color, #111827)",
-          backgroundColor: "var(--settera-input-bg, white)",
+          backgroundColor:
+            "var(--settera-select-trigger-bg, var(--settera-input-bg, white))",
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
@@ -121,14 +120,19 @@ export function Select({ settingKey }: SelectProps) {
 
       <RadixSelect.Portal>
         <RadixSelect.Content
+          data-slot="select-content"
           position="popper"
           sideOffset={6}
           onEscapeKeyDown={handleEscapeKeyDown}
           style={{
-            backgroundColor: "var(--settera-input-bg, white)",
-            border: "var(--settera-input-border, 1px solid #d1d5db)",
-            borderRadius: "var(--settera-input-border-radius, 6px)",
-            boxShadow: "0 12px 28px rgba(0, 0, 0, 0.12)",
+            backgroundColor:
+              "var(--settera-select-content-bg, var(--settera-input-bg, white))",
+            border:
+              "var(--settera-select-content-border, var(--settera-input-border, 1px solid #d1d5db))",
+            borderRadius:
+              "var(--settera-select-content-radius, var(--settera-input-border-radius, 6px))",
+            boxShadow:
+              "var(--settera-select-content-shadow, 0 12px 28px rgba(0, 0, 0, 0.12))",
             overflow: "hidden",
             zIndex: 1000,
           }}
@@ -136,12 +140,13 @@ export function Select({ settingKey }: SelectProps) {
           <RadixSelect.Viewport style={{ padding: "4px" }}>
             {!isRequired && (
               <RadixSelect.Item
+                data-slot="select-item"
                 value={emptyOptionValue}
                 style={{
-                  borderRadius: "4px",
-                  padding: "6px 8px",
-                  fontSize: "13px",
-                  color: "#6b7280",
+                  borderRadius: "var(--settera-select-item-radius, 6px)",
+                  padding: "var(--settera-select-item-padding, 6px 8px)",
+                  fontSize: "var(--settera-select-item-font-size, 13px)",
+                  color: "var(--settera-select-item-muted-color, #6b7280)",
                   cursor: "pointer",
                   userSelect: "none",
                 }}
@@ -152,13 +157,15 @@ export function Select({ settingKey }: SelectProps) {
 
             {options.map((opt) => (
               <RadixSelect.Item
+                data-slot="select-item"
                 key={opt.value}
                 value={opt.value}
                 style={{
-                  borderRadius: "4px",
-                  padding: "6px 8px",
-                  fontSize: "13px",
-                  color: "var(--settera-input-color, #111827)",
+                  borderRadius: "var(--settera-select-item-radius, 6px)",
+                  padding: "var(--settera-select-item-padding, 6px 8px)",
+                  fontSize: "var(--settera-select-item-font-size, 13px)",
+                  color:
+                    "var(--settera-select-item-color, var(--settera-input-color, #111827))",
                   cursor: "pointer",
                   userSelect: "none",
                 }}

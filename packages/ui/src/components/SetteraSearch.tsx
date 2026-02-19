@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
 
 /**
  * Search input for filtering settings.
@@ -24,7 +25,7 @@ export function SetteraSearch() {
         position: "relative",
       }}
     >
-      <input
+      <PrimitiveInput
         type="text"
         role="searchbox"
         value={query}
@@ -48,7 +49,9 @@ export function SetteraSearch() {
         }}
       />
       {query.length > 0 && (
-        <button
+        <PrimitiveButton
+          type="button"
+          tone="default"
           onClick={() => setQuery("")}
           aria-label="Clear search"
           style={{
@@ -56,18 +59,21 @@ export function SetteraSearch() {
             right: "6px",
             top: "50%",
             transform: "translateY(-50%)",
-            border: "none",
             background: "transparent",
             cursor: "pointer",
             fontSize: "14px",
             lineHeight: 1,
             padding: "2px",
+            minWidth: "18px",
+            minHeight: "18px",
+            border: "none",
+            backgroundColor: "transparent",
             color:
               "var(--settera-search-placeholder-color, var(--settera-sidebar-muted-foreground, #9ca3af))",
           }}
         >
           ×
-        </button>
+        </PrimitiveButton>
       )}
     </div>
   );
