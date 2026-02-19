@@ -498,7 +498,7 @@ function SidebarItem({
     ? hasChildren &&
       page.pages!.some((child) => matchingPageKeys.has(child.key))
     : expandedGroups.has(page.key);
-  const paddingLeft = depth === 0 ? 8 : 12;
+  const paddingLeft = 8;
 
   // During search, filter children to only matching pages
   const visibleChildren = hasChildren
@@ -532,7 +532,7 @@ function SidebarItem({
           width: "100%",
           minHeight: "var(--settera-sidebar-item-height, 34px)",
           padding: `var(--settera-sidebar-item-padding, 6px 8px)`,
-          paddingLeft: `${paddingLeft + depth * 12}px`,
+          paddingLeft: `${paddingLeft}px`,
           border: "none",
           borderRadius: "var(--settera-sidebar-item-radius, 8px)",
           background: isActive
@@ -543,7 +543,7 @@ function SidebarItem({
           color: isActive
             ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, #18181b))"
             : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, #3f3f46))",
-          fontWeight: isActive ? 600 : 500,
+          fontWeight: 500,
           fontSize: "inherit",
           textAlign: "left",
           cursor: "pointer",
@@ -598,8 +598,10 @@ function SidebarItem({
         <div
           role="group"
           style={{
-            marginLeft: "var(--settera-sidebar-sub-margin, 4px)",
-            paddingLeft: "var(--settera-sidebar-sub-padding, 0px)",
+            marginLeft: "var(--settera-sidebar-sub-margin, 16px)",
+            paddingLeft: "var(--settera-sidebar-sub-padding, 8px)",
+            borderLeft:
+              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, #e4e4e7))",
             display: "flex",
             flexDirection: "column",
             gap: "var(--settera-sidebar-sub-gap, 1px)",
