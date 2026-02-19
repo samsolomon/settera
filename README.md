@@ -594,17 +594,17 @@ Action handlers are provided via the `onAction` prop on `Settera`:
   schema={schema}
   values={values}
   onChange={handleChange}
-  onAction={{
-    "actions.export": async (payload) => {
-      // For callback actions, payload is undefined.
-      // For modal actions, payload contains submitted modal field values.
-      const opts = (payload ?? {}) as { format?: string };
-      const data = await fetchUserData();
-      downloadAs(data, opts.format ?? "json");
-    },
-    "actions.deleteAccount": async () => {
-      await deleteAccount();
-    },
+  onAction={(key, payload) => {
+    switch (key) {
+      case "actions.export": {
+        // For callback actions, payload is undefined.
+        // For modal actions, payload contains submitted modal field values.
+        const opts = (payload ?? {}) as { format?: string };
+        return fetchUserData().then((data) => downloadAs(data, opts.format ?? "json"));
+      }
+      case "actions.deleteAccount":
+        return deleteAccount();
+    }
   }}
 >
   <SetteraLayout />
