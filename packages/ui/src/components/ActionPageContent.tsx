@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import type { ActionSetting } from "@settera/schema";
 import { useSetteraAction } from "@settera/react";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "../hooks/useActionModalDraft.js";
+import { useSaveAndClose } from "../hooks/useSaveAndClose.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";
 import { parseDescriptionLinks } from "../utils/parseDescriptionLinks.js";
@@ -24,8 +25,6 @@ export function ActionPageContent({
 }: ActionPageContentProps) {
   const { onAction, isLoading } = useSetteraAction(settingKey);
   const pageConfig = definition.page;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const sawLoadingRef = useRef(false);
 
   const { draftValues, setField } = useActionModalDraft(
     pageConfig?.fields,
@@ -33,27 +32,15 @@ export function ActionPageContent({
     true, // always "open"
   );
 
+  const { trigger: triggerSubmit, isBusy } = useSaveAndClose(
+    isLoading,
+    onBack,
+  );
+
   const handleSubmit = useCallback(() => {
     onAction(draftValues);
-    setIsSubmitting(true);
-  }, [draftValues, onAction]);
-
-  // Track whether loading was ever observed after submit.
-  // Sync actions never set isLoading, so sawLoadingRef stays false and
-  // the effect closes the page immediately (correct — the action already ran).
-  // Async actions set isLoading=true synchronously, so sawLoadingRef is set
-  // before the "close" condition can fire.
-  useEffect(() => {
-    if (isLoading) {
-      sawLoadingRef.current = true;
-    }
-    if (!isSubmitting) return;
-    // For async actions: wait until loading completes
-    if (sawLoadingRef.current && isLoading) return;
-    setIsSubmitting(false);
-    sawLoadingRef.current = false;
-    onBack();
-  }, [isLoading, isSubmitting, onBack]);
+    triggerSubmit();
+  }, [draftValues, onAction, triggerSubmit]);
 
   if (!pageConfig || !pageConfig.fields || pageConfig.fields.length === 0) {
     return null;
@@ -102,7 +89,7 @@ export function ActionPageContent({
               flexDirection: "column",
               gap: "4px",
               fontSize: "13px",
-              color: "var(--settera-description-color, var(--settera-muted-foreground, #4b5563))",
+              color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
             }}
           >
             {field.title}
@@ -119,15 +106,16 @@ export function ActionPageContent({
         style={{
           marginTop: "16px",
           display: "flex",
+          justifyContent: "flex-end",
           gap: "8px",
         }}
       >
         <PrimitiveButton
           type="button"
           onClick={onBack}
-          disabled={isLoading}
+          disabled={isBusy}
           style={{
-            cursor: isLoading ? "not-allowed" : "pointer",
+            cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
           {pageConfig.cancelLabel ?? "Cancel"}
@@ -136,14 +124,14 @@ export function ActionPageContent({
         <PrimitiveButton
           type="button"
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isBusy}
           style={{
             backgroundColor: "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
             color: "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
-            cursor: isLoading ? "not-allowed" : "pointer",
+            cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          {isLoading ? "Loading\u2026" : (pageConfig.submitLabel ?? "Submit")}
+          {isBusy ? "Loading\u2026" : (pageConfig.submitLabel ?? "Submit")}
         </PrimitiveButton>
       </div>
     </div>

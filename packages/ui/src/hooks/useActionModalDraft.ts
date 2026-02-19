@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   buildModalDraft,
   type ModalActionFieldSetting,
@@ -16,11 +16,15 @@ export function useActionModalDraft(
 
   const [draftValues, setDraftValues] = useState<Record<string, unknown>>({});
 
-  useEffect(() => {
-    if (isOpen) {
-      setDraftValues(defaults);
-    }
-  }, [defaults, isOpen]);
+  // Reset draft synchronously when isOpen transitions to true.
+  // This must happen during the render phase (not in useEffect) so that
+  // auto-focused inputs see the correct default values before
+  // useBufferedInput's focus guard locks out external syncs.
+  const prevIsOpenRef = useRef(false);
+  if (isOpen && !prevIsOpenRef.current) {
+    setDraftValues(defaults);
+  }
+  prevIsOpenRef.current = isOpen;
 
   const setField = useCallback((key: string, value: unknown) => {
     setDraftValues((prev) => ({ ...prev, [key]: value }));

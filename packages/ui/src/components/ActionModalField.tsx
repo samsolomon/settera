@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import type { RepeatableSetting, TextSetting } from "@settera/schema";
+import React from "react";
+import type { RepeatableSetting } from "@settera/schema";
 import {
   getDefaultFieldValue,
   isObjectRecord,
@@ -8,18 +8,14 @@ import {
 import {
   PrimitiveButton,
   PrimitiveInput,
-  inputBaseStyle,
 } from "./SetteraPrimitives.js";
 import {
   fieldShellStyle,
-  PrimitiveCheckboxControl,
-  PrimitiveCheckboxList,
-  PrimitiveSelectControl,
   sectionPanelStyle,
   smallActionButtonStyle,
-  smallCheckboxStyle,
   stackGapStyle,
 } from "./SetteraFieldPrimitives.js";
+import { FieldControl, fieldControlInputStyle } from "./FieldControl.js";
 
 export interface ActionModalFieldProps {
   field: ModalActionFieldSetting;
@@ -27,140 +23,33 @@ export interface ActionModalFieldProps {
   onChange: (nextValue: unknown) => void;
 }
 
-const inputStyle: React.CSSProperties = {
-  ...inputBaseStyle,
-  border: "var(--settera-input-border, 1px solid #d1d5db)",
+const actionModalInputStyle: React.CSSProperties = {
   width: "100%",
   boxSizing: "border-box",
 };
-
-function ActionModalNumberField({
-  title,
-  value,
-  onChange,
-}: {
-  title: string;
-  value: unknown;
-  onChange: (nextValue: unknown) => void;
-}) {
-  const committed =
-    value !== undefined && value !== null && !Number.isNaN(Number(value))
-      ? String(value)
-      : "";
-  const [draft, setDraft] = useState(committed);
-
-  useEffect(() => {
-    setDraft(committed);
-  }, [committed]);
-
-  const commit = useCallback(() => {
-    if (draft.trim() === "") {
-      onChange(undefined);
-      return;
-    }
-    const parsed = Number(draft);
-    if (!Number.isNaN(parsed)) {
-      onChange(parsed);
-    }
-  }, [draft, onChange]);
-
-  return (
-    <PrimitiveInput
-      aria-label={title}
-      type="number"
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          commit();
-        }
-      }}
-      style={inputStyle}
-    />
-  );
-}
 
 export function ActionModalField({
   field,
   value,
   onChange,
 }: ActionModalFieldProps) {
-  if (field.type === "text") {
-    const textField = field as TextSetting;
+  // Leaf types — delegate to FieldControl
+  if (
+    field.type === "text" ||
+    field.type === "number" ||
+    field.type === "date" ||
+    field.type === "select" ||
+    field.type === "boolean" ||
+    field.type === "multiselect"
+  ) {
     return (
-      <PrimitiveInput
-        aria-label={field.title}
-        type={textField.inputType ?? "text"}
-        value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(e.target.value)}
-        style={inputStyle}
-      />
-    );
-  }
-
-  if (field.type === "number") {
-    return (
-      <ActionModalNumberField
-        title={field.title}
+      <FieldControl
+        field={field}
         value={value}
         onChange={onChange}
-      />
-    );
-  }
-
-  if (field.type === "date") {
-    return (
-      <PrimitiveInput
-        aria-label={field.title}
-        type="date"
-        value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(e.target.value)}
-        style={inputStyle}
-      />
-    );
-  }
-
-  if (field.type === "select") {
-    return (
-      <PrimitiveSelectControl
-        aria-label={field.title}
-        value={typeof value === "string" ? value : ""}
-        options={field.options}
-        onChange={(nextValue) => onChange(nextValue)}
-        style={inputStyle}
-      />
-    );
-  }
-
-  if (field.type === "boolean") {
-    return (
-      <PrimitiveCheckboxControl
-        aria-label={field.title}
-        checked={Boolean(value)}
-        onChange={(nextChecked) => onChange(nextChecked)}
-        style={smallCheckboxStyle}
-      />
-    );
-  }
-
-  if (field.type === "multiselect") {
-    const selected = Array.isArray(value)
-      ? value.filter((item): item is string => typeof item === "string")
-      : [];
-
-    return (
-      <PrimitiveCheckboxList
-        options={field.options}
-        selected={selected}
-        style={stackGapStyle}
-        getAriaLabel={(optionLabel) => `${field.title} ${optionLabel}`}
-        onToggle={(optionValue, checked) => {
-          const next = checked
-            ? [...selected, optionValue]
-            : selected.filter((v) => v !== optionValue);
-          onChange(next);
-        }}
+        ariaLabel={field.title}
+        fullWidth
+        inputStyle={actionModalInputStyle}
       />
     );
   }
@@ -207,7 +96,10 @@ export function ActionModalField({
                 next[index] = e.target.value;
                 onChange(next);
               }}
-              style={inputStyle}
+              style={{
+                ...fieldControlInputStyle,
+                ...actionModalInputStyle,
+              }}
             />
             <PrimitiveButton
               type="button"

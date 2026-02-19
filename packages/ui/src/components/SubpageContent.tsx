@@ -1,6 +1,8 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext } from "react";
 import { SetteraSchemaContext, useSetteraSetting } from "@settera/react";
 import type { ActionSetting, CompoundFieldDefinition } from "@settera/schema";
+import { useCompoundDraft } from "../hooks/useCompoundDraft.js";
+import { useSaveAndClose } from "../hooks/useSaveAndClose.js";
 import { ActionPageContent } from "./ActionPageContent.js";
 import { CompoundFields } from "./CompoundInput.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
@@ -24,7 +26,7 @@ export interface SubpageContentProps {
 
 /**
  * Renders the content for a subpage based on the setting type.
- * - Compound displayStyle "page": instant-apply fields
+ * - Compound displayStyle "page": draft-based fields with Save / Cancel
  * - Action actionType "page" with renderer: custom component
  * - Action actionType "page" with fields: form with Cancel/Submit
  */
@@ -83,69 +85,42 @@ export function SubpageContent({
 
 // ---- Compound Subpage (draft-based with Save / Cancel) ----
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 function CompoundSubpage({
   settingKey,
   definition,
   onBack,
 }: {
   settingKey: string;
-  definition: { title: string; description?: string; fields: CompoundFieldDefinition[] };
+  definition: {
+    title: string;
+    description?: string;
+    disabled?: boolean;
+    fields: CompoundFieldDefinition[];
+  };
   onBack: () => void;
 }) {
-  const { value, setValue, saveStatus } = useSetteraSetting(settingKey);
-  const [isSaving, setIsSaving] = useState(false);
-  const sawSavingRef = useRef(false);
+  const { value, setValue, validate, saveStatus } =
+    useSetteraSetting(settingKey);
 
-  // Build effective value (defaults merged with stored value) — used only for initializing draft
-  const effectiveValue = useMemo(() => {
-    const compoundValue = isObjectRecord(value) ? value : {};
-    const merged: Record<string, unknown> = {};
-    for (const field of definition.fields) {
-      if ("default" in field && field.default !== undefined) {
-        merged[field.key] = field.default;
-      }
-    }
-    return { ...merged, ...compoundValue };
-  }, [value, definition.fields]);
-
-  // Local draft — initialized from effective value, updated only locally
-  const [draft, setDraft] = useState<Record<string, unknown>>(effectiveValue);
-
-  const getFieldValue = useCallback(
-    (field: CompoundFieldDefinition): unknown => draft[field.key],
-    [draft],
+  const { getFieldValue, updateField, commitDraft } = useCompoundDraft(
+    value,
+    definition.fields,
+    setValue,
+    validate,
+    { draft: true },
   );
 
-  const updateField = useCallback(
-    (fieldKey: string, nextFieldValue: unknown) => {
-      setDraft((prev) => ({ ...prev, [fieldKey]: nextFieldValue }));
-    },
-    [],
+  const { trigger: triggerSave, isBusy } = useSaveAndClose(
+    saveStatus,
+    onBack,
   );
 
   const handleSave = useCallback(() => {
-    setValue(draft);
-    setIsSaving(true);
-  }, [draft, setValue]);
+    commitDraft();
+    triggerSave();
+  }, [commitDraft, triggerSave]);
 
-  // Track save completion and navigate back
-  useEffect(() => {
-    if (saveStatus === "saving") {
-      sawSavingRef.current = true;
-    }
-    if (!isSaving) return;
-    // For async saves: wait until saving completes
-    if (sawSavingRef.current && saveStatus === "saving") return;
-    setIsSaving(false);
-    sawSavingRef.current = false;
-    onBack();
-  }, [saveStatus, isSaving, onBack]);
-
-  const isLoading = isSaving && saveStatus === "saving";
+  const isDisabled = Boolean(definition.disabled);
 
   return (
     <div>
@@ -176,6 +151,7 @@ function CompoundSubpage({
           fields={definition.fields}
           getFieldValue={getFieldValue}
           updateField={updateField}
+          parentDisabled={isDisabled}
           fullWidth
         />
       </div>
@@ -191,9 +167,9 @@ function CompoundSubpage({
         <PrimitiveButton
           type="button"
           onClick={onBack}
-          disabled={isLoading}
+          disabled={isBusy}
           style={{
-            cursor: isLoading ? "not-allowed" : "pointer",
+            cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
           Cancel
@@ -202,14 +178,14 @@ function CompoundSubpage({
         <PrimitiveButton
           type="button"
           onClick={handleSave}
-          disabled={isLoading}
+          disabled={isBusy}
           style={{
             backgroundColor: "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
             color: "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
-            cursor: isLoading ? "not-allowed" : "pointer",
+            cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          {isLoading ? "Saving\u2026" : "Save"}
+          {isBusy ? "Saving\u2026" : "Save"}
         </PrimitiveButton>
       </div>
     </div>

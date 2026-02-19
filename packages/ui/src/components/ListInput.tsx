@@ -1,12 +1,7 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting } from "@settera/react";
-import type {
-  RepeatableFieldDefinition,
-  TextSetting,
-  SelectSetting,
-  MultiSelectSetting,
-  BooleanSetting,
-} from "@settera/schema";
+import type { RepeatableFieldDefinition } from "@settera/schema";
+import { isObjectRecord } from "../utils/isObjectRecord.js";
 import { useBufferedInput } from "../hooks/useBufferedInput.js";
 import {
   PrimitiveButton,
@@ -16,14 +11,10 @@ import {
 import {
   fieldShellStyle,
   inlineRowStyle,
-  PrimitiveCheckboxControl,
-  PrimitiveCheckboxList,
-  PrimitiveSelectControl,
   sectionPanelStyle,
   smallActionButtonStyle,
-  smallCheckboxStyle,
-  stackGapStyle,
 } from "./SetteraFieldPrimitives.js";
+import { FieldControl } from "./FieldControl.js";
 
 export interface RepeatableInputProps {
   settingKey: string;
@@ -32,10 +23,6 @@ export interface RepeatableInputProps {
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map((item) => (typeof item === "string" ? item : String(item)));
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function toObjectArray(value: unknown): Record<string, unknown>[] {
@@ -123,7 +110,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled || isFirst ? "not-allowed" : "pointer",
-          opacity: disabled || isFirst ? 0.6 : 1,
+          opacity: disabled || isFirst ? "var(--settera-disabled-opacity, 0.5)" : undefined,
         }}
       >
         Up
@@ -137,7 +124,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled || isLast ? "not-allowed" : "pointer",
-          opacity: disabled || isLast ? 0.6 : 1,
+          opacity: disabled || isLast ? "var(--settera-disabled-opacity, 0.5)" : undefined,
         }}
       >
         Down
@@ -151,7 +138,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled ? "not-allowed" : "pointer",
-          opacity: disabled ? 0.6 : 1,
+          opacity: disabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
         }}
       >
         Remove
@@ -174,160 +161,15 @@ function RepeatableCompoundFieldControl({
   parentDisabled?: boolean;
 }) {
   const effectiveDisabled = parentDisabled || Boolean(field.disabled);
-  const inputStyle = repeatableInputStyle;
 
-  if (field.type === "text") {
-    return (
-      <RepeatableCompoundTextField
-        field={field as TextSetting}
-        itemIndex={itemIndex}
-        value={value}
-        onChange={onChange}
-        inputStyle={inputStyle}
-        disabled={effectiveDisabled}
-      />
-    );
-  }
-
-  if (field.type === "number") {
-    return (
-      <RepeatableCompoundNumberField
-        fieldKey={field.key}
-        fieldTitle={field.title}
-        itemIndex={itemIndex}
-        value={value}
-        onChange={onChange}
-        inputStyle={inputStyle}
-        disabled={effectiveDisabled}
-      />
-    );
-  }
-
-  if (field.type === "select") {
-    const selectField = field as SelectSetting;
-    return (
-      <PrimitiveSelectControl
-        aria-label={`${field.title} ${itemIndex + 1}`}
-        value={typeof value === "string" ? value : ""}
-        options={selectField.options}
-        onChange={(nextValue) => onChange(itemIndex, field.key, nextValue)}
-        disabled={effectiveDisabled}
-        style={inputStyle}
-      />
-    );
-  }
-
-  if (field.type === "multiselect") {
-    const multiField = field as MultiSelectSetting;
-    const selected = Array.isArray(value)
-      ? value.filter((item): item is string => typeof item === "string")
-      : [];
-    return (
-      <PrimitiveCheckboxList
-        aria-label={`${field.title} ${itemIndex + 1}`}
-        options={multiField.options}
-        selected={selected}
-        disabled={effectiveDisabled}
-        onToggle={(optionValue, checked) => {
-          const next = checked
-            ? [...selected, optionValue]
-            : selected.filter((v) => v !== optionValue);
-          onChange(itemIndex, field.key, next);
-        }}
-      />
-    );
-  }
-
-  if (field.type === "date") {
-    return (
-      <PrimitiveInput
-        aria-label={`${field.title} ${itemIndex + 1}`}
-        type="date"
-        value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(itemIndex, field.key, e.target.value)}
-        disabled={effectiveDisabled}
-        style={inputStyle}
-      />
-    );
-  }
-
-  const booleanField = field as BooleanSetting;
   return (
-    <PrimitiveCheckboxControl
-      aria-label={`${booleanField.title} ${itemIndex + 1}`}
-      checked={Boolean(value)}
-      onChange={(nextChecked) =>
-        onChange(itemIndex, booleanField.key, nextChecked)
-      }
+    <FieldControl
+      field={field}
+      value={value}
+      onChange={(nextValue) => onChange(itemIndex, field.key, nextValue)}
+      ariaLabel={`${field.title} ${itemIndex + 1}`}
       disabled={effectiveDisabled}
-      style={smallCheckboxStyle}
-    />
-  );
-}
-
-function RepeatableCompoundTextField({
-  field,
-  itemIndex,
-  value,
-  onChange,
-  inputStyle,
-  disabled,
-}: {
-  field: TextSetting;
-  itemIndex: number;
-  value: unknown;
-  onChange: (itemIndex: number, fieldKey: string, nextValue: unknown) => void;
-  inputStyle: React.CSSProperties;
-  disabled?: boolean;
-}) {
-  const committed = typeof value === "string" ? value : "";
-  const { inputProps } = useBufferedInput(committed, (local) => {
-    onChange(itemIndex, field.key, local);
-  });
-
-  return (
-    <PrimitiveInput
-      aria-label={`${field.title} ${itemIndex + 1}`}
-      {...inputProps}
-      type={field.inputType ?? "text"}
-      disabled={disabled}
-      style={inputStyle}
-    />
-  );
-}
-
-function RepeatableCompoundNumberField({
-  fieldKey,
-  fieldTitle,
-  itemIndex,
-  value,
-  onChange,
-  inputStyle,
-  disabled,
-}: {
-  fieldKey: string;
-  fieldTitle: string;
-  itemIndex: number;
-  value: unknown;
-  onChange: (itemIndex: number, fieldKey: string, nextValue: unknown) => void;
-  inputStyle: React.CSSProperties;
-  disabled?: boolean;
-}) {
-  const committed =
-    value !== undefined && value !== null && !Number.isNaN(Number(value))
-      ? String(value)
-      : "";
-  const { inputProps } = useBufferedInput(committed, (local) => {
-    onChange(itemIndex, fieldKey, local === "" ? undefined : Number(local));
-  });
-
-  return (
-    <PrimitiveInput
-      aria-label={`${fieldTitle} ${itemIndex + 1}`}
-      {...inputProps}
-      type="number"
-      disabled={disabled}
-      style={inputStyle}
+      inputStyle={repeatableInputStyle}
     />
   );
 }
@@ -566,7 +408,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 alignSelf: "flex-start",
                 ...smallActionButtonStyle,
                 cursor: isDisabled || index === 0 ? "not-allowed" : "pointer",
-                opacity: isDisabled || index === 0 ? 0.6 : 1,
+                opacity: isDisabled || index === 0 ? "var(--settera-disabled-opacity, 0.5)" : undefined,
               }}
             >
               Up
@@ -585,7 +427,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                     ? "not-allowed"
                     : "pointer",
                 opacity:
-                  isDisabled || index === compoundItems.length - 1 ? 0.6 : 1,
+                  isDisabled || index === compoundItems.length - 1 ? "var(--settera-disabled-opacity, 0.5)" : undefined,
               }}
             >
               Down
@@ -600,7 +442,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 alignSelf: "flex-start",
                 ...smallActionButtonStyle,
                 cursor: isDisabled ? "not-allowed" : "pointer",
-                opacity: isDisabled ? 0.6 : 1,
+                opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
               }}
             >
               Remove
@@ -617,7 +459,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           alignSelf: "flex-start",
           padding: "4px 10px",
           cursor: isDisabled || isAtMax ? "not-allowed" : "pointer",
-          opacity: isDisabled || isAtMax ? 0.6 : 1,
+          opacity: isDisabled || isAtMax ? "var(--settera-disabled-opacity, 0.5)" : undefined,
         }}
       >
         Add item
@@ -628,6 +470,6 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
 
 const repeatableInputStyle: React.CSSProperties = {
   ...inputBaseStyle,
-  border: "var(--settera-input-border, 1px solid #d1d5db)",
+  border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
   width: "var(--settera-input-width, 200px)",
 };
