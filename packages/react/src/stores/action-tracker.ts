@@ -16,6 +16,10 @@ export class ActionTracker {
     return this._loading;
   }
 
+  activate(): void {
+    this._mounted = true;
+  }
+
   invokeAction(
     key: string,
     handler: (payload?: unknown) => void | Promise<void>,

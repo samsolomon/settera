@@ -1284,13 +1284,13 @@ export function App() {
             ? (payload as Record<string, unknown>)
             : {};
         return new Promise<void>((r) => setTimeout(r, 1500)).then(() => {
-          alert(
-            `Data export started (${String(config.format ?? "json")}, include private: ${String(config.includePrivate ?? false)}).`,
+          console.info(
+            `[test-app] Data export started (${String(config.format ?? "json")}, include private: ${String(config.includePrivate ?? false)}).`,
           );
         });
       }
       case "actions.clearCache":
-        alert("Cache cleared!");
+        console.info("[test-app] Cache cleared!");
         return;
       case "actions.inviteTeam": {
         const data =
@@ -1298,14 +1298,14 @@ export function App() {
             ? (payload as Record<string, unknown>)
             : {};
         return new Promise<void>((r) => setTimeout(r, 1200)).then(() => {
-          alert(
-            `Invites queued (${String(data.seatCount ?? 0)} seats, ${Array.isArray(data.emails) ? data.emails.length : 0} email targets).`,
+          console.info(
+            `[test-app] Invites queued (${String(data.seatCount ?? 0)} seats, ${Array.isArray(data.emails) ? data.emails.length : 0} email targets).`,
           );
         });
       }
       case "actions.deleteAccount":
         return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
-          alert("Account deleted (just kidding).");
+          console.info("[test-app] Account deleted (just kidding).");
         });
     }
   }, []);

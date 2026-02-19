@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import {
   validateSchema,
   flattenSettings,
@@ -33,7 +28,10 @@ export interface SetteraProps {
   /** Handler for action-type settings */
   onAction?: (key: string, payload?: unknown) => void | Promise<void>;
   /** Custom validation callback */
-  onValidate?: (key: string, value: unknown) => string | null | Promise<string | null>;
+  onValidate?: (
+    key: string,
+    value: unknown,
+  ) => string | null | Promise<string | null>;
   /** Save policy for sync validation failures. */
   validationMode?: ValidationMode;
   children: React.ReactNode;
@@ -77,21 +75,18 @@ export function Settera({
   }, [schemaErrors]);
 
   // Memoize schema context (stable after mount)
-  const schemaContext: SetteraSchemaContextValue = useMemo(
-    () => {
-      const flat = flattenSettings(schema);
-      const settingIdx = buildSettingIndex(flat);
-      return {
-        schema,
-        flatSettings: flat,
-        getSettingByKey: (key: string) => settingIdx.get(key)?.definition,
-        getPageByKey: (key: string) => getPageByKey(schema, key),
-        settingIndex: settingIdx,
-        sectionIndex: buildSectionIndex(schema),
-      };
-    },
-    [schema],
-  );
+  const schemaContext: SetteraSchemaContextValue = useMemo(() => {
+    const flat = flattenSettings(schema);
+    const settingIdx = buildSettingIndex(flat);
+    return {
+      schema,
+      flatSettings: flat,
+      getSettingByKey: (key: string) => settingIdx.get(key)?.definition,
+      getPageByKey: (key: string) => getPageByKey(schema, key),
+      settingIndex: settingIdx,
+      sectionIndex: buildSectionIndex(schema),
+    };
+  }, [schema]);
 
   // ---- Values ----
 
@@ -133,6 +128,7 @@ export function Settera({
 
   // Cleanup on unmount
   useEffect(() => {
+    store.activate();
     return () => {
       store.destroy();
     };

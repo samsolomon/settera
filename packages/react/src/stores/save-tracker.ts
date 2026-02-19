@@ -20,6 +20,10 @@ export class SaveTracker {
     return this._saveStatus;
   }
 
+  activate(): void {
+    this._mounted = true;
+  }
+
   /**
    * Track an async save result. Called when onChange returns a Promise.
    * Sets status to "saving" immediately and resolves to "saved"/"error".

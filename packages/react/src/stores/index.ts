@@ -107,6 +107,12 @@ export class SetteraValuesStore {
     this._rebuildAndEmit();
   }
 
+  /** Re-activate async trackers after effect re-subscription (e.g. StrictMode). */
+  activate(): void {
+    this._saves.activate();
+    this._actions.activate();
+  }
+
   setValue = (key: string, value: unknown): void => {
     const definition = this._callbacks.getSchemaLookup()?.(key);
 
@@ -123,7 +129,11 @@ export class SetteraValuesStore {
     }
 
     if (definition.disabled) return;
-    if ("readonly" in definition && (definition as { readonly?: boolean }).readonly) return;
+    if (
+      "readonly" in definition &&
+      (definition as { readonly?: boolean }).readonly
+    )
+      return;
 
     const valueDefinition = definition as ValueSetting;
     const confirmConfig = valueDefinition.confirm;
@@ -151,7 +161,10 @@ export class SetteraValuesStore {
     }
   };
 
-  validate = async (key: string, valueOverride?: unknown): Promise<string | null> => {
+  validate = async (
+    key: string,
+    valueOverride?: unknown,
+  ): Promise<string | null> => {
     if (this._confirms.getPendingConfirm()?.key === key) return null;
 
     const definition = this._callbacks.getSchemaLookup()?.(key);
@@ -179,7 +192,10 @@ export class SetteraValuesStore {
         const message = "Validation failed";
         this._errors.setError(key, message);
         if (IS_DEV) {
-          console.error(`[settera] Async validation failed for "${key}":`, error);
+          console.error(
+            `[settera] Async validation failed for "${key}":`,
+            error,
+          );
         }
         return message;
       }
@@ -231,16 +247,17 @@ export class SetteraValuesStore {
 
   setOnValidate(
     fn:
-      | ((key: string, value: unknown) => string | null | Promise<string | null>)
+      | ((
+          key: string,
+          value: unknown,
+        ) => string | null | Promise<string | null>)
       | undefined,
   ): void {
     this._callbacks.setOnValidate(fn);
   }
 
   setOnAction(
-    fn:
-      | ((key: string, payload?: unknown) => void | Promise<void>)
-      | undefined,
+    fn: ((key: string, payload?: unknown) => void | Promise<void>) | undefined,
   ): void {
     this._callbacks.setOnAction(fn);
   }
