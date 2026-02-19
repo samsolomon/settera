@@ -289,7 +289,7 @@ function SetteraLayoutInner({
                     const isLast = index === breadcrumbItems.length - 1;
                     return (
                       <React.Fragment key={crumb.key}>
-                        <li aria-hidden="true" style={{ color: "#9ca3af" }}>
+                        <li aria-hidden="true" style={{ color: "inherit" }}>
                           /
                         </li>
                         <li

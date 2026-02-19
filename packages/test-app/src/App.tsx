@@ -1196,17 +1196,47 @@ export function App() {
             colorScheme: "dark",
             background: "#09090b",
             color: "#e4e4e7",
+            // Page
             "--settera-page-bg": "#09090b",
             "--settera-page-title-color": "#f4f4f5",
+            // Text
+            "--settera-title-color": "#f4f4f5",
+            "--settera-section-title-color": "#e4e4e7",
             "--settera-description-color": "#a1a1aa",
-            "--settera-card-bg": "#18181b",
-            "--settera-card-border": "1px solid #27272a",
             "--settera-label-color": "#f4f4f5",
             "--settera-help-color": "#a1a1aa",
+            // Cards & rows
+            "--settera-card-bg": "#18181b",
+            "--settera-card-border": "1px solid #27272a",
+            "--settera-row-border": "1px solid #27272a",
+            // Inputs
             "--settera-input-bg": "#09090b",
             "--settera-input-border": "1px solid #3f3f46",
             "--settera-input-color": "#e4e4e7",
+            "--settera-input-border-color": "#3f3f46",
             "--settera-focus-ring": "0 0 0 2px rgba(161, 161, 170, 0.45)",
+            // Buttons
+            "--settera-button-bg": "#18181b",
+            "--settera-button-color": "#e4e4e7",
+            "--settera-button-border": "1px solid #3f3f46",
+            "--settera-button-secondary-bg": "#18181b",
+            "--settera-button-secondary-color": "#e4e4e7",
+            "--settera-button-border-color": "#3f3f46",
+            "--settera-button-primary-bg": "#f4f4f5",
+            "--settera-button-primary-color": "#18181b",
+            // Switch
+            "--settera-switch-inactive-color": "#3f3f46",
+            // Dialog
+            "--settera-dialog-bg": "#18181b",
+            "--settera-dialog-title-color": "#f4f4f5",
+            "--settera-dialog-message-color": "#a1a1aa",
+            "--settera-dialog-label-color": "#a1a1aa",
+            "--settera-dialog-shadow": "0 20px 60px rgba(0, 0, 0, 0.4)",
+            // Ghost / copy-link hover
+            "--settera-ghost-hover-bg": "#27272a",
+            "--settera-ghost-hover-color": "#f4f4f5",
+            "--settera-copy-link-color": "#71717a",
+            // Sidebar
             "--settera-sidebar-background": "#09090b",
             "--settera-sidebar-foreground": "#e4e4e7",
             "--settera-sidebar-muted-foreground": "#a1a1aa",
@@ -1214,10 +1244,17 @@ export function App() {
             "--settera-sidebar-accent": "#18181b",
             "--settera-sidebar-accent-hover": "#27272a",
             "--settera-sidebar-accent-foreground": "#fafafa",
+            // Mobile
             "--settera-mobile-topbar-bg": "#09090b",
             "--settera-mobile-topbar-border": "1px solid #27272a",
             "--settera-mobile-drawer-bg": "#09090b",
             "--settera-mobile-drawer-border": "1px solid #27272a",
+            "--settera-mobile-menu-border": "1px solid #3f3f46",
+            "--settera-mobile-menu-bg": "#18181b",
+            "--settera-mobile-menu-color": "#e4e4e7",
+            // Breadcrumb
+            "--settera-breadcrumb-current": "#f4f4f5",
+            "--settera-breadcrumb-muted": "#71717a",
           } as React.CSSProperties)
         : ({
             colorScheme: "light",
