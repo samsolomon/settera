@@ -121,8 +121,6 @@ export function Select({ settingKey }: SelectProps) {
       <RadixSelect.Portal>
         <RadixSelect.Content
           data-slot="select-content"
-          position="popper"
-          sideOffset={6}
           onEscapeKeyDown={handleEscapeKeyDown}
           style={{
             fontFamily: SETTERA_SYSTEM_FONT,
