@@ -139,8 +139,6 @@ export function SetteraSidebar({
     return result;
   }, [schema.pages, isSearching, matchingPageKeys]);
 
-  const hasGroups = schema.pages.some(isPageGroup);
-
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
 
@@ -497,37 +495,26 @@ export function SetteraSidebar({
           aria-label="Settings navigation"
           onKeyDown={handleNavKeyDown}
         >
-          {hasGroups ? (
-            // Group-aware rendering: each PageItem becomes a SidebarGroup
-            visiblePageItems.map((item, idx) => {
-              if (isPageGroup(item)) {
-                return (
-                  <SidebarGroup key={`group-${idx}`}>
-                    <SidebarGroupLabel>{item.label}</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                      {renderPageItems(item.pages)}
-                    </SidebarGroupContent>
-                  </SidebarGroup>
-                );
-              }
-
+          {visiblePageItems.map((item) => {
+            if (isPageGroup(item)) {
               return (
-                <SidebarGroup key={item.key}>
+                <SidebarGroup key={`group-${item.label}`}>
+                  <SidebarGroupLabel>{item.label}</SidebarGroupLabel>
                   <SidebarGroupContent>
-                    {renderPageItems([item])}
+                    {renderPageItems(item.pages)}
                   </SidebarGroupContent>
                 </SidebarGroup>
               );
-            })
-          ) : (
-            // Legacy: single group with "Navigation" label
-            <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-              <SidebarGroupContent>
-                {renderPageItems(flattenPageItems(schema.pages))}
-              </SidebarGroupContent>
-            </SidebarGroup>
-          )}
+            }
+
+            return (
+              <SidebarGroup key={item.key}>
+                <SidebarGroupContent>
+                  {renderPageItems([item])}
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
 

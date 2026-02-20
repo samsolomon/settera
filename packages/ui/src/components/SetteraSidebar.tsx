@@ -132,8 +132,6 @@ export function SetteraSidebar({
     return result;
   }, [schema.pages, isSearching, matchingPageKeys]);
 
-  const hasGroups = schema.pages.some(isPageGroup);
-
   // --- Keyboard navigation ---
 
   // Build flat list of visible items (respecting expand/collapse + search filter)
@@ -352,107 +350,66 @@ export function SetteraSidebar({
 
       <SetteraSearch />
 
-      {hasGroups ? (
-        // Group-aware rendering: render each PageItem (group or page)
-        visiblePageItems.map((item, idx) => {
-          if (isPageGroup(item)) {
-            return (
-              <div key={`group-${idx}`}>
-                <div
-                  aria-hidden="true"
-                  style={{
-                    fontSize: "11px",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color:
-                      "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
-                    fontWeight: 600,
-                    padding: "2px 8px",
-                    marginTop: idx === 0 ? undefined : "var(--settera-sidebar-group-spacing, 12px)",
-                  }}
-                >
-                  {item.label}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
-                  {item.pages.map((page) => (
-                    <SidebarItem
-                      key={page.key}
-                      page={page}
-                      depth={0}
-                      activePage={activePage}
-                      expandedGroups={expandedGroups}
-                      onPageClick={handlePageClick}
-                      onChildClick={handleChildClick}
-                      renderIcon={renderIcon}
-                      isSearching={isSearching}
-                      matchingPageKeys={matchingPageKeys}
-                      keyToIndex={keyToIndex}
-                      getTabIndex={getTabIndex}
-                      setButtonRef={setButtonRef}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
+      {visiblePageItems.map((item, idx) => {
+        if (isPageGroup(item)) {
           return (
-            <div key={item.key} style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
-              <SidebarItem
-                page={item}
-                depth={0}
-                activePage={activePage}
-                expandedGroups={expandedGroups}
-                onPageClick={handlePageClick}
-                onChildClick={handleChildClick}
-                renderIcon={renderIcon}
-                isSearching={isSearching}
-                matchingPageKeys={matchingPageKeys}
-                keyToIndex={keyToIndex}
-                getTabIndex={getTabIndex}
-                setButtonRef={setButtonRef}
-              />
+            <div key={`group-${item.label}`}>
+              <div
+                aria-hidden="true"
+                style={{
+                  fontSize: "11px",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color:
+                    "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  marginTop: idx === 0 ? undefined : "var(--settera-sidebar-group-spacing, 12px)",
+                }}
+              >
+                {item.label}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+                {item.pages.map((page) => (
+                  <SidebarItem
+                    key={page.key}
+                    page={page}
+                    depth={0}
+                    activePage={activePage}
+                    expandedGroups={expandedGroups}
+                    onPageClick={handlePageClick}
+                    onChildClick={handleChildClick}
+                    renderIcon={renderIcon}
+                    isSearching={isSearching}
+                    matchingPageKeys={matchingPageKeys}
+                    keyToIndex={keyToIndex}
+                    getTabIndex={getTabIndex}
+                    setButtonRef={setButtonRef}
+                  />
+                ))}
+              </div>
             </div>
           );
-        })
-      ) : (
-        // Legacy: flat page list with hardcoded "Navigation" label
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              fontSize: "11px",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color:
-                "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
-              fontWeight: 600,
-              padding: "2px 8px",
-            }}
-          >
-            Navigation
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
-            {flattenPageItems(visiblePageItems).map((page) => (
-              <SidebarItem
-                key={page.key}
-                page={page}
-                depth={0}
-                activePage={activePage}
-                expandedGroups={expandedGroups}
-                onPageClick={handlePageClick}
-                onChildClick={handleChildClick}
-                renderIcon={renderIcon}
-                isSearching={isSearching}
-                matchingPageKeys={matchingPageKeys}
-                keyToIndex={keyToIndex}
-                getTabIndex={getTabIndex}
-                setButtonRef={setButtonRef}
-              />
-            ))}
-          </div>
-        </>
-      )}
+        }
+
+        return (
+          <SidebarItem
+            key={item.key}
+            page={item}
+            depth={0}
+            activePage={activePage}
+            expandedGroups={expandedGroups}
+            onPageClick={handlePageClick}
+            onChildClick={handleChildClick}
+            renderIcon={renderIcon}
+            isSearching={isSearching}
+            matchingPageKeys={matchingPageKeys}
+            keyToIndex={keyToIndex}
+            getTabIndex={getTabIndex}
+            setButtonRef={setButtonRef}
+          />
+        );
+      })}
 
       {!hideFooterHints && <SidebarFooterHints />}
     </nav>
