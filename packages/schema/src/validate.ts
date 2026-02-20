@@ -1,12 +1,14 @@
 import type {
   SetteraSchema,
   PageDefinition,
+  PageItem,
   SectionDefinition,
   SettingDefinition,
   SchemaValidationError,
   VisibilityCondition,
   VisibilityRule,
 } from "./types.js";
+import { isPageGroup } from "./traversal.js";
 
 interface ValidationContext {
   errors: SchemaValidationError[];
@@ -44,10 +46,24 @@ export function validateSchema(schema: SetteraSchema): SchemaValidationError[] {
     return ctx.errors;
   }
 
-  // Validate pages
+  // Validate pages (unwrap groups)
   const pageKeys = new Set<string>();
   for (let i = 0; i < schema.pages.length; i++) {
-    validatePage(schema.pages[i], `pages[${i}]`, pageKeys, ctx);
+    const item: PageItem = schema.pages[i];
+    if (isPageGroup(item)) {
+      if (!item.label) {
+        ctx.errors.push({
+          path: `pages[${i}].label`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: "Page group must have a label.",
+        });
+      }
+      for (let j = 0; j < item.pages.length; j++) {
+        validatePage(item.pages[j], `pages[${i}].pages[${j}]`, pageKeys, ctx);
+      }
+    } else {
+      validatePage(item, `pages[${i}]`, pageKeys, ctx);
+    }
   }
 
   // Check visibility references point to real settings

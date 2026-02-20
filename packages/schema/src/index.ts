@@ -4,6 +4,8 @@ export const SCHEMA_VERSION = "1.0";
 export type {
   SetteraSchema,
   PageDefinition,
+  PageGroup,
+  PageItem,
   SectionDefinition,
   SubsectionDefinition,
   SettingDefinition,
@@ -44,6 +46,8 @@ export { evaluateVisibility } from "./visibility.js";
 
 // Traversal
 export {
+  isPageGroup,
+  flattenPageItems,
   walkSchema,
   flattenSettings,
   getSettingByKey,

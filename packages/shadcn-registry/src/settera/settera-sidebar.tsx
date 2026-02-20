@@ -393,17 +393,18 @@ export function SetteraSidebar({
                                 {renderIcon(page.icon)}
                               </span>
                             )}
-                            {page.title}
+                            <span className="flex-1 truncate">{page.title}</span>
                             <svg
                               aria-hidden="true"
                               width="16"
                               height="16"
                               viewBox="0 0 16 16"
                               fill="none"
-                              className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-150 ${isExpanded ? "rotate-90" : ""}`}
+                              className="shrink-0 text-sidebar-accent-foreground/70 transition-transform duration-200"
+                              style={{ rotate: isExpanded ? "0deg" : "-90deg" }}
                             >
                               <path
-                                d="M6 4l4 4-4 4"
+                                d="M4 6l4 4 4-4"
                                 stroke="currentColor"
                                 strokeWidth="1.5"
                                 strokeLinecap="round"

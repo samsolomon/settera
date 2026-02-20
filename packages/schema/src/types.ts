@@ -10,11 +10,26 @@ export interface SetteraSchema {
     description?: string;
   };
 
-  /** Top-level navigation pages (appear in sidebar) */
-  pages: PageDefinition[];
+  /** Top-level navigation pages (appear in sidebar). Supports ungrouped pages and labeled groups. */
+  pages: PageItem[];
 }
 
 // ---- Navigation Hierarchy ----
+
+/**
+ * A presentational group of pages in the sidebar navigation.
+ * Groups have a label and contain pages, but no key, sections, or navigation state.
+ */
+export interface PageGroup {
+  /** Display label for the group heading */
+  label: string;
+
+  /** Pages within this group */
+  pages: PageDefinition[];
+}
+
+/** A top-level item in the schema's pages array: either a page or a group of pages. */
+export type PageItem = PageDefinition | PageGroup;
 
 export interface PageDefinition {
   /** Unique key for this page */

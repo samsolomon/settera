@@ -23,7 +23,9 @@
         "label",
         "collapsible",
         "sidebar",
-        "tooltip"
+        "tooltip",
+        "input-group",
+        "kbd"
       ],
       "files": [
         { "path": "src/settera/settera-navigation-provider.tsx", "type": "registry:component", "target": "components/settera/settera-navigation-provider.tsx" },

@@ -1,5 +1,5 @@
 import type { SetteraSchema } from "./types.js";
-import { walkSchema } from "./traversal.js";
+import { walkSchema, isPageGroup, flattenPageItems } from "./traversal.js";
 
 export interface SearchSchemaResult {
   settingKeys: Set<string>;
@@ -32,6 +32,16 @@ export function searchSchema(
   const matchedSections = new Set<string>();
   const subsectionMatchedSettings = new Set<string>();
   const parentMap = new Map<string, string>();
+
+  // Match group labels — when a group label matches, include all its pages
+  for (const item of schema.pages) {
+    if (isPageGroup(item) && item.label.toLowerCase().includes(q)) {
+      for (const page of item.pages) {
+        matchedPages.add(page.key);
+        pageKeys.add(page.key);
+      }
+    }
+  }
 
   walkSchema(schema, {
     onPage(page) {

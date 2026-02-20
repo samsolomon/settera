@@ -1,11 +1,38 @@
 import type {
   SetteraSchema,
   PageDefinition,
+  PageGroup,
+  PageItem,
   SectionDefinition,
   SubsectionDefinition,
   SettingDefinition,
   FlattenedSetting,
 } from "./types.js";
+
+// ---- Page Group Helpers ----
+
+/**
+ * Type guard: returns true when a page item is a `PageGroup` (has `label`, no `key`).
+ */
+export function isPageGroup(item: PageItem): item is PageGroup {
+  return "label" in item && !("key" in item);
+}
+
+/**
+ * Extract all `PageDefinition` entries from a mixed `PageItem[]` array,
+ * unwrapping any `PageGroup` containers. Preserves declaration order.
+ */
+export function flattenPageItems(items: PageItem[]): PageDefinition[] {
+  const result: PageDefinition[] = [];
+  for (const item of items) {
+    if (isPageGroup(item)) {
+      result.push(...item.pages);
+    } else {
+      result.push(item);
+    }
+  }
+  return result;
+}
 
 // ---- Generic Schema Walker ----
 
@@ -42,6 +69,9 @@ export function walkSchema(
   schema: SetteraSchema,
   visitor: SchemaVisitor,
 ): void {
+  // Unwrap top-level groups into a flat page list for walking
+  const topLevelPages = flattenPageItems(schema.pages);
+
   function walk(
     pages: PageDefinition[],
     pathPrefix: string,
@@ -132,7 +162,7 @@ export function walkSchema(
     return true;
   }
 
-  walk(schema.pages, "pages", 0);
+  walk(topLevelPages, "pages", 0);
 }
 
 // ---- Derived traversal helpers (built on walkSchema) ----
