@@ -22,7 +22,8 @@
         "dialog",
         "label",
         "collapsible",
-        "sheet"
+        "sidebar",
+        "tooltip"
       ],
       "files": [
         { "path": "src/settera/settera-navigation-provider.tsx", "type": "registry:component", "target": "components/settera/settera-navigation-provider.tsx" },
@@ -31,7 +32,6 @@
         { "path": "src/settera/use-roving-tab-index.ts", "type": "registry:component", "target": "components/settera/use-roving-tab-index.ts" },
         { "path": "src/settera/use-settera-global-keys.ts", "type": "registry:component", "target": "components/settera/use-settera-global-keys.ts" },
         { "path": "src/settera/use-content-card-navigation.ts", "type": "registry:component", "target": "components/settera/use-content-card-navigation.ts" },
-        { "path": "src/settera/use-settera-layout-mobile-shell.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-mobile-shell.ts" },
         { "path": "src/settera/use-settera-layout-highlight.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-highlight.ts" },
         { "path": "src/settera/use-settera-layout-url-sync.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-url-sync.ts" },
         { "path": "src/settera/use-settera-layout-main-keys.ts", "type": "registry:component", "target": "components/settera/use-settera-layout-main-keys.ts" },

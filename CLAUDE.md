@@ -5,13 +5,15 @@ A settings UI framework. Declare a schema, provide values, and render a full set
 ## Packages
 
 ```
-packages/schema   — Types, validation, and traversal for setting schemas (pure TS, no React)
-packages/react    — Unified Settera component, store, and hooks (depends on schema)
-packages/ui       — Prebuilt UI components (depends on react + schema)
-packages/test-app — Vite dev app for manual testing
+packages/schema          — Types, validation, and traversal for setting schemas (pure TS, no React)
+packages/react           — Unified Settera component, store, and hooks (depends on schema)
+packages/ui              — Prebuilt UI components with inline styles (depends on react + schema)
+packages/shadcn-registry — shadcn-style components distributed via registry (depends on react + schema)
+packages/test-app        — Vite dev app for manual testing (ui package)
+packages/shadcn-test-app — Vite dev app for manual testing (shadcn registry)
 ```
 
-Dependency graph: `schema → react → ui`
+Dependency graph: `schema → react → ui / shadcn-registry`
 
 ## Commands
 
@@ -20,7 +22,8 @@ pnpm install              # Install all dependencies
 pnpm build                # Build all packages (turbo, respects dependency order)
 pnpm test                 # Run all tests
 pnpm test:watch           # Run tests in watch mode
-pnpm dev                  # Start test-app dev server
+pnpm dev                  # Start test-app dev server (ui)
+pnpm dev:shadcn           # Start shadcn-test-app dev server
 pnpm lint                 # ESLint
 pnpm typecheck            # TypeScript type checking
 
@@ -62,6 +65,15 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - Uses Radix UI primitives for select, switch, checkbox, and dialog.
 - **Theming**: Components reference `--settera-*` CSS custom properties with light-mode fallback values (e.g. `color: "var(--settera-title-color, #111827)"`). Consumers set tokens on a parent element to theme — no dark mode built in, just token overrides. All color, spacing, and sizing values should use tokens; never hardcode colors without a `var()` wrapper.
 - **Shared primitives**: `SetteraPrimitives.tsx` exports `PrimitiveInput`/`PrimitiveButton` (base slot components with token-aware styles). `SetteraFieldPrimitives.tsx` exports shared style objects (`cardShellStyle`, `sectionTitleStyle`, `descriptionTextStyle`, etc.).
+
+### shadcn Registry (`@settera/shadcn-registry`)
+- Distributed via shadcn registry, not npm — consumers install components into their own codebase.
+- **Styling**: Use **Tailwind classes** for all layout, spacing, and standard styling. Prefer Tailwind utilities over inline styles.
+- **Tokens**: Use `--settera-*` CSS custom properties (via inline `style`) only for values consumers are likely to customize (content max-width, page padding, heading font sizes, section spacing). Standard utility styling that doesn't need consumer override should use Tailwind classes directly.
+- **Primitives**: Import Radix UI from the `radix-ui` monorepo package (not individual `@radix-ui/*` packages). Import shadcn components from `@/components/ui/` — these resolve to the consumer's own shadcn primitives (Button, Dialog, Input, etc.).
+- **Icons**: Uses `lucide-react` by default (configurable via shadcn's `components.json` `iconLibrary` setting).
+- **No own `node_modules`**: Registry source files live in the consumer's project. They rely on the consumer's dependencies for React, Radix, Tailwind, etc.
+- **React 18 compat**: shadcn generates React 19-style components (no `forwardRef`). When the consumer uses React 18 and passes refs, wrap with `React.forwardRef` (see `dialog.tsx`, `button.tsx` in shadcn-test-app for examples).
 
 ## Testing Conventions
 

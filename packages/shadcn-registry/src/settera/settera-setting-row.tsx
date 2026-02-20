@@ -77,7 +77,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const isDisabled = "disabled" in definition && definition.disabled;
-  const showCopyButton = deepLinkCtx && (isHovered || isFocusVisible);
+  const showCopyButton = !!(deepLinkCtx && (isHovered || isFocusVisible || copyFeedback));
 
   return (
     <div
@@ -109,23 +109,24 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
           <div className="flex items-center gap-1.5 min-h-[24px]">
             <span
               className={cn(
-                "text-sm font-medium",
+                "text-sm font-medium leading-6",
                 isDangerous && "text-destructive",
               )}
             >
               {definition.title}
             </span>
-            {showCopyButton && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                tabIndex={-1}
-                data-settera-copy-link="true"
-                aria-label="Copy link to setting"
-                onClick={handleCopyLink}
-                className="h-6 w-6"
-              >
+            {deepLinkCtx && (
+              <span className="inline-flex w-6 h-6 shrink-0">
+                {showCopyButton && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    tabIndex={-1}
+                    data-settera-copy-link="true"
+                    aria-label="Copy link to setting"
+                    onClick={handleCopyLink}
+                  >
                 {copyFeedback ? (
                   <svg
                     width="14"
@@ -156,6 +157,8 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                   </svg>
                 )}
               </Button>
+                )}
+              </span>
             )}
             {saveStatus === "saving" && (
               <span className="text-xs text-muted-foreground font-normal">

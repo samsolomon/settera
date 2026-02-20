@@ -117,7 +117,7 @@ export function useSetteraGlobalKeys(
 
         const main = container.querySelector<HTMLElement>("main");
         const sidebar =
-          container.querySelector<HTMLElement>('nav[role="tree"]');
+          container.querySelector<HTMLElement>('[data-sidebar="sidebar"]');
 
         // 4. Text/number input in content → blur, focus enclosing card
         if (
@@ -168,7 +168,7 @@ export function useSetteraGlobalKeys(
       if (e.key === "F6") {
         e.preventDefault();
         const sidebar =
-          container.querySelector<HTMLElement>('nav[role="tree"]');
+          container.querySelector<HTMLElement>('[data-sidebar="sidebar"]');
         const main = container.querySelector<HTMLElement>("main");
         if (!sidebar || !main) return;
 

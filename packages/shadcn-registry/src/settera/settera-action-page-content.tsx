@@ -46,7 +46,7 @@ export function SetteraActionPageContent({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="font-semibold" style={{ fontSize: "var(--settera-subpage-title-font-size, 1rem)" }}>{title}</h2>
       {description && (
         <p className="mt-1 text-sm text-muted-foreground">
           {parseDescriptionLinks(description)}

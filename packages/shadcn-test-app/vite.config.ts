@@ -15,6 +15,6 @@ export default defineConfig({
       "@/lib": path.resolve(__dirname, "src/lib"),
       "@": path.resolve(__dirname, "src"),
     },
-    dedupe: ["react", "react-dom", "@settera/react", "@settera/schema"],
+    dedupe: ["react", "react-dom", "@settera/react", "@settera/schema", "@settera/ui"],
   },
 });

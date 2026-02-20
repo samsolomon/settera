@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useRef,
   useMemo,
-  useState,
 } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "./use-settera-navigation";
@@ -16,11 +15,29 @@ import type { PageDefinition } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey } from "@settera/schema";
 import { SetteraSearch } from "./settera-search";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
-  onNavigate?: (pageKey: string) => void;
   backToApp?: {
     label?: string;
     href?: string;
@@ -37,7 +54,6 @@ interface FlatItem {
 
 export function SetteraSidebar({
   renderIcon,
-  onNavigate,
   backToApp,
   hideFooterHints,
 }: SetteraSidebarProps) {
@@ -50,6 +66,7 @@ export function SetteraSidebar({
     requestFocusContent,
   } = useSetteraNavigation();
   const { isSearching, matchingPageKeys } = useSetteraSearch();
+  const { setOpenMobile } = useSidebar();
 
   if (!schemaCtx) {
     throw new Error("SetteraSidebar must be used within a Settera component.");
@@ -79,26 +96,27 @@ export function SetteraSidebar({
       if (isFlattenedPage(page)) {
         const pageKey = resolvePageKey(page);
         setActivePage(pageKey);
-        onNavigate?.(pageKey);
+        setOpenMobile(false);
       } else if (hasChildren && !hasSections) {
         toggleGroup(page.key);
       } else if (hasChildren && hasSections) {
         setActivePage(page.key);
         toggleGroup(page.key);
+        setOpenMobile(false);
       } else {
         setActivePage(page.key);
-        onNavigate?.(page.key);
+        setOpenMobile(false);
       }
     },
-    [setActivePage, toggleGroup, onNavigate],
+    [setActivePage, toggleGroup, setOpenMobile],
   );
 
   const handleChildClick = useCallback(
     (key: string) => {
       setActivePage(key);
-      onNavigate?.(key);
+      setOpenMobile(false);
     },
-    [setActivePage, onNavigate],
+    [setActivePage, setOpenMobile],
   );
 
   const filterPages = useCallback(
@@ -149,12 +167,12 @@ export function SetteraSidebar({
     });
 
   const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
-  const navRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    if (!nav.contains(document.activeElement)) return;
+    const menu = menuRef.current;
+    if (!menu) return;
+    if (!menu.contains(document.activeElement)) return;
     const btn = buttonRefs.current.get(focusedIndex);
     if (btn && document.activeElement !== btn) {
       btn.focus();
@@ -264,22 +282,15 @@ export function SetteraSidebar({
   );
 
   return (
-    <nav
-      ref={navRef}
-      role="tree"
-      aria-label="Settings navigation"
-      data-settera-nav
-      onKeyDown={handleNavKeyDown}
-      className="w-[280px] border-r bg-muted/30 text-sm p-3 overflow-y-auto flex flex-col gap-2.5"
-    >
-      {backToApp && (
-        <div className="mb-0">
+    <Sidebar>
+      <SidebarHeader>
+        {backToApp && (
           <Button
             variant="ghost"
             size="sm"
             onClick={backToApp.onClick}
             asChild={!backToApp.onClick && backToApp.href ? true : undefined}
-            className="-ml-2"
+            className="-ml-1 justify-start"
           >
             {!backToApp.onClick && backToApp.href ? (
               <a href={backToApp.href}>
@@ -317,183 +328,190 @@ export function SetteraSidebar({
               </>
             )}
           </Button>
-        </div>
-      )}
+        )}
+        <SetteraSearch />
+      </SidebarHeader>
 
-      <SetteraSearch />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu
+              ref={menuRef}
+              role="tree"
+              aria-label="Settings navigation"
+              onKeyDown={handleNavKeyDown}
+            >
+              {visiblePages.map((page) => {
+                const flattened = isFlattenedPage(page);
+                const hasChildren =
+                  !flattened && page.pages && page.pages.length > 0;
+                const isExpanded = isSearching
+                  ? hasChildren &&
+                    page.pages!.some((child) =>
+                      matchingPageKeys.has(child.key),
+                    )
+                  : expandedGroups.has(page.key);
 
-      <div
-        aria-hidden="true"
-        className="text-[11px] tracking-wider uppercase text-muted-foreground font-semibold px-2"
-      >
-        Navigation
-      </div>
+                const visibleChildren = hasChildren
+                  ? isSearching
+                    ? page.pages!.filter((child) =>
+                        matchingPageKeys.has(child.key),
+                      )
+                    : page.pages!
+                  : [];
 
-      <div className="flex flex-col gap-0.5">
-        {visiblePages.map((page) => (
-          <SidebarItem
-            key={page.key}
-            page={page}
-            depth={0}
-            activePage={activePage}
-            expandedGroups={expandedGroups}
-            onPageClick={handlePageClick}
-            onChildClick={handleChildClick}
-            renderIcon={renderIcon}
-            isSearching={isSearching}
-            matchingPageKeys={matchingPageKeys}
-            keyToIndex={keyToIndex}
-            getTabIndex={getTabIndex}
-            setButtonRef={setButtonRef}
-          />
-        ))}
-      </div>
+                const isActive = flattened
+                  ? activePage === resolvePageKey(page)
+                  : activePage === page.key;
+
+                const flatIndex = keyToIndex.get(page.key) ?? -1;
+
+                if (hasChildren) {
+                  return (
+                    <Collapsible
+                      key={page.key}
+                      open={isExpanded}
+                      asChild
+                    >
+                      <SidebarMenuItem role="treeitem" aria-expanded={isExpanded}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                        >
+                          <button
+                            ref={(el) => setButtonRef(flatIndex, el)}
+                            onClick={() => handlePageClick(page)}
+                            aria-current={isActive ? "page" : undefined}
+                            tabIndex={getTabIndex(flatIndex)}
+                          >
+                            {page.icon && renderIcon && (
+                              <span
+                                aria-hidden="true"
+                                className="size-4 inline-flex items-center justify-center shrink-0"
+                              >
+                                {renderIcon(page.icon)}
+                              </span>
+                            )}
+                            {page.title}
+                            <svg
+                              aria-hidden="true"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-150 ${isExpanded ? "rotate-90" : ""}`}
+                            >
+                              <path
+                                d="M6 4l4 4-4 4"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        </SidebarMenuButton>
+                        <CollapsibleContent>
+                          <SidebarMenuSub role="group">
+                            {visibleChildren.map((child) => {
+                              const childFlattened = isFlattenedPage(child);
+                              const childKey = childFlattened
+                                ? resolvePageKey(child)
+                                : child.key;
+                              const childIsActive = activePage === childKey;
+                              const childFlatIndex =
+                                keyToIndex.get(child.key) ?? -1;
+
+                              return (
+                                <SidebarMenuSubItem
+                                  key={child.key}
+                                  role="treeitem"
+                                >
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    isActive={childIsActive}
+                                  >
+                                    <button
+                                      ref={(el) =>
+                                        setButtonRef(childFlatIndex, el)
+                                      }
+                                      onClick={() =>
+                                        handleChildClick(childKey)
+                                      }
+                                      aria-current={
+                                        childIsActive ? "page" : undefined
+                                      }
+                                      tabIndex={getTabIndex(childFlatIndex)}
+                                    >
+                                      {child.title}
+                                    </button>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                }
+
+                return (
+                  <SidebarMenuItem key={page.key} role="treeitem">
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <button
+                        ref={(el) => setButtonRef(flatIndex, el)}
+                        onClick={() => handlePageClick(page)}
+                        aria-current={isActive ? "page" : undefined}
+                        tabIndex={getTabIndex(flatIndex)}
+                      >
+                        {page.icon && renderIcon && (
+                          <span
+                            aria-hidden="true"
+                            className="size-4 inline-flex items-center justify-center shrink-0"
+                          >
+                            {renderIcon(page.icon)}
+                          </span>
+                        )}
+                        {page.title}
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
       {!hideFooterHints && (
-        <div
-          aria-hidden="true"
-          className="mt-auto flex items-center gap-3 px-2 pt-2 text-[11px] text-muted-foreground"
-        >
-          <span className="inline-flex items-center gap-1">
-            <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">/</kbd>
-            Search
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">↑↓</kbd>
-            Navigate
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">Esc</kbd>
-            Back
-          </span>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-interface SidebarItemProps {
-  page: PageDefinition;
-  depth: number;
-  activePage: string;
-  expandedGroups: Set<string>;
-  onPageClick: (page: PageDefinition) => void;
-  onChildClick: (key: string) => void;
-  renderIcon?: (iconName: string) => React.ReactNode;
-  isSearching: boolean;
-  matchingPageKeys: Set<string>;
-  keyToIndex: Map<string, number>;
-  getTabIndex: (index: number) => 0 | -1;
-  setButtonRef: (index: number, el: HTMLButtonElement | null) => void;
-}
-
-function SidebarItem({
-  page,
-  depth,
-  activePage,
-  expandedGroups,
-  onPageClick,
-  onChildClick,
-  renderIcon,
-  isSearching,
-  matchingPageKeys,
-  keyToIndex,
-  getTabIndex,
-  setButtonRef,
-}: SidebarItemProps) {
-  const flattened = isFlattenedPage(page);
-  const isActive = flattened
-    ? activePage === resolvePageKey(page)
-    : activePage === page.key;
-  const hasChildren = !flattened && page.pages && page.pages.length > 0;
-  const isExpanded = isSearching
-    ? hasChildren &&
-      page.pages!.some((child) => matchingPageKeys.has(child.key))
-    : expandedGroups.has(page.key);
-
-  const visibleChildren = hasChildren
-    ? isSearching
-      ? page.pages!.filter((child) => matchingPageKeys.has(child.key))
-      : page.pages!
-    : [];
-
-  const flatIndex = keyToIndex.get(page.key) ?? -1;
-
-  return (
-    <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined}>
-      <button
-        ref={(el) => setButtonRef(flatIndex, el)}
-        onClick={() =>
-          depth === 0
-            ? onPageClick(page)
-            : onChildClick(
-                isFlattenedPage(page) ? resolvePageKey(page) : page.key,
-              )
-        }
-        aria-current={isActive ? "page" : undefined}
-        tabIndex={getTabIndex(flatIndex)}
-        className={cn(
-          "flex items-center gap-2 w-full min-h-[34px] px-2 py-1.5 border-none rounded-lg text-sm font-medium text-left cursor-pointer transition-colors",
-          isActive
-            ? "bg-accent text-accent-foreground"
-            : "hover:bg-accent/50 text-foreground/80",
-        )}
-      >
-        {depth === 0 && page.icon && renderIcon && (
-          <span
+        <SidebarFooter>
+          <div
             aria-hidden="true"
-            className="w-4 h-4 inline-flex items-center justify-center text-muted-foreground shrink-0"
+            className="flex items-center gap-3 px-2 text-[11px] text-muted-foreground"
           >
-            {renderIcon(page.icon)}
-          </span>
-        )}
-        {page.title}
-        {hasChildren && (
-          <svg
-            aria-hidden="true"
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            className={cn(
-              "ml-auto shrink-0 text-muted-foreground transition-transform duration-150",
-              isExpanded && "rotate-90",
-            )}
-          >
-            <path
-              d="M6 4l4 4-4 4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
-      {hasChildren && isExpanded && (
-        <div
-          role="group"
-          className="ml-4 pl-2 border-l flex flex-col gap-px py-0.5"
-        >
-          {visibleChildren.map((child) => (
-            <SidebarItem
-              key={child.key}
-              page={child}
-              depth={depth + 1}
-              activePage={activePage}
-              expandedGroups={expandedGroups}
-              onPageClick={onPageClick}
-              onChildClick={onChildClick}
-              renderIcon={renderIcon}
-              isSearching={isSearching}
-              matchingPageKeys={matchingPageKeys}
-              keyToIndex={keyToIndex}
-              getTabIndex={getTabIndex}
-              setButtonRef={setButtonRef}
-            />
-          ))}
-        </div>
+            <span className="inline-flex items-center gap-1">
+              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
+                /
+              </kbd>
+              Search
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
+                ↑↓
+              </kbd>
+              Navigate
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
+                Esc
+              </kbd>
+              Back
+            </span>
+          </div>
+        </SidebarFooter>
       )}
-    </div>
+    </Sidebar>
   );
 }

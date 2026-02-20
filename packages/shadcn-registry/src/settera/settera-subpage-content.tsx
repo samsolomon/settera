@@ -111,7 +111,7 @@ function CompoundSubpage({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold">{definition.title}</h2>
+      <h2 className="font-semibold" style={{ fontSize: "var(--settera-subpage-title-font-size, 1rem)" }}>{definition.title}</h2>
       {definition.description && (
         <p className="mt-1 text-sm text-muted-foreground">
           {parseDescriptionLinks(definition.description)}

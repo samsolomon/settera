@@ -103,7 +103,7 @@ export function SetteraPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">{page.title}</h1>
+      <h1 className="font-semibold" style={{ fontSize: "var(--settera-page-title-font-size, 1.5rem)" }}>{page.title}</h1>
       {page.description && (
         <p className="mt-1 text-sm text-muted-foreground">
           {parseDescriptionLinks(page.description)}
