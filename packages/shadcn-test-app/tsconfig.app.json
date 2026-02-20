@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/components/settera/*": ["../shadcn-registry/src/settera/*"],
+      "@/components/ui/*": ["src/components/ui/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src", "../shadcn-registry/src"]
+}

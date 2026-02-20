@@ -1,0 +1,2 @@
+# shadcn CLI sometimes creates a literal @/ directory
+@/

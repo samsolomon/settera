@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck",
-    "dev": "turbo run dev --filter=test-app"
+    "dev": "turbo run dev --filter=test-app",
+    "dev:shadcn": "turbo run dev --filter=@settera/shadcn-test-app"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
