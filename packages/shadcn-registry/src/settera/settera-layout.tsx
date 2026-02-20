@@ -176,8 +176,15 @@ function SetteraLayoutInner({
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     if (!schemaCtx) return [];
     const path = findPagePathByKey(flattenPageItems(schemaCtx.schema.pages), activePage) ?? [];
-    return path.map((page) => ({ key: page.key, title: page.title }));
-  }, [schemaCtx, activePage]);
+    const items = path.map((page) => ({ key: page.key, title: page.title }));
+    if (subpage) {
+      const setting = schemaCtx.getSettingByKey(subpage.settingKey);
+      if (setting && "title" in setting && setting.title) {
+        items.push({ key: subpage.settingKey, title: setting.title });
+      }
+    }
+    return items;
+  }, [schemaCtx, activePage, subpage]);
 
   return (
     <SetteraDeepLinkContext.Provider value={deepLinkContextValue}>
@@ -221,7 +228,10 @@ function SetteraLayoutInner({
                             ) : (
                               <button
                                 type="button"
-                                onClick={() => setActivePage(crumb.key)}
+                                onClick={() => {
+                                  if (subpage) closeSubpage();
+                                  setActivePage(crumb.key);
+                                }}
                                 className="border-none bg-transparent p-0 text-[13px] text-inherit cursor-pointer"
                               >
                                 {crumb.title}
