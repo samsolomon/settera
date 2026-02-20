@@ -6,9 +6,11 @@ import {
   getPageByKey,
   isFlattenedPage,
   resolvePageKey,
+  isPageGroup,
+  flattenPageItems,
 } from "../traversal.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
-import type { SetteraSchema } from "../types.js";
+import type { SetteraSchema, PageItem } from "../types.js";
 import type { SchemaWalkContext } from "../traversal.js";
 
 describe("flattenSettings", () => {
@@ -756,5 +758,150 @@ describe("flattenSettings — subsectionKey", () => {
     const nested = flat.find((f) => f.definition.key === "nested");
     expect(direct?.subsectionKey).toBe("");
     expect(nested?.subsectionKey).toBe("sub1");
+  });
+});
+
+describe("isPageGroup", () => {
+  it("returns true for a page group", () => {
+    expect(isPageGroup({ label: "Group", pages: [] })).toBe(true);
+  });
+
+  it("returns false for a page definition", () => {
+    expect(isPageGroup({ key: "page", title: "Page" })).toBe(false);
+  });
+
+  it("returns false for a page definition that happens to have a label-like property", () => {
+    // PageDefinition has key, so isPageGroup returns false
+    expect(isPageGroup({ key: "page", title: "Page" } as PageItem)).toBe(false);
+  });
+});
+
+describe("flattenPageItems", () => {
+  it("returns pages unchanged when there are no groups", () => {
+    const pages: PageItem[] = [
+      { key: "a", title: "A" },
+      { key: "b", title: "B" },
+    ];
+    const flat = flattenPageItems(pages);
+    expect(flat).toHaveLength(2);
+    expect(flat[0].key).toBe("a");
+    expect(flat[1].key).toBe("b");
+  });
+
+  it("unwraps groups into flat page list", () => {
+    const pages: PageItem[] = [
+      { key: "a", title: "A" },
+      {
+        label: "Group 1",
+        pages: [
+          { key: "b", title: "B" },
+          { key: "c", title: "C" },
+        ],
+      },
+      { key: "d", title: "D" },
+    ];
+    const flat = flattenPageItems(pages);
+    expect(flat.map((p) => p.key)).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("handles empty groups", () => {
+    const pages: PageItem[] = [
+      { label: "Empty Group", pages: [] },
+      { key: "a", title: "A" },
+    ];
+    const flat = flattenPageItems(pages);
+    expect(flat).toHaveLength(1);
+    expect(flat[0].key).toBe("a");
+  });
+
+  it("handles all items being groups", () => {
+    const pages: PageItem[] = [
+      { label: "G1", pages: [{ key: "a", title: "A" }] },
+      { label: "G2", pages: [{ key: "b", title: "B" }] },
+    ];
+    const flat = flattenPageItems(pages);
+    expect(flat.map((p) => p.key)).toEqual(["a", "b"]);
+  });
+});
+
+describe("walkSchema — page groups", () => {
+  it("walks settings inside page groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        { key: "general", title: "General", sections: [{ key: "s1", title: "S1", settings: [{ key: "a", title: "A", type: "boolean" }] }] },
+        {
+          label: "Admin",
+          pages: [
+            { key: "users", title: "Users", sections: [{ key: "s2", title: "S2", settings: [{ key: "b", title: "B", type: "boolean" }] }] },
+          ],
+        },
+      ],
+    };
+    const settings: string[] = [];
+    walkSchema(schema, {
+      onSetting(setting) {
+        settings.push(setting.key);
+      },
+    });
+    expect(settings).toEqual(["a", "b"]);
+  });
+
+  it("visits pages from groups in onPage callback", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        { key: "general", title: "General" },
+        {
+          label: "Admin",
+          pages: [
+            { key: "users", title: "Users" },
+            { key: "billing", title: "Billing" },
+          ],
+        },
+      ],
+    };
+    const pages: string[] = [];
+    walkSchema(schema, {
+      onPage(page) {
+        pages.push(page.key);
+      },
+    });
+    expect(pages).toEqual(["general", "users", "billing"]);
+  });
+
+  it("flattenSettings works with page groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          label: "Group",
+          pages: [
+            { key: "p1", title: "P1", sections: [{ key: "s1", title: "S1", settings: [{ key: "setting1", title: "S", type: "boolean" }] }] },
+          ],
+        },
+      ],
+    };
+    const flat = flattenSettings(schema);
+    expect(flat).toHaveLength(1);
+    expect(flat[0].definition.key).toBe("setting1");
+    expect(flat[0].pageKey).toBe("p1");
+  });
+
+  it("getPageByKey finds pages inside groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          label: "Group",
+          pages: [
+            { key: "deep-page", title: "Deep Page" },
+          ],
+        },
+      ],
+    };
+    const page = getPageByKey(schema, "deep-page");
+    expect(page).toBeDefined();
+    expect(page?.title).toBe("Deep Page");
   });
 });

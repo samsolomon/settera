@@ -127,3 +127,48 @@ describe("searchSchema", () => {
     expect(result.settingKeys.has("font-size")).toBe(true);
   });
 });
+
+describe("searchSchema — page groups", () => {
+  const groupSchema: SetteraSchema = {
+    version: "1.0",
+    pages: [
+      { key: "general", title: "General", sections: [{ key: "main", title: "Main", settings: [{ key: "name", title: "Name", type: "text" }] }] },
+      {
+        label: "Administration",
+        pages: [
+          { key: "users", title: "Users", sections: [{ key: "mgmt", title: "Management", settings: [{ key: "role", title: "User Role", type: "text" }] }] },
+          { key: "billing", title: "Billing", sections: [{ key: "plan", title: "Plan", settings: [{ key: "plan-type", title: "Plan Type", type: "text" }] }] },
+        ],
+      },
+    ],
+  };
+
+  it("matches group label and includes all group pages", () => {
+    const result = searchSchema(groupSchema, "Administration");
+    expect(result.pageKeys.has("users")).toBe(true);
+    expect(result.pageKeys.has("billing")).toBe(true);
+    // Settings within those pages should also be included
+    expect(result.settingKeys.has("role")).toBe(true);
+    expect(result.settingKeys.has("plan-type")).toBe(true);
+  });
+
+  it("matches group label case-insensitively", () => {
+    const result = searchSchema(groupSchema, "admin");
+    expect(result.pageKeys.has("users")).toBe(true);
+    expect(result.pageKeys.has("billing")).toBe(true);
+  });
+
+  it("still matches individual page titles within groups", () => {
+    const result = searchSchema(groupSchema, "Users");
+    expect(result.pageKeys.has("users")).toBe(true);
+    expect(result.settingKeys.has("role")).toBe(true);
+    // Billing should not match
+    expect(result.pageKeys.has("billing")).toBe(false);
+  });
+
+  it("does not match non-existent group label", () => {
+    const result = searchSchema(groupSchema, "xyznonexistent");
+    expect(result.settingKeys.size).toBe(0);
+    expect(result.pageKeys.size).toBe(0);
+  });
+});

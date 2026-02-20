@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../shadcn-registry/src/settera";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -110,6 +111,21 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --animate-collapsible-down: collapsible-down 150ms ease-out;
+  --animate-collapsible-up: collapsible-up 150ms ease-out;
+}
+
+@keyframes collapsible-down {
+  from { height: 0; }
+  to { height: var(--radix-collapsible-content-height); }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); }
+  to { height: 0; }
 }
 
 @layer base {

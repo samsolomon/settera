@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { SetteraSchemaContextValue, SubpageState } from "@settera/react";
-import type { PageDefinition } from "@settera/schema";
+import type { PageDefinition, PageItem } from "@settera/schema";
+import { flattenPageItems } from "@settera/schema";
 
 export interface SetteraDeepLinkContextValue {
   getSettingUrl: (settingKey: string) => string;
 }
 
 function collectPageKeys(
-  pages: PageDefinition[],
+  items: PageItem[],
   acc = new Set<string>(),
 ): Set<string> {
+  const pages = flattenPageItems(items);
   for (const page of pages) {
     acc.add(page.key);
     if (page.pages && page.pages.length > 0) {

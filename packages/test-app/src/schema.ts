@@ -1,4 +1,4 @@
-import type { SetteraSchema } from "@settera/schema";
+import type { SetteraSchema, PageItem } from "@settera/schema";
 
 export const demoSchema: SetteraSchema = {
   version: "1.0",
@@ -496,7 +496,10 @@ export const demoSchema: SetteraSchema = {
       ],
     },
     {
-      key: "security",
+      label: "Organization",
+      pages: [
+        {
+          key: "security",
       title: "Security",
       icon: "shield",
       sections: [
@@ -1066,6 +1069,8 @@ export const demoSchema: SetteraSchema = {
         },
       ],
     },
+      ], // end Organization group pages
+    }, // end Organization group
     {
       key: "users",
       title: "Users",

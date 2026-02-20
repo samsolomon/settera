@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
-import { resolvePageKey } from "@settera/schema";
-import type { PageDefinition } from "@settera/schema";
+import { resolvePageKey, flattenPageItems } from "@settera/schema";
+import type { PageDefinition, PageItem } from "@settera/schema";
 import { SetteraSchemaContext } from "./context.js";
 
 // ---- Types ----
@@ -19,8 +19,8 @@ export interface SetteraNavigationContextValue {
   activePage: string;
   /** Set the active page by key */
   setActivePage: (key: string) => void;
-  /** The pages array from the schema */
-  pages: PageDefinition[];
+  /** The pages array from the schema (may contain PageGroup items) */
+  pages: PageItem[];
   /** Currently active subpage, or null if none */
   subpage: SubpageState | null;
   /** Open a subpage for the given setting key */
@@ -53,9 +53,10 @@ export function SetteraNavigation({ children }: SetteraNavigationProps) {
 
   const { schema } = schemaCtx;
 
-  const [activePage, setActivePageRaw] = useState<string>(
-    schema.pages[0] ? resolvePageKey(schema.pages[0]) : "",
-  );
+  const [activePage, setActivePageRaw] = useState<string>(() => {
+    const firstPage = flattenPageItems(schema.pages)[0];
+    return firstPage ? resolvePageKey(firstPage) : "";
+  });
 
   const [subpage, setSubpage] = useState<SubpageState | null>(null);
 

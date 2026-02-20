@@ -3,6 +3,7 @@
 import React, { useMemo, useContext, useRef, useCallback, useEffect, useState } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
+import { flattenPageItems } from "@settera/schema";
 import { SetteraNavigationProvider } from "./settera-navigation-provider";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { useSetteraSearch } from "./use-settera-search";
@@ -174,7 +175,7 @@ function SetteraLayoutInner({
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     if (!schemaCtx) return [];
-    const path = findPagePathByKey(schemaCtx.schema.pages, activePage) ?? [];
+    const path = findPagePathByKey(flattenPageItems(schemaCtx.schema.pages), activePage) ?? [];
     return path.map((page) => ({ key: page.key, title: page.title }));
   }, [schemaCtx, activePage]);
 

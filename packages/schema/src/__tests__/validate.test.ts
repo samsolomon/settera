@@ -2222,4 +2222,73 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "EMPTY_OPTIONS")).toBe(true);
     expect(errors.some((e) => e.path.includes("page.fields"))).toBe(true);
   });
+
+  // Page groups
+  it("accepts schema with page groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        { key: "general", title: "General" },
+        {
+          label: "Administration",
+          pages: [
+            { key: "users", title: "Users" },
+            { key: "billing", title: "Billing" },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("rejects page group without label", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        { key: "general", title: "General" },
+        {
+          label: "",
+          pages: [
+            { key: "users", title: "Users" },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD" && e.message.includes("group"))).toBe(true);
+  });
+
+  it("validates pages inside groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          label: "Admin",
+          pages: [
+            { key: "", title: "Missing Key" },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD" && e.message.includes("Page must have a key"))).toBe(true);
+  });
+
+  it("detects duplicate page keys across groups", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        { key: "users", title: "Users" },
+        {
+          label: "Admin",
+          pages: [
+            { key: "users", title: "Users Again" },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_KEY")).toBe(true);
+  });
 });

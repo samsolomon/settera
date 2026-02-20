@@ -10,8 +10,8 @@ import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { useRovingTabIndex } from "../hooks/useRovingTabIndex.js";
-import type { PageDefinition } from "@settera/schema";
-import { isFlattenedPage, resolvePageKey } from "@settera/schema";
+import type { PageDefinition, PageItem } from "@settera/schema";
+import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
 import { SetteraSearch } from "./SetteraSearch.js";
 import { BackButton } from "./SetteraPrimitives.js";
 
@@ -68,7 +68,8 @@ export function SetteraSidebar({
 
   // Auto-expand parent when a child page is active
   useEffect(() => {
-    for (const page of schema.pages) {
+    const allPages = flattenPageItems(schema.pages);
+    for (const page of allPages) {
       if (page.pages && !isFlattenedPage(page)) {
         const isChildActive = page.pages.some((c) => c.key === activePage);
         if (isChildActive && !expandedGroupsRef.current.has(page.key)) {
@@ -112,20 +113,31 @@ export function SetteraSidebar({
     [setActivePage, onNavigate],
   );
 
-  // Filter pages during search
-  const filterPages = useCallback(
-    (pages: PageDefinition[]): PageDefinition[] => {
-      if (!isSearching) return pages;
-      return pages.filter((page) => matchingPageKeys.has(page.key));
-    },
-    [isSearching, matchingPageKeys],
-  );
+  // Filter page items during search, preserving groups (with filtered pages inside)
+  const visiblePageItems: PageItem[] = useMemo(() => {
+    if (!isSearching) return schema.pages;
+    const result: PageItem[] = [];
+    for (const item of schema.pages) {
+      if (isPageGroup(item)) {
+        const filtered = item.pages.filter((p) => matchingPageKeys.has(p.key));
+        if (filtered.length > 0) {
+          result.push({ ...item, pages: filtered });
+        }
+      } else {
+        if (matchingPageKeys.has(item.key)) {
+          result.push(item);
+        }
+      }
+    }
+    return result;
+  }, [schema.pages, isSearching, matchingPageKeys]);
 
-  const visiblePages = filterPages(schema.pages);
+  const hasGroups = schema.pages.some(isPageGroup);
 
   // --- Keyboard navigation ---
 
   // Build flat list of visible items (respecting expand/collapse + search filter)
+  // Group labels are skipped — only pages participate in keyboard nav.
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
 
@@ -155,9 +167,13 @@ export function SetteraSidebar({
       }
     }
 
-    walk(schema.pages, 0, null);
+    // Unwrap groups to get flat page list for keyboard nav
+    const topLevelPages = flattenPageItems(
+      isSearching ? visiblePageItems : schema.pages,
+    );
+    walk(topLevelPages, 0, null);
     return items;
-  }, [schema.pages, expandedGroups, isSearching, matchingPageKeys]);
+  }, [schema.pages, visiblePageItems, expandedGroups, isSearching, matchingPageKeys]);
 
   const { focusedIndex, setFocusedIndex, getTabIndex, onKeyDown } =
     useRovingTabIndex({
@@ -336,40 +352,107 @@ export function SetteraSidebar({
 
       <SetteraSearch />
 
-      <div
-        aria-hidden="true"
-        style={{
-          fontSize: "11px",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color:
-            "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
-          fontWeight: 600,
-          padding: "2px 8px",
-        }}
-      >
-        Navigation
-      </div>
+      {hasGroups ? (
+        // Group-aware rendering: render each PageItem (group or page)
+        visiblePageItems.map((item, idx) => {
+          if (isPageGroup(item)) {
+            return (
+              <div key={`group-${idx}`}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    fontSize: "11px",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color:
+                      "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
+                    fontWeight: 600,
+                    padding: "2px 8px",
+                    marginTop: idx === 0 ? undefined : "var(--settera-sidebar-group-spacing, 12px)",
+                  }}
+                >
+                  {item.label}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+                  {item.pages.map((page) => (
+                    <SidebarItem
+                      key={page.key}
+                      page={page}
+                      depth={0}
+                      activePage={activePage}
+                      expandedGroups={expandedGroups}
+                      onPageClick={handlePageClick}
+                      onChildClick={handleChildClick}
+                      renderIcon={renderIcon}
+                      isSearching={isSearching}
+                      matchingPageKeys={matchingPageKeys}
+                      keyToIndex={keyToIndex}
+                      getTabIndex={getTabIndex}
+                      setButtonRef={setButtonRef}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          }
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
-        {visiblePages.map((page) => (
-          <SidebarItem
-            key={page.key}
-            page={page}
-            depth={0}
-            activePage={activePage}
-            expandedGroups={expandedGroups}
-            onPageClick={handlePageClick}
-            onChildClick={handleChildClick}
-            renderIcon={renderIcon}
-            isSearching={isSearching}
-            matchingPageKeys={matchingPageKeys}
-            keyToIndex={keyToIndex}
-            getTabIndex={getTabIndex}
-            setButtonRef={setButtonRef}
-          />
-        ))}
-      </div>
+          return (
+            <div key={item.key} style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+              <SidebarItem
+                page={item}
+                depth={0}
+                activePage={activePage}
+                expandedGroups={expandedGroups}
+                onPageClick={handlePageClick}
+                onChildClick={handleChildClick}
+                renderIcon={renderIcon}
+                isSearching={isSearching}
+                matchingPageKeys={matchingPageKeys}
+                keyToIndex={keyToIndex}
+                getTabIndex={getTabIndex}
+                setButtonRef={setButtonRef}
+              />
+            </div>
+          );
+        })
+      ) : (
+        // Legacy: flat page list with hardcoded "Navigation" label
+        <>
+          <div
+            aria-hidden="true"
+            style={{
+              fontSize: "11px",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color:
+                "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
+              fontWeight: 600,
+              padding: "2px 8px",
+            }}
+          >
+            Navigation
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+            {flattenPageItems(schema.pages).map((page) => (
+              <SidebarItem
+                key={page.key}
+                page={page}
+                depth={0}
+                activePage={activePage}
+                expandedGroups={expandedGroups}
+                onPageClick={handlePageClick}
+                onChildClick={handleChildClick}
+                renderIcon={renderIcon}
+                isSearching={isSearching}
+                matchingPageKeys={matchingPageKeys}
+                keyToIndex={keyToIndex}
+                getTabIndex={getTabIndex}
+                setButtonRef={setButtonRef}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {!hideFooterHints && <SidebarFooterHints />}
     </nav>
