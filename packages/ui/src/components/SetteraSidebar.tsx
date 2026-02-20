@@ -433,7 +433,7 @@ export function SetteraSidebar({
             Navigation
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
-            {flattenPageItems(schema.pages).map((page) => (
+            {flattenPageItems(visiblePageItems).map((page) => (
               <SidebarItem
                 key={page.key}
                 page={page}

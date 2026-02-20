@@ -19,6 +19,14 @@ export function SetteraSearch() {
       if (e.key === "Escape") {
         setQuery("");
       }
+      if (e.key === "ArrowDown") {
+        const sidebar = (e.target as HTMLElement).closest('[data-sidebar="sidebar"]');
+        const firstItem = sidebar?.querySelector<HTMLElement>('[data-sidebar="menu-button"]');
+        if (firstItem) {
+          e.preventDefault();
+          firstItem.focus();
+        }
+      }
     },
     [setQuery],
   );

@@ -3,7 +3,9 @@ import {
   SCHEMA_VERSION,
   getPageByKey,
   evaluateVisibility,
+  flattenPageItems,
   type PageDefinition,
+  type PageItem,
   type SettingDefinition,
   type CustomSetting,
   type CompoundFieldDefinition,
@@ -54,10 +56,11 @@ function readSystemColorMode(): ColorMode {
 }
 
 function flattenPages(
-  pages: PageDefinition[],
+  items: PageItem[],
   depth = 0,
   acc: Array<{ key: string; title: string; depth: number }> = [],
 ): Array<{ key: string; title: string; depth: number }> {
+  const pages = flattenPageItems(items);
   for (const page of pages) {
     acc.push({ key: page.key, title: page.title, depth });
     if (page.pages && page.pages.length > 0) {
@@ -740,7 +743,7 @@ function HeadlessView({
 
   const pageItems = useMemo(() => flattenPages(schema.pages), [schema.pages]);
   const activePageDef = useMemo(
-    () => getPageByKey(schema, activePage) ?? schema.pages[0],
+    () => getPageByKey(schema, activePage) ?? flattenPageItems(schema.pages)[0],
     [schema, activePage],
   );
   const visibleSettings = useMemo(() => {

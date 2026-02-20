@@ -451,16 +451,21 @@ function SidebarGroupContent({
   )
 }
 
-function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
+const SidebarMenu = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentPropsWithoutRef<"ul">
+>(({ className, ...props }, ref) => {
   return (
     <ul
+      ref={ref}
       data-slot="sidebar-menu"
       data-sidebar="menu"
       className={cn("flex w-full min-w-0 flex-col gap-1", className)}
       {...props}
     />
   )
-}
+})
+SidebarMenu.displayName = "SidebarMenu"
 
 function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
