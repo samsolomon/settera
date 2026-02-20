@@ -388,6 +388,7 @@ export function SetteraSidebar({
                           isActive={childIsActive}
                         >
                           <button
+                            className="w-full text-left"
                             ref={(el) =>
                               setButtonRef(childFlatIndex, el)
                             }
