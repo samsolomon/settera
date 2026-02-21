@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraSetting, useCompoundDraft, useSaveAndClose } from "@settera/react";
 import { token, type CompoundFieldDefinition } from "@settera/schema";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import {
   PrimitiveButton,
   SETTERA_SYSTEM_FONT,
@@ -136,6 +137,7 @@ function CompoundModal({
   error: string | null;
   isDisabled: boolean;
 }) {
+  const labels = useSetteraLabels();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { saveStatus } = useSetteraSetting(settingKey);
 
@@ -201,7 +203,7 @@ function CompoundModal({
               opacity: isDisabled ? token("disabled-opacity") : undefined,
             }}
           >
-            {definition.buttonLabel ?? `Edit ${definition.title}`}
+            {definition.buttonLabel ?? `${labels.edit} ${definition.title}`}
           </PrimitiveButton>
         </Dialog.Trigger>
         <Dialog.Portal>
@@ -214,7 +216,7 @@ function CompoundModal({
             }}
           />
           <Dialog.Content
-            aria-label={`Edit ${definition.title}`}
+            aria-label={`${labels.edit} ${definition.title}`}
             onEscapeKeyDown={(e) => e.stopPropagation()}
             style={{
               fontFamily: SETTERA_SYSTEM_FONT,
@@ -248,7 +250,7 @@ function CompoundModal({
                 color: token("description-color"),
               }}
             >
-              {definition.description ?? `Edit ${definition.title}.`}
+              {definition.description ?? `${labels.edit} ${definition.title}.`}
             </Dialog.Description>
             <CompoundFields
               settingKey={settingKey}
@@ -273,7 +275,7 @@ function CompoundModal({
                   cursor: isBusy ? "not-allowed" : "pointer",
                 }}
               >
-                Cancel
+                {labels.cancel}
               </PrimitiveButton>
               <PrimitiveButton
                 type="button"
@@ -285,7 +287,7 @@ function CompoundModal({
                   cursor: isBusy ? "not-allowed" : "pointer",
                 }}
               >
-                {isBusy ? "Saving\u2026" : "Save"}
+                {isBusy ? labels.saving : labels.save}
               </PrimitiveButton>
             </div>
           </Dialog.Content>
@@ -308,6 +310,7 @@ function CompoundPageButton({
   isDisabled: boolean;
   hasError: boolean;
 }) {
+  const labels = useSetteraLabels();
   const { openSubpage } = useSetteraNavigation();
 
   return (
@@ -320,13 +323,13 @@ function CompoundPageButton({
         type="button"
         onClick={() => openSubpage(settingKey)}
         disabled={isDisabled}
-        aria-label={`Open ${title}`}
+        aria-label={`${labels.open} ${title}`}
         style={{
           cursor: isDisabled ? "not-allowed" : "pointer",
           // Disabled opacity is handled by PrimitiveButton via the disabled prop.
         }}
       >
-        Open {title}
+        {labels.open} {title}
       </PrimitiveButton>
     </div>
   );

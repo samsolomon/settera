@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { token } from "@settera/schema";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
 
 const kbdStyle: React.CSSProperties = {
@@ -32,6 +33,7 @@ const kbdStyle: React.CSSProperties = {
  */
 export function SetteraSearch() {
   const { query, setQuery } = useSetteraSearch();
+  const labels = useSetteraLabels();
   const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -70,8 +72,8 @@ export function SetteraSearch() {
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        placeholder="Search settings…"
-        aria-label="Search settings"
+        placeholder={labels.searchPlaceholder}
+        aria-label={labels.searchPlaceholder}
         focusVisible={isFocused}
         style={{
           width: "100%",
@@ -93,7 +95,7 @@ export function SetteraSearch() {
           type="button"
           tone="default"
           onClick={() => setQuery("")}
-          aria-label="Clear search"
+          aria-label={labels.clearSearch}
           style={{
             position: "absolute",
             right: "6px",

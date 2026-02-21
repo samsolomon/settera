@@ -23,11 +23,24 @@ import {
   type SetteraCustomPageProps,
   type SetteraCustomSettingProps,
   type SetteraActionPageProps,
+  type SetteraLabels,
 } from "@settera/ui";
 import { demoSchema } from "./schema.js";
+import * as localeEn from "./locales/en.js";
+import * as localeEs from "./locales/es.js";
 
 type DemoMode = "schema" | "headless" | "ui";
 type ColorMode = "light" | "dark";
+
+interface LocaleBundle {
+  schema: import("@settera/schema").SetteraSchema;
+  labels: SetteraLabels;
+}
+
+const LOCALES: Record<string, LocaleBundle> = {
+  en: localeEn,
+  es: localeEs,
+};
 
 const DEMO_MODE_QUERY_PARAM = "demoMode";
 
@@ -1308,6 +1321,11 @@ export function App() {
     "profile.email": { address: "bob@example.com" },
   });
 
+  const language = typeof values["profile.language"] === "string" ? values["profile.language"] : "en";
+  const locale = useMemo(() => LOCALES[language] ?? LOCALES.en, [language]);
+  const activeSchema = locale.schema;
+  const activeLabels = locale.labels;
+
   const appThemeVars = useMemo<React.CSSProperties>(() => {
     const baseTheme: React.CSSProperties =
       colorMode === "dark"
@@ -1565,7 +1583,7 @@ export function App() {
       </header>
       <div style={{ flex: 1, overflow: "hidden" }}>
         <Settera
-          schema={demoSchema}
+          schema={activeSchema}
           values={values}
           onChange={handleChange}
           onAction={handleAction}
@@ -1573,6 +1591,7 @@ export function App() {
         >
           {mode === "ui" && (
             <SetteraLayout
+              labels={activeLabels}
               backToApp={{
                 label: "Back to app",
                 href: "/",

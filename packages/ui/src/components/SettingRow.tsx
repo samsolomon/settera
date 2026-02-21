@@ -9,6 +9,7 @@ import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
 import { token } from "@settera/schema";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";
 
@@ -26,6 +27,7 @@ export interface SettingRowProps {
 export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
   const navigationCtx = useContext(SetteraNavigationContext);
   const highlightedSettingKey = navigationCtx?.highlightedSettingKey ?? null;
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
@@ -145,7 +147,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                 type="button"
                 tabIndex={-1}
                 data-settera-copy-link
-                aria-label="Copy link to setting"
+                aria-label={labels.copyLink}
                 onClick={handleCopyLink}
                 onMouseEnter={() => setIsCopyHovered(true)}
                 onMouseLeave={() => setIsCopyHovered(false)}
@@ -202,38 +204,38 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
             )}
             {saveStatus === "saving" && (
               <span
-                aria-label="Saving"
+                aria-label={labels.saving}
                 style={{
                   fontSize: token("save-indicator-font-size"),
                   color: token("save-saving-color"),
                   fontWeight: 400,
                 }}
               >
-                Saving...
+                {labels.saving}
               </span>
             )}
             {saveStatus === "saved" && (
               <span
-                aria-label="Saved"
+                aria-label={labels.saved}
                 style={{
                   fontSize: token("save-indicator-font-size"),
                   color: token("save-saved-color"),
                   fontWeight: 400,
                 }}
               >
-                Saved
+                {labels.saved}
               </span>
             )}
             {saveStatus === "error" && (
               <span
-                aria-label="Save failed"
+                aria-label={labels.saveFailed}
                 style={{
                   fontSize: token("save-indicator-font-size"),
                   color: token("save-error-color"),
                   fontWeight: 400,
                 }}
               >
-                Save failed
+                {labels.saveFailed}
               </span>
             )}
           </div>

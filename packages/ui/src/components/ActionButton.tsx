@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ActionModalConfig, ActionPageConfig } from "@settera/schema";
 import { useSetteraAction, useFocusVisible } from "@settera/react";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { ActionModal } from "./ActionModal.js";
@@ -85,6 +86,7 @@ function ActionButtonSingle({
   onAction,
   isLoading,
 }: ActionButtonSingleProps) {
+  const labels = useSetteraLabels();
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
   const { openSubpage } = useSetteraNavigation();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -153,7 +155,7 @@ function ActionButtonSingle({
               : "pointer",
         }}
       >
-        {isLoading ? "Loading\u2026" : buttonLabel}
+        {isLoading ? labels.loading : buttonLabel}
       </PrimitiveButton>
 
       {isModalAction && hasModalConfig && (

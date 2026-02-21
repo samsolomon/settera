@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import * as RadixSelect from "@radix-ui/react-select";
 import { useSetteraSetting, useFocusVisible } from "@settera/react";
 import { token } from "@settera/schema";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { inputBaseStyle, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface SelectProps {
@@ -18,6 +19,7 @@ const EMPTY_OPTION_VALUE_BASE = "__settera_empty_option__";
 export function Select({ settingKey }: SelectProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
 
   const isDangerous =
@@ -95,7 +97,7 @@ export function Select({ settingKey }: SelectProps) {
           gap: "8px",
         }}
       >
-        <RadixSelect.Value placeholder={isRequired ? "" : "Select…"} />
+        <RadixSelect.Value placeholder={isRequired ? "" : labels.select} />
         <RadixSelect.Icon
           style={{
             color: token("select-icon-color"),
@@ -151,7 +153,7 @@ export function Select({ settingKey }: SelectProps) {
                   userSelect: "none",
                 }}
               >
-                <RadixSelect.ItemText>Select…</RadixSelect.ItemText>
+                <RadixSelect.ItemText>{labels.select}</RadixSelect.ItemText>
               </RadixSelect.Item>
             )}
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting, useBufferedInput, isObjectRecord } from "@settera/react";
 import { token, type RepeatableFieldDefinition } from "@settera/schema";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import {
   PrimitiveButton,
   PrimitiveInput,
@@ -90,6 +91,8 @@ function ListTextItem({
     [inputProps, onDraftChange, index],
   );
 
+  const labels = useSetteraLabels();
+
   return (
     <div style={inlineRowStyle}>
       <PrimitiveInput
@@ -111,7 +114,7 @@ function ListTextItem({
           opacity: disabled || isFirst ? token("disabled-opacity") : undefined,
         }}
       >
-        Up
+        {labels.up}
       </PrimitiveButton>
 
       <PrimitiveButton
@@ -125,7 +128,7 @@ function ListTextItem({
           opacity: disabled || isLast ? token("disabled-opacity") : undefined,
         }}
       >
-        Down
+        {labels.down}
       </PrimitiveButton>
 
       <PrimitiveButton
@@ -139,7 +142,7 @@ function ListTextItem({
           opacity: disabled ? token("disabled-opacity") : undefined,
         }}
       >
-        Remove
+        {labels.remove}
       </PrimitiveButton>
     </div>
   );
@@ -175,6 +178,7 @@ function RepeatableCompoundFieldControl({
 export function RepeatableInput({ settingKey }: RepeatableInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
   const isRepeatable = definition.type === "repeatable";
   const itemType = isRepeatable ? definition.itemType : undefined;
   const maxItems = isRepeatable ? definition.validation?.maxItems : undefined;
@@ -394,7 +398,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 opacity: isDisabled || index === 0 ? token("disabled-opacity") : undefined,
               }}
             >
-              Up
+              {labels.up}
             </PrimitiveButton>
 
             <PrimitiveButton
@@ -413,7 +417,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                   isDisabled || index === compoundItems.length - 1 ? token("disabled-opacity") : undefined,
               }}
             >
-              Down
+              {labels.down}
             </PrimitiveButton>
 
             <PrimitiveButton
@@ -428,7 +432,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 opacity: isDisabled ? token("disabled-opacity") : undefined,
               }}
             >
-              Remove
+              {labels.remove}
             </PrimitiveButton>
           </div>
         ))}
@@ -445,7 +449,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           opacity: isDisabled || isAtMax ? token("disabled-opacity") : undefined,
         }}
       >
-        Add item
+        {labels.addItem}
       </PrimitiveButton>
     </div>
   );

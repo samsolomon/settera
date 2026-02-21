@@ -79,6 +79,19 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **No own `node_modules`**: Registry source files live in the consumer's project. They rely on the consumer's dependencies for React, Radix, Tailwind, etc.
 - **React 18 compat**: shadcn generates React 19-style components (no `forwardRef`). When the consumer uses React 18 and passes refs, wrap with `React.forwardRef` (see `dialog.tsx`, `button.tsx` in shadcn-test-app for examples).
 
+### Localization
+
+Both UI packages support localization of all chrome strings (save indicators, button labels, search placeholders, etc.) via a labels system.
+
+- **`SetteraLabels` interface**: All optional string fields — consumers override only what they need, defaults are English.
+- **`mergeLabels(overrides?)`**: Merges partial overrides into `DEFAULT_LABELS`. Returns `Required<SetteraLabels>`.
+- **`useSetteraLabels()`**: Hook to read resolved labels from context.
+- **`SetteraLabelsContext`**: React context provided by `SetteraLayout` (UI package) or the shadcn layout.
+- **`labels` prop**: `SetteraLayout` accepts an optional `labels?: SetteraLabels` prop that wraps children in `SetteraLabelsContext.Provider`.
+- **Template strings**: `typeToConfirm` uses `{text}` as a placeholder (e.g. `"Type {text} to confirm"`) — components split on `{text}` to insert the bolded value.
+- **Schema strings**: Page titles, section titles, setting titles/descriptions, option labels, and validation messages live in the schema. To localize, pass a translated schema — no framework support needed.
+- **Parity**: Both `packages/ui` and `packages/shadcn-registry` share the same label keys. New keys added to one should be added to both.
+
 ## Testing Conventions
 
 - **Framework**: Vitest with `globals: true`. Schema tests use `node` environment; react/UI tests use `jsdom`.

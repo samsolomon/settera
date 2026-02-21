@@ -361,7 +361,7 @@ describe("SetteraLayout", () => {
 
     const backLink = screen.getByRole("link", { name: "Back to app" });
     const searchbox = screen.getByRole("searchbox", {
-      name: "Search settings",
+      name: "Search settings\u2026",
     });
     expect(
       backLink.compareDocumentPosition(searchbox) &

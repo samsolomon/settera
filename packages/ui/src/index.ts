@@ -59,6 +59,15 @@ export { ConfirmDialog } from "./components/ConfirmDialog.js";
 export { SetteraDeepLinkContext } from "./contexts/SetteraDeepLinkContext.js";
 export type { SetteraDeepLinkContextValue } from "./contexts/SetteraDeepLinkContext.js";
 
+// Labels / localization
+export { SetteraLabelsContext } from "./contexts/SetteraLabelsContext.js";
+export type { SetteraLabels } from "./contexts/SetteraLabelsContext.js";
+export {
+  useSetteraLabels,
+  mergeLabels,
+  DEFAULT_LABELS,
+} from "./contexts/SetteraLabelsContext.js";
+
 // Utilities (re-exported from @settera/react)
 export { parseDescriptionLinks } from "@settera/react";
 

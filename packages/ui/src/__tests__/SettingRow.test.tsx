@@ -281,7 +281,7 @@ describe("save status indicator", () => {
 
   it("shows no indicator when idle", () => {
     renderRow("toggle", { toggle: false });
-    expect(screen.queryByLabelText("Saving")).toBeNull();
+    expect(screen.queryByLabelText("Saving\u2026")).toBeNull();
     expect(screen.queryByLabelText("Saved")).toBeNull();
     expect(screen.queryByLabelText("Save failed")).toBeNull();
   });
@@ -297,7 +297,7 @@ describe("save status indicator", () => {
       </Settera>,
     );
     act(() => screen.getByText("save-setting").click());
-    expect(screen.getByLabelText("Saving")).toBeDefined();
+    expect(screen.getByLabelText("Saving\u2026")).toBeDefined();
     await act(async () => resolveSave());
   });
 

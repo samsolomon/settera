@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { token, type ActionPageConfig } from "@settera/schema";
 import { useSetteraAction, useActionModalDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
 import { ActionModalField } from "./ActionModalField.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { descriptionTextStyle } from "./SetteraFieldPrimitives.js";
 
@@ -28,6 +29,7 @@ export function ActionPageContent({
   title: parentTitle,
   onBack,
 }: ActionPageContentProps) {
+  const labels = useSetteraLabels();
   const { onAction, isLoading, items } = useSetteraAction(settingKey);
 
   // For multi-button items, find the matching item's onAction/isLoading
@@ -127,7 +129,7 @@ export function ActionPageContent({
             cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          {pageConfig.cancelLabel ?? "Cancel"}
+          {pageConfig.cancelLabel ?? labels.cancel}
         </PrimitiveButton>
 
         <PrimitiveButton
@@ -140,7 +142,7 @@ export function ActionPageContent({
             cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          {isBusy ? "Loading\u2026" : (pageConfig.submitLabel ?? "Submit")}
+          {isBusy ? labels.loading : (pageConfig.submitLabel ?? labels.submit)}
         </PrimitiveButton>
       </div>
     </div>

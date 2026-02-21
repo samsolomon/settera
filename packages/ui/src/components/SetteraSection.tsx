@@ -3,6 +3,7 @@ import { SetteraSchemaContext, useSettera, parseDescriptionLinks } from "@setter
 import { evaluateVisibility, token } from "@settera/schema";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
@@ -33,6 +34,7 @@ export function SetteraSection({
   customSettings,
 }: SetteraSectionProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
+  const labels = useSetteraLabels();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
   const { values } = useSettera();
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
@@ -141,7 +143,7 @@ export function SetteraSection({
               type="button"
               tabIndex={-1}
               data-settera-copy-link
-              aria-label="Copy link to section"
+              aria-label={labels.copyLinkToSection}
               onClick={handleCopyLink}
               onMouseEnter={() => setIsCopyHovered(true)}
               onMouseLeave={() => setIsCopyHovered(false)}
@@ -201,7 +203,7 @@ export function SetteraSection({
           <PrimitiveButton
             type="button"
             aria-label={
-              isEffectivelyCollapsed ? "Expand section" : "Collapse section"
+              isEffectivelyCollapsed ? labels.expandSection : labels.collapseSection
             }
             aria-expanded={!isEffectivelyCollapsed}
             aria-controls={sectionContentId}
@@ -215,7 +217,7 @@ export function SetteraSection({
               padding: "2px 4px",
             }}
           >
-            {isEffectivelyCollapsed ? "Expand" : "Collapse"}
+            {isEffectivelyCollapsed ? labels.expand : labels.collapse}
           </PrimitiveButton>
         )}
       </div>

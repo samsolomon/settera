@@ -3,6 +3,7 @@ import { SetteraSchemaContext, useSetteraSetting, useCompoundDraft, useSaveAndCl
 import { token, type ActionSetting, type ActionPageConfig, type CompoundFieldDefinition } from "@settera/schema";
 import { ActionPageContent } from "./ActionPageContent.js";
 import { CompoundFields } from "./CompoundInput.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import {
   mutedMessageStyle,
@@ -119,6 +120,7 @@ function CompoundSubpage({
   };
   onBack: () => void;
 }) {
+  const labels = useSetteraLabels();
   const { value, setValue, validate, saveStatus } =
     useSetteraSetting(settingKey);
 
@@ -192,7 +194,7 @@ function CompoundSubpage({
             cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          Cancel
+          {labels.cancel}
         </PrimitiveButton>
 
         <PrimitiveButton
@@ -205,7 +207,7 @@ function CompoundSubpage({
             cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >
-          {isBusy ? "Saving\u2026" : "Save"}
+          {isBusy ? labels.saving : labels.save}
         </PrimitiveButton>
       </div>
     </div>

@@ -47,7 +47,7 @@ describe("mergeLabels", () => {
 describe("useSetteraLabels", () => {
   it("returns default labels from context", () => {
     render(<LabelReader labelKey="saving" />);
-    expect(screen.getByTestId("label")).toHaveTextContent("Saving\u2026");
+    expect(screen.getByTestId("label").textContent).toBe("Saving\u2026");
   });
 
   it("returns overridden labels from provider", () => {
@@ -57,6 +57,6 @@ describe("useSetteraLabels", () => {
         <LabelReader labelKey="saving" />
       </SetteraLabelsContext.Provider>,
     );
-    expect(screen.getByTestId("label")).toHaveTextContent("Guardando\u2026");
+    expect(screen.getByTestId("label").textContent).toBe("Guardando\u2026");
   });
 });

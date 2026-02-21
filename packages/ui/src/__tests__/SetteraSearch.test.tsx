@@ -48,7 +48,7 @@ describe("SetteraSearch", () => {
 
   it("has an aria-label", () => {
     renderSearch();
-    expect(screen.getByLabelText("Search settings")).toBeDefined();
+    expect(screen.getByLabelText("Search settings\u2026")).toBeDefined();
   });
 
   it("updates value on type", async () => {

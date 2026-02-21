@@ -4,6 +4,7 @@ import type { ActionModalConfig } from "@settera/schema";
 import { token } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "@settera/react";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface ActionModalProps {
@@ -23,6 +24,7 @@ export function ActionModal({
   onOpenChange,
   onSubmit,
 }: ActionModalProps) {
+  const labels = useSetteraLabels();
   const contentRef = useRef<HTMLDivElement>(null);
   const { draftValues, setField } = useActionModalDraft(
     modalConfig.fields,
@@ -109,7 +111,7 @@ export function ActionModal({
                 color: token("description-color"),
               }}
             >
-              {modalConfig.description ?? "Review the fields and submit."}
+              {modalConfig.description ?? labels.reviewFieldsAndSubmit}
             </Dialog.Description>
           </div>
 
@@ -158,7 +160,7 @@ export function ActionModal({
                   cursor: isLoading ? "not-allowed" : "pointer",
                 }}
               >
-                {modalConfig.cancelLabel ?? "Cancel"}
+                {modalConfig.cancelLabel ?? labels.cancel}
               </PrimitiveButton>
             </Dialog.Close>
 
@@ -173,7 +175,7 @@ export function ActionModal({
                 cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >
-              {isLoading ? "Loading\u2026" : (modalConfig.submitLabel ?? "Submit")}
+              {isLoading ? labels.loading : (modalConfig.submitLabel ?? labels.submit)}
             </PrimitiveButton>
           </div>
         </Dialog.Content>

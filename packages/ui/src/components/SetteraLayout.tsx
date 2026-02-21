@@ -14,6 +14,8 @@ import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
+import type { SetteraLabels } from "../contexts/SetteraLabelsContext.js";
+import { SetteraLabelsContext, mergeLabels, useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 
 export interface SetteraBackToAppConfig {
   label?: string;
@@ -44,6 +46,8 @@ export interface SetteraLayoutProps {
   onPageChange?: (key: string) => void;
   /** Returns path for a page key; enables `<a href>` in sidebar and path-based deep links. */
   getPageUrl?: (pageKey: string) => string;
+  /** Override UI chrome strings for localization. Merged with DEFAULT_LABELS. */
+  labels?: SetteraLabels;
 }
 
 interface BreadcrumbItem {
@@ -76,14 +80,18 @@ function findPagePathByKey(
  * without extra setup.
  */
 export function SetteraLayout(props: SetteraLayoutProps) {
+  const resolvedLabels = useMemo(() => mergeLabels(props.labels), [props.labels]);
+
   return (
-    <SetteraNavigationProvider
-      activePage={props.activePage}
-      onPageChange={props.onPageChange}
-      getPageUrl={props.getPageUrl}
-    >
-      <SetteraLayoutInner {...props} />
-    </SetteraNavigationProvider>
+    <SetteraLabelsContext.Provider value={resolvedLabels}>
+      <SetteraNavigationProvider
+        activePage={props.activePage}
+        onPageChange={props.onPageChange}
+        getPageUrl={props.getPageUrl}
+      >
+        <SetteraLayoutInner {...props} />
+      </SetteraNavigationProvider>
+    </SetteraLabelsContext.Provider>
   );
 }
 
@@ -102,6 +110,7 @@ function SetteraLayoutInner({
   customActionPages,
   activeSettingQueryParam = "setting",
 }: SetteraLayoutProps) {
+  const labels = useSetteraLabels();
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const mobileDrawerId = useId();
@@ -318,7 +327,7 @@ function SetteraLayoutInner({
             <button
               ref={menuButtonRef}
               type="button"
-              aria-label="Open navigation"
+              aria-label={labels.openNavigation}
               aria-expanded={isMobileNavOpen}
               aria-controls={mobileDrawerId}
               onClick={openMobileNav}

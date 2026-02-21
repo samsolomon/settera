@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { token } from "@settera/schema";
 import { useSetteraConfirm } from "@settera/react";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import { PrimitiveButton, PrimitiveInput, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 /**
@@ -11,6 +12,7 @@ import { PrimitiveButton, PrimitiveInput, SETTERA_SYSTEM_FONT } from "./SetteraP
  */
 export function ConfirmDialog() {
   const { pendingConfirm, resolveConfirm } = useSetteraConfirm();
+  const labels = useSetteraLabels();
   const [inputValue, setInputValue] = useState("");
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -39,9 +41,9 @@ export function ConfirmDialog() {
   if (!pendingConfirm) return null;
 
   const { config, dangerous } = pendingConfirm;
-  const title = config.title ?? "Confirm";
-  const confirmLabel = config.confirmLabel ?? "Confirm";
-  const cancelLabel = config.cancelLabel ?? "Cancel";
+  const title = config.title ?? labels.confirm;
+  const confirmLabel = config.confirmLabel ?? labels.confirm;
+  const cancelLabel = config.cancelLabel ?? labels.cancel;
   const requireText = config.requireText;
   const confirmDisabled = requireText ? inputValue !== requireText : false;
 
@@ -115,13 +117,13 @@ export function ConfirmDialog() {
                   marginBottom: "4px",
                 }}
               >
-                Type <strong>{requireText}</strong> to confirm
+                {labels.typeToConfirm.split("{text}")[0]}<strong>{requireText}</strong>{labels.typeToConfirm.split("{text}")[1]}
               </label>
               <PrimitiveInput
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                aria-label={`Type ${requireText} to confirm`}
+                aria-label={labels.typeToConfirm.replace("{text}", requireText)}
                 style={{
                   width: "100%",
                   padding: "8px 12px",

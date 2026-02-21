@@ -5,6 +5,7 @@ import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { token, type PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
+import { useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
 import {
   mutedMessageStyle,
   descriptionTextStyle,
@@ -44,6 +45,8 @@ export function SetteraPage({
   const { activePage, subpage, closeSubpage } = useSetteraNavigation();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
+  const labels = useSetteraLabels();
+
   if (!schemaCtx) {
     throw new Error("SetteraPage must be used within a Settera component.");
   }
@@ -60,7 +63,7 @@ export function SetteraPage({
     return (
       <div>
         <BackButton onClick={closeSubpage}>
-          {returnPage?.title ?? "Back"}
+          {returnPage?.title ?? labels.back}
         </BackButton>
         <div style={{ marginTop: "12px" }}>
           <SubpageContent
