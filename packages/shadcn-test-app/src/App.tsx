@@ -6,6 +6,7 @@ import { SetteraLayout as UiSetteraLayout } from "@settera/ui";
 import { demoSchema } from "../../test-app/src/schema.js";
 import {
   UsersPage,
+  ConnectedAccountsPage,
   ProfilePictureSetting,
   ThemePickerSetting,
   AdvancedExportPage,
@@ -15,6 +16,7 @@ import { getSetteraThemeVars } from "./ui-theme.js";
 import {
   BellIcon,
   CreditCardIcon,
+  SquareArrowUpRightIcon,
   PaintbrushIcon,
   PaletteIcon,
   ShieldIcon,
@@ -33,6 +35,7 @@ const ICON_MAP: Record<string, ReactNode> = {
   paintbrush: <PaintbrushIcon className="size-4" />,
   palette: <PaletteIcon className="size-4" />,
   "credit-card": <CreditCardIcon className="size-4" />,
+  link: <SquareArrowUpRightIcon className="size-4" />,
 };
 
 function renderIcon(name: string): ReactNode {
@@ -240,7 +243,7 @@ export function App() {
                 href: "/",
               }}
               renderIcon={renderIcon}
-              customPages={{ usersPage: UsersPage }}
+              customPages={{ usersPage: UsersPage, connectedAccountsPage: ConnectedAccountsPage }}
               customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />

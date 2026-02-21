@@ -372,6 +372,14 @@ export const demoSchema: SetteraSchema = {
         },
       ],
     },
+    {
+      key: "connectedAccounts",
+      title: "Connected accounts",
+      description: "Connect your user accounts to sync attribution of your actions between apps.",
+      icon: "link",
+      mode: "custom",
+      renderer: "connectedAccountsPage",
+    },
       ],
     },
     {
