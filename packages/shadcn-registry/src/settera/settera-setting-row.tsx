@@ -120,7 +120,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                 {showCopyButton && (
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="icon-xs"
                     tabIndex={-1}
                     data-settera-copy-link="true"

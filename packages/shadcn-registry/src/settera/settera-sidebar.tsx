@@ -444,7 +444,7 @@ export function SetteraSidebar({
       <SidebarHeader>
         {backToApp && (
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={backToApp.onClick}
             asChild={!backToApp.onClick && backToApp.href ? true : undefined}
