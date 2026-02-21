@@ -9,47 +9,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useEmptyOptionValue } from "./settera-select-utils";
 import { useSetteraLabels } from "./settera-labels";
 
-const INPUT_CLASS =
-  "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+// ---- Shared hook ----
 
-export interface SetteraSearchableSelectProps {
-  settingKey: string;
-}
-
-export function SetteraSearchableSelect({
-  settingKey,
-}: SetteraSearchableSelectProps) {
+function useSearchableSelectState(
+  options: SelectOption[],
+  selectedValue: string,
+  emptyOptionValue: string,
+  isRequired: boolean | undefined,
+  onSelect: (value: string) => void,
+) {
   const labels = useSetteraLabels();
-  const { value, setValue, error, definition, validate } =
-    useSetteraSetting(settingKey);
-
-  const isDangerous =
-    "dangerous" in definition && Boolean(definition.dangerous);
-  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
-  const options = definition.type === "select" ? definition.options : [];
-  const isRequired =
-    definition.type === "select" && definition.validation?.required;
-  const selectedValue = typeof value === "string" ? value : "";
-
-  const emptyOptionValue = useEmptyOptionValue(options);
-  const hasError = error !== null;
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [highlightIndex, setHighlightIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Build the full option list (including empty option for non-required)
   const allOptions: SelectOption[] = isRequired
     ? options
     : [{ value: emptyOptionValue, label: labels.select }, ...options];
 
-  // Filter options by search query
   const filteredOptions = search
     ? allOptions.filter((opt) => {
         if (opt.value === emptyOptionValue) return false;
@@ -62,10 +47,10 @@ export function SetteraSearchableSelect({
       })
     : allOptions;
 
-  // Reset highlight when filtered list changes
+  // Reset highlight when search query changes
   useEffect(() => {
     setHighlightIndex(0);
-  }, [filteredOptions.length]);
+  }, [search]);
 
   // Scroll highlighted item into view
   useEffect(() => {
@@ -81,12 +66,11 @@ export function SetteraSearchableSelect({
   const handleSelect = useCallback(
     (optionValue: string) => {
       const resolved = optionValue === emptyOptionValue ? "" : optionValue;
-      setValue(resolved);
-      validate(resolved);
+      onSelect(resolved);
       setOpen(false);
       setSearch("");
     },
-    [setValue, validate, emptyOptionValue],
+    [onSelect, emptyOptionValue],
   );
 
   const handleKeyDown = useCallback(
@@ -111,34 +95,185 @@ export function SetteraSearchableSelect({
     [filteredOptions, highlightIndex, handleSelect],
   );
 
-  const handleOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      setOpen(nextOpen);
-      if (nextOpen) {
-        setSearch("");
-        setHighlightIndex(0);
-        // Focus input after popover renders
-        requestAnimationFrame(() => {
-          inputRef.current?.focus();
-        });
-      }
-    },
-    [],
-  );
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) {
+      setSearch("");
+      setHighlightIndex(0);
+    }
+  };
 
-  // Resolve display label for trigger
+  const focusInput = (e: Event) => {
+    e.preventDefault();
+    contentRef.current?.querySelector("input")?.focus();
+  };
+
   const selectedLabel =
     options.find((opt) => opt.value === selectedValue)?.label ?? "";
 
+  return {
+    open,
+    search,
+    setSearch,
+    highlightIndex,
+    setHighlightIndex,
+    contentRef,
+    listRef,
+    allOptions,
+    filteredOptions,
+    emptyOptionValue,
+    selectedLabel,
+    labels,
+    handleSelect,
+    handleKeyDown,
+    handleOpenChange,
+    focusInput,
+  };
+}
+
+// ---- Shared popover body ----
+
+function SearchableSelectPopoverBody({
+  search,
+  setSearch,
+  highlightIndex,
+  setHighlightIndex,
+  contentRef,
+  listRef,
+  filteredOptions,
+  emptyOptionValue,
+  selectedValue,
+  labels,
+  listboxLabel,
+  handleSelect,
+  handleKeyDown,
+}: {
+  search: string;
+  setSearch: (v: string) => void;
+  highlightIndex: number;
+  setHighlightIndex: (i: number) => void;
+  contentRef: React.Ref<HTMLDivElement>;
+  listRef: React.Ref<HTMLDivElement>;
+  filteredOptions: SelectOption[];
+  emptyOptionValue: string;
+  selectedValue: string;
+  labels: ReturnType<typeof useSetteraLabels>;
+  listboxLabel: string | undefined;
+  handleSelect: (v: string) => void;
+  handleKeyDown: (e: React.KeyboardEvent) => void;
+}) {
   return (
-    <Popover open={open} onOpenChange={handleOpenChange} modal>
+    <div ref={contentRef} className="flex flex-col" onKeyDown={handleKeyDown}>
+      <div className="p-2">
+        <Input
+          value={search}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setSearch(e.target.value)
+          }
+          placeholder={labels.searchSelectPlaceholder}
+          className="h-8"
+          aria-label={labels.searchSelectPlaceholder}
+        />
+      </div>
+      <div
+        ref={listRef}
+        role="listbox"
+        aria-label={listboxLabel}
+        className="max-h-60 overflow-y-auto p-1"
+      >
+        {filteredOptions.length === 0 ? (
+          <div className="text-muted-foreground px-2 py-6 text-center text-sm">
+            {labels.noResults}
+          </div>
+        ) : (
+          filteredOptions.map((opt, index) => {
+            const isSelected =
+              opt.value === emptyOptionValue
+                ? !selectedValue
+                : opt.value === selectedValue;
+            const isHighlighted = index === highlightIndex;
+            const isEmpty = opt.value === emptyOptionValue;
+            return (
+              <div
+                key={opt.value}
+                role="option"
+                aria-selected={isSelected}
+                aria-label={opt.label}
+                data-highlighted={isHighlighted || undefined}
+                className={cn(
+                  "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none",
+                  isHighlighted && "bg-accent text-accent-foreground",
+                  isEmpty && "text-muted-foreground",
+                )}
+                onMouseEnter={() => setHighlightIndex(index)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSelect(opt.value);
+                }}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && (
+                  <span className="absolute right-2 flex size-3.5 items-center justify-center">
+                    <CheckIcon className="size-4" />
+                  </span>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Top-level searchable select (uses useSetteraSetting) ----
+
+export interface SetteraSearchableSelectProps {
+  settingKey: string;
+}
+
+export function SetteraSearchableSelect({
+  settingKey,
+}: SetteraSearchableSelectProps) {
+  const { value, setValue, error, definition, validate } =
+    useSetteraSetting(settingKey);
+
+  const isDangerous =
+    "dangerous" in definition && Boolean(definition.dangerous);
+  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
+  const options = definition.type === "select" ? definition.options : [];
+  const isRequired =
+    definition.type === "select" && definition.validation?.required;
+  const selectedValue = typeof value === "string" ? value : "";
+
+  const rawEmptyOptionValue = useEmptyOptionValue(options);
+  const hasError = error !== null;
+
+  const onSelect = useCallback(
+    (resolved: string) => {
+      setValue(resolved);
+      validate(resolved);
+    },
+    [setValue, validate],
+  );
+
+  const state = useSearchableSelectState(
+    options,
+    selectedValue,
+    rawEmptyOptionValue,
+    isRequired,
+    onSelect,
+  );
+
+  return (
+    <Popover open={state.open} onOpenChange={state.handleOpenChange} modal>
       <PopoverTrigger asChild disabled={isDisabled}>
         <button
           type="button"
           role="combobox"
-          aria-expanded={open}
+          aria-expanded={state.open}
           aria-label={definition.title}
-          aria-invalid={hasError || undefined}
+          aria-invalid={hasError}
           aria-describedby={
             hasError ? `settera-error-${settingKey}` : undefined
           }
@@ -150,11 +285,11 @@ export function SetteraSearchableSelect({
           )}
         >
           <span className="truncate">
-            {selectedLabel || (
+            {state.selectedLabel || (
               <span className="text-muted-foreground">
                 {definition.type === "select"
-                  ? definition.placeholder || labels.select
-                  : labels.select}
+                  ? definition.placeholder || state.labels.select
+                  : state.labels.select}
               </span>
             )}
           </span>
@@ -164,79 +299,30 @@ export function SetteraSearchableSelect({
       <PopoverContent
         className="w-[var(--radix-popover-trigger-width)] p-0"
         align="start"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          inputRef.current?.focus();
-        }}
+        onOpenAutoFocus={state.focusInput}
       >
-        <div className="flex flex-col" onKeyDown={handleKeyDown}>
-          <div className="p-2">
-            <input
-              ref={inputRef}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={labels.searchSelectPlaceholder}
-              className={cn(INPUT_CLASS, "h-8")}
-              aria-label={labels.searchSelectPlaceholder}
-            />
-          </div>
-          <div
-            ref={listRef}
-            role="listbox"
-            aria-label={definition.title}
-            className="max-h-60 overflow-y-auto p-1"
-          >
-            {filteredOptions.length === 0 ? (
-              <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                {labels.noResults}
-              </div>
-            ) : (
-              filteredOptions.map((opt, index) => {
-                const isSelected =
-                  opt.value === emptyOptionValue
-                    ? !selectedValue
-                    : opt.value === selectedValue;
-                const isHighlighted = index === highlightIndex;
-                const isEmpty = opt.value === emptyOptionValue;
-                return (
-                  <div
-                    key={opt.value}
-                    role="option"
-                    aria-selected={isSelected}
-                    aria-label={opt.label}
-                    data-highlighted={isHighlighted || undefined}
-                    className={cn(
-                      "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none",
-                      isHighlighted && "bg-accent text-accent-foreground",
-                      isEmpty && "text-muted-foreground",
-                    )}
-                    onMouseEnter={() => setHighlightIndex(index)}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelect(opt.value);
-                    }}
-                  >
-                    <span className="truncate">{opt.label}</span>
-                    {isSelected && (
-                      <span className="absolute right-2 flex size-3.5 items-center justify-center">
-                        <CheckIcon className="size-4" />
-                      </span>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        <SearchableSelectPopoverBody
+          search={state.search}
+          setSearch={state.setSearch}
+          highlightIndex={state.highlightIndex}
+          setHighlightIndex={state.setHighlightIndex}
+          contentRef={state.contentRef}
+          listRef={state.listRef}
+          filteredOptions={state.filteredOptions}
+          emptyOptionValue={state.emptyOptionValue}
+          selectedValue={selectedValue}
+          labels={state.labels}
+          listboxLabel={definition.title}
+          handleSelect={state.handleSelect}
+          handleKeyDown={state.handleKeyDown}
+        />
       </PopoverContent>
     </Popover>
   );
 }
 
-/**
- * Searchable select for use inside compound field controls.
- * Same UI as SetteraSearchableSelect but works with raw value/onChange props.
- */
+// ---- Field control searchable select (for compound fields) ----
+
 export function FieldControlSearchableSelect({
   field,
   value,
@@ -246,7 +332,12 @@ export function FieldControlSearchableSelect({
   disabled,
   className,
 }: {
-  field: { options: SelectOption[]; placeholder?: string; searchable?: boolean; validation?: { required?: boolean } };
+  field: {
+    options: SelectOption[];
+    placeholder?: string;
+    searchable?: boolean;
+    validation?: { required?: boolean };
+  };
   value: unknown;
   onChange: (nextValue: unknown) => void;
   fieldId?: string;
@@ -254,106 +345,35 @@ export function FieldControlSearchableSelect({
   disabled?: boolean;
   className?: string;
 }) {
-  const labels = useSetteraLabels();
   const options = field.options;
   const isRequired = field.validation?.required;
   const selectedValue = typeof value === "string" ? value : "";
 
-  const emptyOptionValue = useEmptyOptionValue(options);
+  const rawEmptyOptionValue = useEmptyOptionValue(options);
 
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [highlightIndex, setHighlightIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const allOptions: SelectOption[] = isRequired
-    ? options
-    : [{ value: emptyOptionValue, label: labels.select }, ...options];
-
-  const filteredOptions = search
-    ? allOptions.filter((opt) => {
-        if (opt.value === emptyOptionValue) return false;
-        const query = search.toLowerCase();
-        return (
-          opt.label.toLowerCase().includes(query) ||
-          (opt.description && opt.description.toLowerCase().includes(query)) ||
-          (opt.group && opt.group.toLowerCase().includes(query))
-        );
-      })
-    : allOptions;
-
-  useEffect(() => {
-    setHighlightIndex(0);
-  }, [filteredOptions.length]);
-
-  useEffect(() => {
-    if (!listRef.current) return;
-    const highlighted = listRef.current.querySelector(
-      '[data-highlighted="true"]',
-    );
-    if (highlighted) {
-      highlighted.scrollIntoView({ block: "nearest" });
-    }
-  }, [highlightIndex]);
-
-  const handleSelect = useCallback(
-    (optionValue: string) => {
-      const resolved = optionValue === emptyOptionValue ? "" : optionValue;
+  const onSelect = useCallback(
+    (resolved: string) => {
       onChange(resolved);
-      setOpen(false);
-      setSearch("");
     },
-    [onChange, emptyOptionValue],
+    [onChange],
   );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setHighlightIndex((i) => Math.min(i + 1, filteredOptions.length - 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setHighlightIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (filteredOptions[highlightIndex]) {
-          handleSelect(filteredOptions[highlightIndex].value);
-        }
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
-        setSearch("");
-      }
-    },
-    [filteredOptions, highlightIndex, handleSelect],
+  const state = useSearchableSelectState(
+    options,
+    selectedValue,
+    rawEmptyOptionValue,
+    isRequired,
+    onSelect,
   );
-
-  const handleOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      setOpen(nextOpen);
-      if (nextOpen) {
-        setSearch("");
-        setHighlightIndex(0);
-        requestAnimationFrame(() => {
-          inputRef.current?.focus();
-        });
-      }
-    },
-    [],
-  );
-
-  const selectedLabel =
-    options.find((opt) => opt.value === selectedValue)?.label ?? "";
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange} modal>
+    <Popover open={state.open} onOpenChange={state.handleOpenChange} modal>
       <PopoverTrigger asChild disabled={disabled}>
         <button
           type="button"
           role="combobox"
           id={fieldId}
-          aria-expanded={open}
+          aria-expanded={state.open}
           aria-label={ariaLabel}
           disabled={disabled}
           className={cn(
@@ -362,8 +382,10 @@ export function FieldControlSearchableSelect({
           )}
         >
           <span className="truncate">
-            {selectedLabel || (
-              <span className="text-muted-foreground">{labels.select}</span>
+            {state.selectedLabel || (
+              <span className="text-muted-foreground">
+                {state.labels.select}
+              </span>
             )}
           </span>
           <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
@@ -372,70 +394,23 @@ export function FieldControlSearchableSelect({
       <PopoverContent
         className="w-[var(--radix-popover-trigger-width)] p-0"
         align="start"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          inputRef.current?.focus();
-        }}
+        onOpenAutoFocus={state.focusInput}
       >
-        <div className="flex flex-col" onKeyDown={handleKeyDown}>
-          <div className="p-2">
-            <input
-              ref={inputRef}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={labels.searchSelectPlaceholder}
-              className={cn(INPUT_CLASS, "h-8")}
-              aria-label={labels.searchSelectPlaceholder}
-            />
-          </div>
-          <div
-            ref={listRef}
-            role="listbox"
-            aria-label={ariaLabel}
-            className="max-h-60 overflow-y-auto p-1"
-          >
-            {filteredOptions.length === 0 ? (
-              <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                {labels.noResults}
-              </div>
-            ) : (
-              filteredOptions.map((opt, index) => {
-                const isSelected =
-                  opt.value === emptyOptionValue
-                    ? !selectedValue
-                    : opt.value === selectedValue;
-                const isHighlighted = index === highlightIndex;
-                const isEmpty = opt.value === emptyOptionValue;
-                return (
-                  <div
-                    key={opt.value}
-                    role="option"
-                    aria-selected={isSelected}
-                    aria-label={opt.label}
-                    data-highlighted={isHighlighted || undefined}
-                    className={cn(
-                      "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none",
-                      isHighlighted && "bg-accent text-accent-foreground",
-                      isEmpty && "text-muted-foreground",
-                    )}
-                    onMouseEnter={() => setHighlightIndex(index)}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelect(opt.value);
-                    }}
-                  >
-                    <span className="truncate">{opt.label}</span>
-                    {isSelected && (
-                      <span className="absolute right-2 flex size-3.5 items-center justify-center">
-                        <CheckIcon className="size-4" />
-                      </span>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        <SearchableSelectPopoverBody
+          search={state.search}
+          setSearch={state.setSearch}
+          highlightIndex={state.highlightIndex}
+          setHighlightIndex={state.setHighlightIndex}
+          contentRef={state.contentRef}
+          listRef={state.listRef}
+          filteredOptions={state.filteredOptions}
+          emptyOptionValue={state.emptyOptionValue}
+          selectedValue={selectedValue}
+          labels={state.labels}
+          listboxLabel={ariaLabel}
+          handleSelect={state.handleSelect}
+          handleKeyDown={state.handleKeyDown}
+        />
       </PopoverContent>
     </Popover>
   );

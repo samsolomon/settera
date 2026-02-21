@@ -197,6 +197,33 @@ describe("SetteraSearchableSelect", () => {
     expect(options[2]).toHaveAttribute("data-highlighted", "true");
   });
 
+  it("resets highlight when search query changes to different results of same length", async () => {
+    const user = userEvent.setup();
+    renderSearchableSelect("timezone");
+
+    await user.click(screen.getByRole("combobox"));
+    const input = screen.getByRole("textbox");
+    input.focus();
+
+    // Type "Tokyo" — 1 result, arrow down to highlight it (already at 0)
+    await user.type(input, "Tokyo");
+    let listbox = screen.getByRole("listbox");
+    let options = within(listbox).getAllByRole("option");
+    expect(options).toHaveLength(1);
+
+    // Now arrow down (stay at 0 since only 1 option)
+    await user.keyboard("{ArrowDown}");
+
+    // Clear and type "London" — also 1 result, highlight should reset to 0
+    await user.clear(input);
+    await user.type(input, "London");
+    listbox = screen.getByRole("listbox");
+    options = within(listbox).getAllByRole("option");
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent("GMT (London)");
+    expect(options[0]).toHaveAttribute("data-highlighted", "true");
+  });
+
   it("enter selects highlighted option", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
