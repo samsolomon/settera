@@ -4,7 +4,13 @@ import React, { useCallback } from "react";
 import { useSetteraSetting, useBufferedInput } from "@settera/react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { SetteraCopyButton } from "./settera-copy-button";
 
 export interface SetteraTextInputProps {
   settingKey: string;
@@ -44,34 +50,58 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
   const isReadOnly = "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
-  const sharedProps = {
-    ...inputProps,
-    placeholder,
-    disabled: isDisabled,
-    readOnly: isReadOnly,
-    "aria-label": definition.title,
-    "aria-invalid": hasError as boolean,
-    "aria-describedby": hasError ? `settera-error-${settingKey}` : undefined,
-    className: cn(
-      "w-full md:w-[200px]",
-      hasError && "border-destructive",
-      isDangerous && "text-destructive",
-    ),
-  };
+  const sharedClassName = cn(
+    hasError && "border-destructive",
+    isDangerous && "text-destructive",
+  );
 
   if (isMultiline) {
     return (
       <Textarea
-        {...sharedProps}
+        {...inputProps}
+        placeholder={placeholder}
+        disabled={isDisabled}
+        readOnly={isReadOnly}
+        aria-label={definition.title}
+        aria-invalid={hasError}
+        aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+        className={cn("w-full md:w-[200px]", sharedClassName)}
         maxLength={maxLength}
       />
+    );
+  }
+
+  if (isReadOnly) {
+    return (
+      <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
+        <InputGroupInput
+          type={inputType}
+          {...inputProps}
+          placeholder={placeholder}
+          disabled={isDisabled}
+          readOnly
+          aria-label={definition.title}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+          maxLength={maxLength}
+        />
+        <InputGroupAddon align="inline-end">
+          <SetteraCopyButton value={committed} label={definition.title} />
+        </InputGroupAddon>
+      </InputGroup>
     );
   }
 
   return (
     <Input
       type={inputType}
-      {...sharedProps}
+      {...inputProps}
+      placeholder={placeholder}
+      disabled={isDisabled}
+      aria-label={definition.title}
+      aria-invalid={hasError}
+      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+      className={cn("w-full md:w-[200px]", sharedClassName)}
       maxLength={maxLength}
     />
   );

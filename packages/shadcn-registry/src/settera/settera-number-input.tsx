@@ -3,7 +3,13 @@
 import React, { useCallback } from "react";
 import { useSetteraSetting, useBufferedInput } from "@settera/react";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { SetteraCopyButton } from "./settera-copy-button";
 
 export interface SetteraNumberInputProps {
   settingKey: string;
@@ -58,6 +64,33 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
   const isReadOnly = "readonly" in definition && Boolean(definition.readonly);
   const hasError = error !== null;
 
+  const sharedClassName = cn(
+    hasError && "border-destructive",
+    isDangerous && "text-destructive",
+  );
+
+  if (isReadOnly) {
+    return (
+      <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
+        <InputGroupInput
+          type="number"
+          {...inputProps}
+          placeholder={placeholder}
+          min={min}
+          max={max}
+          disabled={isDisabled}
+          readOnly
+          aria-label={definition.title}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+        />
+        <InputGroupAddon align="inline-end">
+          <SetteraCopyButton value={committed} label={definition.title} />
+        </InputGroupAddon>
+      </InputGroup>
+    );
+  }
+
   return (
     <Input
       type="number"
@@ -66,15 +99,10 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
       min={min}
       max={max}
       disabled={isDisabled}
-      readOnly={isReadOnly}
       aria-label={definition.title}
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      className={cn(
-        "w-full md:w-[200px]",
-        hasError && "border-destructive",
-        isDangerous && "text-destructive",
-      )}
+      className={cn("w-full md:w-[200px]", sharedClassName)}
     />
   );
 }

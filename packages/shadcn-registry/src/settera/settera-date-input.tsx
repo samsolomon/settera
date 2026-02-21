@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { SetteraCopyButton } from "./settera-copy-button";
 
 export interface SetteraDateInputProps {
   settingKey: string;
@@ -210,6 +211,7 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
         <InputGroup
           data-disabled={isDisabled || undefined}
           className={cn(
+            "w-full md:w-[200px]",
             hasError && "border-destructive",
             isDangerous && "text-destructive",
           )}
@@ -230,18 +232,22 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
             }
           />
           <InputGroupAddon align="inline-end">
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                disabled={isDisabled || isReadOnly}
-                aria-label="Open calendar"
-                className="text-muted-foreground shadow-none [&_svg]:size-4"
-              >
-                <CalendarDaysIcon />
-              </Button>
-            </PopoverTrigger>
+            {isReadOnly ? (
+              <SetteraCopyButton value={inputText} label={definition.title} />
+            ) : (
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  disabled={isDisabled}
+                  aria-label="Open calendar"
+                  className="text-muted-foreground shadow-none [&_svg]:size-5"
+                >
+                  <CalendarDaysIcon />
+                </Button>
+              </PopoverTrigger>
+            )}
           </InputGroupAddon>
         </InputGroup>
       </PopoverAnchor>
