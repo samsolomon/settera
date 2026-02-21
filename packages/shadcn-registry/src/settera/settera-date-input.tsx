@@ -25,7 +25,7 @@ export interface SetteraDateInputProps {
   settingKey: string;
 }
 
-export const DISPLAY_FORMAT = "MMMM dd, yyyy";
+export const DISPLAY_FORMAT = "M/d/yyyy";
 const ISO_FORMAT = "yyyy-MM-dd";
 export const PARSE_FORMATS = [
   DISPLAY_FORMAT,
@@ -212,7 +212,7 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
         <InputGroup
           data-disabled={isDisabled || undefined}
           className={cn(
-            "w-full md:w-[200px]",
+            "w-full md:w-[var(--settera-control-width,200px)]",
             hasError && "border-destructive",
             isDangerous && "text-destructive",
           )}
