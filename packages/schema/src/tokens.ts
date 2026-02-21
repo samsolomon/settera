@@ -224,11 +224,11 @@ export const UI_TOKENS: Record<string, string> = {
 
   // ── Checkbox ──────────────────────────────────────────────────────────
   "checkbox-bg": "var(--settera-card, #ffffff)",
-  "checkbox-checked-bg": "#18181b",
-  "checkbox-indicator-color": "#ffffff",
+  "checkbox-checked-bg": "var(--settera-primary, #2563eb)",
+  "checkbox-indicator-color": "var(--settera-primary-foreground, white)",
   "checkbox-border": "1px solid var(--settera-input, #d1d5db)",
   "checkbox-checked-border":
-    "1px solid var(--settera-checkbox-checked-bg, #18181b)",
+    "1px solid var(--settera-checkbox-checked-bg, var(--settera-primary, #2563eb))",
   "checkbox-border-radius": "0.25rem",
   "checkbox-size": "1rem",
   "checkbox-gap": "0.5rem",
