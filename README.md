@@ -4,15 +4,39 @@ A schema-driven settings framework for React.
 
 <!-- TODO: Add screenshot or GIF of the settings UI here -->
 
-Settings don't sell software—and nobody wants to work on them. They are seldom reconsidered, rarely refactored and grow until they are unmanageable. Yet, the quality of software can often be determined by the settings that govern it.
+Settings don't sell software—and nobody wants to work on them. Settera solves both those problems.
 
-Settera solves both those problems.
+Define your settings in a schema, and it renders a complete settings UI—keyboard navigation, search, form validation and conditional visibility. It makes it fast for teams to ship settings updates, while providing consistency for users.
 
-Settera is a schema-driven settings framework. Define your settings in a schema, and it renders a complete settings UI—keyboard navigation, search, form validation and conditional visibility. It makes it fast for teams to ship settings updates, while providing consistency for users.
+Use it three ways: **drop in** a prebuilt UI (`@settera/ui`), **integrate** with your existing shadcn/Tailwind stack (`@settera/shadcn-registry`), or **go headless** with just hooks and types (`@settera/react`).
 
 Stop spending cycles on settings infrastructure and focus on your core product.
 
 > **Note:** Settera packages are not yet published to npm.
+
+## Core Concepts
+
+### Schema-driven
+
+One schema defines everything — pages, sections, settings, controls, validation rules, and visibility conditions. The schema is plain data (JSON-serializable), so it can come from a config file, a database, or an API.
+
+### Consistent saving
+
+Settera picks the right save behavior for each setting type. Toggles and selects apply instantly. Text and number inputs apply on blur or Enter. For settings that need grouped submission — like an address or a list of items — compound and repeatable types provide scoped Save/Cancel controls.
+
+Your `onChange(key, value)` callback handles every save. Return a Promise and Settera tracks the lifecycle per setting automatically (`saving → saved → idle`), with built-in race condition safety.
+
+### Flat values
+
+Values are a flat `Record<string, unknown>` keyed by the setting's `key`. No nesting, no path resolution — just a key-value map.
+
+```typescript
+{
+  "general.theme": "dark",
+  "general.autoSave": true,
+  "profile.displayName": "Sam"
+}
+```
 
 ## Quick Start
 
@@ -74,51 +98,6 @@ function AppSettings() {
 }
 ```
 
-## Core Concepts
-
-### Instant-apply
-
-There's no form submit. Each setting change fires `onChange(key, value)` immediately. Toggles and selects apply on click. Text and number inputs apply on blur or Enter. For settings that need grouped submission, compound and repeatable types provide scoped Save/Cancel controls.
-
-### Flat values
-
-Values are a flat `Record<string, unknown>` keyed by the setting's `key`. No nesting, no path resolution — just a key-value map.
-
-```typescript
-{
-  "general.theme": "dark",
-  "general.autoSave": true,
-  "profile.displayName": "Sam"
-}
-```
-
-### Async save tracking
-
-Return a Promise from `onChange` and Settera tracks the save lifecycle automatically:
-
-```
-idle → saving → saved → idle
-```
-
-Each setting shows its own save indicator. Race conditions are handled — only the latest save per key affects UI state.
-
-```tsx
-<Settera
-  schema={schema}
-  values={values}
-  onChange={async (key, value) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
-    await api.saveSetting(key, value);
-  }}
->
-  <SetteraLayout />
-</Settera>
-```
-
-### Schema-driven
-
-One schema defines everything — pages, sections, settings, controls, validation rules, and visibility conditions. The schema is plain data (JSON-serializable), so it can come from a config file, a database, or an API.
-
 ## Choose Your UI
 
 Settera offers two UI packages. Pick the one that fits your stack.
@@ -151,71 +130,20 @@ Use `@settera/schema` + `@settera/react` for types, validation, and headless hoo
 
 | Type | Description | Apply behavior |
 | --- | --- | --- |
-| `boolean` | Toggle switch | Instant |
-| `text` | Single-line or multi-line text input | On blur / Enter |
-| `number` | Numeric input with optional min/max/step | On blur / Enter |
-| `select` | Single-choice dropdown | Instant |
-| `multiselect` | Multi-choice selection | Instant |
-| `date` | Date picker | On blur |
-| `compound` | Multi-field group (inline, modal, or page) | Field-dependent |
-| `repeatable` | Add/remove list of text or compound items | Field-dependent |
-| `action` | Button that triggers a callback, modal, or page | On click / submit |
-| `custom` | Developer-provided renderer | Developer-defined |
-
-```typescript
-// Example: a few setting types together
-{
-  key: "general.autoSave",
-  title: "Auto Save",
-  type: "boolean",
-  default: true,
-},
-{
-  key: "appearance.fontSize",
-  title: "Font Size",
-  type: "number",
-  default: 14,
-  validation: { min: 10, max: 24, step: 1 },
-},
-{
-  key: "appearance.theme",
-  title: "Theme",
-  type: "select",
-  options: [
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "system", label: "System" },
-  ],
-  default: "system",
-}
-```
+| [`boolean`](docs/schema.md#boolean) | Toggle switch | Instant |
+| [`text`](docs/schema.md#text) | Single-line or multi-line text input | On blur / Enter |
+| [`number`](docs/schema.md#number) | Numeric input with optional min/max/step | On blur / Enter |
+| [`select`](docs/schema.md#select) | Single-choice dropdown | Instant |
+| [`multiselect`](docs/schema.md#multiselect) | Multi-choice selection | Instant |
+| [`date`](docs/schema.md#date) | Date picker | On blur |
+| [`compound`](docs/schema.md#compound) | Multi-field group (inline, modal, or page) | Field-dependent |
+| [`repeatable`](docs/schema.md#repeatable) | Add/remove list of text or compound items | Field-dependent |
+| [`action`](docs/schema.md#action) | Button that triggers a callback, modal, or page | On click / submit |
+| [`custom`](docs/schema.md#custom) | Developer-provided renderer | Developer-defined |
 
 See the full schema reference in [docs/schema.md](docs/schema.md).
 
-## Features
-
-- **Schema-driven rendering** — sidebar, page layout, sections, and controls are all generated from a single schema definition
-- **Keyboard navigation** — Tab flows through settings, F6 cycles sidebar/content, Ctrl+Arrow jumps sections, / or Cmd+K opens search
-- **Client-side search** — filters sidebar and content by matching setting titles, descriptions, section titles, and page titles
-- **Conditional visibility** — show or hide settings, sections, or subsections based on other values
-- **Validation** — schema-level validators (required, min/max, pattern, etc.) plus async callback validators for custom logic
-- **Confirmation dialogs** — any setting can require confirmation before applying, with optional text confirmation for dangerous actions
-- **Responsive layout** — desktop sidebar + content; below 768px switches to full-screen drill-down (breakpoint is configurable)
-- **Collapsible sections** — sections support `collapsible` and `defaultCollapsed` to reduce visual clutter
-- **Deep-linking** — query params for page + setting with copy-link affordance
-- **Custom registries** — `customSettings` and `customPages` for app-specific extensions
-
-## Architecture
-
-Settera is split into three layers. Use only what you need.
-
-| Package | Purpose | Dependencies |
-| --- | --- | --- |
-| `@settera/schema` | Pure TypeScript types and schema validation. No React. | None |
-| `@settera/react` | Unified `Settera` component, store, and headless hooks. Handles validation, save tracking, confirm dialogs, and visibility. | `@settera/schema`, React |
-| `@settera/ui` | Prebuilt UI components with inline styles and Radix primitives. Drop-in settings UI. | `@settera/react`, `@radix-ui/*` |
-
-The `@settera/shadcn-registry` package distributes components via shadcn's registry format, using your own shadcn primitives and Tailwind.
+Also included: [conditional visibility](docs/schema.md#conditional-visibility), [confirmation dialogs](docs/schema.md#confirmconfig), [deep-linking](docs/api.md), responsive layout, and [custom setting/page extensions](docs/schema.md#custom).
 
 ## Documentation
 
@@ -233,18 +161,6 @@ pnpm dev           # Start test-app dev server (ui)
 pnpm dev:shadcn    # Start shadcn-test-app dev server
 pnpm lint          # ESLint
 pnpm typecheck     # TypeScript type checking
-```
-
-## Project Structure
-
-```
-packages/
-  schema/           @settera/schema          — Types, validation, traversal
-  react/            @settera/react           — Headless hooks and primitives
-  ui/               @settera/ui              — Prebuilt components (inline styles + Radix)
-  shadcn-registry/  @settera/shadcn-registry — shadcn-style components (Tailwind + shadcn primitives)
-  test-app/         Internal Vite app for development testing (ui)
-  shadcn-test-app/  Internal Vite app for development testing (shadcn)
 ```
 
 ## License
