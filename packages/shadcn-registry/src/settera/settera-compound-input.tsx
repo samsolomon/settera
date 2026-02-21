@@ -127,6 +127,7 @@ function CompoundModal({
   definition: {
     title: string;
     description?: string;
+    buttonLabel?: string;
     fields: CompoundFieldDefinition[];
   };
   value: unknown;
@@ -175,6 +176,8 @@ function CompoundModal({
     [resetDraft],
   );
 
+  const valueSummary = summarizeCompoundValue(value, definition.fields);
+
   return (
     <div
       data-testid={`compound-${settingKey}`}
@@ -182,11 +185,15 @@ function CompoundModal({
       aria-describedby={
         error !== null ? `settera-error-${settingKey}` : undefined
       }
+      className="flex items-center gap-3"
     >
+      {valueSummary && (
+        <span className="text-sm text-muted-foreground">{valueSummary}</span>
+      )}
       <ResponsiveDialog open={isModalOpen} onOpenChange={handleOpenChange} preventDismiss={isBusy}>
         <ResponsiveDialogTrigger asChild>
           <Button variant="outline" disabled={isDisabled}>
-            {labels.edit} {definition.title}
+            {definition.buttonLabel ?? `${labels.edit} ${definition.title}`}
           </Button>
         </ResponsiveDialogTrigger>
         <ResponsiveDialogContent
@@ -252,6 +259,22 @@ function CompoundPageButton({
       </Button>
     </div>
   );
+}
+
+function summarizeCompoundValue(
+  value: unknown,
+  fields: CompoundFieldDefinition[],
+): string {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return "";
+  const obj = value as Record<string, unknown>;
+  const parts: string[] = [];
+  for (const field of fields) {
+    const v = obj[field.key];
+    if (v !== undefined && v !== null && v !== "") {
+      parts.push(String(v));
+    }
+  }
+  return parts.join(", ");
 }
 
 export function CompoundFields({

@@ -49,9 +49,10 @@ export const demoSchema: SetteraSchema = {
             },
             {
               key: "profile.email",
-              title: "Primary email address",
+              title: "Email address",
               type: "compound",
               displayStyle: "modal",
+              buttonLabel: "Edit",
               fields: [
                 {
                   key: "address",
@@ -72,7 +73,7 @@ export const demoSchema: SetteraSchema = {
           settings: [
             {
               key: "profile.timezone",
-              title: "Preferred timezone",
+              title: "Timezone",
               type: "select",
               options: [
                 { value: "America/New_York", label: "America/New_York" },

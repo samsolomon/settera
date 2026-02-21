@@ -127,6 +127,7 @@ function CompoundModal({
   definition: {
     title: string;
     description?: string;
+    buttonLabel?: string;
     fields: CompoundFieldDefinition[];
   };
   value: unknown;
@@ -174,6 +175,8 @@ function CompoundModal({
     [resetDraft],
   );
 
+  const valueSummary = summarizeCompoundValue(value, definition.fields);
+
   return (
     <div
       data-testid={`compound-${settingKey}`}
@@ -181,7 +184,13 @@ function CompoundModal({
       aria-describedby={
         error !== null ? `settera-error-${settingKey}` : undefined
       }
+      style={{ display: "flex", alignItems: "center", gap: "12px" }}
     >
+      {valueSummary && (
+        <span style={{ fontSize: "14px", color: "var(--settera-muted-foreground, #6b7280)" }}>
+          {valueSummary}
+        </span>
+      )}
       <Dialog.Root open={isModalOpen} onOpenChange={handleOpenChange}>
         <Dialog.Trigger asChild>
           <PrimitiveButton
@@ -192,7 +201,7 @@ function CompoundModal({
               opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
             }}
           >
-            Edit {definition.title}
+            {definition.buttonLabel ?? `Edit ${definition.title}`}
           </PrimitiveButton>
         </Dialog.Trigger>
         <Dialog.Portal>
@@ -328,6 +337,24 @@ function CompoundPageButton({
       </PrimitiveButton>
     </div>
   );
+}
+
+// ---- Helpers ----
+
+function summarizeCompoundValue(
+  value: unknown,
+  fields: CompoundFieldDefinition[],
+): string {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return "";
+  const obj = value as Record<string, unknown>;
+  const parts: string[] = [];
+  for (const field of fields) {
+    const v = obj[field.key];
+    if (v !== undefined && v !== null && v !== "") {
+      parts.push(String(v));
+    }
+  }
+  return parts.join(", ");
 }
 
 // ---- Shared field renderer ----

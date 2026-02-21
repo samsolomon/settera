@@ -228,6 +228,8 @@ export type CompoundFieldDefinition =
 export interface CompoundSetting extends BaseValueSettingFields {
   type: "compound";
   displayStyle: "modal" | "page" | "inline";
+  /** Override the trigger button label (default: "Edit {title}" for modal, "Open {title}" for page) */
+  buttonLabel?: string;
   fields: CompoundFieldDefinition[];
   validation?: {
     rules?: Array<{
