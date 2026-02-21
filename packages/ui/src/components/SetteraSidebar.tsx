@@ -666,7 +666,7 @@ function SidebarItem({
 
   const itemContent = (
     <>
-      {depth === 0 && page.icon && renderIcon && (
+      {page.icon && renderIcon && (
         <span
           aria-hidden="true"
           style={{
