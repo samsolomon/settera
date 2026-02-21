@@ -6,6 +6,7 @@ import { flattenPageItems } from "@settera/schema";
 
 export interface SetteraDeepLinkContextValue {
   getSettingUrl: (settingKey: string) => string;
+  getSectionUrl: (pageKey: string, sectionKey: string) => string;
 }
 
 export function collectPageKeys(
@@ -277,11 +278,19 @@ export function useSetteraLayoutUrlSync({
           url.searchParams.set(activeSettingQueryParam, settingKey);
           return url.toString();
         },
+        getSectionUrl: (pageKey: string, sectionKey: string) => {
+          const url = new URL(window.location.href);
+          url.searchParams.set(activePageQueryParam, pageKey);
+          url.searchParams.set(activeSectionQueryParam, sectionKey);
+          url.searchParams.delete(activeSettingQueryParam);
+          return url.toString();
+        },
       };
     }, [
       syncActivePageWithUrl,
       schemaCtx,
       activePageQueryParam,
+      activeSectionQueryParam,
       activeSettingQueryParam,
     ]);
 

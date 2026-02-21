@@ -22,6 +22,7 @@ export interface SetteraLabels {
   openCalendar?: string;
   selectDate?: string;
   copyLink?: string;
+  copyLinkToSection?: string;
 }
 
 export const DEFAULT_LABELS: Required<SetteraLabels> = {
@@ -44,6 +45,7 @@ export const DEFAULT_LABELS: Required<SetteraLabels> = {
   openCalendar: "Open calendar",
   selectDate: "Select date",
   copyLink: "Copy link to setting",
+  copyLinkToSection: "Copy link to section",
 };
 
 export const SetteraLabelsContext = createContext<Required<SetteraLabels>>(DEFAULT_LABELS);

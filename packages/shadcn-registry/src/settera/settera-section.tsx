@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SetteraSchemaContext, useSettera, parseDescriptionLinks } from "@settera/react";
 import { evaluateVisibility } from "@settera/schema";
 import type { SectionDefinition } from "@settera/schema";
-import { ChevronDownIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, LinkIcon } from "lucide-react";
 import { useSetteraSearch } from "./use-settera-search";
+import { SetteraDeepLinkContext } from "./settera-deep-link-context";
+import { useSetteraLabels } from "./settera-labels";
 import { SetteraSetting } from "./settera-setting";
 import type { SetteraCustomSettingProps } from "./settera-setting";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -31,6 +34,31 @@ export function SetteraSection({
   const schemaCtx = useContext(SetteraSchemaContext);
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
   const { values } = useSettera();
+  const deepLinkCtx = useContext(SetteraDeepLinkContext);
+  const labels = useSetteraLabels();
+  const [isHovered, setIsHovered] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleCopyLink = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!deepLinkCtx) return;
+    if (!navigator.clipboard?.writeText) return;
+
+    const url = deepLinkCtx.getSectionUrl(pageKey, sectionKey);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyFeedback(true);
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyFeedback(false), 2000);
+    } catch {
+      // Clipboard write failed
+    }
+  }, [deepLinkCtx, pageKey, sectionKey]);
+
+  useEffect(() => {
+    return () => clearTimeout(copyTimeoutRef.current);
+  }, []);
 
   if (!schemaCtx) {
     throw new Error("SetteraSection must be used within a Settera component.");
@@ -85,6 +113,25 @@ export function SetteraSection({
   const sectionTitleId = `settera-section-title-${pageKey}-${sectionKey}`;
   const sectionElementId = `settera-section-${pageKey}-${sectionKey}`;
   const isEffectivelyCollapsed = isCollapsible && isCollapsed && !isSearching;
+  const showCopyButton = !!(deepLinkCtx && (isHovered || copyFeedback));
+
+  const copyButton = showCopyButton ? (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      tabIndex={-1}
+      data-settera-copy-link="true"
+      aria-label={labels.copyLinkToSection}
+      onClick={handleCopyLink}
+    >
+      {copyFeedback ? (
+        <CheckIcon className="size-4" style={{ color: "var(--settera-success-color, #16a34a)" }} />
+      ) : (
+        <LinkIcon className="size-4" />
+      )}
+    </Button>
+  ) : null;
 
   const sectionContent = (
     <>
@@ -158,23 +205,34 @@ export function SetteraSection({
         }}
       >
         <Collapsible open={!isEffectivelyCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="flex items-center gap-1 group cursor-pointer p-0"
-              style={{ marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}
-            >
-              <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold group-hover:text-muted-foreground transition-colors" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)" }}>
-                {section.title}
-              </h2>
-              <ChevronDownIcon
-                className="size-4 text-muted-foreground shrink-0 transition-transform duration-200"
-                style={{
-                  transform: isEffectivelyCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
-                }}
-              />
-            </button>
-          </CollapsibleTrigger>
+          <div
+            className="flex items-center gap-1"
+            style={{ marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1 group cursor-pointer p-0"
+              >
+                <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold group-hover:text-muted-foreground transition-colors" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)" }}>
+                  {section.title}
+                </h2>
+                <ChevronDownIcon
+                  className="size-4 text-muted-foreground shrink-0 transition-transform duration-200"
+                  style={{
+                    transform: isEffectivelyCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+                  }}
+                />
+              </button>
+            </CollapsibleTrigger>
+            {deepLinkCtx && (
+              <span className="inline-flex w-6 h-6 shrink-0">
+                {copyButton}
+              </span>
+            )}
+          </div>
           <CollapsibleContent id={sectionContentId}>
             {sectionContent}
           </CollapsibleContent>
@@ -194,9 +252,21 @@ export function SetteraSection({
         scrollMarginTop: "var(--settera-section-scroll-margin-top, 1.5rem)",
       }}
     >
-      <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)", marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}>
-        {section.title}
-      </h2>
+      <div
+        className="flex items-center gap-1"
+        style={{ marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)" }}>
+          {section.title}
+        </h2>
+        {deepLinkCtx && (
+          <span className="inline-flex w-6 h-6 shrink-0">
+            {copyButton}
+          </span>
+        )}
+      </div>
       <div id={sectionContentId}>
         {sectionContent}
       </div>

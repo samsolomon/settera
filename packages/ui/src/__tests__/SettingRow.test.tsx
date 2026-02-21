@@ -196,6 +196,8 @@ describe("SettingRow", () => {
           value={{
             getSettingUrl: (key) =>
               `https://example.com/?setteraSetting=${key}`,
+            getSectionUrl: (page, section) =>
+              `https://example.com/?setteraPage=${page}&section=${section}`,
           }}
         >
           <SettingRow settingKey="toggle">
@@ -234,6 +236,8 @@ describe("SettingRow", () => {
           value={{
             getSettingUrl: (key) =>
               `https://example.com/?setteraSetting=${key}`,
+            getSectionUrl: (page, section) =>
+              `https://example.com/?setteraPage=${page}&section=${section}`,
           }}
         >
           <SettingRow settingKey="toggle">
