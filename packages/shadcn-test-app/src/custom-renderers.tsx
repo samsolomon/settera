@@ -15,6 +15,21 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 const demoUsers = [
   {
@@ -220,6 +235,128 @@ export function ProfilePictureSetting({
       >
         {imageUrl ? "Remove image" : "Upload image"}
       </Button>
+    </div>
+  );
+}
+
+export function WorkspaceLogoSetting({
+  settingKey,
+}: SetteraCustomSettingProps) {
+  const { value, setValue } = useSetteraSetting(settingKey);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageUrl = typeof value === "string" ? value : "";
+  const initials = imageUrl ? "" : "W";
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setValue(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className="size-16 rounded-lg flex items-center justify-center text-2xl font-semibold text-white shrink-0 bg-primary"
+        style={
+          imageUrl
+            ? { backgroundImage: `url(${imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : undefined
+        }
+      >
+        {initials}
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          if (imageUrl) {
+            setValue("");
+          } else {
+            fileInputRef.current?.click();
+          }
+        }}
+      >
+        {imageUrl ? "Remove image" : "Upload image"}
+      </Button>
+    </div>
+  );
+}
+
+export function WorkspaceUrlSetting({
+  settingKey,
+}: SetteraCustomSettingProps) {
+  const { value, setValue } = useSetteraSetting(settingKey);
+  const currentSlug = typeof value === "string" ? value : "";
+  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = (isOpen: boolean) => {
+    if (isOpen) {
+      setDraft(currentSlug);
+    }
+    setOpen(isOpen);
+  };
+
+  const handleSave = () => {
+    setValue(draft);
+    setOpen(false);
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-muted-foreground truncate">
+        {currentSlug
+          ? `https://appname.com/${currentSlug}`
+          : "Not set"}
+      </span>
+      <Dialog open={open} onOpenChange={handleOpen}>
+        <DialogTrigger asChild>
+          <Button type="button" variant="outline" size="sm">
+            Edit
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Workspace URL</DialogTitle>
+            <DialogDescription>
+              Choose a URL slug for your workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <InputGroup>
+              <InputGroupAddon>
+                <InputGroupText>https://appname.com/</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="my-workspace"
+              />
+            </InputGroup>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

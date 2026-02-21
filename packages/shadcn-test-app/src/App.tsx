@@ -9,6 +9,8 @@ import {
   ConnectedAccountsPage,
   ProfilePictureSetting,
   ThemePickerSetting,
+  WorkspaceLogoSetting,
+  WorkspaceUrlSetting,
   AdvancedExportPage,
 } from "./custom-renderers.js";
 import { HeadlessView } from "./headless-view.js";
@@ -16,6 +18,7 @@ import { getSetteraThemeVars } from "./ui-theme.js";
 import {
   BellIcon,
   CreditCardIcon,
+  LayoutDashboardIcon,
   SquareArrowUpRightIcon,
   PaintbrushIcon,
   PaletteIcon,
@@ -36,6 +39,7 @@ const ICON_MAP: Record<string, ReactNode> = {
   palette: <PaletteIcon className="size-4" />,
   "credit-card": <CreditCardIcon className="size-4" />,
   link: <SquareArrowUpRightIcon className="size-4" />,
+  "layout-dashboard": <LayoutDashboardIcon className="size-4" />,
 };
 
 function renderIcon(name: string): ReactNode {
@@ -244,7 +248,12 @@ export function App() {
               }}
               renderIcon={renderIcon}
               customPages={{ usersPage: UsersPage, connectedAccountsPage: ConnectedAccountsPage }}
-              customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
+              customSettings={{
+                profilePicture: ProfilePictureSetting,
+                themePicker: ThemePickerSetting,
+                workspaceLogo: WorkspaceLogoSetting,
+                workspaceUrl: WorkspaceUrlSetting,
+              }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}

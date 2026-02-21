@@ -383,8 +383,44 @@ export const demoSchema: SetteraSchema = {
       ],
     },
     {
-      label: "Organization",
+      label: "Administration",
       pages: [
+        {
+          key: "workspace",
+          title: "Workspace",
+          description: "Manage your workspace identity and settings.",
+          icon: "layout-dashboard",
+          sections: [
+            {
+              key: "workspaceIdentity",
+              title: "Workspace identity",
+              settings: [
+                {
+                  key: "workspace.logo",
+                  title: "Workspace logo",
+                  description:
+                    "We only support PNGs, JPEGs and GIFs under 10MB.",
+                  type: "custom",
+                  renderer: "workspaceLogo",
+                },
+                {
+                  key: "workspace.name",
+                  title: "Workspace name",
+                  type: "text",
+                  placeholder: "My workspace",
+                  validation: { required: true, maxLength: 60 },
+                },
+                {
+                  key: "workspace.url",
+                  title: "Workspace URL",
+                  description: "The public URL for your workspace.",
+                  type: "custom",
+                  renderer: "workspaceUrl",
+                },
+              ],
+            },
+          ],
+        },
         {
           key: "security",
           title: "Security",
