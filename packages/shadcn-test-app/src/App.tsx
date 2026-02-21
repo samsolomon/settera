@@ -172,71 +172,37 @@ export function App() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
-      <header className="px-6 py-3 border-b flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-semibold">Settera Demo</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Schema v{SCHEMA_VERSION}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Mode toggle */}
-          <div className="inline-flex rounded-lg border bg-muted p-0.5">
-            {MODES.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => setMode(m.key)}
-                className={`px-3 py-1 text-sm rounded-md transition-colors cursor-pointer ${
-                  mode === m.key
-                    ? "bg-background text-foreground shadow-sm font-medium"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Dark mode toggle */}
-          <button
-            type="button"
-            onClick={() => setIsDark((d) => !d)}
-            className="inline-flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors cursor-pointer"
-          >
-            {isDark ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="8" cy="8" r="3" />
-                <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
-              </svg>
-            ) : (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
-              </svg>
-            )}
-            {isDark ? "Light" : "Dark"}
-          </button>
-        </div>
-      </header>
+      <div className="flex items-center gap-2 px-3 h-6 border-b bg-muted/50 text-[11px] text-muted-foreground shrink-0 select-none">
+        <span>Settera v{SCHEMA_VERSION}</span>
+        <span className="text-border">|</span>
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value as DemoMode)}
+          className="bg-transparent border-none text-[11px] text-muted-foreground cursor-pointer outline-none"
+        >
+          {MODES.map((m) => (
+            <option key={m.key} value={m.key}>{m.label}</option>
+          ))}
+        </select>
+        <span className="text-border">|</span>
+        <button
+          type="button"
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={() => setIsDark((d) => !d)}
+          className="inline-flex items-center justify-center cursor-pointer bg-transparent border-none p-0 text-muted-foreground hover:text-foreground"
+        >
+          {isDark ? (
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="8" cy="8" r="3" />
+              <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
+            </svg>
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       <div className="flex-1 overflow-hidden">
         <Settera
