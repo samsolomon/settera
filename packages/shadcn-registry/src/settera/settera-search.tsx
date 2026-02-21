@@ -34,7 +34,7 @@ export function SetteraSearch() {
   const showKbd = !isFocused && query.length === 0;
 
   return (
-    <InputGroup>
+    <InputGroup className="bg-card dark:bg-card">
       <InputGroupInput
         type="text"
         role="searchbox"
