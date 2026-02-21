@@ -1,45 +1,18 @@
 import { useContext } from "react";
-import type { SubpageState } from "@settera/react";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
-
-const EMPTY_SET = new Set<string>();
-const NOOP = () => {};
-const NOOP_UNREGISTER = () => () => {};
-const isProduction = () => process.env.NODE_ENV === "production";
 
 /**
  * Access sidebar navigation state and controls.
  *
- * When used inside a SetteraNavigationProvider (or SetteraLayout),
- * returns live navigation state. When no provider is present,
- * returns safe defaults (empty page, no search, noop functions).
+ * Must be used inside a SetteraNavigationProvider (or SetteraLayout).
  */
 export function useSetteraNavigation() {
   const ctx = useContext(SetteraNavigationContext);
 
   if (!ctx) {
-    if (!isProduction()) {
-      throw new Error(
-        "useSetteraNavigation must be used within a SetteraNavigationProvider.",
-      );
-    }
-    return {
-      activePage: "",
-      setActivePage: NOOP as (key: string) => void,
-      expandedGroups: EMPTY_SET,
-      toggleGroup: NOOP as (key: string) => void,
-      searchQuery: "",
-      setSearchQuery: NOOP as (query: string) => void,
-      matchingSettingKeys: EMPTY_SET,
-      matchingPageKeys: EMPTY_SET,
-      highlightedSettingKey: null as string | null,
-      setHighlightedSettingKey: NOOP as (key: string | null) => void,
-      requestFocusContent: NOOP,
-      registerFocusContentHandler: NOOP_UNREGISTER as (handler: () => void) => () => void,
-      subpage: null as SubpageState | null,
-      openSubpage: NOOP as (settingKey: string) => void,
-      closeSubpage: NOOP,
-    };
+    throw new Error(
+      "useSetteraNavigation must be used within a SetteraNavigationProvider.",
+    );
   }
 
   return {

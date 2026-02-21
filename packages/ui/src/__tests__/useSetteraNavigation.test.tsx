@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
@@ -47,10 +47,6 @@ function renderNav() {
 }
 
 describe("useSetteraNavigation", () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
   it("returns the first page as active by default", () => {
     renderNav();
     expect(screen.getByTestId("active").textContent).toBe("general");
@@ -84,13 +80,6 @@ describe("useSetteraNavigation", () => {
     expect(() => render(<NavConsumer />)).toThrow(
       "useSetteraNavigation must be used within a SetteraNavigationProvider.",
     );
-  });
-
-  it("returns safe defaults in production when used outside SetteraNavigationProvider", () => {
-    vi.stubEnv("NODE_ENV", "production");
-    render(<NavConsumer />);
-    expect(screen.getByTestId("active").textContent).toBe("");
-    expect(screen.getByTestId("expanded").textContent).toBe("");
   });
 
   it("resolves initial activePage to child key when first page is flattened", () => {
