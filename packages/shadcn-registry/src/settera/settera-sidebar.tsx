@@ -67,6 +67,7 @@ export function SetteraSidebar({
     setActivePage,
     activeSection,
     setActiveSection,
+    navigateToSection,
     expandedGroups,
     toggleGroup,
     requestFocusContent,
@@ -140,11 +141,10 @@ export function SetteraSidebar({
 
   const handleSectionClick = useCallback(
     (pageKey: string, sectionKey: string) => {
-      setActivePage(pageKey);
-      setActiveSection(sectionKey);
+      navigateToSection(pageKey, sectionKey);
       setOpenMobile(false);
     },
-    [setActivePage, setActiveSection, setOpenMobile],
+    [navigateToSection, setOpenMobile],
   );
 
   // Filter page items during search, preserving groups (with filtered pages inside)
@@ -352,7 +352,7 @@ export function SetteraSidebar({
         ) ?? [];
       const matchingSections = matchingSectionsByPage.get(page.key);
       const visibleSectionItems =
-        isSearching && searchableSections.length > 1 && matchingSections
+        isSearching && matchingSections
           ? searchableSections.filter((section) => matchingSections.has(section.key))
           : [];
 

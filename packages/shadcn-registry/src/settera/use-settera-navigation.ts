@@ -20,6 +20,7 @@ export function useSetteraNavigation() {
       setActivePage: NOOP as (key: string) => void,
       activeSection: null as string | null,
       setActiveSection: NOOP as (key: string | null) => void,
+      navigateToSection: NOOP as (pageKey: string, sectionKey: string) => void,
       expandedGroups: EMPTY_SET,
       toggleGroup: NOOP as (key: string) => void,
       highlightedSettingKey: null as string | null,

@@ -29,6 +29,8 @@ export interface SetteraNavigationContextValue {
   setActivePage: (key: string) => void;
   activeSection: string | null;
   setActiveSection: (key: string | null) => void;
+  /** Navigate to a specific section within a page without clearing activeSection. */
+  navigateToSection: (pageKey: string, sectionKey: string) => void;
   expandedGroups: Set<string>;
   toggleGroup: (key: string) => void;
   highlightedSettingKey: string | null;
@@ -117,6 +119,14 @@ function SetteraNavigationProviderInner({
     [setActivePageRaw],
   );
 
+  const navigateToSection = useCallback(
+    (pageKey: string, sectionKey: string) => {
+      setActivePageRaw(pageKey);
+      setActiveSection(sectionKey);
+    },
+    [setActivePageRaw],
+  );
+
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     () => new Set(),
   );
@@ -197,6 +207,7 @@ function SetteraNavigationProviderInner({
       setActivePage,
       activeSection,
       setActiveSection,
+      navigateToSection,
       expandedGroups,
       toggleGroup,
       highlightedSettingKey,
@@ -213,6 +224,7 @@ function SetteraNavigationProviderInner({
       setActivePage,
       activeSection,
       setActiveSection,
+      navigateToSection,
       expandedGroups,
       toggleGroup,
       highlightedSettingKey,
