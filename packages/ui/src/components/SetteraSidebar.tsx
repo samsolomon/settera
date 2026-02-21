@@ -28,9 +28,19 @@ export interface SetteraSidebarProps {
 }
 
 interface FlatItem {
-  page: PageDefinition;
+  kind: "page" | "section";
   depth: number;
   parentKey: string | null;
+  page?: PageDefinition;
+  pageKey?: string;
+  sectionKey?: string;
+}
+
+function getFlatItemKey(item: FlatItem): string {
+  if (item.kind === "section") {
+    return `section:${item.pageKey}:${item.sectionKey}`;
+  }
+  return `page:${item.page!.key}`;
 }
 
 /**
@@ -48,11 +58,13 @@ export function SetteraSidebar({
   const {
     activePage,
     setActivePage,
+    activeSection,
+    setActiveSection,
     expandedGroups,
     toggleGroup,
     requestFocusContent,
   } = useSetteraNavigation();
-  const { isSearching, matchingPageKeys } = useSetteraSearch();
+  const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
 
   if (!schemaCtx) {
     throw new Error("SetteraSidebar must be used within a Settera component.");
@@ -113,6 +125,15 @@ export function SetteraSidebar({
     [setActivePage, onNavigate],
   );
 
+  const handleSectionClick = useCallback(
+    (pageKey: string, sectionKey: string) => {
+      setActivePage(pageKey);
+      setActiveSection(sectionKey);
+      onNavigate?.(pageKey);
+    },
+    [onNavigate, setActivePage, setActiveSection],
+  );
+
   // Filter page items during search, preserving groups (with filtered pages inside)
   const visiblePageItems: PageItem[] = useMemo(() => {
     if (!isSearching) return schema.pages;
@@ -138,6 +159,20 @@ export function SetteraSidebar({
   // Group labels are skipped — only pages participate in keyboard nav.
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
+    const getVisibleSectionItems = (page: PageDefinition) => {
+      const searchableSections =
+        (page.sections ?? []).filter(
+          (section) =>
+            section.key && section.title && section.title.trim().length > 0,
+        ) ?? [];
+      const matchingSections = matchingSectionsByPage.get(page.key);
+      if (!isSearching || searchableSections.length <= 1 || !matchingSections) {
+        return [];
+      }
+      return searchableSections.filter((section) =>
+        matchingSections.has(section.key),
+      );
+    };
 
     function walk(
       pages: PageDefinition[],
@@ -147,7 +182,7 @@ export function SetteraSidebar({
       for (const page of pages) {
         // During search, skip non-matching pages
         if (isSearching && !matchingPageKeys.has(page.key)) continue;
-        items.push({ page, depth, parentKey });
+        items.push({ kind: "page", page, depth, parentKey });
 
         const flattened = isFlattenedPage(page);
         const hasChildren = !flattened && page.pages && page.pages.length > 0;
@@ -162,6 +197,16 @@ export function SetteraSidebar({
             walk(children, depth + 1, page.key);
           }
         }
+        const visibleSections = getVisibleSectionItems(page);
+        for (const section of visibleSections) {
+          items.push({
+            kind: "section",
+            pageKey: page.key,
+            sectionKey: section.key,
+            depth: depth + 1,
+            parentKey: page.key,
+          });
+        }
       }
     }
 
@@ -171,7 +216,14 @@ export function SetteraSidebar({
     );
     walk(topLevelPages, 0, null);
     return items;
-  }, [schema.pages, visiblePageItems, expandedGroups, isSearching, matchingPageKeys]);
+  }, [
+    schema.pages,
+    visiblePageItems,
+    expandedGroups,
+    isSearching,
+    matchingPageKeys,
+    matchingSectionsByPage,
+  ]);
 
   const { focusedIndex, setFocusedIndex, getTabIndex, onKeyDown } =
     useRovingTabIndex({
@@ -198,7 +250,15 @@ export function SetteraSidebar({
     // Navigate to the focused item so the content area updates
     const item = flatItemsRef.current[focusedIndex];
     if (item) {
+      if (item.kind === "section") {
+        if (!item.pageKey || !item.sectionKey) return;
+        setActivePage(item.pageKey);
+        setActiveSection(item.sectionKey);
+        return;
+      }
+
       const { page } = item;
+      if (!page) return;
       const hasChildren =
         !isFlattenedPage(page) && page.pages && page.pages.length > 0;
       const hasSections = page.sections && page.sections.length > 0;
@@ -209,12 +269,12 @@ export function SetteraSidebar({
       const pageKey = isFlattenedPage(page) ? resolvePageKey(page) : page.key;
       setActivePage(pageKey);
     }
-  }, [focusedIndex, setActivePage]);
+  }, [focusedIndex, setActivePage, setActiveSection]);
 
   // Build a key→index map for quick lookups (O(1) instead of findIndex)
   const keyToIndex = useMemo(() => {
     const map = new Map<string, number>();
-    flatItems.forEach((item, i) => map.set(item.page.key, i));
+    flatItems.forEach((item, i) => map.set(getFlatItemKey(item), i));
     return map;
   }, [flatItems]);
 
@@ -238,7 +298,29 @@ export function SetteraSidebar({
         return;
       }
 
+      if (item.kind === "section") {
+        if (e.key === "ArrowLeft" && item.parentKey) {
+          e.preventDefault();
+          const parentIndex = keyToIndex.get(`page:${item.parentKey}`);
+          if (parentIndex !== undefined) {
+            setFocusedIndex(parentIndex);
+          }
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          requestFocusContent();
+          return;
+        }
+        onKeyDownRef.current(e);
+        return;
+      }
+
       const { page, parentKey } = item;
+      if (!page) {
+        onKeyDownRef.current(e);
+        return;
+      }
       const hasChildren =
         !isFlattenedPage(page) && page.pages && page.pages.length > 0;
       const isExpanded = hasChildren && expandedGroupsRef.current.has(page.key);
@@ -253,7 +335,7 @@ export function SetteraSidebar({
           e.preventDefault();
           const firstChildKey = page.pages![0]?.key;
           if (firstChildKey) {
-            const childIndex = keyToIndex.get(firstChildKey);
+            const childIndex = keyToIndex.get(`page:${firstChildKey}`);
             if (childIndex !== undefined) {
               setFocusedIndex(childIndex);
             }
@@ -270,7 +352,7 @@ export function SetteraSidebar({
         } else if (parentKey) {
           // Move to parent
           e.preventDefault();
-          const parentIndex = keyToIndex.get(parentKey);
+          const parentIndex = keyToIndex.get(`page:${parentKey}`);
           if (parentIndex !== undefined) {
             setFocusedIndex(parentIndex);
           }
@@ -382,6 +464,9 @@ export function SetteraSidebar({
                     renderIcon={renderIcon}
                     isSearching={isSearching}
                     matchingPageKeys={matchingPageKeys}
+                    matchingSectionsByPage={matchingSectionsByPage}
+                    activeSection={activeSection}
+                    onSectionClick={handleSectionClick}
                     keyToIndex={keyToIndex}
                     getTabIndex={getTabIndex}
                     setButtonRef={setButtonRef}
@@ -404,6 +489,9 @@ export function SetteraSidebar({
             renderIcon={renderIcon}
             isSearching={isSearching}
             matchingPageKeys={matchingPageKeys}
+            matchingSectionsByPage={matchingSectionsByPage}
+            activeSection={activeSection}
+            onSectionClick={handleSectionClick}
             keyToIndex={keyToIndex}
             getTabIndex={getTabIndex}
             setButtonRef={setButtonRef}
@@ -477,6 +565,9 @@ interface SidebarItemProps {
   renderIcon?: (iconName: string) => React.ReactNode;
   isSearching: boolean;
   matchingPageKeys: Set<string>;
+  matchingSectionsByPage: Map<string, Set<string>>;
+  activeSection: string | null;
+  onSectionClick: (pageKey: string, sectionKey: string) => void;
   keyToIndex: Map<string, number>;
   getTabIndex: (index: number) => 0 | -1;
   setButtonRef: (index: number, el: HTMLButtonElement | null) => void;
@@ -492,6 +583,9 @@ function SidebarItem({
   renderIcon,
   isSearching,
   matchingPageKeys,
+  matchingSectionsByPage,
+  activeSection,
+  onSectionClick,
   keyToIndex,
   getTabIndex,
   setButtonRef,
@@ -515,9 +609,18 @@ function SidebarItem({
       ? page.pages!.filter((child) => matchingPageKeys.has(child.key))
       : page.pages!
     : [];
+  const searchableSections =
+    (page.sections ?? []).filter(
+      (section) => section.key && section.title && section.title.trim().length > 0,
+    ) ?? [];
+  const matchingSections = matchingSectionsByPage.get(page.key);
+  const visibleSectionItems =
+    isSearching && searchableSections.length > 1 && matchingSections
+      ? searchableSections.filter((section) => matchingSections.has(section.key))
+      : [];
 
   // O(1) lookup via the key→index map instead of O(n) findIndex
-  const flatIndex = keyToIndex.get(page.key) ?? -1;
+  const flatIndex = keyToIndex.get(`page:${page.key}`) ?? -1;
 
   return (
     <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined}>
@@ -630,11 +733,68 @@ function SidebarItem({
               renderIcon={renderIcon}
               isSearching={isSearching}
               matchingPageKeys={matchingPageKeys}
+              matchingSectionsByPage={matchingSectionsByPage}
+              activeSection={activeSection}
+              onSectionClick={onSectionClick}
               keyToIndex={keyToIndex}
               getTabIndex={getTabIndex}
               setButtonRef={setButtonRef}
             />
           ))}
+        </div>
+      )}
+      {visibleSectionItems.length > 0 && (
+        <div
+          role="group"
+          aria-label={`${page.title} matching sections`}
+          style={{
+            marginLeft: "var(--settera-sidebar-sub-margin, 16px)",
+            paddingLeft: "var(--settera-sidebar-sub-padding, 8px)",
+            borderLeft:
+              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--settera-sidebar-sub-gap, 1px)",
+            paddingTop: "2px",
+            paddingBottom: "2px",
+          }}
+        >
+          {visibleSectionItems.map((section) => {
+            const sectionIsActive = isActive && activeSection === section.key;
+            const sectionFlatIndex =
+              keyToIndex.get(`section:${page.key}:${section.key}`) ?? -1;
+            return (
+              <button
+                key={`${page.key}:${section.key}`}
+                ref={(el) => setButtonRef(sectionFlatIndex, el)}
+                type="button"
+                onClick={() => onSectionClick(page.key, section.key)}
+                tabIndex={getTabIndex(sectionFlatIndex)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  width: "100%",
+                  minHeight: "var(--settera-sidebar-item-height, 34px)",
+                  padding: `var(--settera-sidebar-item-padding, 6px 8px)`,
+                  border: "none",
+                  borderRadius: "var(--settera-sidebar-item-radius, 8px)",
+                  background: sectionIsActive
+                    ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
+                    : "transparent",
+                  color: sectionIsActive
+                    ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, var(--settera-foreground, #18181b)))"
+                    : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, var(--settera-foreground, #3f3f46)))",
+                  fontWeight: sectionIsActive ? 600 : 500,
+                  fontSize: "inherit",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                {section.title}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

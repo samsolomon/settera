@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useRef, useId, useCallback } from "react";
+import React, { useMemo, useContext, useRef, useId, useCallback, useEffect } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import { flattenPageItems } from "@settera/schema";
@@ -30,6 +30,7 @@ export interface SetteraLayoutProps {
   backToApp?: SetteraBackToAppConfig;
   syncActivePageWithUrl?: boolean;
   activePageQueryParam?: string;
+  activeSectionQueryParam?: string;
   customPages?: Record<string, React.ComponentType<SetteraCustomPageProps>>;
   customSettings?: Record<
     string,
@@ -85,6 +86,7 @@ function SetteraLayoutInner({
   backToApp,
   syncActivePageWithUrl = true,
   activePageQueryParam = "setteraPage",
+  activeSectionQueryParam = "section",
   customPages,
   customSettings,
   customActionPages,
@@ -99,6 +101,8 @@ function SetteraLayoutInner({
   const {
     activePage,
     setActivePage,
+    activeSection,
+    setActiveSection,
     setHighlightedSettingKey,
     registerFocusContentHandler,
     subpage,
@@ -143,8 +147,11 @@ function SetteraLayoutInner({
     schemaCtx,
     activePage,
     setActivePage,
+    activeSection,
+    setActiveSection,
     syncActivePageWithUrl,
     activePageQueryParam,
+    activeSectionQueryParam,
     activeSettingQueryParam,
     scrollToSetting,
     setPendingScrollKey,
@@ -154,6 +161,51 @@ function SetteraLayoutInner({
 
   const resolvedMobileTitle =
     mobileTitle ?? schemaCtx?.schema.meta?.title ?? "Settings";
+
+  const escapeSelectorValue = useCallback((value: string) => {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(value);
+    }
+    return value.replace(/["\\]/g, "\\$&");
+  }, []);
+  const previousPageRef = useRef(activePage);
+  const previousSectionRef = useRef<string | null>(activeSection);
+
+  useEffect(() => {
+    if (subpage) return;
+    const main = mainRef.current;
+    if (!main) return;
+
+    if (!activeSection) {
+      // Only force top-scroll when a section on this same page was just cleared.
+      const didClearSectionOnSamePage =
+        previousPageRef.current === activePage &&
+        previousSectionRef.current !== null;
+      if (didClearSectionOnSamePage) {
+        if (typeof main.scrollTo === "function") {
+          main.scrollTo({ top: 0, behavior: prefersReducedMotion ? "instant" : "smooth" });
+        } else {
+          main.scrollTop = 0;
+        }
+      }
+      previousPageRef.current = activePage;
+      previousSectionRef.current = activeSection;
+      return;
+    }
+
+    const section = main.querySelector(
+      `[data-settera-page-key="${escapeSelectorValue(activePage)}"][data-settera-section-key="${escapeSelectorValue(activeSection)}"]`,
+    );
+    if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
+      return;
+    }
+    (section as HTMLElement).scrollIntoView({
+      behavior: prefersReducedMotion ? "instant" : "smooth",
+      block: "start",
+    });
+    previousPageRef.current = activePage;
+    previousSectionRef.current = activeSection;
+  }, [activePage, activeSection, subpage, mainRef, prefersReducedMotion, escapeSelectorValue]);
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     if (!schemaCtx) return [];

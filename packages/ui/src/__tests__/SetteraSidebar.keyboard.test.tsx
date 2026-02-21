@@ -20,6 +20,11 @@ const schema: SetteraSchema = {
           title: "Behavior",
           settings: [{ key: "autoSave", title: "Auto Save", type: "boolean" }],
         },
+        {
+          key: "time",
+          title: "Time preferences",
+          settings: [{ key: "timezone", title: "Timezone", type: "text" }],
+        },
       ],
       pages: [
         {
@@ -318,6 +323,19 @@ describe("SetteraSidebar keyboard navigation", () => {
       await user.keyboard("{ArrowDown}");
       expect(document.activeElement).toBe(getButton("Advanced"));
     });
+  });
+
+  it("includes matching section subnav items in arrow-key navigation during search", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+
+    await user.type(screen.getByRole("searchbox"), "timezone");
+
+    const generalBtn = getButton("General");
+    generalBtn.focus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(getButton("Time preferences"));
   });
 
   describe("multiple levels", () => {

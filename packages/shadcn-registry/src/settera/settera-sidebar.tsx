@@ -65,11 +65,13 @@ export function SetteraSidebar({
   const {
     activePage,
     setActivePage,
+    activeSection,
+    setActiveSection,
     expandedGroups,
     toggleGroup,
     requestFocusContent,
   } = useSetteraNavigation();
-  const { isSearching, matchingPageKeys } = useSetteraSearch();
+  const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
   const { setOpenMobile } = useSidebar();
 
   if (!schemaCtx) {
@@ -122,6 +124,15 @@ export function SetteraSidebar({
       setOpenMobile(false);
     },
     [setActivePage, setOpenMobile],
+  );
+
+  const handleSectionClick = useCallback(
+    (pageKey: string, sectionKey: string) => {
+      setActivePage(pageKey);
+      setActiveSection(sectionKey);
+      setOpenMobile(false);
+    },
+    [setActivePage, setActiveSection, setOpenMobile],
   );
 
   // Filter page items during search, preserving groups (with filtered pages inside)
@@ -322,6 +333,15 @@ export function SetteraSidebar({
       const isActive = flattened
         ? activePage === resolvePageKey(page)
         : activePage === page.key;
+      const searchableSections =
+        (page.sections ?? []).filter(
+          (section) => section.key && section.title && section.title.trim().length > 0,
+        ) ?? [];
+      const matchingSections = matchingSectionsByPage.get(page.key);
+      const visibleSectionItems =
+        isSearching && searchableSections.length > 1 && matchingSections
+          ? searchableSections.filter((section) => matchingSections.has(section.key))
+          : [];
 
       const flatIndex = keyToIndex.get(page.key) ?? -1;
 
@@ -398,6 +418,27 @@ export function SetteraSidebar({
                       </SidebarMenuSubItem>
                     );
                   })}
+                  {visibleSectionItems.map((section) => {
+                    const sectionIsActive = isActive && activeSection === section.key;
+                    return (
+                      <SidebarMenuSubItem
+                        key={`${page.key}:${section.key}`}
+                        role="treeitem"
+                      >
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={sectionIsActive}
+                        >
+                          <button
+                            className="w-full text-left"
+                            onClick={() => handleSectionClick(page.key, section.key)}
+                          >
+                            {section.title}
+                          </button>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
@@ -425,6 +466,31 @@ export function SetteraSidebar({
               {page.title}
             </button>
           </SidebarMenuButton>
+          {visibleSectionItems.length > 0 && (
+            <SidebarMenuSub role="group">
+              {visibleSectionItems.map((section) => {
+                const sectionIsActive = isActive && activeSection === section.key;
+                return (
+                  <SidebarMenuSubItem
+                    key={`${page.key}:${section.key}`}
+                    role="treeitem"
+                  >
+                    <SidebarMenuSubButton
+                      asChild
+                      isActive={sectionIsActive}
+                    >
+                      <button
+                        className="w-full text-left"
+                        onClick={() => handleSectionClick(page.key, section.key)}
+                      >
+                        {section.title}
+                      </button>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                );
+              })}
+            </SidebarMenuSub>
+          )}
         </SidebarMenuItem>
       );
     });

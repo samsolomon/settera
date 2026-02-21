@@ -21,6 +21,11 @@ const schema: SetteraSchema = {
           title: "Behavior",
           settings: [{ key: "autoSave", title: "Auto Save", type: "boolean" }],
         },
+        {
+          key: "time",
+          title: "Time preferences",
+          settings: [{ key: "timezone", title: "Timezone", type: "text" }],
+        },
       ],
     },
     {
@@ -414,5 +419,39 @@ describe("SetteraLayout", () => {
       expect(screen.getByText("Debug Mode")).toBeDefined();
     });
     expect(screen.queryByText("Auto Save")).toBeNull();
+  });
+
+  it("shows matching section results in sidebar search and syncs section to URL", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+
+    await user.type(screen.getByRole("searchbox"), "timezone");
+    const sectionButton = await screen.findByRole("button", {
+      name: "Time preferences",
+    });
+    await user.click(sectionButton);
+
+    await waitFor(() => {
+      const params = new URL(window.location.href).searchParams;
+      expect(params.get("setteraPage")).toBe("general");
+      expect(params.get("section")).toBe("time");
+    });
+  });
+
+  it("clears section query param when navigating to page root", async () => {
+    const user = userEvent.setup();
+    setLocationSearch("?setteraPage=general&section=time");
+    renderLayout();
+
+    await waitFor(() => {
+      expect(screen.getByText("Time preferences")).toBeDefined();
+    });
+
+    await user.click(screen.getByRole("button", { name: "General" }));
+    await waitFor(() => {
+      const params = new URL(window.location.href).searchParams;
+      expect(params.get("setteraPage")).toBe("general");
+      expect(params.get("section")).toBeNull();
+    });
   });
 });

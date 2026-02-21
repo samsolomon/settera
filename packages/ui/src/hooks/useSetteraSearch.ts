@@ -20,6 +20,7 @@ export function useSetteraSearch() {
     setQuery: ctx.setSearchQuery,
     matchingSettingKeys: ctx.matchingSettingKeys,
     matchingPageKeys: ctx.matchingPageKeys,
+    matchingSectionsByPage: ctx.matchingSectionsByPage,
     isSearching: ctx.searchQuery.length > 0,
   };
 }

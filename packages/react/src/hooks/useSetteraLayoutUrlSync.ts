@@ -26,8 +26,11 @@ export interface UseSetteraLayoutUrlSyncOptions {
   schemaCtx: SetteraSchemaContextValue | null;
   activePage: string;
   setActivePage: (key: string) => void;
+  activeSection: string | null;
+  setActiveSection: (key: string | null) => void;
   syncActivePageWithUrl: boolean;
   activePageQueryParam: string;
+  activeSectionQueryParam: string;
   activeSettingQueryParam: string;
   scrollToSetting: (key: string) => void;
   setPendingScrollKey: (key: string | null) => void;
@@ -42,8 +45,11 @@ export function useSetteraLayoutUrlSync({
   schemaCtx,
   activePage,
   setActivePage,
+  activeSection,
+  setActiveSection,
   syncActivePageWithUrl,
   activePageQueryParam,
+  activeSectionQueryParam,
   activeSettingQueryParam,
   scrollToSetting,
   setPendingScrollKey,
@@ -77,14 +83,40 @@ export function useSetteraLayoutUrlSync({
 
     const url = new URL(window.location.href);
     const fromUrl = url.searchParams.get(activePageQueryParam);
-    if (fromUrl === activePage) return;
-    url.searchParams.set(activePageQueryParam, activePage);
-    // Clear stale setting param when page changes via navigation
-    url.searchParams.delete(activeSettingQueryParam);
-    window.history.replaceState(window.history.state, "", url);
+    const sectionFromUrl = url.searchParams.get(activeSectionQueryParam);
+    let changed = false;
+    const pageChanged = fromUrl !== activePage;
+
+    if (pageChanged) {
+      url.searchParams.set(activePageQueryParam, activePage);
+      // Clear stale setting param when page changes via navigation
+      url.searchParams.delete(activeSettingQueryParam);
+      changed = true;
+    }
+
+    if (activeSection) {
+      if (sectionFromUrl !== activeSection) {
+        url.searchParams.set(activeSectionQueryParam, activeSection);
+        changed = true;
+      }
+    } else if (sectionFromUrl) {
+      url.searchParams.delete(activeSectionQueryParam);
+      changed = true;
+    }
+
+    if (!changed) return;
+    const sectionChangedWithoutPageChange =
+      !pageChanged && sectionFromUrl !== activeSection;
+    if (sectionChangedWithoutPageChange) {
+      window.history.pushState(window.history.state, "", url);
+    } else {
+      window.history.replaceState(window.history.state, "", url);
+    }
   }, [
     activePage,
+    activeSection,
     activePageQueryParam,
+    activeSectionQueryParam,
     activeSettingQueryParam,
     syncActivePageWithUrl,
     validPageKeys,
@@ -97,8 +129,12 @@ export function useSetteraLayoutUrlSync({
     const readFromUrl = () => {
       const url = new URL(window.location.href);
       const pageKey = url.searchParams.get(activePageQueryParam);
+      const sectionKey = url.searchParams.get(activeSectionQueryParam);
       if (pageKey && validPageKeys.has(pageKey) && pageKey !== activePage) {
         setActivePage(pageKey);
+      }
+      if (sectionKey !== activeSection) {
+        setActiveSection(sectionKey);
       }
     };
 
@@ -108,8 +144,11 @@ export function useSetteraLayoutUrlSync({
     return () => window.removeEventListener("popstate", readFromUrl);
   }, [
     activePage,
+    activeSection,
     activePageQueryParam,
+    activeSectionQueryParam,
     setActivePage,
+    setActiveSection,
     syncActivePageWithUrl,
     validPageKeys,
   ]);

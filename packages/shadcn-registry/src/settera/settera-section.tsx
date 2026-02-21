@@ -82,7 +82,8 @@ export function SetteraSection({
   }
 
   const sectionContentId = `settera-section-content-${pageKey}-${sectionKey}`;
-  const sectionTitleId = `settera-section-${sectionKey}`;
+  const sectionTitleId = `settera-section-title-${pageKey}-${sectionKey}`;
+  const sectionElementId = `settera-section-${pageKey}-${sectionKey}`;
   const isEffectivelyCollapsed = isCollapsible && isCollapsed && !isSearching;
 
   const sectionContent = (
@@ -146,7 +147,16 @@ export function SetteraSection({
 
   if (isCollapsible) {
     return (
-      <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 1.5rem)" }}>
+      <section
+        id={sectionElementId}
+        data-settera-page-key={pageKey}
+        data-settera-section-key={sectionKey}
+        aria-labelledby={sectionTitleId}
+        style={{
+          marginTop: "var(--settera-section-gap, 1.5rem)",
+          scrollMarginTop: "var(--settera-section-scroll-margin-top, 1.5rem)",
+        }}
+      >
         <Collapsible open={!isEffectivelyCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
           <CollapsibleTrigger asChild>
             <button
@@ -174,7 +184,16 @@ export function SetteraSection({
   }
 
   return (
-    <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 1.5rem)" }}>
+    <section
+      id={sectionElementId}
+      data-settera-page-key={pageKey}
+      data-settera-section-key={sectionKey}
+      aria-labelledby={sectionTitleId}
+      style={{
+        marginTop: "var(--settera-section-gap, 1.5rem)",
+        scrollMarginTop: "var(--settera-section-scroll-margin-top, 1.5rem)",
+      }}
+    >
       <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)", marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}>
         {section.title}
       </h2>

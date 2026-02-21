@@ -43,7 +43,7 @@ function SetteraNavigationProviderInner({
   children: React.ReactNode;
 }) {
   const schemaCtx = useContext(SetteraSchemaContext);
-  const { activePage, setActivePage, subpage, openSubpage, closeSubpage } = useReactNavigation();
+  const { activePage, setActivePage: setActivePageRaw, subpage, openSubpage, closeSubpage } = useReactNavigation();
 
   if (!schemaCtx) {
     throw new Error(
@@ -51,6 +51,15 @@ function SetteraNavigationProviderInner({
     );
   }
   const { schema } = schemaCtx;
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  const setActivePage = useCallback(
+    (key: string) => {
+      setActiveSection(null);
+      setActivePageRaw(key);
+    },
+    [setActivePageRaw],
+  );
 
   // UI-specific state
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
@@ -98,24 +107,47 @@ function SetteraNavigationProviderInner({
     }
   }, [closeSubpage]);
 
-  const { matchingSettingKeys, matchingPageKeys } = useMemo(() => {
+  const { matchingSettingKeys, matchingPageKeys, matchingSectionsByPage } =
+    useMemo(() => {
     if (!searchQuery) {
-      return { matchingSettingKeys: new Set<string>(), matchingPageKeys: new Set<string>() };
+      return {
+        matchingSettingKeys: new Set<string>(),
+        matchingPageKeys: new Set<string>(),
+        matchingSectionsByPage: new Map<string, Set<string>>(),
+      };
     }
     const { settingKeys, pageKeys } = searchSchema(schema, searchQuery);
-    return { matchingSettingKeys: settingKeys, matchingPageKeys: pageKeys };
-  }, [searchQuery, schema]);
+    const sectionMatches = new Map<string, Set<string>>();
+    for (const flat of schemaCtx.flatSettings) {
+      if (!settingKeys.has(flat.definition.key) || !flat.sectionKey) continue;
+      const pageMatches = sectionMatches.get(flat.pageKey);
+      if (pageMatches) {
+        pageMatches.add(flat.sectionKey);
+        continue;
+      }
+      sectionMatches.set(flat.pageKey, new Set([flat.sectionKey]));
+    }
+
+    return {
+      matchingSettingKeys: settingKeys,
+      matchingPageKeys: pageKeys,
+      matchingSectionsByPage: sectionMatches,
+    };
+  }, [searchQuery, schema, schemaCtx.flatSettings]);
 
   const navigationContext: SetteraNavigationContextValue = useMemo(
     () => ({
       activePage,
       setActivePage,
+      activeSection,
+      setActiveSection,
       expandedGroups,
       toggleGroup,
       searchQuery,
       setSearchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      matchingSectionsByPage,
       highlightedSettingKey,
       setHighlightedSettingKey,
       requestFocusContent,
@@ -127,18 +159,21 @@ function SetteraNavigationProviderInner({
     [
       activePage,
       setActivePage,
+      activeSection,
       expandedGroups,
       toggleGroup,
       searchQuery,
       setSearchQuery,
       matchingSettingKeys,
       matchingPageKeys,
+      matchingSectionsByPage,
       highlightedSettingKey,
       requestFocusContent,
       registerFocusContentHandler,
       subpage,
       openSubpage,
       closeSubpage,
+      setActiveSection,
     ],
   );
 

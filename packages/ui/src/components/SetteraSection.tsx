@@ -87,14 +87,19 @@ export function SetteraSection({
   }
 
   const sectionContentId = `settera-section-content-${pageKey}-${sectionKey}`;
-  const sectionTitleId = `settera-section-${sectionKey}`;
+  const sectionTitleId = `settera-section-title-${pageKey}-${sectionKey}`;
+  const sectionElementId = `settera-section-${pageKey}-${sectionKey}`;
   const isEffectivelyCollapsed = isCollapsible && isCollapsed && !isSearching;
 
   return (
     <section
+      id={sectionElementId}
+      data-settera-page-key={pageKey}
+      data-settera-section-key={sectionKey}
       aria-labelledby={sectionTitleId}
       style={{
         marginTop: "var(--settera-section-margin-top, 24px)",
+        scrollMarginTop: "var(--settera-section-scroll-margin-top, 24px)",
       }}
     >
       <div style={sectionHeadingRowStyle}>

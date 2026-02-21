@@ -18,6 +18,8 @@ export function useSetteraNavigation() {
     return {
       activePage: "",
       setActivePage: NOOP as (key: string) => void,
+      activeSection: null as string | null,
+      setActiveSection: NOOP as (key: string | null) => void,
       expandedGroups: EMPTY_SET,
       toggleGroup: NOOP as (key: string) => void,
       highlightedSettingKey: null as string | null,
