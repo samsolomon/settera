@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useSetteraSetting, useBufferedInput } from "@settera/react";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   InputGroup,
@@ -152,11 +154,13 @@ function InputBuffered({
   className?: string;
 }) {
   const { inputProps } = useBufferedInput(committed, onCommit);
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = inputType === "password";
 
   return (
     <InputGroup className={cn("w-full md:w-[var(--settera-control-width,200px)]", extraClassName)}>
       <InputGroupInput
-        type={inputType}
+        type={isPassword && showPassword ? "text" : inputType}
         {...inputProps}
         placeholder={placeholder}
         disabled={isDisabled}
@@ -166,6 +170,24 @@ function InputBuffered({
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         maxLength={maxLength}
       />
+      {isPassword && (
+        <InputGroupAddon align="inline-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="text-muted-foreground shadow-none"
+          >
+            {showPassword ? (
+              <EyeOffIcon className="size-4" />
+            ) : (
+              <EyeIcon className="size-4" />
+            )}
+          </Button>
+        </InputGroupAddon>
+      )}
       {isReadOnly && (
         <InputGroupAddon align="inline-end">
           <SetteraCopyButton value={committed} label={title} />

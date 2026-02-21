@@ -8,7 +8,7 @@ import type {
   TextSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "@settera/react";
-import { CalendarDaysIcon } from "lucide-react";
+import { CalendarDaysIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -42,6 +42,7 @@ import {
 } from "./settera-date-input";
 import { useEmptyOptionValue } from "./settera-select-utils";
 import { useSetteraLabels } from "./settera-labels";
+import { FieldControlSearchableSelect } from "./settera-searchable-select";
 
 export interface SetteraFieldControlProps {
   field: CompoundFieldDefinition;
@@ -102,10 +103,24 @@ export function SetteraFieldControl({
           className={className}
         />
       );
-    case "select":
+    case "select": {
+      const selectField = field as SelectSetting;
+      if (selectField.searchable) {
+        return (
+          <FieldControlSearchableSelect
+            field={selectField}
+            value={value}
+            onChange={onChange}
+            fieldId={fieldId}
+            ariaLabel={ariaLabel}
+            disabled={disabled}
+            className={className}
+          />
+        );
+      }
       return (
         <FieldControlSelect
-          field={field as SelectSetting}
+          field={selectField}
           value={value}
           onChange={onChange}
           fieldId={fieldId}
@@ -114,6 +129,7 @@ export function SetteraFieldControl({
           className={className}
         />
       );
+    }
     case "boolean":
       return (
         <Switch
@@ -200,6 +216,39 @@ function FieldControlText({
   );
 
   const { inputProps } = useBufferedInput(committed, onCommit);
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = field.inputType === "password";
+
+  if (isPassword) {
+    return (
+      <InputGroup className={cn("w-full", className)}>
+        <InputGroupInput
+          id={fieldId}
+          aria-label={ariaLabel}
+          type={showPassword ? "text" : "password"}
+          {...inputProps}
+          disabled={disabled}
+          readOnly={readOnly}
+        />
+        <InputGroupAddon align="inline-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="text-muted-foreground shadow-none"
+          >
+            {showPassword ? (
+              <EyeOffIcon className="size-4" />
+            ) : (
+              <EyeIcon className="size-4" />
+            )}
+          </Button>
+        </InputGroupAddon>
+      </InputGroup>
+    );
+  }
 
   return (
     <Input

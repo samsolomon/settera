@@ -263,6 +263,12 @@ describe("SelectSetting placeholder", () => {
   });
 });
 
+describe("SelectSetting searchable", () => {
+  it("has optional searchable field", () => {
+    expectTypeOf<SelectSetting["searchable"]>().toEqualTypeOf<boolean | undefined>();
+  });
+});
+
 describe("VisibilityCondition extensions", () => {
   it("has greaterThan and lessThan", () => {
     expectTypeOf<VisibilityCondition["greaterThan"]>().toEqualTypeOf<number | undefined>();

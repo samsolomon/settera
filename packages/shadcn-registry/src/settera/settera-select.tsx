@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useEmptyOptionValue } from "./settera-select-utils";
 import { useSetteraLabels } from "./settera-labels";
+import { SetteraSearchableSelect } from "./settera-searchable-select";
 
 export interface SetteraSelectProps {
   settingKey: string;
@@ -21,6 +22,10 @@ export function SetteraSelect({ settingKey }: SetteraSelectProps) {
   const labels = useSetteraLabels();
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+
+  if (definition.type === "select" && definition.searchable) {
+    return <SetteraSearchableSelect settingKey={settingKey} />;
+  }
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);

@@ -186,6 +186,8 @@ export interface SelectSetting extends BaseValueSettingFields {
   options: SelectOption[];
   default?: string;
   placeholder?: string;
+  /** Rendering hint: when true, UI layers may render a searchable combobox instead of a plain dropdown. */
+  searchable?: boolean;
   validation?: {
     required?: boolean;
     message?: string;

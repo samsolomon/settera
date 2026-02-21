@@ -23,6 +23,8 @@ export interface SetteraLabels {
   selectDate?: string;
   copyLink?: string;
   copyLinkToSection?: string;
+  searchSelectPlaceholder?: string;
+  noResults?: string;
 }
 
 export const DEFAULT_LABELS: Required<SetteraLabels> = {
@@ -46,6 +48,8 @@ export const DEFAULT_LABELS: Required<SetteraLabels> = {
   selectDate: "Select date",
   copyLink: "Copy link to setting",
   copyLinkToSection: "Copy link to section",
+  searchSelectPlaceholder: "Search\u2026",
+  noResults: "No results",
 };
 
 export const SetteraLabelsContext = createContext<Required<SetteraLabels>>(DEFAULT_LABELS);

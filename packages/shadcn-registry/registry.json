@@ -43,6 +43,7 @@
         { "path": "src/settera/settera-boolean-switch.tsx", "type": "registry:component", "target": "components/settera/settera-boolean-switch.tsx" },
         { "path": "src/settera/settera-select-utils.ts", "type": "registry:component", "target": "components/settera/settera-select-utils.ts" },
         { "path": "src/settera/settera-select.tsx", "type": "registry:component", "target": "components/settera/settera-select.tsx" },
+        { "path": "src/settera/settera-searchable-select.tsx", "type": "registry:component", "target": "components/settera/settera-searchable-select.tsx" },
         { "path": "src/settera/settera-multiselect.tsx", "type": "registry:component", "target": "components/settera/settera-multiselect.tsx" },
         { "path": "src/settera/settera-date-input.tsx", "type": "registry:component", "target": "components/settera/settera-date-input.tsx" },
         { "path": "src/settera/settera-field-control.tsx", "type": "registry:component", "target": "components/settera/settera-field-control.tsx" },
