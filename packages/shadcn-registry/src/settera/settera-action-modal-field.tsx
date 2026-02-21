@@ -90,7 +90,7 @@ export function SetteraActionModalField({
             />
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               aria-label={`Remove ${field.title} item ${index + 1}`}
               onClick={() => {
@@ -143,7 +143,7 @@ export function SetteraActionModalField({
             ))}
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               aria-label={`Remove ${field.title} item ${index + 1}`}
               onClick={() => onChange(items.filter((_, i) => i !== index))}

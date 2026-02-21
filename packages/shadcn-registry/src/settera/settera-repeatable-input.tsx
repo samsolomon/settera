@@ -91,7 +91,7 @@ function ListTextItem({
       />
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
         aria-label={`Move item ${index + 1} up`}
         onClick={() => onMoveUp(index)}
@@ -101,7 +101,7 @@ function ListTextItem({
       </Button>
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
         aria-label={`Move item ${index + 1} down`}
         onClick={() => onMoveDown(index)}
@@ -111,7 +111,7 @@ function ListTextItem({
       </Button>
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
         aria-label={`Remove item ${index + 1}`}
         onClick={() => onRemove(index)}
@@ -348,7 +348,7 @@ export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputPro
             <div className="flex gap-1 mt-1">
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 aria-label={`Move item ${index + 1} up`}
                 onClick={() => moveItem(index, "up")}
@@ -358,7 +358,7 @@ export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputPro
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 aria-label={`Move item ${index + 1} down`}
                 onClick={() => moveItem(index, "down")}
@@ -368,7 +368,7 @@ export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputPro
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 aria-label={`Remove item ${index + 1}`}
                 onClick={() => removeItem(index)}

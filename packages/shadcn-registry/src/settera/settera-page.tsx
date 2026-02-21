@@ -49,7 +49,7 @@ export function SetteraPage({
     return (
       <div>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={closeSubpage}
           className="mb-3 -ml-2"

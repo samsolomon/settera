@@ -153,7 +153,7 @@ export function SetteraSection({
               {section.title}
             </h2>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="outline" size="sm">
                 {isEffectivelyCollapsed ? "Expand" : "Collapse"}
               </Button>
             </CollapsibleTrigger>
