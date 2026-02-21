@@ -8,487 +8,99 @@ export const demoSchema: SetteraSchema = {
   },
   pages: [
     {
-      key: "general",
-      title: "General",
-      description:
-        "Core application settings. See our [documentation](https://example.com/docs) for details.",
-      icon: "settings",
+      key: "profile",
+      title: "Profile",
+      description: "Manage your personal details",
+      icon: "user",
       sections: [
         {
-          key: "behavior",
-          title: "Behavior",
+          key: "details",
+          title: "Personal information",
+          description:
+            "Changes to your profile will apply to all of your workspaces.",
           settings: [
             {
-              key: "general.autoSave",
-              title: "Auto Save",
-              description: "Automatically save changes when you leave a field.",
-              type: "boolean",
-              default: true,
+              key: "profile.avatar",
+              title: "Profile picture",
+              description:
+                "We only support PNGs, JPEGs and GIFs under 10MB",
+              type: "custom",
+              renderer: "profilePicture",
             },
             {
-              key: "general.notifications",
-              title: "Enable Notifications",
-              description: "Receive notifications about important updates.",
-              type: "boolean",
-              default: true,
-            },
-            {
-              key: "general.sounds",
-              title: "Notification Sounds",
-              description: "Play a sound when a notification arrives.",
-              type: "boolean",
-              default: false,
-              badge: "New",
-              visibleWhen: {
-                setting: "general.notifications",
-                equals: true,
-              },
-            },
-            {
-              key: "general.channels",
-              title: "Notification Channels",
-              description: "Choose how you want to receive notifications.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "sms", label: "SMS" },
-                { value: "push", label: "Push Notifications" },
-                { value: "in-app", label: "In-App" },
-              ],
-              default: ["email", "in-app"],
-              visibleWhen: {
-                setting: "general.notifications",
-                equals: true,
-              },
-              validation: {
-                required: true,
-              },
-            },
-          ],
-        },
-        {
-          key: "profile",
-          title: "Profile",
-          settings: [
-            {
-              key: "profile.displayName",
-              title: "Display Name",
-              description: "Your name as shown to other users.",
+              key: "profile.firstName",
+              title: "First name",
               type: "text",
-              placeholder: "Enter your name",
+              placeholder: "Enter your first name",
               validation: {
                 required: true,
-                minLength: 2,
+                maxLength: 50,
+              },
+            },
+            {
+              key: "profile.lastName",
+              title: "Last name",
+              type: "text",
+              placeholder: "Enter your last name",
+              validation: {
+                required: true,
                 maxLength: 50,
               },
             },
             {
               key: "profile.email",
-              title: "Email Address",
-              description: "Used for account recovery and notifications.",
-              type: "text",
-              inputType: "email",
-              placeholder: "you@example.com",
-              validation: {
-                required: true,
-                pattern: "^[^@]+@[^@]+\\.[^@]+$",
-                message: "Please enter a valid email address",
-              },
-            },
-            {
-              key: "profile.bio",
-              title: "Bio",
-              description: "A short description about yourself.",
-              type: "text",
-              inputType: "textarea",
-              rows: 4,
-              placeholder: "Tell us about yourself…",
-              validation: {
-                maxLength: 200,
-              },
-            },
-            {
-              key: "profile.birthday",
-              title: "Birthday",
-              description: "Your date of birth (used for age verification).",
-              type: "date",
-              validation: {
-                maxDate: "2010-01-01",
-              },
-            },
-            {
-              key: "profile.preferences",
-              title: "Profile Preferences (Compound Inline)",
-              description:
-                "Demo compound object that edits multiple profile fields together.",
-              type: "compound",
-              displayStyle: "inline",
-              fields: [
-                {
-                  key: "pronouns",
-                  title: "Pronouns",
-                  type: "text",
-                  default: "",
-                },
-                {
-                  key: "profileVisibility",
-                  title: "Public Profile",
-                  type: "boolean",
-                  default: false,
-                },
-                {
-                  key: "timezone",
-                  title: "Timezone",
-                  type: "select",
-                  options: [
-                    { value: "utc", label: "UTC" },
-                    { value: "pst", label: "Pacific" },
-                    { value: "est", label: "Eastern" },
-                  ],
-                  default: "utc",
-                },
-              ],
-            },
-            {
-              key: "profile.contactCard",
-              title: "Emergency Contact (Compound Modal)",
-              description:
-                "Second compound example using modal display style in schema.",
+              title: "Primary email address",
               type: "compound",
               displayStyle: "modal",
               fields: [
                 {
-                  key: "name",
-                  title: "Contact Name",
+                  key: "address",
+                  title: "Email address",
                   type: "text",
-                },
-                {
-                  key: "phone",
-                  title: "Phone Number",
-                  type: "text",
-                  inputType: "text",
-                },
-                {
-                  key: "methods",
-                  title: "Preferred Contact Methods",
-                  type: "multiselect",
-                  options: [
-                    { value: "call", label: "Call" },
-                    { value: "sms", label: "SMS" },
-                    { value: "email", label: "Email" },
-                  ],
-                  default: ["call"],
+                  inputType: "email",
+                  placeholder: "you@example.com",
+                  validation: { required: true },
                 },
               ],
-            },
-            {
-              key: "profile.publicCard",
-              title: "Public Card (Compound Page)",
-              description:
-                "Compound editor rendered as an expandable page-style panel.",
-              type: "compound",
-              displayStyle: "page",
-              fields: [
-                {
-                  key: "headline",
-                  title: "Headline",
-                  type: "text",
-                  default: "",
-                },
-                {
-                  key: "tagline",
-                  title: "Tagline",
-                  type: "text",
-                  default: "",
-                },
-                {
-                  key: "showLocation",
-                  title: "Show Location",
-                  type: "boolean",
-                  default: true,
-                },
-              ],
-            },
-            {
-              key: "profile.aliases",
-              title: "Aliases (List)",
-              description: "A text list example for list setting behavior.",
-              type: "repeatable",
-              itemType: "text",
-              default: ["Sam"],
-              validation: {
-                minItems: 1,
-                maxItems: 4,
-              },
-            },
-            {
-              key: "profile.socialLinks",
-              title: "Social Links (Repeatable Compound)",
-              description:
-                "Repeatable compound items with per-row text/select/boolean fields.",
-              type: "repeatable",
-              itemType: "compound",
-              itemFields: [
-                {
-                  key: "label",
-                  title: "Label",
-                  type: "text",
-                  default: "",
-                },
-                {
-                  key: "url",
-                  title: "URL",
-                  type: "text",
-                  inputType: "url",
-                  default: "",
-                },
-                {
-                  key: "visibility",
-                  title: "Visibility",
-                  type: "select",
-                  options: [
-                    { value: "public", label: "Public" },
-                    { value: "private", label: "Private" },
-                  ],
-                  default: "public",
-                },
-                {
-                  key: "featured",
-                  title: "Featured",
-                  type: "boolean",
-                  default: false,
-                },
-              ],
-              default: [],
-              validation: {
-                maxItems: 5,
-              },
-            },
-            {
-              key: "profile.signatureCard",
-              title: "Signature Card (Custom)",
-              description:
-                "Custom-rendered setting surface for app-specific UI.",
-              type: "custom",
-              renderer: "signatureCard",
-              config: {
-                label: "Public signature",
-              },
             },
           ],
         },
         {
-          key: "disabled-readonly",
-          title: "Disabled & Readonly",
-          description: "Demonstrates disabled and readonly states.",
-          collapsible: true,
-          defaultCollapsed: true,
+          key: "time",
+          title: "Time preferences",
+          description: "Manage your time preferences",
           settings: [
             {
-              key: "demo.disabledText",
-              title: "Disabled Text",
-              description: "This text field is disabled and cannot be edited.",
-              type: "text",
-              default: "Cannot edit this",
-              disabled: true,
-            },
-            {
-              key: "demo.readonlyText",
-              title: "Readonly Text",
-              description:
-                "This text field is readonly — you can select and copy but not edit.",
-              type: "text",
-              default: "You can copy this",
-              readonly: true,
-            },
-            {
-              key: "demo.disabledNumber",
-              title: "Disabled Number",
-              description: "A disabled number input.",
-              type: "number",
-              default: 42,
-              disabled: true,
-            },
-            {
-              key: "demo.readonlyNumber",
-              title: "Readonly Number",
-              description: "A readonly number input.",
-              type: "number",
-              default: 99,
-              readonly: true,
-            },
-            {
-              key: "demo.disabledDate",
-              title: "Disabled Date",
-              description: "A disabled date input.",
-              type: "date",
-              default: "2025-01-01",
-              disabled: true,
-            },
-            {
-              key: "demo.readonlyDate",
-              title: "Readonly Date",
-              description: "A readonly date input.",
-              type: "date",
-              default: "2025-06-15",
-              readonly: true,
-            },
-            {
-              key: "demo.disabledToggle",
-              title: "Disabled Toggle",
-              description: "A disabled boolean switch.",
-              type: "boolean",
-              default: true,
-              disabled: true,
-            },
-            {
-              key: "demo.disabledSelect",
-              title: "Disabled Select",
-              description: "A disabled dropdown.",
+              key: "profile.timezone",
+              title: "Preferred timezone",
               type: "select",
               options: [
-                { value: "a", label: "Option A" },
-                { value: "b", label: "Option B" },
+                { value: "America/New_York", label: "America/New_York" },
+                { value: "America/Chicago", label: "America/Chicago" },
+                { value: "America/Denver", label: "America/Denver" },
+                { value: "America/Los_Angeles", label: "America/Los_Angeles" },
+                { value: "America/Anchorage", label: "America/Anchorage" },
+                { value: "Pacific/Honolulu", label: "Pacific/Honolulu" },
+                { value: "Europe/London", label: "Europe/London" },
+                { value: "Europe/Berlin", label: "Europe/Berlin" },
+                { value: "Europe/Paris", label: "Europe/Paris" },
+                { value: "Asia/Tokyo", label: "Asia/Tokyo" },
+                { value: "Asia/Shanghai", label: "Asia/Shanghai" },
+                { value: "Australia/Sydney", label: "Australia/Sydney" },
+                { value: "UTC", label: "UTC" },
               ],
-              default: "a",
-              disabled: true,
+              default: "America/New_York",
             },
             {
-              key: "demo.disabledMultiselect",
-              title: "Disabled Multiselect",
-              description: "Disabled checkboxes.",
-              type: "multiselect",
-              options: [
-                { value: "x", label: "Choice X" },
-                { value: "y", label: "Choice Y" },
-                { value: "z", label: "Choice Z" },
-              ],
-              default: ["x", "z"],
-              disabled: true,
-            },
-            {
-              key: "demo.disabledCompound",
-              title: "Disabled Compound (Inline)",
-              description:
-                "A disabled compound — all child fields are also disabled.",
-              type: "compound",
-              displayStyle: "inline",
-              disabled: true,
-              fields: [
-                {
-                  key: "firstName",
-                  title: "First Name",
-                  type: "text",
-                  default: "Jane",
-                },
-                {
-                  key: "active",
-                  title: "Active",
-                  type: "boolean",
-                  default: true,
-                },
-              ],
-            },
-            {
-              key: "demo.disabledList",
-              title: "Disabled List",
-              description:
-                "A disabled repeatable — items and buttons are all disabled.",
-              type: "repeatable",
-              itemType: "text",
-              default: ["locked-item-1", "locked-item-2"],
-              disabled: true,
-            },
-            {
-              key: "demo.disabledAction",
-              title: "Disabled Action",
-              description: "A disabled action button.",
-              type: "action",
-              buttonLabel: "Can't Click",
-              actionType: "callback",
-              disabled: true,
-            },
-          ],
-        },
-        {
-          key: "appearance",
-          title: "Appearance",
-          settings: [
-            {
-              key: "appearance.theme",
-              title: "Theme",
-              description: "Choose the visual theme for the application.",
+              key: "profile.startWeekOn",
+              title: "Start week on",
               type: "select",
               options: [
-                { value: "light", label: "Light" },
-                { value: "dark", label: "Dark" },
-                { value: "system", label: "System" },
+                { value: "sunday", label: "Sunday" },
+                { value: "monday", label: "Monday" },
+                { value: "saturday", label: "Saturday" },
               ],
-              default: "system",
-            },
-            {
-              key: "appearance.fontSize",
-              title: "Font Size",
-              description: "Base font size in pixels.",
-              type: "number",
-              placeholder: "14",
-              default: 14,
-              displayHint: "slider",
-              validation: {
-                required: true,
-                min: 10,
-                max: 24,
-                step: 1,
-              },
-            },
-            {
-              key: "appearance.language",
-              title: "Language",
-              description: "Display language for the interface.",
-              type: "select",
-              placeholder: "Choose a language…",
-              options: [
-                { value: "en", label: "English", group: "Popular", description: "US English" },
-                { value: "es", label: "Spanish", group: "Popular", description: "Español" },
-                { value: "fr", label: "French", group: "European", description: "Français" },
-                { value: "de", label: "German", group: "European", description: "Deutsch" },
-                { value: "ja", label: "Japanese", group: "Asian", description: "日本語" },
-                { value: "ko", label: "Korean", group: "Asian", description: "한국어" },
-                { value: "zh", label: "Chinese", group: "Asian", description: "中文" },
-              ],
-              default: "en",
-              validation: {
-                required: true,
-              },
-            },
-          ],
-        },
-      ],
-      pages: [
-        {
-          key: "privacy",
-          title: "Privacy",
-          sections: [
-            {
-              key: "tracking",
-              title: "Tracking",
-              settings: [
-                {
-                  key: "privacy.analytics",
-                  title: "Usage Analytics",
-                  description:
-                    "Share anonymous usage data to help improve the app.",
-                  type: "boolean",
-                  default: true,
-                },
-                {
-                  key: "privacy.crashReports",
-                  title: "Crash Reports",
-                  description: "Automatically send crash reports.",
-                  type: "boolean",
-                  default: true,
-                },
-              ],
+              default: "monday",
             },
           ],
         },
@@ -515,7 +127,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "security.ssoProvider",
-                  title: "SSO Provider",
+                  title: "SSO provider",
                   description: "Select your SSO identity provider.",
                   type: "select",
                   placeholder: "Choose a provider…",
@@ -542,7 +154,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "security.sessionTimeout",
-                  title: "Session Timeout",
+                  title: "Session timeout",
                   description: "Minutes of inactivity before auto-logout.",
                   type: "number",
                   placeholder: "30",
@@ -569,20 +181,20 @@ export const demoSchema: SetteraSchema = {
               settings: [
                 {
                   key: "advanced.experimental",
-                  title: "Enable Experimental Features",
+                  title: "Enable experimental features",
                   description: "Turn on features that are still in development.",
                   type: "boolean",
                   default: false,
                   dangerous: true,
                   confirm: {
-                    title: "Enable Experimental Features?",
+                    title: "Enable experimental features?",
                     message:
                       "Experimental features may cause instability. Proceed?",
                   },
                 },
                 {
                   key: "advanced.debug",
-                  title: "Debug Mode",
+                  title: "Debug mode",
                   description: "Show debug information in the console.",
                   type: "boolean",
                   default: false,
@@ -593,7 +205,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "advanced.betaUpdates",
-                  title: "Beta Updates",
+                  title: "Beta updates",
                   description: "Receive beta updates before general release.",
                   type: "boolean",
                   default: false,
@@ -604,11 +216,11 @@ export const demoSchema: SetteraSchema = {
             },
             {
               key: "actions",
-              title: "Data Management",
+              title: "Data management",
               settings: [
                 {
                   key: "actions.export",
-                  title: "Export Data",
+                  title: "Export data",
                   description: "Download all your data as a JSON file.",
                   type: "action",
                   buttonLabel: "Export",
@@ -640,11 +252,11 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "actions.inviteTeam",
-                  title: "Invite Team (Modal Demo)",
+                  title: "Invite team (modal demo)",
                   description:
                     "Comprehensive modal action example with mixed field types.",
                   type: "action",
-                  buttonLabel: "Invite Team",
+                  buttonLabel: "Invite team",
                   actionType: "modal",
                   modal: {
                     title: "Invite team members",
@@ -654,25 +266,25 @@ export const demoSchema: SetteraSchema = {
                     fields: [
                       {
                         key: "message",
-                        title: "Welcome Message",
+                        title: "Welcome message",
                         type: "text",
                         placeholder: "Welcome to the workspace",
                         default: "Welcome aboard!",
                       },
                       {
                         key: "seatCount",
-                        title: "Seat Count",
+                        title: "Seat count",
                         type: "number",
                         default: 3,
                       },
                       {
                         key: "sendOn",
-                        title: "Send On",
+                        title: "Send on",
                         type: "date",
                       },
                       {
                         key: "channels",
-                        title: "Invite Channels",
+                        title: "Invite channels",
                         type: "multiselect",
                         options: [
                           { value: "email", label: "Email" },
@@ -689,13 +301,13 @@ export const demoSchema: SetteraSchema = {
                         fields: [
                           {
                             key: "name",
-                            title: "Owner Name",
+                            title: "Owner name",
                             type: "text",
                             default: "",
                           },
                           {
                             key: "notify",
-                            title: "Notify Owner",
+                            title: "Notify owner",
                             type: "boolean",
                             default: true,
                           },
@@ -703,7 +315,7 @@ export const demoSchema: SetteraSchema = {
                       },
                       {
                         key: "emails",
-                        title: "Invite Emails",
+                        title: "Invite emails",
                         type: "repeatable",
                         itemType: "text",
                         default: ["new-user@example.com"],
@@ -713,25 +325,25 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "actions.clearCache",
-                  title: "Clear Cache",
+                  title: "Clear cache",
                   description: "Remove cached data to free up space.",
                   type: "action",
-                  buttonLabel: "Clear Cache",
+                  buttonLabel: "Clear cache",
                   actionType: "callback",
                 },
                 {
                   key: "actions.importData",
-                  title: "Import Data",
+                  title: "Import data",
                   description:
                     "Full-page form for importing data from an external source.",
                   type: "action",
-                  buttonLabel: "Import Data",
+                  buttonLabel: "Import data",
                   actionType: "page",
                   page: {
-                    title: "Import Data",
+                    title: "Import data",
                     description:
                       "Configure the import source and options, then submit to begin the import.",
-                    submitLabel: "Start Import",
+                    submitLabel: "Start import",
                     cancelLabel: "Cancel",
                     fields: [
                       {
@@ -769,21 +381,21 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "actions.advancedExport",
-                  title: "Advanced Export",
+                  title: "Advanced export",
                   description:
                     "Custom full-page export wizard with a custom renderer.",
                   type: "action",
-                  buttonLabel: "Advanced Export",
+                  buttonLabel: "Advanced export",
                   actionType: "page",
                   page: {
                     renderer: "advancedExportPage",
-                    title: "Advanced Export",
+                    title: "Advanced export",
                     description: "Custom renderer for advanced export options.",
                   },
                 },
                 {
                   key: "actions.account",
-                  title: "Your Account",
+                  title: "Your account",
                   description: "Log in or create a new account.",
                   type: "action",
                   actions: [
@@ -821,11 +433,11 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "actions.deleteAccount",
-                  title: "Delete Account",
+                  title: "Delete account",
                   description:
                     "Permanently delete your account and all associated data. This action cannot be undone.",
                   type: "action",
-                  buttonLabel: "Delete Account",
+                  buttonLabel: "Delete account",
                   actionType: "callback",
                   dangerous: true,
                 },
@@ -840,12 +452,12 @@ export const demoSchema: SetteraSchema = {
           sections: [
             {
               key: "identity",
-              title: "Brand Identity",
+              title: "Brand identity",
               collapsible: true,
               settings: [
                 {
                   key: "branding.name",
-                  title: "Brand Name",
+                  title: "Brand name",
                   description: "Your organization or product name.",
                   type: "text",
                   placeholder: "Acme Corp",
@@ -868,7 +480,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "branding.legalNotice",
-                  title: "Legal Notice",
+                  title: "Legal notice",
                   description: "Footer legal text displayed across the app.",
                   type: "text",
                   inputType: "textarea",
@@ -899,11 +511,11 @@ export const demoSchema: SetteraSchema = {
           sections: [
             {
               key: "plan",
-              title: "Plan & Usage",
+              title: "Plan & usage",
               settings: [
                 {
                   key: "billing.plan",
-                  title: "Current Plan",
+                  title: "Current plan",
                   description: "Your subscription tier.",
                   type: "select",
                   placeholder: "Select a plan…",
@@ -917,7 +529,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.seats",
-                  title: "Team Seats",
+                  title: "Team seats",
                   description: "Number of team member seats on your plan.",
                   type: "number",
                   default: 3,
@@ -931,7 +543,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.annualBilling",
-                  title: "Annual Billing",
+                  title: "Annual billing",
                   description: "Save 20% with annual billing.",
                   type: "boolean",
                   default: false,
@@ -944,7 +556,7 @@ export const demoSchema: SetteraSchema = {
             },
             {
               key: "paid-features",
-              title: "Paid Features",
+              title: "Paid features",
               description: "These settings require a paid plan.",
               collapsible: true,
               visibleWhen: {
@@ -957,7 +569,7 @@ export const demoSchema: SetteraSchema = {
               settings: [
                 {
                   key: "billing.customDomain",
-                  title: "Custom Domain",
+                  title: "Custom domain",
                   description: "Use your own domain for the app.",
                   type: "text",
                   inputType: "url",
@@ -972,7 +584,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.auditLog",
-                  title: "Audit Log Retention",
+                  title: "Audit log retention",
                   description: "How long to keep audit log entries (days).",
                   type: "number",
                   default: 30,
@@ -989,14 +601,14 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.apiAccess",
-                  title: "API Access",
+                  title: "API access",
                   description: "Enable REST API access for integrations.",
                   type: "boolean",
                   default: false,
                 },
                 {
                   key: "billing.apiRateLimit",
-                  title: "API Rate Limit",
+                  title: "API rate limit",
                   description: "Maximum API requests per minute. Shown when API access is enabled and seats exceed 5.",
                   type: "number",
                   default: 60,
@@ -1014,11 +626,11 @@ export const demoSchema: SetteraSchema = {
             },
             {
               key: "notifications-billing",
-              title: "Billing Notifications",
+              title: "Billing notifications",
               settings: [
                 {
                   key: "billing.notifyChannels",
-                  title: "Billing Alert Channels",
+                  title: "Billing alert channels",
                   description: "Choose how to receive billing-related alerts.",
                   type: "multiselect",
                   options: [
@@ -1030,7 +642,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.slackWebhook",
-                  title: "Slack Webhook URL",
+                  title: "Slack webhook URL",
                   description: "Webhook URL for Slack billing notifications.",
                   type: "text",
                   inputType: "url",
@@ -1042,7 +654,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.webhookUrl",
-                  title: "Custom Webhook URL",
+                  title: "Custom webhook URL",
                   description: "Your webhook endpoint for billing events.",
                   type: "text",
                   inputType: "url",
@@ -1054,7 +666,7 @@ export const demoSchema: SetteraSchema = {
                 },
                 {
                   key: "billing.usageThreshold",
-                  title: "Usage Alert Threshold",
+                  title: "Usage alert threshold",
                   description: "Get notified when usage exceeds this percentage.",
                   type: "number",
                   default: 80,
@@ -1069,7 +681,7 @@ export const demoSchema: SetteraSchema = {
               subsections: [
                 {
                   key: "billing-overages",
-                  title: "Overage Settings",
+                  title: "Overage settings",
                   description: "Configure what happens when you exceed your plan limits.",
                   visibleWhen: {
                     setting: "billing.usageThreshold",
@@ -1078,7 +690,7 @@ export const demoSchema: SetteraSchema = {
                   settings: [
                     {
                       key: "billing.overageAction",
-                      title: "Overage Action",
+                      title: "Overage action",
                       description: "What to do when usage exceeds the threshold.",
                       type: "select",
                       options: [
@@ -1090,7 +702,7 @@ export const demoSchema: SetteraSchema = {
                     },
                     {
                       key: "billing.overageEmail",
-                      title: "Overage Notification Email",
+                      title: "Overage notification email",
                       description: "Override the billing contact for overage alerts. Leave empty to use the account email.",
                       type: "text",
                       inputType: "email",

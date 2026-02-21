@@ -142,7 +142,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
     >
       <div
         className={cn(
-          "flex flex-col gap-2 py-3 md:flex-row md:justify-between md:items-start md:gap-0",
+          "flex flex-col gap-2 py-3 md:flex-row md:justify-between md:items-center md:gap-0",
           !isLast && "border-b",
         )}
       >
@@ -199,7 +199,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
             </div>
           )}
         </div>
-        <div className="md:pt-0.5">{children}</div>
+        <div>{children}</div>
       </div>
       <span aria-live="polite" role="status" className="sr-only">
         {saveStatus === "saving" && labels.saving}

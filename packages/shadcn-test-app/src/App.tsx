@@ -6,7 +6,7 @@ import { SetteraLayout as UiSetteraLayout } from "@settera/ui";
 import { demoSchema } from "../../test-app/src/schema.js";
 import {
   UsersPage,
-  SignatureCardSetting,
+  ProfilePictureSetting,
   AdvancedExportPage,
 } from "./custom-renderers.js";
 import { HeadlessView } from "./headless-view.js";
@@ -33,7 +33,9 @@ function readModeFromUrl(): DemoMode {
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [isDark, setIsDark] = useState(false);
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [values, setValues] = useState<Record<string, unknown>>({
+    "profile.email": { address: "bob@example.com" },
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -130,15 +132,17 @@ export function App() {
 
   const handleValidate = useCallback((key: string, value: unknown) => {
     switch (key) {
-      case "profile.email":
+      case "profile.email": {
+        const emailObj = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
         return new Promise<string | null>((r) => setTimeout(r, 500)).then(
           () => {
-            if (value === "taken@example.com") {
+            if (emailObj.address === "taken@example.com") {
               return "This email is already in use";
             }
             return null;
           },
         );
+      }
       default:
         return null;
     }
@@ -243,7 +247,7 @@ export function App() {
                 href: "/",
               }}
               customPages={{ usersPage: UsersPage }}
-              customSettings={{ signatureCard: SignatureCardSetting }}
+              customSettings={{ profilePicture: ProfilePictureSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}

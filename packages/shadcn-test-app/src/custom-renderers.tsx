@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { useSetteraSetting, useSetteraAction } from "@settera/react";
 import type { SetteraCustomPageProps } from "@/components/settera/settera-page";
 import type { SetteraCustomSettingProps } from "@/components/settera/settera-setting";
@@ -108,23 +108,60 @@ export function UsersPage({ page }: SetteraCustomPageProps) {
   );
 }
 
-export function SignatureCardSetting({
+export function ProfilePictureSetting({
   settingKey,
-  definition,
 }: SetteraCustomSettingProps) {
   const { value, setValue } = useSetteraSetting(settingKey);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageUrl = typeof value === "string" ? value : "";
+  const initials = imageUrl ? "" : "B";
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setValue(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   return (
-    <div className="border border-dashed rounded-lg p-2.5 min-w-[260px]">
-      <div className="text-xs text-muted-foreground mb-1.5">
-        {String(definition.config?.label ?? "Signature")}
+    <div className="flex items-center gap-4">
+      <div
+        className="size-16 rounded-full flex items-center justify-center text-2xl font-semibold text-white shrink-0 bg-primary"
+        style={
+          imageUrl
+            ? { backgroundImage: `url(${imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : undefined
+        }
+      >
+        {initials}
       </div>
-      <Input
-        aria-label="Signature card input"
-        value={typeof value === "string" ? value : ""}
-        placeholder="Kind regards, ..."
-        onChange={(e) => setValue(e.target.value)}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
       />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          if (imageUrl) {
+            setValue("");
+          } else {
+            fileInputRef.current?.click();
+          }
+        }}
+      >
+        {imageUrl ? "Remove image" : "Upload image"}
+      </Button>
     </div>
   );
 }

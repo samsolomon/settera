@@ -1146,37 +1146,55 @@ function UsersPage({ page }: SetteraCustomPageProps) {
   );
 }
 
-function SignatureCardSetting({
+function ProfilePictureSetting({
   settingKey,
-  definition,
 }: SetteraCustomSettingProps) {
   const { value, setValue } = useSetteraSetting(settingKey);
+  const imageUrl = typeof value === "string" ? value : "";
+  const initials = imageUrl ? "" : "B";
 
   return (
-    <div
-      style={{
-        border: "1px dashed #d1d5db",
-        borderRadius: "10px",
-        padding: "10px",
-        minWidth: "260px",
-      }}
-    >
-      <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "6px" }}>
-        {String(definition.config?.label ?? "Signature")}
-      </div>
-      <input
-        aria-label="Signature card input"
-        value={typeof value === "string" ? value : ""}
-        placeholder="Kind regards, ..."
-        onChange={(e) => setValue(e.target.value)}
+    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      <div
         style={{
-          width: "100%",
-          fontSize: "14px",
-          padding: "8px 10px",
-          borderRadius: "8px",
-          border: "1px solid #d1d5db",
+          width: "64px",
+          height: "64px",
+          borderRadius: "50%",
+          background: imageUrl ? `url(${imageUrl}) center/cover` : "var(--settera-primary, #2563eb)",
+          color: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "24px",
+          fontWeight: 600,
+          flexShrink: 0,
         }}
-      />
+      >
+        {initials}
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          // In a real app this would open a file picker.
+          // For the demo, toggle between a placeholder image and empty.
+          setValue(imageUrl ? "" : "https://i.pravatar.cc/128?u=demo");
+        }}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          border: "none",
+          borderRadius: "8px",
+          background: "var(--settera-primary, #2563eb)",
+          color: "#ffffff",
+          padding: "8px 16px",
+          fontSize: "14px",
+          fontWeight: 500,
+          cursor: "pointer",
+        }}
+      >
+        Upload image
+      </button>
     </div>
   );
 }
@@ -1286,7 +1304,9 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
   const [colorMode, setColorMode] = useState<ColorMode>(readSystemColorMode);
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [values, setValues] = useState<Record<string, unknown>>({
+    "profile.email": { address: "bob@example.com" },
+  });
 
   const appThemeVars = useMemo<React.CSSProperties>(() => {
     const baseTheme: React.CSSProperties =
@@ -1397,15 +1417,17 @@ export function App() {
 
   const handleValidate = useCallback((key: string, value: unknown) => {
     switch (key) {
-      case "profile.email":
+      case "profile.email": {
+        const emailObj = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
         return new Promise<string | null>((r) => setTimeout(r, 500)).then(
           () => {
-            if (value === "taken@example.com") {
+            if (emailObj.address === "taken@example.com") {
               return "This email is already in use";
             }
             return null;
           },
         );
+      }
       default:
         return null;
     }
@@ -1556,14 +1578,14 @@ export function App() {
                 href: "/",
               }}
               customPages={{ usersPage: UsersPage }}
-              customSettings={{ signatureCard: SignatureCardSetting }}
+              customSettings={{ profilePicture: ProfilePictureSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}
           {mode === "headless" && (
             <SetteraNavigation>
               <HeadlessView
-                customSettings={{ signatureCard: SignatureCardSetting }}
+                customSettings={{ profilePicture: ProfilePictureSetting }}
               />
             </SetteraNavigation>
           )}
