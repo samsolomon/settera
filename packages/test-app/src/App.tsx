@@ -25,6 +25,16 @@ import {
   type SetteraActionPageProps,
   type SetteraLabels,
 } from "@settera/ui";
+import {
+  User,
+  Paintbrush,
+  Shield,
+  Zap,
+  Palette,
+  CreditCard,
+  Users,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { demoSchema } from "./schema.js";
 import * as localeEn from "./locales/en.js";
 import * as localeEs from "./locales/es.js";
@@ -41,6 +51,22 @@ const LOCALES: Record<string, LocaleBundle> = {
   en: localeEn,
   es: localeEs,
 };
+
+const ICON_MAP: Record<string, React.ComponentType<{ size?: string | number }>> = {
+  user: User,
+  paintbrush: Paintbrush,
+  shield: Shield,
+  zap: Zap,
+  palette: Palette,
+  "credit-card": CreditCard,
+  users: Users,
+};
+
+function renderIcon(name: string): ReactNode {
+  const Icon = ICON_MAP[name];
+  if (!Icon) return null;
+  return <Icon size={16} />;
+}
 
 const DEMO_MODE_QUERY_PARAM = "demoMode";
 
@@ -1652,6 +1678,7 @@ export function App() {
           {mode === "ui" && (
             <SetteraLayout
               labels={activeLabels}
+              renderIcon={renderIcon}
               backToApp={{
                 label: "Back to app",
                 href: "/",

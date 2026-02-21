@@ -258,9 +258,11 @@ export const demoSchema: SetteraSchema = {
               description: "Base font size for the interface.",
               type: "select",
               options: [
+                { value: "xs", label: "Extra small" },
                 { value: "small", label: "Small" },
                 { value: "medium", label: "Medium" },
                 { value: "large", label: "Large" },
+                { value: "xl", label: "Extra large" },
               ],
               default: "medium",
             },
