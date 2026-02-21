@@ -2,7 +2,7 @@
 
 import React, { useCallback, useContext } from "react";
 import { SetteraSchemaContext, useSetteraSetting, useCompoundDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
-import type { ActionSetting, CompoundFieldDefinition } from "@settera/schema";
+import type { ActionSetting, ActionPageConfig, CompoundFieldDefinition } from "@settera/schema";
 import { SetteraActionPageContent } from "./settera-action-page-content";
 import { CompoundFields } from "./settera-compound-input";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,30 @@ export function SetteraSubpageContent({
     );
   }
 
-  if (setting.type === "action" && setting.actionType === "page") {
-    if (setting.page?.renderer) {
-      const CustomActionPage = customActionPages?.[setting.page.renderer];
+  if (setting.type === "action") {
+    // Determine if this is a multi-button item subpage or a single-button subpage
+    let actionKey = settingKey;
+    let pageConfig: ActionPageConfig | undefined;
+    let actionType: string | undefined;
+    let title = setting.title;
+
+    if (setting.actions && setting.key !== settingKey) {
+      // Multi-button: find the matching item
+      const item = setting.actions.find((a) => a.key === settingKey);
+      if (item) {
+        actionKey = item.key;
+        pageConfig = item.page;
+        actionType = item.actionType;
+      }
+    } else {
+      pageConfig = setting.page;
+      actionType = setting.actionType;
+    }
+
+    if (actionType !== "page") return null;
+
+    if (pageConfig?.renderer) {
+      const CustomActionPage = customActionPages?.[pageConfig.renderer];
       if (CustomActionPage) {
         return (
           <CustomActionPage
@@ -55,15 +76,17 @@ export function SetteraSubpageContent({
       }
       return (
         <div className="text-sm italic text-muted-foreground">
-          Missing custom action page renderer &ldquo;{setting.page.renderer}&rdquo;.
+          Missing custom action page renderer &ldquo;{pageConfig.renderer}&rdquo;.
         </div>
       );
     }
 
     return (
       <SetteraActionPageContent
-        settingKey={settingKey}
-        definition={setting}
+        settingKey={setting.key}
+        actionKey={actionKey}
+        pageConfig={pageConfig}
+        title={title}
         onBack={onBack}
       />
     );

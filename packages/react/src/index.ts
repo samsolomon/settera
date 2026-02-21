@@ -20,7 +20,7 @@ export { useSettera } from "./hooks/useSettera.js";
 export { useSetteraSetting } from "./hooks/useSetteraSetting.js";
 export type { UseSetteraSettingResult } from "./hooks/useSetteraSetting.js";
 export { useSetteraAction } from "./hooks/useSetteraAction.js";
-export type { UseSetteraActionResult } from "./hooks/useSetteraAction.js";
+export type { UseSetteraActionResult, UseSetteraActionItemResult } from "./hooks/useSetteraAction.js";
 export { useSetteraConfirm } from "./hooks/useSetteraConfirm.js";
 export type { UseSetteraConfirmResult } from "./hooks/useSetteraConfirm.js";
 export { useSetteraSection } from "./hooks/useSetteraSection.js";

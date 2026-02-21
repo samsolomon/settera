@@ -84,6 +84,21 @@ export function App() {
           );
         });
       }
+      case "actions.account.login": {
+        const creds =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+        return new Promise<void>((r) => setTimeout(r, 1000)).then(() => {
+          console.info(
+            `[shadcn-test-app] Login attempted (email: ${String(creds.email ?? "")}).`,
+          );
+        });
+      }
+      case "actions.account.signup":
+        return new Promise<void>((r) => setTimeout(r, 800)).then(() => {
+          console.info("[shadcn-test-app] Sign up flow started.");
+        });
       case "actions.deleteAccount":
         return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
           console.info("[shadcn-test-app] Account deleted (just kidding).");

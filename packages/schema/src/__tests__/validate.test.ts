@@ -2223,6 +2223,309 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.path.includes("page.fields"))).toBe(true);
   });
 
+  // Multi-button action settings
+  it("accepts valid multi-button action setting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                    { key: "signup", buttonLabel: "Sign up", actionType: "callback" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors).toEqual([]);
+  });
+
+  it("rejects action with both buttonLabel and actions", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  buttonLabel: "Log in",
+                  actionType: "callback",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                  ],
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_ACTION_CONFIG")).toBe(true);
+    expect(errors.some((e) => e.message.includes("not both"))).toBe(true);
+  });
+
+  it("rejects action with neither buttonLabel nor actions", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                } as any,
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_ACTION_CONFIG")).toBe(true);
+  });
+
+  it("rejects multi-button action with empty actions array", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "INVALID_ACTION_CONFIG")).toBe(true);
+    expect(errors.some((e) => e.message.includes("must not be empty"))).toBe(true);
+  });
+
+  it("rejects action item without key", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "", buttonLabel: "Log in", actionType: "callback" } as any,
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
+  });
+
+  it("rejects action item without buttonLabel", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "", actionType: "callback" } as any,
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD" && e.message.includes("buttonLabel"))).toBe(true);
+  });
+
+  it("rejects duplicate action item keys within array", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                    { key: "login", buttonLabel: "Log in again", actionType: "callback" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_KEY" && e.message.includes("action item key"))).toBe(true);
+  });
+
+  it("rejects action item key that conflicts with existing setting key", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                { key: "login", title: "Login Toggle", type: "boolean" },
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "DUPLICATE_KEY" && e.message.includes("conflicts"))).toBe(true);
+  });
+
+  it("validates modal config per action item", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "modal" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_REQUIRED_FIELD" && e.path.includes("actions[0].modal"))).toBe(true);
+  });
+
+  it("validates page config per action item", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "setup", buttonLabel: "Setup", actionType: "page" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.code === "MISSING_ACTION_PAGE_CONFIG")).toBe(true);
+  });
+
   // Page groups
   it("accepts schema with page groups", () => {
     const schema: SetteraSchema = {

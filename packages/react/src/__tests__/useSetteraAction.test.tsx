@@ -38,6 +38,15 @@ const schema: SetteraSchema = {
               actionType: "callback",
               visibleWhen: { setting: "toggle", equals: true },
             },
+            {
+              key: "multiAction",
+              title: "Multi Buttons",
+              type: "action",
+              actions: [
+                { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                { key: "signup", buttonLabel: "Sign up", actionType: "callback" },
+              ],
+            },
           ],
         },
       ],
@@ -285,5 +294,129 @@ describe("useSetteraAction", () => {
     await act(async () => {
       resolve!();
     });
+  });
+});
+
+// ---- Multi-button action tests ----
+
+function MultiActionDisplay({ settingKey }: { settingKey: string }) {
+  const { definition, isVisible, items } = useSetteraAction(settingKey);
+  return (
+    <div data-testid={`multi-${settingKey}`}>
+      <span data-testid={`title-${settingKey}`}>{definition.title}</span>
+      <span data-testid={`visible-${settingKey}`}>
+        {isVisible ? "visible" : "hidden"}
+      </span>
+      <span data-testid={`items-count-${settingKey}`}>{items.length}</span>
+      {items.map((item) => (
+        <div key={item.item.key} data-testid={`item-${item.item.key}`}>
+          <span data-testid={`item-label-${item.item.key}`}>{item.item.buttonLabel}</span>
+          <span data-testid={`item-loading-${item.item.key}`}>
+            {item.isLoading ? "loading" : "idle"}
+          </span>
+          <button
+            onClick={() => item.onAction()}
+            data-testid={`item-trigger-${item.item.key}`}
+          >
+            {item.item.buttonLabel}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function renderMultiAction(
+  settingKey: string,
+  onAction?: (key: string, payload?: unknown) => void | Promise<void>,
+  values: Record<string, unknown> = {},
+) {
+  return render(
+    <Settera schema={schema} values={values} onChange={() => {}} onAction={onAction}>
+      <MultiActionDisplay settingKey={settingKey} />
+    </Settera>,
+  );
+}
+
+describe("useSetteraAction — multi-button", () => {
+  it("returns items array with correct length", () => {
+    renderMultiAction("multiAction");
+    expect(screen.getByTestId("items-count-multiAction").textContent).toBe("2");
+  });
+
+  it("returns empty items array for single-button action", () => {
+    render(
+      <Settera schema={schema} values={{}} onChange={() => {}}>
+        <MultiActionDisplay settingKey="resetAction" />
+      </Settera>,
+    );
+    expect(screen.getByTestId("items-count-resetAction").textContent).toBe("0");
+  });
+
+  it("renders item labels correctly", () => {
+    renderMultiAction("multiAction");
+    expect(screen.getByTestId("item-label-login").textContent).toBe("Log in");
+    expect(screen.getByTestId("item-label-signup").textContent).toBe("Sign up");
+  });
+
+  it("calls onAction with item key on click", () => {
+    const handler = vi.fn();
+    renderMultiAction("multiAction", handler);
+
+    screen.getByTestId("item-trigger-login").click();
+    expect(handler).toHaveBeenCalledWith("login", undefined);
+
+    screen.getByTestId("item-trigger-signup").click();
+    expect(handler).toHaveBeenCalledWith("signup", undefined);
+  });
+
+  it("tracks per-item loading state independently", async () => {
+    let resolveLogin: () => void;
+    const handler = vi.fn((key: string) => {
+      if (key === "login") {
+        return new Promise<void>((r) => {
+          resolveLogin = r;
+        });
+      }
+    });
+
+    renderMultiAction("multiAction", handler);
+
+    expect(screen.getByTestId("item-loading-login").textContent).toBe("idle");
+    expect(screen.getByTestId("item-loading-signup").textContent).toBe("idle");
+
+    // Start async action on login
+    await act(async () => {
+      screen.getByTestId("item-trigger-login").click();
+    });
+
+    expect(screen.getByTestId("item-loading-login").textContent).toBe("loading");
+    expect(screen.getByTestId("item-loading-signup").textContent).toBe("idle");
+
+    // Resolve login
+    await act(async () => {
+      resolveLogin!();
+    });
+
+    expect(screen.getByTestId("item-loading-login").textContent).toBe("idle");
+    expect(screen.getByTestId("item-loading-signup").textContent).toBe("idle");
+  });
+
+  it("can look up multi-button action by item key", () => {
+    // The hook should find the parent action when called with an item key
+    function ItemKeyDisplay() {
+      const { definition } = useSetteraAction("login");
+      return (
+        <span data-testid="item-key-definition">{definition.key}</span>
+      );
+    }
+
+    render(
+      <Settera schema={schema} values={{}} onChange={() => {}}>
+        <ItemKeyDisplay />
+      </Settera>,
+    );
+
+    expect(screen.getByTestId("item-key-definition").textContent).toBe("multiAction");
   });
 });

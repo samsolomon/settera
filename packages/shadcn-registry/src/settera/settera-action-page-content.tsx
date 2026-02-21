@@ -1,25 +1,37 @@
 "use client";
 
 import React, { useCallback } from "react";
-import type { ActionSetting } from "@settera/schema";
+import type { ActionPageConfig } from "@settera/schema";
 import { useSetteraAction, useActionModalDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
 import { SetteraActionModalField } from "./settera-action-modal-field";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 export interface SetteraActionPageContentProps {
+  /** The parent action setting key (used for useSetteraAction) */
   settingKey: string;
-  definition: ActionSetting;
+  /** The key to use when invoking the action (item key for multi-button, same as settingKey for single) */
+  actionKey: string;
+  /** The page config to render */
+  pageConfig?: ActionPageConfig;
+  /** Fallback title from the parent setting */
+  title: string;
   onBack: () => void;
 }
 
 export function SetteraActionPageContent({
   settingKey,
-  definition,
+  actionKey,
+  pageConfig,
+  title: parentTitle,
   onBack,
 }: SetteraActionPageContentProps) {
-  const { onAction, isLoading } = useSetteraAction(settingKey);
-  const pageConfig = definition.page;
+  const { onAction, isLoading, items } = useSetteraAction(settingKey);
+
+  // For multi-button items, find the matching item's onAction/isLoading
+  const itemResult = items.find((i) => i.item.key === actionKey);
+  const effectiveOnAction = itemResult ? itemResult.onAction : onAction;
+  const effectiveIsLoading = itemResult ? itemResult.isLoading : isLoading;
 
   const { draftValues, setField } = useActionModalDraft(
     pageConfig?.fields,
@@ -28,20 +40,20 @@ export function SetteraActionPageContent({
   );
 
   const { trigger: triggerSubmit, isBusy } = useSaveAndClose(
-    isLoading,
+    effectiveIsLoading,
     onBack,
   );
 
   const handleSubmit = useCallback(() => {
-    onAction(draftValues);
+    effectiveOnAction(draftValues);
     triggerSubmit();
-  }, [draftValues, onAction, triggerSubmit]);
+  }, [draftValues, effectiveOnAction, triggerSubmit]);
 
   if (!pageConfig || !pageConfig.fields || pageConfig.fields.length === 0) {
     return null;
   }
 
-  const title = pageConfig.title ?? definition.title;
+  const title = pageConfig.title ?? parentTitle;
   const description = pageConfig.description;
 
   return (

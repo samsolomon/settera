@@ -8,6 +8,7 @@ import {
   resolvePageKey,
   isPageGroup,
   flattenPageItems,
+  buildSettingIndex,
 } from "../traversal.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
 import type { SetteraSchema, PageItem } from "../types.js";
@@ -903,5 +904,83 @@ describe("walkSchema — page groups", () => {
     const page = getPageByKey(schema, "deep-page");
     expect(page).toBeDefined();
     expect(page?.title).toBe("Deep Page");
+  });
+});
+
+describe("buildSettingIndex — multi-button action items", () => {
+  it("indexes action item keys pointing to the parent ActionSetting", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "account",
+                  title: "Your Account",
+                  type: "action",
+                  actions: [
+                    { key: "login", buttonLabel: "Log in", actionType: "callback" },
+                    { key: "signup", buttonLabel: "Sign up", actionType: "callback" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const flat = flattenSettings(schema);
+    const index = buildSettingIndex(flat);
+
+    // Parent key is indexed
+    expect(index.get("account")).toBeDefined();
+    expect(index.get("account")!.definition.key).toBe("account");
+
+    // Item keys also resolve to the parent
+    expect(index.get("login")).toBeDefined();
+    expect(index.get("login")!.definition.key).toBe("account");
+
+    expect(index.get("signup")).toBeDefined();
+    expect(index.get("signup")!.definition.key).toBe("account");
+  });
+
+  it("does not index action items for single-button actions", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "doThing",
+                  title: "Do Thing",
+                  type: "action",
+                  buttonLabel: "Do it",
+                  actionType: "callback",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const flat = flattenSettings(schema);
+    const index = buildSettingIndex(flat);
+
+    expect(index.get("doThing")).toBeDefined();
+    expect(index.size).toBe(1);
   });
 });

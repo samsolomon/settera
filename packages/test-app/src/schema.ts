@@ -782,6 +782,44 @@ export const demoSchema: SetteraSchema = {
                   },
                 },
                 {
+                  key: "actions.account",
+                  title: "Your Account",
+                  description: "Log in or create a new account.",
+                  type: "action",
+                  actions: [
+                    {
+                      key: "actions.account.login",
+                      buttonLabel: "Log in",
+                      actionType: "modal",
+                      modal: {
+                        title: "Log in to your account",
+                        description: "Enter your credentials to sign in.",
+                        submitLabel: "Log in",
+                        fields: [
+                          {
+                            key: "email",
+                            title: "Email",
+                            type: "text",
+                            inputType: "email",
+                            placeholder: "you@example.com",
+                          },
+                          {
+                            key: "password",
+                            title: "Password",
+                            type: "text",
+                            inputType: "password",
+                          },
+                        ],
+                      },
+                    },
+                    {
+                      key: "actions.account.signup",
+                      buttonLabel: "Sign up",
+                      actionType: "callback",
+                    },
+                  ],
+                },
+                {
                   key: "actions.deleteAccount",
                   title: "Delete Account",
                   description:

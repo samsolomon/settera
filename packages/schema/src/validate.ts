@@ -4,6 +4,7 @@ import type {
   PageItem,
   SectionDefinition,
   SettingDefinition,
+  ActionSetting,
   SchemaValidationError,
   VisibilityCondition,
   VisibilityRule,
@@ -408,72 +409,7 @@ function validateSetting(
   }
 
   if (setting.type === "action") {
-    if (!setting.buttonLabel) {
-      ctx.errors.push({
-        path: `${path}.buttonLabel`,
-        code: "MISSING_REQUIRED_FIELD",
-        message: `Action setting "${setting.key}" must have a buttonLabel.`,
-      });
-    }
-    if (!setting.actionType) {
-      ctx.errors.push({
-        path: `${path}.actionType`,
-        code: "MISSING_REQUIRED_FIELD",
-        message: `Action setting "${setting.key}" must have an actionType.`,
-      });
-    }
-
-    if (setting.actionType === "modal") {
-      if (!setting.modal) {
-        ctx.errors.push({
-          path: `${path}.modal`,
-          code: "MISSING_REQUIRED_FIELD",
-          message: `Action setting "${setting.key}" with actionType "modal" must define modal config.`,
-        });
-      } else if (!setting.modal.fields || setting.modal.fields.length === 0) {
-        ctx.errors.push({
-          path: `${path}.modal.fields`,
-          code: "MISSING_REQUIRED_FIELD",
-          message: `Action setting "${setting.key}" modal must define at least one field.`,
-        });
-      } else {
-        const modalFieldKeys = new Set<string>();
-        for (let i = 0; i < setting.modal.fields.length; i++) {
-          validateSetting(
-            setting.modal.fields[i],
-            `${path}.modal.fields[${i}]`,
-            ctx,
-            modalFieldKeys,
-          );
-        }
-      }
-    }
-
-    if (setting.actionType === "page") {
-      if (!setting.page) {
-        ctx.errors.push({
-          path: `${path}.page`,
-          code: "MISSING_ACTION_PAGE_CONFIG",
-          message: `Action setting "${setting.key}" with actionType "page" must define page config.`,
-        });
-      } else if (!setting.page.renderer && (!setting.page.fields || setting.page.fields.length === 0)) {
-        ctx.errors.push({
-          path: `${path}.page`,
-          code: "MISSING_ACTION_PAGE_CONFIG",
-          message: `Action setting "${setting.key}" page config must define either a renderer or fields.`,
-        });
-      } else if (setting.page.fields && setting.page.fields.length > 0) {
-        const pageFieldKeys = new Set<string>();
-        for (let i = 0; i < setting.page.fields.length; i++) {
-          validateSetting(
-            setting.page.fields[i],
-            `${path}.page.fields[${i}]`,
-            ctx,
-            pageFieldKeys,
-          );
-        }
-      }
-    }
+    validateActionSetting(setting, path, ctx);
   }
 
   if (setting.type === "compound") {
@@ -571,6 +507,199 @@ function validateSetting(
   // Collect visibility refs
   if ("visibleWhen" in setting && setting.visibleWhen) {
     collectVisibilityRefs(setting.visibleWhen, `${path}.visibleWhen`, ctx);
+  }
+}
+
+// ---- Action validation helpers ----
+
+function validateActionSetting(
+  setting: ActionSetting,
+  path: string,
+  ctx: ValidationContext,
+): void {
+  const hasSingleButton = setting.buttonLabel !== undefined || setting.actionType !== undefined;
+  const hasMultiButton = setting.actions !== undefined;
+
+  // Mutual exclusivity: must have one form or the other, not both, not neither
+  if (hasSingleButton && hasMultiButton) {
+    ctx.errors.push({
+      path,
+      code: "INVALID_ACTION_CONFIG",
+      message: `Action setting "${setting.key}" must use either buttonLabel/actionType or actions, not both.`,
+    });
+    return;
+  }
+
+  if (!hasSingleButton && !hasMultiButton) {
+    ctx.errors.push({
+      path,
+      code: "INVALID_ACTION_CONFIG",
+      message: `Action setting "${setting.key}" must define either buttonLabel/actionType or actions.`,
+    });
+    return;
+  }
+
+  if (hasMultiButton) {
+    // Multi-button form
+    const actions = setting.actions!;
+    if (actions.length === 0) {
+      ctx.errors.push({
+        path: `${path}.actions`,
+        code: "INVALID_ACTION_CONFIG",
+        message: `Action setting "${setting.key}" actions array must not be empty.`,
+      });
+      return;
+    }
+
+    const itemKeys = new Set<string>();
+    for (let i = 0; i < actions.length; i++) {
+      const item = actions[i];
+      const itemPath = `${path}.actions[${i}]`;
+
+      if (!item.key) {
+        ctx.errors.push({
+          path: `${itemPath}.key`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: `Action item must have a key.`,
+        });
+      }
+      if (!item.buttonLabel) {
+        ctx.errors.push({
+          path: `${itemPath}.buttonLabel`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: `Action item "${item.key || "(unnamed)"}" must have a buttonLabel.`,
+        });
+      }
+      if (!item.actionType) {
+        ctx.errors.push({
+          path: `${itemPath}.actionType`,
+          code: "MISSING_REQUIRED_FIELD",
+          message: `Action item "${item.key || "(unnamed)"}" must have an actionType.`,
+        });
+      }
+
+      // Duplicate item key within the array
+      if (item.key) {
+        if (itemKeys.has(item.key)) {
+          ctx.errors.push({
+            path: `${itemPath}.key`,
+            code: "DUPLICATE_KEY",
+            message: `Duplicate action item key "${item.key}".`,
+          });
+        }
+        itemKeys.add(item.key);
+
+        // Global uniqueness
+        if (ctx.settingKeys.has(item.key)) {
+          ctx.errors.push({
+            path: `${itemPath}.key`,
+            code: "DUPLICATE_KEY",
+            message: `Action item key "${item.key}" conflicts with an existing setting key.`,
+          });
+        }
+        ctx.settingKeys.add(item.key);
+      }
+
+      // Validate modal/page config per item
+      if (item.actionType) {
+        validateActionTypeConfig(
+          item.actionType,
+          item.modal,
+          item.page,
+          itemPath,
+          item.key || setting.key,
+          ctx,
+        );
+      }
+    }
+  } else {
+    // Single-button form
+    if (!setting.buttonLabel) {
+      ctx.errors.push({
+        path: `${path}.buttonLabel`,
+        code: "MISSING_REQUIRED_FIELD",
+        message: `Action setting "${setting.key}" must have a buttonLabel.`,
+      });
+    }
+    if (!setting.actionType) {
+      ctx.errors.push({
+        path: `${path}.actionType`,
+        code: "MISSING_REQUIRED_FIELD",
+        message: `Action setting "${setting.key}" must have an actionType.`,
+      });
+    }
+
+    if (setting.actionType) {
+      validateActionTypeConfig(
+        setting.actionType,
+        setting.modal,
+        setting.page,
+        path,
+        setting.key,
+        ctx,
+      );
+    }
+  }
+}
+
+function validateActionTypeConfig(
+  actionType: "modal" | "callback" | "page",
+  modal: ActionSetting["modal"],
+  page: ActionSetting["page"],
+  path: string,
+  label: string,
+  ctx: ValidationContext,
+): void {
+  if (actionType === "modal") {
+    if (!modal) {
+      ctx.errors.push({
+        path: `${path}.modal`,
+        code: "MISSING_REQUIRED_FIELD",
+        message: `Action "${label}" with actionType "modal" must define modal config.`,
+      });
+    } else if (!modal.fields || modal.fields.length === 0) {
+      ctx.errors.push({
+        path: `${path}.modal.fields`,
+        code: "MISSING_REQUIRED_FIELD",
+        message: `Action "${label}" modal must define at least one field.`,
+      });
+    } else {
+      const modalFieldKeys = new Set<string>();
+      for (let i = 0; i < modal.fields.length; i++) {
+        validateSetting(
+          modal.fields[i],
+          `${path}.modal.fields[${i}]`,
+          ctx,
+          modalFieldKeys,
+        );
+      }
+    }
+  }
+
+  if (actionType === "page") {
+    if (!page) {
+      ctx.errors.push({
+        path: `${path}.page`,
+        code: "MISSING_ACTION_PAGE_CONFIG",
+        message: `Action "${label}" with actionType "page" must define page config.`,
+      });
+    } else if (!page.renderer && (!page.fields || page.fields.length === 0)) {
+      ctx.errors.push({
+        path: `${path}.page`,
+        code: "MISSING_ACTION_PAGE_CONFIG",
+        message: `Action "${label}" page config must define either a renderer or fields.`,
+      });
+    } else if (page.fields && page.fields.length > 0) {
+      const pageFieldKeys = new Set<string>();
+      for (let i = 0; i < page.fields.length; i++) {
+        validateSetting(
+          page.fields[i],
+          `${path}.page.fields[${i}]`,
+          ctx,
+          pageFieldKeys,
+        );
+      }
+    }
   }
 }
 

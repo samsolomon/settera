@@ -255,6 +255,15 @@ export function buildSettingIndex(
   const index = new Map<string, FlattenedSetting>();
   for (const entry of flatSettings) {
     index.set(entry.definition.key, entry);
+    // Index action item keys so getSettingByKey("itemKey") returns the parent ActionSetting.
+    // Skip if a top-level setting already claimed this key (validation catches this).
+    if (entry.definition.type === "action" && entry.definition.actions) {
+      for (const item of entry.definition.actions) {
+        if (!index.has(item.key)) {
+          index.set(item.key, entry);
+        }
+      }
+    }
   }
   return index;
 }

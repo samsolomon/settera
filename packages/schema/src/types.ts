@@ -253,29 +253,47 @@ export interface RepeatableSetting extends BaseValueSettingFields {
   };
 }
 
-export interface ActionSetting extends BaseSettingFields {
-  type: "action";
+export interface ActionModalConfig {
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+  cancelLabel?: string;
+  fields: ModalActionFieldSetting[];
+  initialValues?: Record<string, unknown>;
+}
+
+export interface ActionPageConfig {
+  title?: string;
+  description?: string;
+  /** Custom page component key (consumer-provided renderer) */
+  renderer?: string;
+  submitLabel?: string;
+  cancelLabel?: string;
+  /** Schema-defined form fields (same types as modal fields) */
+  fields?: ModalActionFieldSetting[];
+  initialValues?: Record<string, unknown>;
+}
+
+/** A single button within a multi-button action setting. */
+export interface ActionItem {
+  key: string;
   buttonLabel: string;
   actionType: "modal" | "callback" | "page";
-  modal?: {
-    title?: string;
-    description?: string;
-    submitLabel?: string;
-    cancelLabel?: string;
-    fields: ModalActionFieldSetting[];
-    initialValues?: Record<string, unknown>;
-  };
-  page?: {
-    title?: string;
-    description?: string;
-    /** Custom page component key (consumer-provided renderer) */
-    renderer?: string;
-    submitLabel?: string;
-    cancelLabel?: string;
-    /** Schema-defined form fields (same types as modal fields) */
-    fields?: ModalActionFieldSetting[];
-    initialValues?: Record<string, unknown>;
-  };
+  dangerous?: boolean;
+  disabled?: boolean;
+  modal?: ActionModalConfig;
+  page?: ActionPageConfig;
+}
+
+export interface ActionSetting extends BaseSettingFields {
+  type: "action";
+  // Single-button form (existing):
+  buttonLabel?: string;
+  actionType?: "modal" | "callback" | "page";
+  modal?: ActionModalConfig;
+  page?: ActionPageConfig;
+  // Multi-button form:
+  actions?: ActionItem[];
 }
 
 export type ModalActionFieldSetting =
@@ -377,7 +395,8 @@ export interface SchemaValidationError {
     | "INVALID_REPEATABLE_CONFIG"
     | "INVALID_PATTERN"
     | "INVALID_COMPOUND_RULE"
-    | "MISSING_ACTION_PAGE_CONFIG";
+    | "MISSING_ACTION_PAGE_CONFIG"
+    | "INVALID_ACTION_CONFIG";
 
   /** Human-readable error message */
   message: string;

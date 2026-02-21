@@ -1,12 +1,13 @@
 import React, { useCallback, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import type { ActionSetting } from "@settera/schema";
+import type { ActionModalConfig } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "@settera/react";
 import { PrimitiveButton, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
 export interface ActionModalProps {
-  definition: ActionSetting;
+  modalConfig: ActionModalConfig;
+  title: string;
   isOpen: boolean;
   isLoading: boolean;
   onOpenChange: (open: boolean) => void;
@@ -14,27 +15,23 @@ export interface ActionModalProps {
 }
 
 export function ActionModal({
-  definition,
+  modalConfig,
+  title,
   isOpen,
   isLoading,
   onOpenChange,
   onSubmit,
 }: ActionModalProps) {
-  const modalConfig = definition.modal;
   const contentRef = useRef<HTMLDivElement>(null);
   const { draftValues, setField } = useActionModalDraft(
-    modalConfig?.fields,
-    modalConfig?.initialValues,
+    modalConfig.fields,
+    modalConfig.initialValues,
     isOpen,
   );
 
   const handleSubmit = useCallback(() => {
     onSubmit(draftValues);
   }, [draftValues, onSubmit]);
-
-  if (!modalConfig) {
-    return null;
-  }
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
@@ -49,7 +46,7 @@ export function ActionModal({
         />
         <Dialog.Content
           ref={contentRef}
-          aria-label={modalConfig.title ?? definition.title}
+          aria-label={modalConfig.title ?? title}
           onOpenAutoFocus={(e) => {
             e.preventDefault();
             const firstControl = contentRef.current?.querySelector<HTMLElement>(
@@ -102,7 +99,7 @@ export function ActionModal({
                 color: "var(--settera-title-color, var(--settera-foreground, #111827))",
               }}
             >
-              {modalConfig.title ?? definition.title}
+              {modalConfig.title ?? title}
             </Dialog.Title>
             <Dialog.Description
               style={{
@@ -182,7 +179,7 @@ export function ActionModal({
                 cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >
-              {isLoading ? "Loading…" : (modalConfig.submitLabel ?? "Submit")}
+              {isLoading ? "Loading\u2026" : (modalConfig.submitLabel ?? "Submit")}
             </PrimitiveButton>
           </div>
         </Dialog.Content>

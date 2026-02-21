@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { ActionSetting } from "@settera/schema";
+import type { ActionModalConfig, ActionPageConfig } from "@settera/schema";
 import { useSetteraAction, useFocusVisible } from "@settera/react";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
@@ -11,11 +11,80 @@ export interface ActionButtonProps {
 
 /**
  * A button for action-type settings.
- * Callback actions execute directly, modal actions collect local draft values and
- * submit payload on explicit confirmation.
+ * Supports both single-button and multi-button forms.
  */
 export function ActionButton({ settingKey }: ActionButtonProps) {
-  const { definition, onAction, isLoading } = useSetteraAction(settingKey);
+  const { definition, onAction, isLoading, items } = useSetteraAction(settingKey);
+
+  // Multi-button form
+  if (definition.actions && items.length > 0) {
+    return (
+      <div style={{ display: "flex", gap: "8px" }}>
+        {items.map((itemResult) => (
+          <ActionButtonSingle
+            key={itemResult.item.key}
+            itemKey={itemResult.item.key}
+            buttonLabel={itemResult.item.buttonLabel}
+            ariaLabel={itemResult.item.buttonLabel}
+            actionType={itemResult.item.actionType}
+            dangerous={itemResult.item.dangerous}
+            disabled={itemResult.item.disabled}
+            modal={itemResult.item.modal}
+            page={itemResult.item.page}
+            title={definition.title}
+            onAction={itemResult.onAction}
+            isLoading={itemResult.isLoading}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Single-button form
+  return (
+    <ActionButtonSingle
+      itemKey={settingKey}
+      buttonLabel={definition.buttonLabel ?? "Action"}
+      ariaLabel={definition.title}
+      actionType={definition.actionType ?? "callback"}
+      dangerous={definition.dangerous}
+      disabled={definition.disabled}
+      modal={definition.modal}
+      page={definition.page}
+      title={definition.title}
+      onAction={onAction}
+      isLoading={isLoading}
+    />
+  );
+}
+
+interface ActionButtonSingleProps {
+  itemKey: string;
+  buttonLabel: string;
+  ariaLabel: string;
+  actionType: "modal" | "callback" | "page";
+  dangerous?: boolean;
+  disabled?: boolean;
+  modal?: ActionModalConfig;
+  page?: ActionPageConfig;
+  title: string;
+  onAction: (payload?: unknown) => void;
+  isLoading: boolean;
+}
+
+function ActionButtonSingle({
+  itemKey,
+  buttonLabel,
+  ariaLabel,
+  actionType,
+  dangerous,
+  disabled,
+  modal,
+  page,
+  title,
+  onAction,
+  isLoading,
+}: ActionButtonSingleProps) {
   const { isFocusVisible, focusVisibleProps } = useFocusVisible();
   const { openSubpage } = useSetteraNavigation();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -23,17 +92,13 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmittingModal, setIsSubmittingModal] = useState(false);
 
-  const isDangerous =
-    "dangerous" in definition && Boolean(definition.dangerous);
-  const isDisabled = "disabled" in definition && Boolean(definition.disabled);
-  const buttonLabel =
-    definition.type === "action" ? definition.buttonLabel : "Action";
+  const isDangerous = Boolean(dangerous);
+  const isDisabled = Boolean(disabled);
 
-  const actionDefinition = definition as ActionSetting;
-  const isModalAction = actionDefinition.actionType === "modal";
-  const isPageAction = actionDefinition.actionType === "page";
-  const hasModalConfig = Boolean(actionDefinition.modal);
-  const hasPageConfig = Boolean(actionDefinition.page);
+  const isModalAction = actionType === "modal";
+  const isPageAction = actionType === "page";
+  const hasModalConfig = Boolean(modal);
+  const hasPageConfig = Boolean(page);
 
   const handleSubmitModal = useCallback(
     (payload: Record<string, unknown>) => {
@@ -65,7 +130,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
         onClick={() => {
           if (isPageAction) {
             if (isLoading) return;
-            openSubpage(settingKey);
+            openSubpage(itemKey);
             return;
           }
           if (isModalAction) {
@@ -77,7 +142,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
         }}
         {...focusVisibleProps}
         disabled={isDisabled || isLoading || (isModalAction && !hasModalConfig) || (isPageAction && !hasPageConfig)}
-        aria-label={definition.title}
+        aria-label={ariaLabel}
         aria-busy={isLoading}
         tone={isDangerous ? "destructive" : "default"}
         focusVisible={isFocusVisible}
@@ -86,15 +151,15 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
             isDisabled || isLoading || (isModalAction && !hasModalConfig) || (isPageAction && !hasPageConfig)
               ? "not-allowed"
               : "pointer",
-          // Disabled opacity is handled by PrimitiveButton via the disabled prop.
         }}
       >
-        {isLoading ? "Loading…" : buttonLabel}
+        {isLoading ? "Loading\u2026" : buttonLabel}
       </PrimitiveButton>
 
       {isModalAction && hasModalConfig && (
         <ActionModal
-          definition={actionDefinition}
+          modalConfig={modal!}
+          title={title}
           isOpen={isModalOpen}
           isLoading={isLoading}
           onOpenChange={(open) => {

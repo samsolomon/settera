@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useRef } from "react";
-import type { ActionSetting } from "@settera/schema";
+import type { ActionModalConfig } from "@settera/schema";
 import { useActionModalDraft } from "@settera/react";
 import { SetteraActionModalField } from "./settera-action-modal-field";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ import {
 import { Label } from "@/components/ui/label";
 
 export interface SetteraActionModalProps {
-  definition: ActionSetting;
+  modalConfig: ActionModalConfig;
+  title: string;
   isOpen: boolean;
   isLoading: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,27 +25,23 @@ export interface SetteraActionModalProps {
 }
 
 export function SetteraActionModal({
-  definition,
+  modalConfig,
+  title,
   isOpen,
   isLoading,
   onOpenChange,
   onSubmit,
 }: SetteraActionModalProps) {
-  const modalConfig = definition.modal;
   const contentRef = useRef<HTMLDivElement>(null);
   const { draftValues, setField } = useActionModalDraft(
-    modalConfig?.fields,
-    modalConfig?.initialValues,
+    modalConfig.fields,
+    modalConfig.initialValues,
     isOpen,
   );
 
   const handleSubmit = useCallback(() => {
     onSubmit(draftValues);
   }, [draftValues, onSubmit]);
-
-  if (!modalConfig) {
-    return null;
-  }
 
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={onOpenChange} preventDismiss={isLoading}>
@@ -72,7 +69,7 @@ export function SetteraActionModal({
         }}
       >
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>{modalConfig.title ?? definition.title}</ResponsiveDialogTitle>
+          <ResponsiveDialogTitle>{modalConfig.title ?? title}</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
             {modalConfig.description ?? "Review the fields and submit."}
           </ResponsiveDialogDescription>
