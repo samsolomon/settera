@@ -242,9 +242,9 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
                   size="icon-xs"
                   disabled={isDisabled}
                   aria-label="Open calendar"
-                  className="text-muted-foreground shadow-none [&_svg]:size-5"
+                  className="text-muted-foreground shadow-none"
                 >
-                  <CalendarDaysIcon />
+                  <CalendarDaysIcon className="size-4" />
                 </Button>
               </PopoverTrigger>
             )}

@@ -29,7 +29,7 @@ export function SetteraCopyButton({ value, label }: SetteraCopyButtonProps) {
       aria-label={`Copy ${label ?? "value"}`}
       className="text-muted-foreground shadow-none"
     >
-      {copied ? <CheckIcon /> : <CopyIcon />}
+      {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
     </Button>
   );
 }
