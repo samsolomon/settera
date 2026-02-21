@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting, useBufferedInput, isObjectRecord } from "@settera/react";
 import type { RepeatableFieldDefinition, RepeatableSetting } from "@settera/schema";
 import { SetteraFieldControl } from "./settera-field-control";
+import { ArrowDownIcon, ArrowUpIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,32 +93,33 @@ function ListTextItem({
       <Button
         type="button"
         variant="outline"
-        size="sm"
+        size="icon-xs"
         aria-label={`Move item ${index + 1} up`}
         onClick={() => onMoveUp(index)}
         disabled={disabled || isFirst}
       >
-        Up
+        <ArrowUpIcon className="size-3.5" />
       </Button>
       <Button
         type="button"
         variant="outline"
-        size="sm"
+        size="icon-xs"
         aria-label={`Move item ${index + 1} down`}
         onClick={() => onMoveDown(index)}
         disabled={disabled || isLast}
       >
-        Down
+        <ArrowDownIcon className="size-3.5" />
       </Button>
       <Button
         type="button"
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="icon-xs"
         aria-label={`Remove item ${index + 1}`}
         onClick={() => onRemove(index)}
         disabled={disabled}
+        className="text-muted-foreground hover:text-destructive"
       >
-        Remove
+        <Trash2Icon className="size-3.5" />
       </Button>
     </div>
   );
@@ -349,32 +351,33 @@ export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputPro
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon-xs"
                 aria-label={`Move item ${index + 1} up`}
                 onClick={() => moveItem(index, "up")}
                 disabled={isDisabled || index === 0}
               >
-                Up
+                <ArrowUpIcon className="size-3.5" />
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon-xs"
                 aria-label={`Move item ${index + 1} down`}
                 onClick={() => moveItem(index, "down")}
                 disabled={isDisabled || index === compoundItems.length - 1}
               >
-                Down
+                <ArrowDownIcon className="size-3.5" />
               </Button>
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon-xs"
                 aria-label={`Remove item ${index + 1}`}
                 onClick={() => removeItem(index)}
                 disabled={isDisabled}
+                className="text-muted-foreground hover:text-destructive"
               >
-                Remove
+                <Trash2Icon className="size-3.5" />
               </Button>
             </div>
           </div>

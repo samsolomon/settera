@@ -4,10 +4,10 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { SetteraSchemaContext, useSettera, parseDescriptionLinks } from "@settera/react";
 import { evaluateVisibility } from "@settera/schema";
 import type { SectionDefinition } from "@settera/schema";
+import { ChevronDownIcon } from "lucide-react";
 import { useSetteraSearch } from "./use-settera-search";
 import { SetteraSetting } from "./settera-setting";
 import type { SetteraCustomSettingProps } from "./settera-setting";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -146,18 +146,25 @@ export function SetteraSection({
 
   if (isCollapsible) {
     return (
-      <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 1rem)" }}>
+      <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 2rem)" }}>
         <Collapsible open={!isEffectivelyCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
-          <div className="flex items-center justify-between" style={{ marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}>
-            <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)" }}>
-              {section.title}
-            </h2>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" size="sm">
-                {isEffectivelyCollapsed ? "Expand" : "Collapse"}
-              </Button>
-            </CollapsibleTrigger>
-          </div>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-1 group cursor-pointer p-0"
+              style={{ marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}
+            >
+              <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold group-hover:text-muted-foreground transition-colors" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)" }}>
+                {section.title}
+              </h2>
+              <ChevronDownIcon
+                className="size-4 text-muted-foreground shrink-0 transition-transform duration-200"
+                style={{
+                  transform: isEffectivelyCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+                }}
+              />
+            </button>
+          </CollapsibleTrigger>
           <CollapsibleContent id={sectionContentId}>
             {sectionContent}
           </CollapsibleContent>
@@ -167,7 +174,7 @@ export function SetteraSection({
   }
 
   return (
-    <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 1rem)" }}>
+    <section aria-labelledby={sectionTitleId} style={{ marginTop: "var(--settera-section-gap, 2rem)" }}>
       <h2 id={sectionTitleId} tabIndex={-1} className="font-semibold" style={{ fontSize: "var(--settera-section-title-font-size, 1rem)", marginBottom: "var(--settera-section-title-gap, 0.75rem)" }}>
         {section.title}
       </h2>

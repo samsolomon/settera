@@ -256,6 +256,9 @@ function SetteraLayoutInner({
               padding: isMobile
                 ? "var(--settera-page-padding-mobile, 1rem)"
                 : "var(--settera-page-padding, 1.5rem 2rem)",
+              paddingBottom: isMobile
+                ? "var(--settera-page-padding-bottom-mobile, 3rem)"
+                : "var(--settera-page-padding-bottom, 4rem)",
             }}
           >
             <div
