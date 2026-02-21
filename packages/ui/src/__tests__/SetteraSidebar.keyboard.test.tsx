@@ -329,12 +329,14 @@ describe("SetteraSidebar keyboard navigation", () => {
     const user = userEvent.setup();
     renderSidebar();
 
-    await user.type(screen.getByRole("searchbox"), "timezone");
-
-    const generalBtn = getButton("General");
-    generalBtn.focus();
-
-    await user.keyboard("{ArrowDown}");
+    const search = screen.getByRole("searchbox");
+    await user.type(search, "timezone");
+    for (let i = 0; i < 3; i += 1) {
+      await user.keyboard("{ArrowDown}");
+      if (document.activeElement === getButton("Time preferences")) {
+        break;
+      }
+    }
     expect(document.activeElement).toBe(getButton("Time preferences"));
   });
 

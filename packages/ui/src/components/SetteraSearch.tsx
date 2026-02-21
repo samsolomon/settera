@@ -37,6 +37,16 @@ export function SetteraSearch() {
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Escape") {
         setQuery("");
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        const firstNavItem = document.querySelector(
+          "[data-settera-nav] button[tabindex='0']",
+        );
+        if (firstNavItem instanceof HTMLElement) {
+          e.preventDefault();
+          firstNavItem.focus();
+        }
       }
     },
     [setQuery],
