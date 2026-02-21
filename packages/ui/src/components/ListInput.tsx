@@ -87,7 +87,7 @@ function ListTextItem({
       inputProps.onChange(e);
       onDraftChange(index, e.target.value);
     },
-    [inputProps.onChange, onDraftChange, index],
+    [inputProps, onDraftChange, index],
   );
 
   return (
@@ -175,29 +175,24 @@ function RepeatableCompoundFieldControl({
 export function RepeatableInput({ settingKey }: RepeatableInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
-
-  if (definition.type !== "repeatable") {
-    return null;
-  }
-
+  const isRepeatable = definition.type === "repeatable";
+  const itemType = isRepeatable ? definition.itemType : undefined;
+  const maxItems = isRepeatable ? definition.validation?.maxItems : undefined;
+  const itemFields = isRepeatable ? definition.itemFields : undefined;
   const isDisabled = Boolean(definition.disabled);
   const hasError = error !== null;
 
   const textItems = useMemo(
-    () => (definition.itemType === "text" ? toStringArray(value) : []),
-    [definition.itemType, value],
+    () => (itemType === "text" ? toStringArray(value) : []),
+    [itemType, value],
   );
 
   const compoundItems = useMemo(
-    () =>
-      definition.itemType === "compound"
-        ? toObjectArray(value)
-        : ([] as Record<string, unknown>[]),
-    [definition.itemType, value],
+    () => (itemType === "compound" ? toObjectArray(value) : []),
+    [itemType, value],
   );
 
-  const itemCount =
-    definition.itemType === "text" ? textItems.length : compoundItems.length;
+  const itemCount = itemType === "text" ? textItems.length : compoundItems.length;
 
   const compoundItemsRef = useRef(compoundItems);
   compoundItemsRef.current = compoundItems;
@@ -222,36 +217,28 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
   }, []);
 
   const addItem = useCallback(() => {
-    const currentTextItems =
-      definition.itemType === "text" ? getLatestTextItems() : undefined;
+    const currentTextItems = itemType === "text" ? getLatestTextItems() : undefined;
     const currentItems =
-      definition.itemType === "text"
-        ? currentTextItems!
-        : [...compoundItemsRef.current];
+      itemType === "text" ? currentTextItems! : [...compoundItemsRef.current];
 
-    if (definition.validation?.maxItems !== undefined) {
-      if (currentItems.length >= definition.validation.maxItems) {
-        void validate(currentItems);
-        return;
-      }
+    if (maxItems !== undefined && currentItems.length >= maxItems) {
+      void validate(currentItems);
+      return;
     }
 
     const next =
-      definition.itemType === "text"
+      itemType === "text"
         ? [...currentTextItems!, ""]
-        : [
-            ...compoundItemsRef.current,
-            buildCompoundDefaultItem(definition.itemFields),
-          ];
-    if (definition.itemType === "compound") {
+        : [...compoundItemsRef.current, buildCompoundDefaultItem(itemFields)];
+    if (itemType === "compound") {
       compoundItemsRef.current = next as Record<string, unknown>[];
     }
     setValue(next);
     void validate(next);
   }, [
-    definition.itemType,
-    definition.itemFields,
-    definition.validation?.maxItems,
+    itemType,
+    itemFields,
+    maxItems,
     getLatestTextItems,
     setValue,
     validate,
@@ -260,18 +247,16 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
   const removeItem = useCallback(
     (index: number) => {
       const base =
-        definition.itemType === "text"
-          ? getLatestTextItems()
-          : compoundItemsRef.current;
+        itemType === "text" ? getLatestTextItems() : compoundItemsRef.current;
       const next = base.filter((_, i) => i !== index);
       draftTextValuesRef.current = {};
-      if (definition.itemType === "compound") {
+      if (itemType === "compound") {
         compoundItemsRef.current = next as Record<string, unknown>[];
       }
       setValue(next);
       void validate(next);
     },
-    [definition.itemType, getLatestTextItems, setValue, validate],
+    [itemType, getLatestTextItems, setValue, validate],
   );
 
   const moveItem = useCallback(
@@ -280,9 +265,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
       if (targetIndex < 0) return;
 
       const base =
-        definition.itemType === "text"
-          ? getLatestTextItems()
-          : [...compoundItemsRef.current];
+        itemType === "text" ? getLatestTextItems() : [...compoundItemsRef.current];
 
       if (targetIndex >= base.length) return;
 
@@ -291,7 +274,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
       next[index] = next[targetIndex];
       next[targetIndex] = current;
 
-      if (definition.itemType === "text") {
+      if (itemType === "text") {
         draftTextValuesRef.current = {};
       } else {
         compoundItemsRef.current = next as Record<string, unknown>[];
@@ -300,7 +283,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
       setValue(next);
       void validate(next);
     },
-    [definition.itemType, getLatestTextItems, setValue, validate],
+    [itemType, getLatestTextItems, setValue, validate],
   );
 
   const commitTextItem = useCallback(
@@ -326,7 +309,11 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
     [setValue, validate],
   );
 
-  if (definition.itemType !== "text" && definition.itemType !== "compound") {
+  if (!isRepeatable) {
+    return null;
+  }
+
+  if (itemType !== "text" && itemType !== "compound") {
     return (
       <div
         data-testid={`repeatable-${settingKey}`}
@@ -338,14 +325,12 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           fontStyle: "italic",
         }}
       >
-        Repeatable item type "{definition.itemType}" is not implemented yet.
+        Repeatable item type "{itemType}" is not implemented yet.
       </div>
     );
   }
 
-  const isAtMax =
-    definition.validation?.maxItems !== undefined &&
-    itemCount >= definition.validation.maxItems;
+  const isAtMax = maxItems !== undefined && itemCount >= maxItems;
 
   return (
     <div
@@ -358,7 +343,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
         gap: "8px",
       }}
     >
-      {definition.itemType === "text" &&
+      {itemType === "text" &&
         textItems.map((item, index) => (
           <ListTextItem
             key={`${settingKey}-${index}`}
@@ -375,7 +360,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           />
         ))}
 
-      {definition.itemType === "compound" &&
+      {itemType === "compound" &&
         compoundItems.map((item, index) => (
           <div
             key={`${settingKey}-${index}`}
@@ -384,7 +369,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
               padding: "10px",
             }}
           >
-            {(definition.itemFields ?? []).map((field) => (
+            {(itemFields ?? []).map((field) => (
               <label key={`${index}-${field.key}`} style={fieldShellStyle}>
                 {field.title}
                 <RepeatableCompoundFieldControl
