@@ -6,9 +6,7 @@ A schema-driven settings framework for React.
 
 Settings don't sell software—and nobody wants to work on them. Settera solves both those problems.
 
-Define your settings in a schema, and it renders a complete settings UI—keyboard navigation, search, form validation and conditional visibility. It makes it fast for teams to ship settings updates, while providing consistency for users.
-
-Use it three ways: **drop in** a prebuilt UI (`@settera/ui`), **integrate** with your existing shadcn/Tailwind stack (`@settera/shadcn-registry`), or **go headless** with just hooks and types (`@settera/react`).
+Define your settings in a schema, and it renders a complete settings UI—keyboard navigation, search, form validation and conditional visibility. It makes it fast for teams to ship settings updates, while providing consistency for users. You can either drop in Settera's prebuilt UI (`@settera/ui`), integrate with your existing shadcn/Tailwind stack (`@settera/shadcn-registry`), or go headless with just hooks and types (`@settera/react`).
 
 Stop spending cycles on settings infrastructure and focus on your core product.
 
