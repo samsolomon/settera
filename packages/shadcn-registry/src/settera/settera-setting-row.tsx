@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
+import { CheckIcon, LinkIcon } from "lucide-react";
 import { SetteraNavigationContext } from "./settera-navigation-provider";
 import type { SetteraDeepLinkContextValue } from "./use-settera-layout-url-sync";
 import { Button } from "@/components/ui/button";
@@ -128,33 +129,9 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                     onClick={handleCopyLink}
                   >
                 {copyFeedback ? (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-green-600"
-                  >
-                    <path d="M3 8.5l3.5 3.5L13 4" />
-                  </svg>
+                  <CheckIcon className="size-4 text-green-600" />
                 ) : (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6.5 8.5a3 3 0 0 0 4.243 0l2-2a3 3 0 0 0-4.243-4.243l-1 1" />
-                    <path d="M9.5 7.5a3 3 0 0 0-4.243 0l-2 2a3 3 0 0 0 4.243 4.243l1-1" />
-                  </svg>
+                  <LinkIcon className="size-4" />
                 )}
               </Button>
                 )}
