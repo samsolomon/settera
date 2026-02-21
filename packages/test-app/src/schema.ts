@@ -265,6 +265,7 @@ export const demoSchema: SetteraSchema = {
                 { value: "xl", label: "Extra large" },
               ],
               default: "medium",
+              validation: { required: true },
             },
           ],
         },
