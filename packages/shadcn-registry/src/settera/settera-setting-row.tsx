@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
+import type { SaveStatus } from "@settera/react";
 import { CheckIcon, LinkIcon } from "lucide-react";
 import { SetteraNavigationContext } from "./settera-navigation-provider";
 import { SetteraDeepLinkContext } from "./use-settera-layout-url-sync";
@@ -19,6 +20,45 @@ export interface SetteraSettingRowProps {
   settingKey: string;
   isLast?: boolean;
   children: React.ReactNode;
+}
+
+function useSaveIndicatorAnimation(saveStatus: SaveStatus) {
+  const prevActiveRef = useRef(false);
+  const [displayedStatus, setDisplayedStatus] = useState<SaveStatus>("idle");
+  const [animClass, setAnimClass] = useState("");
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    clearTimeout(fadeTimerRef.current);
+
+    const isActive = saveStatus === "saving" || saveStatus === "saved";
+    const wasActive = prevActiveRef.current;
+    prevActiveRef.current = isActive;
+
+    if (isActive) {
+      setDisplayedStatus(saveStatus);
+      if (!wasActive) {
+        // idle → active: fade in
+        setAnimClass("animate-in fade-in-0 duration-150");
+      } else {
+        // saving → saved: no animation, just swap content
+        setAnimClass("");
+      }
+    } else if (wasActive) {
+      // active → idle: fade out, then unmount
+      setAnimClass("animate-out fade-out-0 duration-150");
+      fadeTimerRef.current = setTimeout(() => {
+        setDisplayedStatus("idle");
+        setAnimClass("");
+      }, 150);
+    }
+  }, [saveStatus]);
+
+  useEffect(() => {
+    return () => clearTimeout(fadeTimerRef.current);
+  }, []);
+
+  return { displayedStatus, animClass };
 }
 
 export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSettingRowProps) {
@@ -34,7 +74,8 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const isHighlighted = highlightedSettingKey === settingKey;
-  const isSaveActive = saveStatus === "saving" || saveStatus === "saved";
+  const { displayedStatus, animClass } = useSaveIndicatorAnimation(saveStatus);
+  const isBadgeShown = displayedStatus !== "idle";
 
   const handlePointerDown = useCallback(() => {
     pointerDownRef.current = true;
@@ -75,7 +116,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const isDisabled = "disabled" in definition && definition.disabled;
-  const showCopyButton = !!(deepLinkCtx && !isSaveActive && (isHovered || isFocusVisible || copyFeedback));
+  const showCopyButton = !!(deepLinkCtx && !isBadgeShown && (isHovered || isFocusVisible || copyFeedback));
 
   return (
     <div
@@ -113,8 +154,12 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
             >
               {definition.title}
             </span>
-            {isSaveActive && <SetteraSaveIndicator saveStatus={saveStatus} />}
-            {deepLinkCtx && !isSaveActive && (
+            {isBadgeShown && (
+              <span className={animClass}>
+                <SetteraSaveIndicator saveStatus={displayedStatus} />
+              </span>
+            )}
+            {deepLinkCtx && !isBadgeShown && (
               <span className="inline-flex w-6 h-6 shrink-0">
                 {showCopyButton && (
                   <Button
