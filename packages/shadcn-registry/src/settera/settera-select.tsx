@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraSelectProps {
   settingKey: string;
@@ -18,7 +19,7 @@ export interface SetteraSelectProps {
 const EMPTY_OPTION_VALUE_BASE = "__settera_empty_option__";
 
 export function SetteraSelect({ settingKey }: SetteraSelectProps) {
-  const { value, setValue, error, definition, validate } =
+  const { value, setValue, error, definition, validate, saveStatus } =
     useSetteraSetting(settingKey);
 
   const isDangerous =
@@ -52,37 +53,41 @@ export function SetteraSelect({ settingKey }: SetteraSelectProps) {
   );
 
   const hasError = error !== null;
+  const showIndicator = saveStatus === "saving" || saveStatus === "saved";
 
   return (
-    <Select
-      value={selectedValue || emptyOptionValue}
-      onValueChange={handleValueChange}
-      disabled={isDisabled}
-    >
-      <SelectTrigger
-        aria-label={definition.title}
-        aria-invalid={hasError}
-        aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-        className={cn(
-          "w-full md:w-[200px]",
-          hasError && "border-destructive",
-          isDangerous && "text-destructive",
-        )}
+    <div className="inline-flex items-center gap-2">
+      <Select
+        value={selectedValue || emptyOptionValue}
+        onValueChange={handleValueChange}
+        disabled={isDisabled}
       >
-        <SelectValue placeholder={isRequired ? undefined : "Select\u2026"} />
-      </SelectTrigger>
-      <SelectContent>
-        {!isRequired && (
-          <SelectItem value={emptyOptionValue} className="text-muted-foreground">
-            Select&hellip;
-          </SelectItem>
-        )}
-        {options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        <SelectTrigger
+          aria-label={definition.title}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+          className={cn(
+            "w-full md:w-[200px]",
+            hasError && "border-destructive",
+            isDangerous && "text-destructive",
+          )}
+        >
+          <SelectValue placeholder={isRequired ? undefined : "Select\u2026"} />
+        </SelectTrigger>
+        <SelectContent>
+          {!isRequired && (
+            <SelectItem value={emptyOptionValue} className="text-muted-foreground">
+              Select&hellip;
+            </SelectItem>
+          )}
+          {options.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {showIndicator && <SetteraSaveIndicator saveStatus={saveStatus} />}
+    </div>
   );
 }

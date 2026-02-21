@@ -2,7 +2,6 @@
 
 import React, { useCallback } from "react";
 import { useSetteraSetting, useBufferedInput } from "@settera/react";
-import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
+import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraNumberInputProps {
   settingKey: string;
@@ -20,7 +20,7 @@ function displayString(v: unknown): string {
 }
 
 export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
-  const { value, setValue, error, definition, validate } =
+  const { value, setValue, error, definition, validate, saveStatus } =
     useSetteraSetting(settingKey);
 
   const committed = displayString(value);
@@ -69,40 +69,31 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
     isDangerous && "text-destructive",
   );
 
-  if (isReadOnly) {
-    return (
-      <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
-        <InputGroupInput
-          type="number"
-          {...inputProps}
-          placeholder={placeholder}
-          min={min}
-          max={max}
-          disabled={isDisabled}
-          readOnly
-          aria-label={definition.title}
-          aria-invalid={hasError}
-          aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-        />
-        <InputGroupAddon align="inline-end">
-          <SetteraCopyButton value={committed} label={definition.title} />
-        </InputGroupAddon>
-      </InputGroup>
-    );
-  }
+  const showAddon = isReadOnly || saveStatus === "saving" || saveStatus === "saved";
 
   return (
-    <Input
-      type="number"
-      {...inputProps}
-      placeholder={placeholder}
-      min={min}
-      max={max}
-      disabled={isDisabled}
-      aria-label={definition.title}
-      aria-invalid={hasError}
-      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-      className={cn("w-full md:w-[200px]", sharedClassName)}
-    />
+    <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
+      <InputGroupInput
+        type="number"
+        {...inputProps}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        disabled={isDisabled}
+        readOnly={isReadOnly}
+        aria-label={definition.title}
+        aria-invalid={hasError}
+        aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+      />
+      {showAddon && (
+        <InputGroupAddon align="inline-end">
+          {isReadOnly ? (
+            <SetteraCopyButton value={committed} label={definition.title} />
+          ) : (
+            <SetteraSaveIndicator saveStatus={saveStatus} />
+          )}
+        </InputGroupAddon>
+      )}
+    </InputGroup>
   );
 }

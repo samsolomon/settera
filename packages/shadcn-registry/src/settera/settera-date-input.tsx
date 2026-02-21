@@ -19,14 +19,15 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
+import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraDateInputProps {
   settingKey: string;
 }
 
-const DISPLAY_FORMAT = "MMMM dd, yyyy";
+export const DISPLAY_FORMAT = "MMMM dd, yyyy";
 const ISO_FORMAT = "yyyy-MM-dd";
-const PARSE_FORMATS = [
+export const PARSE_FORMATS = [
   DISPLAY_FORMAT,
   "M/d/yyyy",
   "MM/dd/yyyy",
@@ -34,21 +35,21 @@ const PARSE_FORMATS = [
   ISO_FORMAT,
 ];
 
-function parseISODate(iso: string): Date | undefined {
+export function parseISODate(iso: string): Date | undefined {
   const ref = new Date();
   const d = parse(iso, ISO_FORMAT, ref);
   return isValid(d) ? d : undefined;
 }
 
-function formatDisplayDate(date: Date): string {
+export function formatDisplayDate(date: Date): string {
   return format(date, DISPLAY_FORMAT);
 }
 
-function formatISODate(date: Date): string {
+export function formatISODate(date: Date): string {
   return format(date, ISO_FORMAT);
 }
 
-function parseDateInput(text: string): Date | undefined {
+export function parseDateInput(text: string): Date | undefined {
   const trimmed = text.trim();
   if (!trimmed) return undefined;
   const ref = new Date();
@@ -60,7 +61,7 @@ function parseDateInput(text: string): Date | undefined {
 }
 
 export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
-  const { value, setValue, error, definition, validate } =
+  const { value, setValue, error, definition, validate, saveStatus } =
     useSetteraSetting(settingKey);
 
   const isDangerous =
@@ -231,6 +232,11 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
               hasError ? `settera-error-${settingKey}` : undefined
             }
           />
+          {(saveStatus === "saving" || saveStatus === "saved") && !isReadOnly && (
+            <InputGroupAddon align="inline-end">
+              <SetteraSaveIndicator saveStatus={saveStatus} />
+            </InputGroupAddon>
+          )}
           <InputGroupAddon align="inline-end">
             {isReadOnly ? (
               <SetteraCopyButton value={inputText} label={definition.title} />

@@ -30,7 +30,8 @@
         "input-group",
         "popover",
         "calendar",
-        "kbd"
+        "kbd",
+        "spinner"
       ],
       "files": [
         { "path": "src/settera/settera-navigation-provider.tsx", "type": "registry:component", "target": "components/settera/settera-navigation-provider.tsx" },
@@ -65,6 +66,7 @@
         { "path": "src/settera/settera-layout.tsx", "type": "registry:component", "target": "components/settera/settera-layout.tsx" },
         { "path": "src/settera/settera-responsive-dialog.tsx", "type": "registry:component", "target": "components/settera/settera-responsive-dialog.tsx" },
         { "path": "src/settera/settera-copy-button.tsx", "type": "registry:component", "target": "components/settera/settera-copy-button.tsx" },
+        { "path": "src/settera/settera-save-indicator.tsx", "type": "registry:component", "target": "components/settera/settera-save-indicator.tsx" },
         { "path": "src/settera/settera-confirm-dialog.tsx", "type": "registry:component", "target": "components/settera/settera-confirm-dialog.tsx" }
       ]
     }

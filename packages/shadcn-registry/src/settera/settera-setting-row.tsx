@@ -25,7 +25,7 @@ export interface SetteraSettingRowProps {
 }
 
 export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSettingRowProps) {
-  const { isVisible, definition, error, saveStatus } =
+  const { isVisible, definition, error } =
     useSetteraSetting(settingKey);
   const navigationCtx = useContext(SetteraNavigationContext);
   const highlightedSettingKey = navigationCtx?.highlightedSettingKey ?? null;
@@ -158,19 +158,6 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                 )}
               </Button>
                 )}
-              </span>
-            )}
-            {saveStatus === "saving" && (
-              <span className="text-xs text-muted-foreground font-normal">
-                Saving...
-              </span>
-            )}
-            {saveStatus === "saved" && (
-              <span className="text-xs text-green-600 font-normal">Saved</span>
-            )}
-            {saveStatus === "error" && (
-              <span className="text-xs text-destructive font-normal">
-                Save failed
               </span>
             )}
           </div>
