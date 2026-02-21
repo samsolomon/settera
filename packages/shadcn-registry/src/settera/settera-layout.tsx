@@ -104,7 +104,7 @@ export function SetteraLayout(props: SetteraLayoutProps) {
       getPageUrl={props.getPageUrl}
     >
       <SidebarProvider
-        className="h-full overflow-hidden"
+        className="h-full overflow-clip"
         style={
           {
             "--sidebar-width": "280px",
