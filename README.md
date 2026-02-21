@@ -89,7 +89,7 @@ const schema: SetteraSchema = {
 | [`date`](#date) | Date picker (native `<input type="date">`) | On blur |
 | [`compound`](#compound) | Multi-field group (`inline`, `modal`, or `page`) | Field-dependent |
 | [`repeatable`](#repeatable) | Add/remove list of text or compound items | Field-dependent |
-| [`action`](#action) | Button that triggers callback or modal action | On click / submit |
+| [`action`](#action) | Button that triggers a callback, modal, or page action | On click / submit |
 | [`custom`](#custom) | Developer-provided renderer | Developer-defined |
 
 ### Common Properties
@@ -494,15 +494,21 @@ When `itemType` is `"text"`, the value is `string[]`. When `itemType` is `"compo
 
 ### Action
 
-Action settings do not store a value in settings state. They either execute a callback immediately or open a submit-only modal draft form.
+Action settings do not store a value in settings state. Each action has an `actionType` that determines its behavior:
+
+- `"callback"` — executes the handler immediately on click
+- `"modal"` — opens a draft form dialog; handler receives submitted values as payload
+- `"page"` — navigates to a full-page form; handler receives submitted values as payload
+
+**Callback action:**
 
 ```typescript
 {
-  key: "actions.export",
-  title: "Export Data",
-  description: "Download all your data as a JSON file.",
+  key: "actions.clearCache",
+  title: "Clear Cache",
+  description: "Remove cached data to free up space.",
   type: "action",
-  buttonLabel: "Export",
+  buttonLabel: "Clear Cache",
   actionType: "callback",
 }
 ```
@@ -544,6 +550,45 @@ Action settings do not store a value in settings state. They either execute a ca
 }
 ```
 
+**Page action** (full-page form with Cancel/Submit):
+
+```typescript
+{
+  key: "actions.importData",
+  title: "Import Data",
+  description: "Full-page form for importing data from an external source.",
+  type: "action",
+  buttonLabel: "Import Data",
+  actionType: "page",
+  page: {
+    title: "Import Data",
+    description: "Configure the import source and options.",
+    submitLabel: "Start Import",
+    cancelLabel: "Cancel",
+    fields: [
+      {
+        key: "source",
+        title: "Source",
+        type: "select",
+        options: [
+          { value: "csv", label: "CSV File" },
+          { value: "json", label: "JSON File" },
+        ],
+        default: "csv",
+      },
+      {
+        key: "overwrite",
+        title: "Overwrite existing data",
+        type: "boolean",
+        default: false,
+      },
+    ],
+  },
+}
+```
+
+Page actions can also use a `renderer` string instead of `fields` to delegate to a custom component registered via `customActionPages` on `SetteraLayout`.
+
 Mark destructive actions with `dangerous`:
 
 ```typescript
@@ -558,6 +603,39 @@ Mark destructive actions with `dangerous`:
 }
 ```
 
+**Multi-button actions** — render multiple buttons in a single settings row using the `actions` array instead of `buttonLabel`/`actionType`. Each item has its own `key`, `buttonLabel`, `actionType`, and optional `modal`/`page` config:
+
+```typescript
+{
+  key: "actions.account",
+  title: "Your Account",
+  description: "Log in or create a new account.",
+  type: "action",
+  actions: [
+    {
+      key: "actions.account.login",
+      buttonLabel: "Log in",
+      actionType: "modal",
+      modal: {
+        title: "Log in to your account",
+        submitLabel: "Log in",
+        fields: [
+          { key: "email", title: "Email", type: "text", inputType: "email" },
+          { key: "password", title: "Password", type: "text", inputType: "password" },
+        ],
+      },
+    },
+    {
+      key: "actions.account.signup",
+      buttonLabel: "Sign up",
+      actionType: "callback",
+    },
+  ],
+}
+```
+
+Multi-button actions are wrapped in a standard settings row (showing title and description), unlike single-button actions which render as a standalone button. Each item's `key` must be globally unique and is used as the `key` argument in `onAction`. Items support `dangerous` and `disabled` independently.
+
 Action handlers are provided via the `onAction` prop on `Settera`:
 
 ```tsx
@@ -568,13 +646,17 @@ Action handlers are provided via the `onAction` prop on `Settera`:
   onAction={(key, payload) => {
     switch (key) {
       case "actions.export": {
+        // For modal/page actions, payload contains submitted field values.
         // For callback actions, payload is undefined.
-        // For modal actions, payload contains submitted modal field values.
         const opts = (payload ?? {}) as { format?: string };
         return fetchUserData().then((data) =>
           downloadAs(data, opts.format ?? "json"),
         );
       }
+      case "actions.account.login":
+        return login(payload as { email: string; password: string });
+      case "actions.account.signup":
+        return startSignupFlow();
       case "actions.deleteAccount":
         return deleteAccount();
     }
@@ -584,8 +666,7 @@ Action handlers are provided via the `onAction` prop on `Settera`:
 </Settera>
 ```
 
-If the handler returns a Promise, the button automatically shows a loading state while it resolves.
-For modal actions, the dialog stays open while submit is in-flight and closes after completion.
+If the handler returns a Promise, the button automatically shows a loading state while it resolves. For modal actions, the dialog stays open while submit is in-flight and closes after completion. Multi-button items track loading state independently.
 
 ### Custom
 
@@ -796,7 +877,7 @@ const {
 Access an action setting.
 
 ```typescript
-const { definition, isVisible, onAction, isLoading } =
+const { definition, isVisible, onAction, isLoading, items } =
   useSetteraAction("actions.export");
 ```
 
@@ -804,8 +885,11 @@ const { definition, isVisible, onAction, isLoading } =
 | --- | --- | --- |
 | `definition` | `ActionSetting` | The action definition from the schema |
 | `isVisible` | `boolean` | Whether `visibleWhen` resolves to true |
-| `onAction` | `(payload?: unknown) => void` | Invoke the action |
-| `isLoading` | `boolean` | True while an async handler is in-flight |
+| `onAction` | `(payload?: unknown) => void` | Invoke the action (single-button form) |
+| `isLoading` | `boolean` | True while an async handler is in-flight (single-button form) |
+| `items` | `UseSetteraActionItemResult[]` | Per-item results for multi-button actions (empty array for single-button) |
+
+Each item in `items` contains `{ item: ActionItem, onAction, isLoading }` with independent loading state.
 
 #### useSetteraConfirm()
 
@@ -904,10 +988,12 @@ pnpm format
 
 ```
 packages/
-  schema/     @settera/schema — Types, validation, traversal
-  react/      @settera/react  — Headless hooks and primitives
-  ui/         @settera/ui     — Prebuilt components (inline styles + Radix)
-  test-app/   Internal Vite app for development testing
+  schema/           @settera/schema          — Types, validation, traversal
+  react/            @settera/react           — Headless hooks and primitives
+  ui/               @settera/ui              — Prebuilt components (inline styles + Radix)
+  shadcn-registry/  @settera/shadcn-registry — shadcn-style components (Tailwind + shadcn primitives)
+  test-app/         Internal Vite app for development testing (ui)
+  shadcn-test-app/  Internal Vite app for development testing (shadcn)
 ```
 
 ## License
