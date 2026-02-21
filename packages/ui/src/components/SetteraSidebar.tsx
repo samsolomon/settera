@@ -65,7 +65,7 @@ export function SetteraSidebar({
     requestFocusContent,
     getPageUrl,
   } = useSetteraNavigation();
-  const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
+  const { isSearching, matchingPageKeys, matchingSectionsByPage, setQuery } = useSetteraSearch();
 
   if (!schemaCtx) {
     throw new Error("SetteraSidebar must be used within a Settera component.");
@@ -99,6 +99,7 @@ export function SetteraSidebar({
 
       if (isFlattenedPage(page)) {
         // Single-child parent without sections — navigate to the child
+        setQuery("");
         const pageKey = resolvePageKey(page);
         setActivePage(pageKey);
         onNavigate?.(pageKey);
@@ -107,32 +108,36 @@ export function SetteraSidebar({
         toggleGroup(page.key);
       } else if (hasChildren && hasSections) {
         // Parent with own sections + children — navigate AND toggle
+        setQuery("");
         setActivePage(page.key);
         toggleGroup(page.key);
       } else {
         // Leaf page — just navigate
+        setQuery("");
         setActivePage(page.key);
         onNavigate?.(page.key);
       }
     },
-    [setActivePage, toggleGroup, onNavigate],
+    [setActivePage, toggleGroup, onNavigate, setQuery],
   );
 
   const handleChildClick = useCallback(
     (key: string) => {
+      setQuery("");
       setActivePage(key);
       onNavigate?.(key);
     },
-    [setActivePage, onNavigate],
+    [setActivePage, onNavigate, setQuery],
   );
 
   const handleSectionClick = useCallback(
     (pageKey: string, sectionKey: string) => {
+      setQuery("");
       setActivePage(pageKey);
       setActiveSection(sectionKey);
       onNavigate?.(pageKey);
     },
-    [onNavigate, setActivePage, setActiveSection],
+    [onNavigate, setActivePage, setActiveSection, setQuery],
   );
 
   // Filter page items during search, preserving groups (with filtered pages inside)
@@ -310,6 +315,7 @@ export function SetteraSidebar({
         }
         if (e.key === "Enter") {
           e.preventDefault();
+          setQuery("");
           requestFocusContent();
           return;
         }
@@ -372,6 +378,7 @@ export function SetteraSidebar({
           toggleGroup(page.key);
         } else {
           // Page already loaded via arrow-key navigation; move focus to content
+          setQuery("");
           requestFocusContent();
         }
         return;
@@ -380,7 +387,7 @@ export function SetteraSidebar({
       // Delegate to roving tabindex for ArrowUp/Down/Home/End
       onKeyDownRef.current(e);
     },
-    [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent],
+    [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent, setQuery],
   );
 
   // Ref callback factory for storing element refs

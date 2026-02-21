@@ -176,7 +176,7 @@ describe("SetteraSection", () => {
     expect(screen.queryByText("Auto Save")).toBeNull();
   });
 
-  it("hides non-matching settings during search", async () => {
+  it("keeps all settings visible during search", async () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
@@ -202,12 +202,12 @@ describe("SetteraSection", () => {
 
     await user.click(screen.getByText("search"));
 
-    // Matching section auto-expands during search
+    // Section auto-expands during search, all settings visible
     expect(screen.getByText("Auto Save")).toBeDefined();
-    expect(screen.queryByText("Sounds")).toBeNull();
+    expect(screen.getByText("Sounds")).toBeDefined();
   });
 
-  it("hides entire section when no settings match search", async () => {
+  it("keeps section visible even when no settings match search", async () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
@@ -232,11 +232,11 @@ describe("SetteraSection", () => {
 
     await user.click(screen.getByText("search"));
 
-    // Entire section hidden — heading gone
-    expect(screen.queryByText("Behavior")).toBeNull();
+    // Section remains visible — content is not filtered
+    expect(screen.getByText("Behavior")).toBeDefined();
   });
 
-  it("filters subsection settings during search", async () => {
+  it("keeps all subsection settings visible during search", async () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
@@ -263,10 +263,9 @@ describe("SetteraSection", () => {
 
     await user.click(screen.getByText("search"));
 
-    // Only subsection setting matches
+    // All settings remain visible during search (content not filtered)
     expect(screen.getByText("Sub Setting")).toBeDefined();
-    expect(screen.queryByText("Top Level")).toBeNull();
-    // Subsection heading still visible
+    expect(screen.getByText("Top Level")).toBeDefined();
     expect(screen.getByText("Subsection One")).toBeDefined();
   });
 

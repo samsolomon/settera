@@ -107,7 +107,7 @@ describe("SetteraPage", () => {
     expect(screen.getByText("Display Name")).toBeDefined();
   });
 
-  it("hides sections with no matches during search", async () => {
+  it("keeps all sections visible during search", async () => {
     const user = userEvent.setup();
 
     function SearchTrigger() {
@@ -130,9 +130,9 @@ describe("SetteraPage", () => {
 
     await user.click(screen.getByText("search"));
 
-    // After search, only Behavior section should be visible
+    // After search, all sections remain visible (content is not filtered)
     expect(screen.getByText("Behavior")).toBeDefined();
-    expect(screen.queryByText("Profile")).toBeNull();
+    expect(screen.getByText("Profile")).toBeDefined();
   });
 
   it("shows all sections when not searching", () => {

@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { SetteraSchemaContext, parseDescriptionLinks } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
-import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { token, type PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
@@ -43,7 +42,6 @@ export function SetteraPage({
 }: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage, subpage, closeSubpage } = useSetteraNavigation();
-  const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   const labels = useSetteraLabels();
 
@@ -89,18 +87,7 @@ export function SetteraPage({
       ? customPages[customPageRendererKey]
       : undefined;
 
-  // During search, only show sections that contain matching settings
-  const visibleSections = isSearching
-    ? (page.sections ?? []).filter((section) => {
-        const hasMatchingSetting = (section.settings ?? []).some((s) =>
-          matchingSettingKeys.has(s.key),
-        );
-        const hasMatchingSubsection = (section.subsections ?? []).some((sub) =>
-          sub.settings.some((s) => matchingSettingKeys.has(s.key)),
-        );
-        return hasMatchingSetting || hasMatchingSubsection;
-      })
-    : (page.sections ?? []);
+  const visibleSections = page.sections ?? [];
 
   return (
     <div>

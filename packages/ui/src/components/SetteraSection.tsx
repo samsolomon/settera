@@ -35,7 +35,7 @@ export function SetteraSection({
 }: SetteraSectionProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const labels = useSetteraLabels();
-  const { isSearching, matchingSettingKeys } = useSetteraSearch();
+  const { isSearching } = useSetteraSearch();
   const { values } = useSettera();
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
   const [isHovered, setIsHovered] = useState(false);
@@ -81,16 +81,10 @@ export function SetteraSection({
 
   const visibleSubsections = useMemo(
     () =>
-      (section?.subsections ?? []).filter((sub) => {
-        if (!evaluateVisibility(sub.visibleWhen, values)) {
-          return false;
-        }
-        if (!isSearching) {
-          return true;
-        }
-        return sub.settings.some((s) => matchingSettingKeys.has(s.key));
-      }),
-    [section?.subsections, values, isSearching, matchingSettingKeys],
+      (section?.subsections ?? []).filter((sub) =>
+        evaluateVisibility(sub.visibleWhen, values),
+      ),
+    [section?.subsections, values],
   );
 
   if (!page || !section) return null;
@@ -99,19 +93,7 @@ export function SetteraSection({
     return null;
   }
 
-  // Filter settings during search
-  const visibleSettings = isSearching
-    ? (section.settings ?? []).filter((s) => matchingSettingKeys.has(s.key))
-    : (section.settings ?? []);
-
-  // Hide entire section if no visible settings or subsections during search
-  if (
-    isSearching &&
-    visibleSettings.length === 0 &&
-    visibleSubsections.length === 0
-  ) {
-    return null;
-  }
+  const visibleSettings = section.settings ?? [];
 
   const sectionContentId = `settera-section-content-${pageKey}-${sectionKey}`;
   const sectionTitleId = `settera-section-title-${pageKey}-${sectionKey}`;
@@ -247,10 +229,6 @@ export function SetteraSection({
             </div>
           )}
           {visibleSubsections.map((sub) => {
-            const subSettings = isSearching
-              ? sub.settings.filter((s) => matchingSettingKeys.has(s.key))
-              : sub.settings;
-
             return (
               <div
                 key={sub.key}
@@ -281,11 +259,11 @@ export function SetteraSection({
                   </p>
                 )}
                 <div style={cardShellStyle}>
-                  {subSettings.map((setting, i) => (
+                  {sub.settings.map((setting, i) => (
                     <SetteraSetting
                       key={setting.key}
                       settingKey={setting.key}
-                      isLast={i === subSettings.length - 1}
+                      isLast={i === sub.settings.length - 1}
                       customSettings={customSettings}
                     />
                   ))}

@@ -5,7 +5,6 @@ import { SetteraSchemaContext, parseDescriptionLinks } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import { ChevronLeftIcon } from "lucide-react";
 import { useSetteraNavigation } from "./use-settera-navigation";
-import { useSetteraSearch } from "./use-settera-search";
 import { SetteraSection } from "./settera-section";
 import type { SetteraCustomSettingProps } from "./settera-setting";
 import { SetteraSubpageContent } from "./settera-subpage-content";
@@ -37,7 +36,6 @@ export function SetteraPage({
   const schemaCtx = useContext(SetteraSchemaContext);
   const labels = useSetteraLabels();
   const { activePage, subpage, closeSubpage } = useSetteraNavigation();
-  const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
   if (!schemaCtx) {
     throw new Error("SetteraPage must be used within a Settera component.");
@@ -80,17 +78,7 @@ export function SetteraPage({
       ? customPages[customPageRendererKey]
       : undefined;
 
-  const visibleSections = isSearching
-    ? (page.sections ?? []).filter((section) => {
-        const hasMatchingSetting = (section.settings ?? []).some((s) =>
-          matchingSettingKeys.has(s.key),
-        );
-        const hasMatchingSubsection = (section.subsections ?? []).some((sub) =>
-          sub.settings.some((s) => matchingSettingKeys.has(s.key)),
-        );
-        return hasMatchingSetting || hasMatchingSubsection;
-      })
-    : (page.sections ?? []);
+  const visibleSections = page.sections ?? [];
 
   return (
     <div>

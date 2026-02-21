@@ -73,7 +73,7 @@ export function SetteraSidebar({
     requestFocusContent,
     getPageUrl,
   } = useSetteraNavigation();
-  const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
+  const { isSearching, matchingPageKeys, matchingSectionsByPage, setQuery } = useSetteraSearch();
   const { setOpenMobile } = useSidebar();
 
   if (!schemaCtx) {
@@ -103,29 +103,33 @@ export function SetteraSidebar({
       const hasSections = page.sections && page.sections.length > 0;
 
       if (isFlattenedPage(page)) {
+        setQuery("");
         const pageKey = resolvePageKey(page);
         setActivePage(pageKey);
         setOpenMobile(false);
       } else if (hasChildren && !hasSections) {
         toggleGroup(page.key);
       } else if (hasChildren && hasSections) {
+        setQuery("");
         setActivePage(page.key);
         toggleGroup(page.key);
         setOpenMobile(false);
       } else {
+        setQuery("");
         setActivePage(page.key);
         setOpenMobile(false);
       }
     },
-    [setActivePage, toggleGroup, setOpenMobile],
+    [setActivePage, toggleGroup, setOpenMobile, setQuery],
   );
 
   const handleChildClick = useCallback(
     (key: string) => {
+      setQuery("");
       setActivePage(key);
       setOpenMobile(false);
     },
-    [setActivePage, setOpenMobile],
+    [setActivePage, setOpenMobile, setQuery],
   );
 
   const handleChildItemClick = useCallback(
@@ -141,10 +145,11 @@ export function SetteraSidebar({
 
   const handleSectionClick = useCallback(
     (pageKey: string, sectionKey: string) => {
+      setQuery("");
       navigateToSection(pageKey, sectionKey);
       setOpenMobile(false);
     },
-    [navigateToSection, setOpenMobile],
+    [navigateToSection, setOpenMobile, setQuery],
   );
 
   // Filter page items during search, preserving groups (with filtered pages inside)
@@ -301,6 +306,7 @@ export function SetteraSidebar({
         if (isExpandOnly) {
           toggleGroup(page.key);
         } else {
+          setQuery("");
           requestFocusContent();
         }
         return;
@@ -308,7 +314,7 @@ export function SetteraSidebar({
 
       onKeyDownRef.current(e);
     },
-    [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent],
+    [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent, setQuery],
   );
 
   const setButtonRef = useCallback(
