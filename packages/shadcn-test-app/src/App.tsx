@@ -11,6 +11,28 @@ import {
 } from "./custom-renderers.js";
 import { HeadlessView } from "./headless-view.js";
 import { getSetteraThemeVars } from "./ui-theme.js";
+import {
+  CreditCardIcon,
+  PaletteIcon,
+  ShieldIcon,
+  UserIcon,
+  UsersIcon,
+  ZapIcon,
+} from "lucide-react";
+import type { ReactNode } from "react";
+
+const ICON_MAP: Record<string, ReactNode> = {
+  user: <UserIcon className="size-4" />,
+  users: <UsersIcon className="size-4" />,
+  shield: <ShieldIcon className="size-4" />,
+  zap: <ZapIcon className="size-4" />,
+  palette: <PaletteIcon className="size-4" />,
+  "credit-card": <CreditCardIcon className="size-4" />,
+};
+
+function renderIcon(name: string): ReactNode {
+  return ICON_MAP[name] ?? null;
+}
 
 type DemoMode = "schema" | "headless" | "ui" | "shadcn";
 
@@ -246,6 +268,7 @@ export function App() {
                 label: "Back to app",
                 href: "/",
               }}
+              renderIcon={renderIcon}
               customPages={{ usersPage: UsersPage }}
               customSettings={{ profilePicture: ProfilePictureSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
