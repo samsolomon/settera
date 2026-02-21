@@ -13,6 +13,7 @@ import {
 import { HeadlessView } from "./headless-view.js";
 import { getSetteraThemeVars } from "./ui-theme.js";
 import {
+  BellIcon,
   CreditCardIcon,
   PaintbrushIcon,
   PaletteIcon,
@@ -26,6 +27,7 @@ import type { ReactNode } from "react";
 const ICON_MAP: Record<string, ReactNode> = {
   user: <UserIcon className="size-4" />,
   users: <UsersIcon className="size-4" />,
+  bell: <BellIcon className="size-4" />,
   shield: <ShieldIcon className="size-4" />,
   zap: <ZapIcon className="size-4" />,
   paintbrush: <PaintbrushIcon className="size-4" />,

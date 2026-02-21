@@ -271,6 +271,107 @@ export const demoSchema: SetteraSchema = {
         },
       ],
     },
+    {
+      key: "notifications",
+      title: "Notifications",
+      description:
+        "Customize your notification settings to stay informed without being overwhelmed.",
+      icon: "bell",
+      sections: [
+        {
+          key: "digest",
+          title: "Daily digest",
+          settings: [
+            {
+              key: "notifications.dailyDigest",
+              title: "Enable daily digest",
+              description:
+                "Includes tasks overdue and due today. Sent every morning if any tasks are due or overdue.",
+              type: "boolean",
+              default: false,
+            },
+          ],
+        },
+        {
+          key: "collaboration",
+          title: "Collaboration notifications",
+          settings: [
+            {
+              key: "notifications.mentions",
+              title: "Mentions",
+              description:
+                "Notify me when someone cites me with an @mention in notes or comments.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+            {
+              key: "notifications.replies",
+              title: "Replies",
+              description:
+                "Notify me when someone replies to my comments.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+            {
+              key: "notifications.emailGrants",
+              title: "Email grants",
+              description:
+                "Notify me of email access requested or when my requests are accepted or denied.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+            {
+              key: "notifications.taskAssignments",
+              title: "Task assignments",
+              description:
+                "Notify me when I'm assigned a task.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+            {
+              key: "notifications.sharedResources",
+              title: "Shared resources",
+              description:
+                "Notify me when someone shares a resource, such as an email, with me.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+            {
+              key: "notifications.sequenceDelegated",
+              title: "Sequence delegated sender invites",
+              description:
+                "Notify me when someone invites me to be a sequence delegated sender.",
+              type: "multiselect",
+              options: [
+                { value: "email", label: "Email" },
+                { value: "desktop", label: "Desktop" },
+              ],
+              default: ["desktop"],
+            },
+          ],
+        },
+      ],
+    },
       ],
     },
     {
