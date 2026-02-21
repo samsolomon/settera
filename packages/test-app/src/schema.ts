@@ -206,6 +206,7 @@ export const demoSchema: SetteraSchema = {
                 { value: "system", label: "System" },
               ],
               default: "system",
+              validation: { required: true },
             },
             {
               key: "appearance.accentColor",
