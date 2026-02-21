@@ -71,6 +71,7 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
       aria-invalid={hasError}
       aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
       className={cn(
+        "w-full md:w-[200px]",
         hasError && "border-destructive",
         isDangerous && "text-destructive",
       )}

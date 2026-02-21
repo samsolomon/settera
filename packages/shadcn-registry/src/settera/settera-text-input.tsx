@@ -53,6 +53,7 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
     "aria-invalid": hasError as boolean,
     "aria-describedby": hasError ? `settera-error-${settingKey}` : undefined,
     className: cn(
+      "w-full md:w-[200px]",
       hasError && "border-destructive",
       isDangerous && "text-destructive",
     ),

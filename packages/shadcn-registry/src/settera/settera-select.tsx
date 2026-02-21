@@ -64,7 +64,7 @@ export function SetteraSelect({ settingKey }: SetteraSelectProps) {
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         className={cn(
-          "min-w-[160px]",
+          "w-full md:w-[200px]",
           hasError && "border-destructive",
           isDangerous && "text-destructive",
         )}
