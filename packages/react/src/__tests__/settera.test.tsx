@@ -169,6 +169,14 @@ describe("Settera — schema context", () => {
 function ValuesConsumer() {
   const store = React.useContext(SetteraValuesContext);
   if (!store) return <div>no values context</div>;
+  return <ValuesConsumerInner store={store} />;
+}
+
+function ValuesConsumerInner({
+  store,
+}: {
+  store: NonNullable<React.ContextType<typeof SetteraValuesContext>>;
+}) {
   const values = useSyncExternalStore(
     store.subscribe,
     () => store.getState().values,
@@ -316,6 +324,14 @@ describe("Settera (unified)", () => {
 function SaveStatusConsumer() {
   const store = React.useContext(SetteraValuesContext);
   if (!store) return <div>no context</div>;
+  return <SaveStatusConsumerInner store={store} />;
+}
+
+function SaveStatusConsumerInner({
+  store,
+}: {
+  store: NonNullable<React.ContextType<typeof SetteraValuesContext>>;
+}) {
   const saveStatus = useSyncExternalStore(
     store.subscribe,
     () => store.getState().saveStatus,

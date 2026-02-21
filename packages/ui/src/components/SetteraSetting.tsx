@@ -101,10 +101,10 @@ export function SetteraSetting({
       );
       break;
     }
-    default:
+    default: {
       // Exhaustive fallback for forward compatibility.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustive: never = definition;
+      void _exhaustive;
       control = (
         <span
           data-testid={`unsupported-${settingKey}`}
@@ -118,6 +118,7 @@ export function SetteraSetting({
         </span>
       );
       break;
+    }
   }
 
   return (

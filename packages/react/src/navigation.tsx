@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 import { resolvePageKey, flattenPageItems } from "@settera/schema";
-import type { PageDefinition, PageItem } from "@settera/schema";
+import type { PageItem } from "@settera/schema";
 import { SetteraSchemaContext } from "./context.js";
 
 // ---- Types ----

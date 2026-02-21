@@ -54,11 +54,14 @@ describe("@settera/schema", () => {
       ],
     };
 
-    const setting: SettingDefinition =
-      schema.pages[0].sections![0].settings![0];
-    if (setting.type === "boolean") {
-      const boolSetting: BooleanSetting = setting;
-      expect(boolSetting.type).toBe("boolean");
+    const firstPage = schema.pages[0];
+    if ("key" in firstPage) {
+      const setting: SettingDefinition =
+        firstPage.sections![0].settings![0];
+      if (setting.type === "boolean") {
+        const boolSetting: BooleanSetting = setting;
+        expect(boolSetting.type).toBe("boolean");
+      }
     }
   });
 });

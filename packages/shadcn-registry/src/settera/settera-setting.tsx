@@ -96,6 +96,7 @@ export function SetteraSetting({
     }
     default: {
       const _exhaustive: never = definition;
+      void _exhaustive;
       control = (
         <span
           data-testid={`unsupported-${settingKey}`}

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 /**
  * Track keyboard-driven focus for a visible focus ring.
@@ -15,12 +15,12 @@ export function useFocusVisible() {
     pointerDownRef.current = true;
   }, []);
 
-  const onFocus = useCallback((_e?: React.FocusEvent) => {
+  const onFocus = useCallback(() => {
     setIsFocusVisible(!pointerDownRef.current);
     pointerDownRef.current = false;
   }, []);
 
-  const onBlur = useCallback((_e?: React.FocusEvent) => {
+  const onBlur = useCallback(() => {
     setIsFocusVisible(false);
   }, []);
 

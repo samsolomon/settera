@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import type {
   CompoundFieldDefinition,
-  BooleanSetting,
   SelectSetting,
   MultiSelectSetting,
   TextSetting,
@@ -74,7 +73,6 @@ export function FieldControl({
     case "number":
       return (
         <FieldControlNumber
-          field={field}
           value={value}
           onChange={onChange}
           fieldId={fieldId}
@@ -203,7 +201,6 @@ function FieldControlText({
 }
 
 function FieldControlNumber({
-  field,
   value,
   onChange,
   fieldId,
@@ -213,7 +210,6 @@ function FieldControlNumber({
   showFocusRing,
   inputStyle,
 }: {
-  field: CompoundFieldDefinition;
   value: unknown;
   onChange: (nextValue: unknown) => void;
   fieldId?: string;

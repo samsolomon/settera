@@ -26,7 +26,7 @@ describe("useSaveAndClose", () => {
 
     it("waits for saving→non-saving transition before calling onComplete", () => {
       const onComplete = vi.fn();
-      const { result, rerender } = renderHook(
+      const { result } = renderHook(
         ({ status }) => useSaveAndClose(status, onComplete),
         { initialProps: { status: "idle" as string } },
       );

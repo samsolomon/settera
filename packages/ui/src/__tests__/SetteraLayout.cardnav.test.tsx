@@ -185,7 +185,7 @@ describe("SetteraLayout card navigation", () => {
 
     it("End jumps to last card", () => {
       renderLayout();
-      const cards = focusFirstCard();
+      focusFirstCard();
 
       fireKey("End");
       expect(document.activeElement).toBe(getCards()[getCards().length - 1]);

@@ -22,7 +22,10 @@ export function Select({ settingKey }: SelectProps) {
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
   const isDisabled = "disabled" in definition && Boolean(definition.disabled);
-  const options = definition.type === "select" ? definition.options : [];
+  const options = useMemo(
+    () => (definition.type === "select" ? definition.options : []),
+    [definition],
+  );
   const isRequired =
     definition.type === "select" && definition.validation?.required;
   const selectedValue = typeof value === "string" ? value : "";

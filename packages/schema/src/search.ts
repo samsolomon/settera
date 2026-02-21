@@ -1,5 +1,5 @@
 import type { SetteraSchema } from "./types.js";
-import { walkSchema, isPageGroup, flattenPageItems } from "./traversal.js";
+import { walkSchema, isPageGroup } from "./traversal.js";
 
 export interface SearchSchemaResult {
   settingKeys: Set<string>;

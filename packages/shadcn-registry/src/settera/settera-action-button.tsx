@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { ActionItem, ActionModalConfig, ActionPageConfig } from "@settera/schema";
+import type { ActionModalConfig, ActionPageConfig } from "@settera/schema";
 import { useSetteraAction } from "@settera/react";
-import type { UseSetteraActionItemResult } from "@settera/react";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { SetteraActionModal } from "./settera-action-modal";
 import { Button } from "@/components/ui/button";

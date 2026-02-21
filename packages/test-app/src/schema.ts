@@ -1,4 +1,4 @@
-import type { SetteraSchema, PageItem } from "@settera/schema";
+import type { SetteraSchema } from "@settera/schema";
 
 export const demoSchema: SetteraSchema = {
   version: "1.0",

@@ -47,7 +47,7 @@ export function SetteraSubpageContent({
     let actionKey = settingKey;
     let pageConfig: ActionPageConfig | undefined;
     let actionType: string | undefined;
-    let title = setting.title;
+    const title = setting.title;
 
     if (setting.actions && setting.key !== settingKey) {
       // Multi-button: find the matching item

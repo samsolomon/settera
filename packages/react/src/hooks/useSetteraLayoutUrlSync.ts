@@ -220,7 +220,6 @@ export function useSetteraLayoutUrlSync({
         openSubpage(subpageKey);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncActivePageWithUrl, schemaCtx, openSubpage]);
 
   const deepLinkContextValue =

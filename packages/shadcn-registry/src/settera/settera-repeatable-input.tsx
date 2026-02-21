@@ -8,7 +8,6 @@ import { ArrowDownIcon, ArrowUpIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraRepeatableInputProps {
@@ -79,7 +78,7 @@ function ListTextItem({
       inputProps.onChange(e);
       onDraftChange(index, e.target.value);
     },
-    [inputProps.onChange, onDraftChange, index],
+    [inputProps, onDraftChange, index],
   );
 
   return (
