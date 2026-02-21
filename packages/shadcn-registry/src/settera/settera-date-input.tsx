@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useSetteraSetting } from "@settera/react";
 import { format, isValid, parse } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarDaysIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/input-group";
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -205,44 +206,45 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
 
   return (
     <Popover open={open} onOpenChange={handlePopoverOpenChange}>
-      <InputGroup
-        data-disabled={isDisabled || undefined}
-        className={cn(
-          "w-full md:w-[200px]",
-          hasError && "border-destructive",
-          isDangerous && "text-destructive",
-        )}
-      >
-        <InputGroupInput
-          value={inputText}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onKeyDown={handleInputKeyDown}
-          placeholder="Select date"
-          disabled={isDisabled}
-          readOnly={isReadOnly}
-          aria-label={definition.title}
-          aria-invalid={hasError}
-          aria-describedby={
-            hasError ? `settera-error-${settingKey}` : undefined
-          }
-        />
-        <InputGroupAddon align="inline-end">
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              disabled={isDisabled || isReadOnly}
-              aria-label="Open calendar"
-              className="text-muted-foreground shadow-none"
-            >
-              <CalendarIcon />
-            </Button>
-          </PopoverTrigger>
-        </InputGroupAddon>
-      </InputGroup>
+      <PopoverAnchor>
+        <InputGroup
+          data-disabled={isDisabled || undefined}
+          className={cn(
+            hasError && "border-destructive",
+            isDangerous && "text-destructive",
+          )}
+        >
+          <InputGroupInput
+            value={inputText}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            placeholder="Select date"
+            disabled={isDisabled}
+            readOnly={isReadOnly}
+            aria-label={definition.title}
+            aria-invalid={hasError}
+            aria-describedby={
+              hasError ? `settera-error-${settingKey}` : undefined
+            }
+          />
+          <InputGroupAddon align="inline-end">
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                disabled={isDisabled || isReadOnly}
+                aria-label="Open calendar"
+                className="text-muted-foreground shadow-none [&_svg]:size-4"
+              >
+                <CalendarDaysIcon />
+              </Button>
+            </PopoverTrigger>
+          </InputGroupAddon>
+        </InputGroup>
+      </PopoverAnchor>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
