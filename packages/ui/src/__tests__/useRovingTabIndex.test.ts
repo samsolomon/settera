@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useRovingTabIndex } from "../hooks/useRovingTabIndex.js";
+import { useRovingTabIndex } from "@settera/react";
 import type { KeyboardEvent } from "react";
 
 function makeKeyEvent(key: string): KeyboardEvent {

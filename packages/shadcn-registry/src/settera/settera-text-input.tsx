@@ -31,8 +31,6 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
     [committed, setValue, validate],
   );
 
-  const { inputProps } = useBufferedInput(committed, onCommit);
-
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
   const isText = definition.type === "text";
@@ -56,36 +54,121 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
 
   if (isMultiline) {
     return (
-      <Textarea
-        {...inputProps}
+      <TextareaBuffered
+        committed={committed}
+        onCommit={onCommit}
+        settingKey={settingKey}
+        title={definition.title}
         placeholder={placeholder}
-        disabled={isDisabled}
-        readOnly={isReadOnly}
-        aria-label={definition.title}
-        aria-invalid={hasError}
-        aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-        className={cn("w-full md:w-[var(--settera-control-width,200px)]", sharedClassName)}
         maxLength={maxLength}
+        isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
+        hasError={hasError}
+        className={sharedClassName}
       />
     );
   }
 
   return (
-    <InputGroup className={cn("w-full md:w-[var(--settera-control-width,200px)]", sharedClassName)}>
+    <InputBuffered
+      committed={committed}
+      onCommit={onCommit}
+      settingKey={settingKey}
+      title={definition.title}
+      inputType={inputType}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
+      hasError={hasError}
+      className={sharedClassName}
+    />
+  );
+}
+
+function TextareaBuffered({
+  committed,
+  onCommit,
+  settingKey,
+  title,
+  placeholder,
+  maxLength,
+  isDisabled,
+  isReadOnly,
+  hasError,
+  className: extraClassName,
+}: {
+  committed: string;
+  onCommit: (local: string) => void;
+  settingKey: string;
+  title: string;
+  placeholder?: string;
+  maxLength?: number;
+  isDisabled: boolean;
+  isReadOnly: boolean;
+  hasError: boolean;
+  className?: string;
+}) {
+  const { inputProps } = useBufferedInput<HTMLTextAreaElement>(committed, onCommit);
+
+  return (
+    <Textarea
+      {...inputProps}
+      placeholder={placeholder}
+      disabled={isDisabled}
+      readOnly={isReadOnly}
+      aria-label={title}
+      aria-invalid={hasError}
+      aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
+      className={cn("w-full md:w-[var(--settera-control-width,200px)]", extraClassName)}
+      maxLength={maxLength}
+    />
+  );
+}
+
+function InputBuffered({
+  committed,
+  onCommit,
+  settingKey,
+  title,
+  inputType,
+  placeholder,
+  maxLength,
+  isDisabled,
+  isReadOnly,
+  hasError,
+  className: extraClassName,
+}: {
+  committed: string;
+  onCommit: (local: string) => void;
+  settingKey: string;
+  title: string;
+  inputType: string;
+  placeholder?: string;
+  maxLength?: number;
+  isDisabled: boolean;
+  isReadOnly: boolean;
+  hasError: boolean;
+  className?: string;
+}) {
+  const { inputProps } = useBufferedInput(committed, onCommit);
+
+  return (
+    <InputGroup className={cn("w-full md:w-[var(--settera-control-width,200px)]", extraClassName)}>
       <InputGroupInput
         type={inputType}
         {...inputProps}
         placeholder={placeholder}
         disabled={isDisabled}
         readOnly={isReadOnly}
-        aria-label={definition.title}
+        aria-label={title}
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         maxLength={maxLength}
       />
       {isReadOnly && (
         <InputGroupAddon align="inline-end">
-          <SetteraCopyButton value={committed} label={definition.title} />
+          <SetteraCopyButton value={committed} label={title} />
         </InputGroupAddon>
       )}
     </InputGroup>

@@ -24,10 +24,13 @@ export type { SetteraNavigationContextValue } from "./contexts/SetteraNavigation
 export { useSetteraNavigation } from "./hooks/useSetteraNavigation.js";
 export { useSetteraSearch } from "./hooks/useSetteraSearch.js";
 
-// Keyboard navigation hooks (UI-specific, DOM-dependent)
-export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";
-export { useSetteraGlobalKeys, isTextInput } from "./hooks/useSetteraGlobalKeys.js";
-export { useContentCardNavigation } from "./hooks/useContentCardNavigation.js";
+// Keyboard navigation hooks (re-exported from @settera/react)
+export {
+  useRovingTabIndex,
+  useSetteraGlobalKeys,
+  isTextInput,
+  useContentCardNavigation,
+} from "@settera/react";
 
 // UI Components
 export { BooleanSwitch } from "./components/BooleanSwitch.js";

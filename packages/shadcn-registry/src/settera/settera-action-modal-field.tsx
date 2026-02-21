@@ -11,6 +11,7 @@ import { SetteraFieldControl } from "./settera-field-control";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraActionModalFieldProps {
   field: ModalActionFieldSetting;
@@ -23,6 +24,7 @@ export function SetteraActionModalField({
   value,
   onChange,
 }: SetteraActionModalFieldProps) {
+  const labels = useSetteraLabels();
   // Leaf types
   if (
     field.type === "text" ||
@@ -97,7 +99,7 @@ export function SetteraActionModalField({
                 onChange(items.filter((_, i) => i !== index));
               }}
             >
-              Remove
+              {labels.remove}
             </Button>
           </div>
         ))}
@@ -149,7 +151,7 @@ export function SetteraActionModalField({
               onClick={() => onChange(items.filter((_, i) => i !== index))}
               className="self-start"
             >
-              Remove
+              {labels.remove}
             </Button>
           </div>
         );
@@ -170,7 +172,7 @@ export function SetteraActionModalField({
         }}
         className="self-start"
       >
-        Add item
+        {labels.addItem}
       </Button>
     </div>
   );

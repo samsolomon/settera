@@ -6,6 +6,7 @@ import type { ActionSetting, ActionPageConfig, CompoundFieldDefinition } from "@
 import { SetteraActionPageContent } from "./settera-action-page-content";
 import { CompoundFields } from "./settera-compound-input";
 import { Button } from "@/components/ui/button";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraActionPageProps {
   settingKey: string;
@@ -109,6 +110,7 @@ function CompoundSubpage({
   };
   onBack: () => void;
 }) {
+  const labels = useSetteraLabels();
   const { value, setValue, validate, saveStatus } =
     useSetteraSetting(settingKey);
 
@@ -156,13 +158,13 @@ function CompoundSubpage({
           onClick={onBack}
           disabled={isBusy}
         >
-          Cancel
+          {labels.cancel}
         </Button>
         <Button
           onClick={handleSave}
           disabled={isBusy}
         >
-          {isBusy ? "Saving\u2026" : "Save"}
+          {isBusy ? labels.saving : labels.save}
         </Button>
       </div>
     </div>

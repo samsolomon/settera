@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraDateInputProps {
   settingKey: string;
@@ -62,6 +63,7 @@ export function parseDateInput(text: string): Date | undefined {
 export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
@@ -222,7 +224,7 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleInputKeyDown}
-            placeholder="Select date"
+            placeholder={labels.selectDate}
             disabled={isDisabled}
             readOnly={isReadOnly}
             aria-label={definition.title}
@@ -241,7 +243,7 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
                   variant="ghost"
                   size="icon-xs"
                   disabled={isDisabled}
-                  aria-label="Open calendar"
+                  aria-label={labels.openCalendar}
                   className="text-muted-foreground shadow-none"
                 >
                   <CalendarDaysIcon className="size-4" />

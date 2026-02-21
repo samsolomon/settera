@@ -7,6 +7,7 @@ import type { UseSetteraActionItemResult } from "@settera/react";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { SetteraActionModal } from "./settera-action-modal";
 import { Button } from "@/components/ui/button";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraActionButtonProps {
   settingKey: string;
@@ -85,6 +86,7 @@ function ActionButtonSingle({
   isLoading,
 }: ActionButtonSingleProps) {
   const { openSubpage } = useSetteraNavigation();
+  const labels = useSetteraLabels();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasModalOpenRef = useRef(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -143,7 +145,7 @@ function ActionButtonSingle({
         aria-label={ariaLabel}
         aria-busy={isLoading}
       >
-        {isLoading ? "Loading\u2026" : buttonLabel}
+        {isLoading ? labels.loading : buttonLabel}
       </Button>
 
       {isModalAction && hasModalConfig && (

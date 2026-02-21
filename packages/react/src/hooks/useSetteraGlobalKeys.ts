@@ -7,7 +7,11 @@ export interface UseSetteraGlobalKeysOptions {
   searchQuery: string;
   closeSubpage?: (() => void) | null;
   subpageSettingKey?: string | null;
+  /** CSS selector for the sidebar element. Defaults to `'nav[role="tree"]'`. */
+  sidebarSelector?: string;
 }
+
+const DEFAULT_SIDEBAR_SELECTOR = 'nav[role="tree"]';
 
 /**
  * Returns true if the element is a text-entry input where single-key
@@ -41,7 +45,14 @@ export function isTextInput(el: EventTarget | null): boolean {
 export function useSetteraGlobalKeys(
   options: UseSetteraGlobalKeysOptions,
 ): void {
-  const { containerRef, clearSearch, searchQuery, closeSubpage, subpageSettingKey } = options;
+  const {
+    containerRef,
+    clearSearch,
+    searchQuery,
+    closeSubpage,
+    subpageSettingKey,
+    sidebarSelector = DEFAULT_SIDEBAR_SELECTOR,
+  } = options;
 
   // Use refs for volatile values so the effect doesn't re-run on every change
   const searchQueryRef = useRef(searchQuery);
@@ -90,12 +101,6 @@ export function useSetteraGlobalKeys(
       }
 
       // Escape — layered priority:
-      // 1. Dialog open → bail, let dialog handle it
-      // 2. Search input focused → bail, let SetteraSearch handle it
-      // 4. Text/number input in content → blur, focus enclosing card
-      // 5. Control inside a card (non-text) → drill out to enclosing card
-      // 6. Focus on card or <main> → return to sidebar
-      // 7. Search query active → clear search
       if (e.key === "Escape") {
         // 1. Dialog open — let the dialog handle Escape
         if (container.querySelector('[role="dialog"], [role="alertdialog"]'))
@@ -123,7 +128,7 @@ export function useSetteraGlobalKeys(
 
         const main = container.querySelector<HTMLElement>("main");
         const sidebar =
-          container.querySelector<HTMLElement>('nav[role="tree"]');
+          container.querySelector<HTMLElement>(sidebarSelector);
 
         // 4. Text/number input in content → blur, focus enclosing card
         if (
@@ -174,7 +179,7 @@ export function useSetteraGlobalKeys(
       if (e.key === "F6") {
         e.preventDefault();
         const sidebar =
-          container.querySelector<HTMLElement>('nav[role="tree"]');
+          container.querySelector<HTMLElement>(sidebarSelector);
         const main = container.querySelector<HTMLElement>("main");
         if (!sidebar || !main) return;
 
@@ -214,5 +219,5 @@ export function useSetteraGlobalKeys(
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [containerRef, clearSearch]);
+  }, [containerRef, clearSearch, sidebarSelector]);
 }

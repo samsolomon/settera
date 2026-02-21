@@ -10,8 +10,13 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
  *
  * External value changes (e.g. from another source) are synced into the
  * local buffer only while the input is *not* focused.
+ *
+ * Generic over the element type — works with both `<input>` and `<textarea>`.
+ * Defaults to `HTMLInputElement` for backwards compatibility.
  */
-export function useBufferedInput(
+export function useBufferedInput<
+  E extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement,
+>(
   committedValue: string,
   onCommit: (localValue: string) => void,
 ) {
@@ -33,7 +38,7 @@ export function useBufferedInput(
   }, [onCommit]);
 
   const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<E>) => {
       localRef.current = e.target.value;
       setLocalValue(e.target.value);
     },
@@ -52,7 +57,7 @@ export function useBufferedInput(
   }, [commit]);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+    (e: React.KeyboardEvent<E>) => {
       if (e.key === "Enter") {
         commit();
       } else if (e.key === "Escape") {

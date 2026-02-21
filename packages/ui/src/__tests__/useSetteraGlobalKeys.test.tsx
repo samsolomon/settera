@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import { useSetteraGlobalKeys } from "../hooks/useSetteraGlobalKeys.js";
+import { useSetteraGlobalKeys } from "@settera/react";
 
 function TestHarness({
   clearSearch,

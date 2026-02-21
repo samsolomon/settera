@@ -7,16 +7,16 @@ import { flattenPageItems } from "@settera/schema";
 import { SetteraNavigationProvider } from "./settera-navigation-provider";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { useSetteraSearch } from "./use-settera-search";
-import { useSetteraLayoutMainKeys } from "./use-settera-layout-main-keys";
-import { useSetteraLayoutHighlight } from "./use-settera-layout-highlight";
-import { useSetteraLayoutUrlSync } from "./use-settera-layout-url-sync";
+import { useSetteraLayoutMainKeys, useSetteraLayoutHighlight, useSetteraLayoutUrlSync } from "@settera/react";
 import { SetteraSidebar } from "./settera-sidebar";
 import { SetteraPage } from "./settera-page";
 import type { SetteraCustomPageProps } from "./settera-page";
 import type { SetteraCustomSettingProps } from "./settera-setting";
 import type { SetteraActionPageProps } from "./settera-subpage-content";
 import { SetteraConfirmDialog } from "./settera-confirm-dialog";
-import { SetteraDeepLinkContext } from "./use-settera-layout-url-sync";
+import { SetteraDeepLinkContext } from "./settera-deep-link-context";
+import type { SetteraLabels } from "./settera-labels";
+import { SetteraLabelsContext, mergeLabels } from "./settera-labels";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -48,6 +48,7 @@ export interface SetteraLayoutProps {
   >;
   activeSettingQueryParam?: string;
   hideFooterHints?: boolean;
+  labels?: SetteraLabels;
 }
 
 interface BreadcrumbItem {
@@ -119,6 +120,7 @@ function SetteraLayoutInner({
   customActionPages,
   activeSettingQueryParam = "setting",
   hideFooterHints,
+  labels,
 }: SetteraLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -138,6 +140,8 @@ function SetteraLayoutInner({
   const { isMobile } = useSidebar();
   const prefersReducedMotion = usePrefersReducedMotion();
 
+  const resolvedLabels = useMemo(() => mergeLabels(labels), [labels]);
+
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
 
   const { handleComposedKeyDown } = useSetteraLayoutMainKeys({
@@ -148,6 +152,7 @@ function SetteraLayoutInner({
     registerFocusContentHandler,
     closeSubpage,
     subpageSettingKey: subpage?.settingKey ?? null,
+    sidebarSelector: '[data-sidebar="sidebar"]',
   });
 
   const { setPendingScrollKey, scrollToSetting } = useSetteraLayoutHighlight({
@@ -187,99 +192,101 @@ function SetteraLayoutInner({
   }, [schemaCtx, activePage, subpage]);
 
   return (
-    <SetteraDeepLinkContext.Provider value={deepLinkContextValue}>
-      <div
-        ref={containerRef}
-        className="flex h-full w-full relative"
-      >
-        <SetteraSidebar
-          renderIcon={renderIcon}
-          backToApp={backToApp}
-          hideFooterHints={hideFooterHints}
-        />
+    <SetteraLabelsContext.Provider value={resolvedLabels}>
+      <SetteraDeepLinkContext.Provider value={deepLinkContextValue}>
+        <div
+          ref={containerRef}
+          className="flex h-full w-full relative"
+        >
+          <SetteraSidebar
+            renderIcon={renderIcon}
+            backToApp={backToApp}
+            hideFooterHints={hideFooterHints}
+          />
 
-        <div className="flex flex-1 flex-col min-w-0">
-          {isMobile && (
-            <header className="sticky top-0 z-[5] flex items-center gap-2 min-h-[52px] px-3 py-2 border-b bg-background">
-              <SidebarTrigger className="shrink-0" />
+          <div className="flex flex-1 flex-col min-w-0">
+            {isMobile && (
+              <header className="sticky top-0 z-[5] flex items-center gap-2 min-h-[52px] px-3 py-2 border-b bg-background">
+                <SidebarTrigger className="shrink-0" />
 
-              {showBreadcrumbs && (
-                <nav
-                  aria-label="Breadcrumb"
-                  className="min-w-0 flex-1"
-                >
-                  <ol className="list-none m-0 p-0 flex items-center gap-1.5 text-muted-foreground text-[13px] min-w-0 whitespace-nowrap overflow-hidden">
-                    <li className="overflow-hidden text-ellipsis">
-                      {resolvedMobileTitle}
-                    </li>
-                    {breadcrumbItems.map((crumb, index) => {
-                      const isLast = index === breadcrumbItems.length - 1;
-                      return (
-                        <React.Fragment key={crumb.key}>
-                          <li aria-hidden="true">/</li>
-                          <li className="min-w-0 overflow-hidden text-ellipsis">
-                            {isLast ? (
-                              <span
-                                aria-current="page"
-                                className="text-foreground font-semibold"
-                              >
-                                {crumb.title}
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (subpage) closeSubpage();
-                                  setActivePage(crumb.key);
-                                }}
-                                className="border-none bg-transparent p-0 text-[13px] text-inherit cursor-pointer"
-                              >
-                                {crumb.title}
-                              </button>
-                            )}
-                          </li>
-                        </React.Fragment>
-                      );
-                    })}
-                  </ol>
-                </nav>
-              )}
-            </header>
-          )}
+                {showBreadcrumbs && (
+                  <nav
+                    aria-label="Breadcrumb"
+                    className="min-w-0 flex-1"
+                  >
+                    <ol className="list-none m-0 p-0 flex items-center gap-1.5 text-muted-foreground text-[13px] min-w-0 whitespace-nowrap overflow-hidden">
+                      <li className="overflow-hidden text-ellipsis">
+                        {resolvedMobileTitle}
+                      </li>
+                      {breadcrumbItems.map((crumb, index) => {
+                        const isLast = index === breadcrumbItems.length - 1;
+                        return (
+                          <React.Fragment key={crumb.key}>
+                            <li aria-hidden="true">/</li>
+                            <li className="min-w-0 overflow-hidden text-ellipsis">
+                              {isLast ? (
+                                <span
+                                  aria-current="page"
+                                  className="text-foreground font-semibold"
+                                >
+                                  {crumb.title}
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (subpage) closeSubpage();
+                                    setActivePage(crumb.key);
+                                  }}
+                                  className="border-none bg-transparent p-0 text-[13px] text-inherit cursor-pointer"
+                                >
+                                  {crumb.title}
+                                </button>
+                              )}
+                            </li>
+                          </React.Fragment>
+                        );
+                      })}
+                    </ol>
+                  </nav>
+                )}
+              </header>
+            )}
 
-          <main
-            ref={mainRef}
-            tabIndex={-1}
-            onKeyDown={handleComposedKeyDown}
-            className="flex-1 min-h-0 overflow-y-auto outline-none bg-background"
-            style={{
-              padding: isMobile
-                ? "var(--settera-page-padding-mobile, 1rem)"
-                : "var(--settera-page-padding, 1.5rem 2rem)",
-              paddingBottom: isMobile
-                ? "var(--settera-page-padding-bottom-mobile, 3rem)"
-                : "var(--settera-page-padding-bottom, 4rem)",
-            }}
-          >
-            <div
+            <main
+              ref={mainRef}
+              tabIndex={-1}
+              onKeyDown={handleComposedKeyDown}
+              className="flex-1 min-h-0 overflow-y-auto outline-none bg-background"
               style={{
-                maxWidth: "var(--settera-content-max-width, 640px)",
-                marginInline: "auto",
+                padding: isMobile
+                  ? "var(--settera-page-padding-mobile, 1rem)"
+                  : "var(--settera-page-padding, 1.5rem 2rem)",
+                paddingBottom: isMobile
+                  ? "var(--settera-page-padding-bottom-mobile, 3rem)"
+                  : "var(--settera-page-padding-bottom, 4rem)",
               }}
             >
-              {children ?? (
-                <SetteraPage
-                  customPages={customPages}
-                  customSettings={customSettings}
-                  customActionPages={customActionPages}
-                />
-              )}
-            </div>
-          </main>
-        </div>
+              <div
+                style={{
+                  maxWidth: "var(--settera-content-max-width, 640px)",
+                  marginInline: "auto",
+                }}
+              >
+                {children ?? (
+                  <SetteraPage
+                    customPages={customPages}
+                    customSettings={customSettings}
+                    customActionPages={customActionPages}
+                  />
+                )}
+              </div>
+            </main>
+          </div>
 
-        <SetteraConfirmDialog />
-      </div>
-    </SetteraDeepLinkContext.Provider>
+          <SetteraConfirmDialog />
+        </div>
+      </SetteraDeepLinkContext.Provider>
+    </SetteraLabelsContext.Provider>
   );
 }

@@ -1,16 +1,14 @@
-import { createContext, useEffect, useMemo, useRef } from "react";
-import type { SetteraSchemaContextValue, SubpageState } from "@settera/react";
-import type { PageDefinition, PageItem } from "@settera/schema";
+import { useEffect, useMemo, useRef } from "react";
+import type { SetteraSchemaContextValue } from "../context.js";
+import type { SubpageState } from "../navigation.js";
+import type { PageItem } from "@settera/schema";
 import { flattenPageItems } from "@settera/schema";
 
 export interface SetteraDeepLinkContextValue {
   getSettingUrl: (settingKey: string) => string;
 }
 
-export const SetteraDeepLinkContext =
-  createContext<SetteraDeepLinkContextValue | null>(null);
-
-function collectPageKeys(
+export function collectPageKeys(
   items: PageItem[],
   acc = new Set<string>(),
 ): Set<string> {
@@ -39,6 +37,7 @@ export interface UseSetteraLayoutUrlSyncOptions {
 
 const SUBPAGE_QUERY_PARAM = "subpage";
 
+/** @internal SetteraLayout implementation detail; not part of public API. */
 export function useSetteraLayoutUrlSync({
   schemaCtx,
   activePage,
@@ -60,6 +59,7 @@ export function useSetteraLayoutUrlSync({
   }, [schemaCtx]);
 
   // Capture the initial setting key from the URL during render (before effects)
+  // so it survives React StrictMode's effect double-fire.
   if (
     initialSettingKeyRef.current === undefined &&
     syncActivePageWithUrl &&
@@ -79,6 +79,7 @@ export function useSetteraLayoutUrlSync({
     const fromUrl = url.searchParams.get(activePageQueryParam);
     if (fromUrl === activePage) return;
     url.searchParams.set(activePageQueryParam, activePage);
+    // Clear stale setting param when page changes via navigation
     url.searchParams.delete(activeSettingQueryParam);
     window.history.replaceState(window.history.state, "", url);
   }, [
@@ -113,6 +114,8 @@ export function useSetteraLayoutUrlSync({
     validPageKeys,
   ]);
 
+  // Read setting param from URL on mount and popstate.
+  // Separate from page-sync to avoid re-running on every activePage change.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!syncActivePageWithUrl || !schemaCtx) return;
@@ -130,8 +133,10 @@ export function useSetteraLayoutUrlSync({
 
       if (targetPage !== activePage) {
         setActivePage(targetPage);
+        // Page will change — scroll after render via pending ref
         setPendingScrollKey(settingKey);
       } else {
+        // Already on the correct page — scroll immediately
         scrollToSetting(settingKey);
       }
     };
@@ -151,6 +156,8 @@ export function useSetteraLayoutUrlSync({
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
+    // activePage intentionally read but not in deps — we only want this
+    // to run on mount and popstate, not on every page navigation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeSettingQueryParam,
@@ -166,6 +173,7 @@ export function useSetteraLayoutUrlSync({
 
   const initialSubpageKeyRef = useRef<string | null | undefined>(undefined);
 
+  // Capture the initial subpage key from URL during render
   if (
     initialSubpageKeyRef.current === undefined &&
     syncActivePageWithUrl &&
@@ -176,6 +184,7 @@ export function useSetteraLayoutUrlSync({
       null;
   }
 
+  // Write subpage state to URL
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!syncActivePageWithUrl) return;
@@ -197,6 +206,7 @@ export function useSetteraLayoutUrlSync({
     }
   }, [subpage, syncActivePageWithUrl]);
 
+  // Read subpage from URL on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!syncActivePageWithUrl || !schemaCtx) return;
@@ -204,6 +214,7 @@ export function useSetteraLayoutUrlSync({
     const subpageKey = initialSubpageKeyRef.current;
     if (subpageKey !== undefined && subpageKey !== null) {
       initialSubpageKeyRef.current = undefined;
+      // Verify the setting exists before opening the subpage
       const setting = schemaCtx.getSettingByKey(subpageKey);
       if (setting) {
         openSubpage(subpageKey);
@@ -218,6 +229,7 @@ export function useSetteraLayoutUrlSync({
       return {
         getSettingUrl: (settingKey: string) => {
           const url = new URL(window.location.href);
+          // Look up the setting's page
           const flat = schemaCtx?.flatSettings.find(
             (f) => f.definition.key === settingKey,
           );

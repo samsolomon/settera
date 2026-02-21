@@ -40,6 +40,24 @@ export { useCompoundDraft } from "./hooks/useCompoundDraft.js";
 export { useActionModalDraft } from "./hooks/useActionModalDraft.js";
 export { useSaveAndClose } from "./hooks/useSaveAndClose.js";
 
+// Layout hooks (shared across UI implementations)
+export { useRovingTabIndex } from "./hooks/useRovingTabIndex.js";
+export type { UseRovingTabIndexOptions, UseRovingTabIndexResult } from "./hooks/useRovingTabIndex.js";
+export { useSetteraGlobalKeys, isTextInput } from "./hooks/useSetteraGlobalKeys.js";
+export type { UseSetteraGlobalKeysOptions } from "./hooks/useSetteraGlobalKeys.js";
+export { useContentCardNavigation } from "./hooks/useContentCardNavigation.js";
+export type { UseContentCardNavigationOptions, UseContentCardNavigationResult } from "./hooks/useContentCardNavigation.js";
+export { useSetteraLayoutHighlight } from "./hooks/useSetteraLayoutHighlight.js";
+export type { UseSetteraLayoutHighlightOptions, UseSetteraLayoutHighlightResult } from "./hooks/useSetteraLayoutHighlight.js";
+export { useSetteraLayoutUrlSync, collectPageKeys } from "./hooks/useSetteraLayoutUrlSync.js";
+export type { UseSetteraLayoutUrlSyncOptions, SetteraDeepLinkContextValue } from "./hooks/useSetteraLayoutUrlSync.js";
+export { useSetteraLayoutMainKeys } from "./hooks/useSetteraLayoutMainKeys.js";
+export type { UseSetteraLayoutMainKeysOptions } from "./hooks/useSetteraLayoutMainKeys.js";
+
+// Components
+export { SetteraSettingErrorBoundary } from "./components/SetteraSettingErrorBoundary.js";
+export type { SetteraSettingErrorBoundaryProps } from "./components/SetteraSettingErrorBoundary.js";
+
 // Utilities
 export { parseDescriptionLinks } from "./utils/parseDescriptionLinks.js";
 export { isObjectRecord } from "./utils/isObjectRecord.js";

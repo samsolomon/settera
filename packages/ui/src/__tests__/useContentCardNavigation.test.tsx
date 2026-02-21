@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { useContentCardNavigation } from "../hooks/useContentCardNavigation.js";
+import { useContentCardNavigation } from "@settera/react";
 
 /**
  * Test harness that renders a mock settings content area with cards.

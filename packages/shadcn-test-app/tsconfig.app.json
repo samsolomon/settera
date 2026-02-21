@@ -1,8 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
     "baseUrl": ".",
     "paths": {
       "@/components/settera/*": ["../shadcn-registry/src/settera/*"],
@@ -11,5 +12,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "../shadcn-registry/src"]
+  "include": ["src", "../shadcn-registry/src", "../test-app/src/schema.ts"]
 }

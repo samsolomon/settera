@@ -9,7 +9,7 @@ import React, {
 import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
-import { useRovingTabIndex } from "../hooks/useRovingTabIndex.js";
+import { useRovingTabIndex } from "@settera/react";
 import type { PageDefinition, PageItem } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
 import { SetteraSearch } from "./SetteraSearch.js";

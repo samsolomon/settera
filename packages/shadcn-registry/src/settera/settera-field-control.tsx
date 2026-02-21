@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import type {
   CompoundFieldDefinition,
   SelectSetting,
@@ -41,6 +41,7 @@ import {
   parseDateInput,
 } from "./settera-date-input";
 import { useEmptyOptionValue } from "./settera-select-utils";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraFieldControlProps {
   field: CompoundFieldDefinition;
@@ -278,6 +279,7 @@ function FieldControlDate({
   readOnly?: boolean;
   className?: string;
 }) {
+  const labels = useSetteraLabels();
   const [open, setOpen] = useState(false);
   const [inputText, setInputText] = useState(() => {
     if (typeof value === "string" && value) {
@@ -386,7 +388,7 @@ function FieldControlDate({
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleInputKeyDown}
-            placeholder="Select date"
+            placeholder={labels.selectDate}
             disabled={disabled}
             readOnly={readOnly}
             aria-label={ariaLabel}
@@ -398,7 +400,7 @@ function FieldControlDate({
                 variant="ghost"
                 size="icon-xs"
                 disabled={disabled || readOnly}
-                aria-label="Open calendar"
+                aria-label={labels.openCalendar}
                 className="text-muted-foreground shadow-none"
               >
                 <CalendarDaysIcon className="size-4" />
@@ -440,6 +442,7 @@ function FieldControlSelect({
   disabled?: boolean;
   className?: string;
 }) {
+  const labels = useSetteraLabels();
   const options = field.options;
   const isRequired = field.validation?.required;
   const selectedValue = typeof value === "string" ? value : "";
@@ -465,12 +468,12 @@ function FieldControlSelect({
         aria-label={ariaLabel}
         className={cn("w-full", className)}
       >
-        <SelectValue placeholder="Select…" />
+        <SelectValue placeholder={labels.select} />
       </SelectTrigger>
       <SelectContent position="popper" sideOffset={4}>
         {!isRequired && (
           <SelectItem value={emptyOptionValue} className="text-muted-foreground">
-            Select&hellip;
+            {labels.select}
           </SelectItem>
         )}
         {options.map((opt) => (

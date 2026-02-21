@@ -11,10 +11,11 @@ import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
 import type { SaveStatus } from "@settera/react";
 import { CheckIcon, LinkIcon } from "lucide-react";
 import { SetteraNavigationContext } from "./settera-navigation-provider";
-import { SetteraDeepLinkContext } from "./use-settera-layout-url-sync";
+import { SetteraDeepLinkContext } from "./settera-deep-link-context";
 import { SetteraSaveIndicator } from "./settera-save-indicator";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraSettingRowProps {
   settingKey: string;
@@ -64,6 +65,7 @@ function useSaveIndicatorAnimation(saveStatus: SaveStatus) {
 export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSettingRowProps) {
   const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
   const navigationCtx = useContext(SetteraNavigationContext);
   const highlightedSettingKey = navigationCtx?.highlightedSettingKey ?? null;
   const deepLinkCtx = useContext(SetteraDeepLinkContext);
@@ -168,7 +170,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                     size="icon-xs"
                     tabIndex={-1}
                     data-settera-copy-link="true"
-                    aria-label="Copy link to setting"
+                    aria-label={labels.copyLink}
                     onClick={handleCopyLink}
                   >
                 {copyFeedback ? (
@@ -200,9 +202,9 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
         <div className="md:pt-0.5">{children}</div>
       </div>
       <span aria-live="polite" role="status" className="sr-only">
-        {saveStatus === "saving" && "Saving\u2026"}
-        {saveStatus === "saved" && "Saved"}
-        {saveStatus === "error" && "Save failed"}
+        {saveStatus === "saving" && labels.saving}
+        {saveStatus === "saved" && labels.saved}
+        {saveStatus === "error" && labels.saveFailed}
       </span>
     </div>
   );

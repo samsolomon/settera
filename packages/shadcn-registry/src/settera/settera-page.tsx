@@ -11,6 +11,7 @@ import type { SetteraCustomSettingProps } from "./settera-setting";
 import { SetteraSubpageContent } from "./settera-subpage-content";
 import type { SetteraActionPageProps } from "./settera-subpage-content";
 import { Button } from "@/components/ui/button";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraPageProps {
   pageKey?: string;
@@ -34,6 +35,7 @@ export function SetteraPage({
   customActionPages,
 }: SetteraPageProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
+  const labels = useSetteraLabels();
   const { activePage, subpage, closeSubpage } = useSetteraNavigation();
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
 
@@ -56,7 +58,7 @@ export function SetteraPage({
           className="mb-3 -ml-2"
         >
           <ChevronLeftIcon className="size-4 mr-1" />
-          {returnPage?.title ?? "Back"}
+          {returnPage?.title ?? labels.back}
         </Button>
         <SetteraSubpageContent
           settingKey={subpage.settingKey}

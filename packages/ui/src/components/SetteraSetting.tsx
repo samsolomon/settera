@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { SetteraSchemaContext } from "@settera/react";
+import { SetteraSchemaContext, SetteraSettingErrorBoundary } from "@settera/react";
 import type { CustomSetting } from "@settera/schema";
 import { SettingRow } from "./SettingRow.js";
 import { BooleanSwitch } from "./BooleanSwitch.js";
@@ -121,8 +121,27 @@ export function SetteraSetting({
   }
 
   return (
-    <SettingRow settingKey={settingKey} isLast={isLast}>
-      {control}
-    </SettingRow>
+    <SetteraSettingErrorBoundary
+      settingKey={settingKey}
+      fallback={
+        process.env.NODE_ENV !== "production" ? (
+          <SettingRow settingKey={settingKey} isLast={isLast}>
+            <span
+              style={{
+                fontSize: "var(--settera-description-font-size, 13px)",
+                color: "var(--settera-error-color, #dc2626)",
+                fontStyle: "italic",
+              }}
+            >
+              Failed to render setting &ldquo;{settingKey}&rdquo;.
+            </span>
+          </SettingRow>
+        ) : undefined
+      }
+    >
+      <SettingRow settingKey={settingKey} isLast={isLast}>
+        {control}
+      </SettingRow>
+    </SetteraSettingErrorBoundary>
   );
 }

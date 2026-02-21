@@ -13,9 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useSetteraLabels } from "./settera-labels";
 
 export function SetteraConfirmDialog() {
   const { pendingConfirm, resolveConfirm } = useSetteraConfirm();
+  const labels = useSetteraLabels();
   const [inputValue, setInputValue] = useState("");
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -43,9 +45,9 @@ export function SetteraConfirmDialog() {
   if (!pendingConfirm) return null;
 
   const { config, dangerous } = pendingConfirm;
-  const title = config.title ?? "Confirm";
-  const confirmLabel = config.confirmLabel ?? "Confirm";
-  const cancelLabel = config.cancelLabel ?? "Cancel";
+  const title = config.title ?? labels.confirm;
+  const confirmLabel = config.confirmLabel ?? labels.confirm;
+  const cancelLabel = config.cancelLabel ?? labels.cancel;
   const requireText = config.requireText;
   const confirmDisabled = requireText ? inputValue !== requireText : false;
 

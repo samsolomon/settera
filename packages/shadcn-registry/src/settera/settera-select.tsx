@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useEmptyOptionValue } from "./settera-select-utils";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraSelectProps {
   settingKey: string;
 }
 
 export function SetteraSelect({ settingKey }: SetteraSelectProps) {
+  const labels = useSetteraLabels();
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
 
@@ -57,12 +59,12 @@ export function SetteraSelect({ settingKey }: SetteraSelectProps) {
           isDangerous && "text-destructive",
         )}
       >
-        <SelectValue placeholder={isRequired ? undefined : "Select\u2026"} />
+        <SelectValue placeholder={isRequired ? undefined : labels.select} />
       </SelectTrigger>
       <SelectContent>
         {!isRequired && (
           <SelectItem value={emptyOptionValue} className="text-muted-foreground">
-            Select&hellip;
+            {labels.select}
           </SelectItem>
         )}
         {options.map((opt) => (

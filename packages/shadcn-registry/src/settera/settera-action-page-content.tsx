@@ -6,6 +6,7 @@ import { useSetteraAction, useActionModalDraft, useSaveAndClose, parseDescriptio
 import { SetteraActionModalField } from "./settera-action-modal-field";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraActionPageContentProps {
   /** The parent action setting key (used for useSetteraAction) */
@@ -26,6 +27,7 @@ export function SetteraActionPageContent({
   title: parentTitle,
   onBack,
 }: SetteraActionPageContentProps) {
+  const labels = useSetteraLabels();
   const { onAction, isLoading, items } = useSetteraAction(settingKey);
 
   // For multi-button items, find the matching item's onAction/isLoading
@@ -84,13 +86,13 @@ export function SetteraActionPageContent({
           onClick={onBack}
           disabled={isBusy}
         >
-          {pageConfig.cancelLabel ?? "Cancel"}
+          {pageConfig.cancelLabel ?? labels.cancel}
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={isBusy}
         >
-          {isBusy ? "Loading\u2026" : (pageConfig.submitLabel ?? "Submit")}
+          {isBusy ? labels.loading : (pageConfig.submitLabel ?? labels.submit)}
         </Button>
       </div>
     </div>

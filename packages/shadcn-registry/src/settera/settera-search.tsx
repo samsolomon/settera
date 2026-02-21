@@ -9,9 +9,11 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Kbd } from "@/components/ui/kbd";
+import { useSetteraLabels } from "./settera-labels";
 
 export function SetteraSearch() {
   const { query, setQuery } = useSetteraSearch();
+  const labels = useSetteraLabels();
   const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -43,8 +45,8 @@ export function SetteraSearch() {
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        placeholder={"Search settings\u2026"}
-        aria-label="Search settings"
+        placeholder={labels.searchPlaceholder}
+        aria-label={labels.searchPlaceholder}
       />
       {showKbd && (
         <InputGroupAddon align="inline-end">

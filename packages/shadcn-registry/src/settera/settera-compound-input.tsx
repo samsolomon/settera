@@ -16,6 +16,7 @@ import {
   ResponsiveDialogTrigger,
 } from "./settera-responsive-dialog";
 import { Label } from "@/components/ui/label";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraCompoundInputProps {
   settingKey: string;
@@ -134,6 +135,7 @@ function CompoundModal({
   error: string | null;
   isDisabled: boolean;
 }) {
+  const labels = useSetteraLabels();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { saveStatus } = useSetteraSetting(settingKey);
 
@@ -184,7 +186,7 @@ function CompoundModal({
       <ResponsiveDialog open={isModalOpen} onOpenChange={handleOpenChange} preventDismiss={isBusy}>
         <ResponsiveDialogTrigger asChild>
           <Button variant="outline" disabled={isDisabled}>
-            Edit {definition.title}
+            {labels.edit} {definition.title}
           </Button>
         </ResponsiveDialogTrigger>
         <ResponsiveDialogContent
@@ -208,10 +210,10 @@ function CompoundModal({
           </div>
           <ResponsiveDialogFooter>
             <Button variant="outline" onClick={handleCancel} disabled={isBusy}>
-              Cancel
+              {labels.cancel}
             </Button>
             <Button onClick={handleSave} disabled={isBusy}>
-              {isBusy ? "Saving\u2026" : "Save"}
+              {isBusy ? labels.saving : labels.save}
             </Button>
           </ResponsiveDialogFooter>
         </ResponsiveDialogContent>
@@ -231,6 +233,7 @@ function CompoundPageButton({
   isDisabled: boolean;
   hasError: boolean;
 }) {
+  const labels = useSetteraLabels();
   const { openSubpage } = useSetteraNavigation();
 
   return (
@@ -243,9 +246,9 @@ function CompoundPageButton({
         variant="outline"
         onClick={() => openSubpage(settingKey)}
         disabled={isDisabled}
-        aria-label={`Open ${title}`}
+        aria-label={`${labels.open} ${title}`}
       >
-        Open {title}
+        {labels.open} {title}
       </Button>
     </div>
   );

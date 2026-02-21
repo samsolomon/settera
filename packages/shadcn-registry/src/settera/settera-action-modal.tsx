@@ -14,6 +14,7 @@ import {
   ResponsiveDialogTitle,
 } from "./settera-responsive-dialog";
 import { Label } from "@/components/ui/label";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraActionModalProps {
   modalConfig: ActionModalConfig;
@@ -32,6 +33,7 @@ export function SetteraActionModal({
   onOpenChange,
   onSubmit,
 }: SetteraActionModalProps) {
+  const labels = useSetteraLabels();
   const contentRef = useRef<HTMLDivElement>(null);
   const { draftValues, setField } = useActionModalDraft(
     modalConfig.fields,
@@ -96,10 +98,10 @@ export function SetteraActionModal({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            {modalConfig.cancelLabel ?? "Cancel"}
+            {modalConfig.cancelLabel ?? labels.cancel}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Loading\u2026" : (modalConfig.submitLabel ?? "Submit")}
+            {isLoading ? labels.loading : (modalConfig.submitLabel ?? labels.submit)}
           </Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

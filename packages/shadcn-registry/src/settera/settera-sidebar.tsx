@@ -10,7 +10,7 @@ import React, {
 import { SetteraSchemaContext } from "@settera/react";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { useSetteraSearch } from "./use-settera-search";
-import { useRovingTabIndex } from "./use-roving-tab-index";
+import { useRovingTabIndex } from "@settera/react";
 import type { PageDefinition, PageItem } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
 import { ChevronDownIcon, ChevronLeftIcon } from "lucide-react";
@@ -37,6 +37,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraSidebarProps {
   renderIcon?: (iconName: string) => React.ReactNode;
@@ -59,6 +60,7 @@ export function SetteraSidebar({
   backToApp,
   hideFooterHints,
 }: SetteraSidebarProps) {
+  const labels = useSetteraLabels();
   const schemaCtx = useContext(SetteraSchemaContext);
   const {
     activePage,
@@ -442,12 +444,12 @@ export function SetteraSidebar({
             {!backToApp.onClick && backToApp.href ? (
               <a href={backToApp.href}>
                 <ChevronLeftIcon className="size-4 mr-1" />
-                {backToApp.label ?? "Back to app"}
+                {backToApp.label ?? labels.backToApp}
               </a>
             ) : (
               <>
                 <ChevronLeftIcon className="size-4 mr-1" />
-                {backToApp.label ?? "Back to app"}
+                {backToApp.label ?? labels.backToApp}
               </>
             )}
           </Button>
@@ -501,7 +503,7 @@ export function SetteraSidebar({
             </span>
             <span className="inline-flex items-center gap-1">
               <Kbd>Esc</Kbd>
-              Back
+              {labels.back}
             </span>
           </div>
         </SidebarFooter>

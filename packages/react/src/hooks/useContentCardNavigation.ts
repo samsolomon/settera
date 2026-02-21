@@ -1,9 +1,13 @@
 import { useCallback } from "react";
 import type { RefObject, KeyboardEvent } from "react";
-import { isTextInput } from "./use-settera-global-keys";
+import { isTextInput } from "./useSetteraGlobalKeys.js";
 
 export interface UseContentCardNavigationOptions {
   mainRef: RefObject<HTMLElement | null>;
+}
+
+export interface UseContentCardNavigationResult {
+  onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
 }
 
 /**
@@ -25,7 +29,7 @@ export interface UseContentCardNavigationOptions {
  */
 export function useContentCardNavigation(
   options: UseContentCardNavigationOptions,
-) {
+): UseContentCardNavigationResult {
   const { mainRef } = options;
 
   const getCheckboxControls = useCallback((scope: ParentNode) => {
@@ -67,6 +71,7 @@ export function useContentCardNavigation(
       if (!activeEl) return;
 
       // --- Multiselect checkbox navigation ---
+      // When focused on a checkbox inside a card, ArrowDown/Up moves between checkboxes
       const activeIsCheckbox =
         (activeEl instanceof HTMLInputElement &&
           activeEl.type === "checkbox") ||
@@ -86,6 +91,7 @@ export function useContentCardNavigation(
             nextIdx = idx - 1;
           }
 
+          // Stop at edges (no wrap)
           if (nextIdx < 0 || nextIdx >= checkboxes.length) return;
 
           e.preventDefault();
@@ -95,12 +101,16 @@ export function useContentCardNavigation(
       }
 
       // --- Card-level navigation ---
+      // Only handle when a card itself is focused (not a child control)
       const focusedCard = activeEl.closest<HTMLElement>("[data-setting-key]");
       const isCardItself = focusedCard && activeEl === focusedCard;
 
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        // Don't interfere with Ctrl+Arrow (section jumping) or text input cursor
         if (e.ctrlKey || e.metaKey) return;
         if (isTextInput(activeEl)) return;
+
+        // Only navigate between cards when the card itself is focused
         if (!isCardItself) return;
 
         const cards = Array.from(
@@ -116,6 +126,7 @@ export function useContentCardNavigation(
           nextIdx = idx - 1;
         }
 
+        // Stop at edges (no wrap)
         if (nextIdx < 0 || nextIdx >= cards.length) return;
 
         e.preventDefault();
@@ -144,12 +155,14 @@ export function useContentCardNavigation(
 
         e.preventDefault();
 
+        // Multiselect: drill into first checkbox
         const checkbox = getCheckboxControls(focusedCard)[0];
         if (checkbox) {
           checkbox.focus();
           return;
         }
 
+        // Other controls: find first interactive element (skip tabIndex=-1 utility buttons)
         const control = Array.from(
           focusedCard.querySelectorAll<HTMLElement>(
             "button, input, select, textarea",

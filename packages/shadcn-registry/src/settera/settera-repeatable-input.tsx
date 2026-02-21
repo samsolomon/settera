@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useSetteraLabels } from "./settera-labels";
 
 export interface SetteraRepeatableInputProps {
   settingKey: string;
@@ -128,6 +129,7 @@ function ListTextItem({
 export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
+  const labels = useSetteraLabels();
 
   // Cast once — only used when isRepeatable is true
   const repDef = definition as RepeatableSetting;
@@ -389,10 +391,10 @@ export function SetteraRepeatableInput({ settingKey }: SetteraRepeatableInputPro
         size="sm"
         onClick={addItem}
         disabled={isDisabled || Boolean(isAtMax)}
-        aria-label={`Add item to ${repDef.title}`}
+        aria-label={`${labels.addItem} to ${repDef.title}`}
         className="self-start"
       >
-        Add item
+        {labels.addItem}
       </Button>
     </div>
   );

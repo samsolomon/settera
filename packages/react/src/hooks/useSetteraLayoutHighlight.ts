@@ -8,12 +8,18 @@ export interface UseSetteraLayoutHighlightOptions {
   setHighlightedSettingKey: (key: string | null) => void;
 }
 
+export interface UseSetteraLayoutHighlightResult {
+  setPendingScrollKey: (key: string | null) => void;
+  scrollToSetting: (key: string) => void;
+}
+
+/** @internal SetteraLayout implementation detail; not part of public API. */
 export function useSetteraLayoutHighlight({
   activePage,
   mainRef,
   prefersReducedMotion,
   setHighlightedSettingKey,
-}: UseSetteraLayoutHighlightOptions) {
+}: UseSetteraLayoutHighlightOptions): UseSetteraLayoutHighlightResult {
   const pendingScrollKeyRef = useRef<string | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
