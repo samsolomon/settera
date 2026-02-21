@@ -185,6 +185,49 @@ export const demoSchema: SetteraSchema = {
       ],
     },
     {
+      key: "appearance",
+      title: "Appearance",
+      description: "Customize the look and feel of the app.",
+      icon: "monitor",
+      sections: [
+        {
+          key: "theme",
+          title: "Theme",
+          settings: [
+            {
+              key: "appearance.colorMode",
+              title: "Color mode",
+              description:
+                "Choose between light and dark mode, or follow your system preference.",
+              type: "select",
+              options: [
+                { value: "light", label: "Light" },
+                { value: "dark", label: "Dark" },
+                { value: "system", label: "System" },
+              ],
+              default: "system",
+            },
+            {
+              key: "appearance.accentColor",
+              title: "Accent color",
+              description:
+                "The primary color used for buttons, links, and highlights.",
+              type: "select",
+              options: [
+                { value: "blue", label: "Blue" },
+                { value: "purple", label: "Purple" },
+                { value: "green", label: "Green" },
+                { value: "rose", label: "Rose" },
+                { value: "orange", label: "Orange" },
+                { value: "neutral", label: "Neutral" },
+              ],
+              default: "blue",
+            },
+          ],
+        },
+      ],
+    },
+    {
       label: "Organization",
       pages: [
         {

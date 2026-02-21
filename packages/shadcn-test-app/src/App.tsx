@@ -13,6 +13,7 @@ import { HeadlessView } from "./headless-view.js";
 import { getSetteraThemeVars } from "./ui-theme.js";
 import {
   CreditCardIcon,
+  MonitorIcon,
   PaletteIcon,
   ShieldIcon,
   UserIcon,
@@ -26,6 +27,7 @@ const ICON_MAP: Record<string, ReactNode> = {
   users: <UsersIcon className="size-4" />,
   shield: <ShieldIcon className="size-4" />,
   zap: <ZapIcon className="size-4" />,
+  monitor: <MonitorIcon className="size-4" />,
   palette: <PaletteIcon className="size-4" />,
   "credit-card": <CreditCardIcon className="size-4" />,
 };
