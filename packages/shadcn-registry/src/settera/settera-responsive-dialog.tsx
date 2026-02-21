@@ -90,8 +90,8 @@ export function ResponsiveDialogContent({
 
   if (isMobile) {
     return (
-      <DrawerContent ref={ref} className={className} {...props}>
-        {children}
+      <DrawerContent className={className} {...props}>
+        <div className="overflow-y-auto">{children}</div>
       </DrawerContent>
     );
   }

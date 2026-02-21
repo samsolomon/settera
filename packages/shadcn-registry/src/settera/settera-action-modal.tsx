@@ -6,13 +6,13 @@ import { useActionModalDraft } from "@settera/react";
 import { SetteraActionModalField } from "./settera-action-modal-field";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "./settera-responsive-dialog";
 import { Label } from "@/components/ui/label";
 
 export interface SetteraActionModalProps {
@@ -47,8 +47,8 @@ export function SetteraActionModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent
+    <ResponsiveDialog open={isOpen} onOpenChange={onOpenChange} preventDismiss={isLoading}>
+      <ResponsiveDialogContent
         ref={contentRef}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
@@ -71,14 +71,14 @@ export function SetteraActionModal({
           if (isLoading) e.preventDefault();
         }}
       >
-        <DialogHeader>
-          <DialogTitle>{modalConfig.title ?? definition.title}</DialogTitle>
-          <DialogDescription>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{modalConfig.title ?? definition.title}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {modalConfig.description ?? "Review the fields and submit."}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 px-4 md:px-0">
           {modalConfig.fields.map((field) => (
             <div key={field.key} className="flex flex-col gap-1.5">
               <Label>{field.title}</Label>
@@ -93,7 +93,7 @@ export function SetteraActionModal({
           ))}
         </div>
 
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -104,8 +104,8 @@ export function SetteraActionModal({
           <Button onClick={handleSubmit} disabled={isLoading}>
             {isLoading ? "Loading\u2026" : (modalConfig.submitLabel ?? "Submit")}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

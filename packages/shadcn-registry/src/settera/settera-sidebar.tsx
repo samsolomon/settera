@@ -524,7 +524,7 @@ export function SetteraSidebar({
         <SidebarFooter>
           <div
             aria-hidden="true"
-            className="flex items-center gap-3 px-2 text-[11px] text-muted-foreground"
+            className="hidden md:flex items-center gap-3 px-2 text-[11px] text-muted-foreground"
           >
             <span className="inline-flex items-center gap-1">
               <Kbd>/</Kbd>

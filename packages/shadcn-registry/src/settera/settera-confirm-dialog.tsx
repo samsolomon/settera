@@ -3,13 +3,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSetteraConfirm } from "@settera/react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "./settera-responsive-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -50,8 +50,8 @@ export function SetteraConfirmDialog() {
   const confirmDisabled = requireText ? inputValue !== requireText : false;
 
   return (
-    <Dialog open={Boolean(pendingConfirm)} onOpenChange={handleOpenChange}>
-      <DialogContent
+    <ResponsiveDialog open={Boolean(pendingConfirm)} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent
         aria-label={title}
         className="max-w-[420px]"
         onOpenAutoFocus={(e) => {
@@ -59,13 +59,13 @@ export function SetteraConfirmDialog() {
           cancelRef.current?.focus();
         }}
       >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{config.message}</DialogDescription>
-        </DialogHeader>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{config.message}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         {requireText && (
-          <div className="mt-2">
+          <div className="mt-2 px-4 md:px-0">
             <Label className="text-sm text-muted-foreground">
               Type <strong>{requireText}</strong> to confirm
             </Label>
@@ -79,7 +79,7 @@ export function SetteraConfirmDialog() {
           </div>
         )}
 
-        <DialogFooter className="mt-4">
+        <ResponsiveDialogFooter className="mt-4">
           <Button ref={cancelRef} variant="outline" onClick={handleCancel}>
             {cancelLabel}
           </Button>
@@ -90,8 +90,8 @@ export function SetteraConfirmDialog() {
           >
             {confirmLabel}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

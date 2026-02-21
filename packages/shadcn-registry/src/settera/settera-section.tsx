@@ -114,7 +114,7 @@ export function SetteraSection({
             key={sub.key}
             role="group"
             aria-labelledby={`settera-subsection-${sub.key}`}
-            className="mt-6"
+            style={{ marginTop: "var(--settera-subsection-gap, 1.5rem)" }}
           >
             <h3
               id={`settera-subsection-${sub.key}`}

@@ -7,14 +7,14 @@ import { useSetteraNavigation } from "./use-settera-navigation";
 import { SetteraFieldControl } from "./settera-field-control";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "./settera-responsive-dialog";
 import { Label } from "@/components/ui/label";
 
 export interface SetteraCompoundInputProps {
@@ -181,39 +181,41 @@ function CompoundModal({
         error !== null ? `settera-error-${settingKey}` : undefined
       }
     >
-      <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
+      <ResponsiveDialog open={isModalOpen} onOpenChange={handleOpenChange} preventDismiss={isBusy}>
+        <ResponsiveDialogTrigger asChild>
           <Button variant="outline" disabled={isDisabled}>
             Edit {definition.title}
           </Button>
-        </DialogTrigger>
-        <DialogContent
+        </ResponsiveDialogTrigger>
+        <ResponsiveDialogContent
           onInteractOutside={(e) => { if (isBusy) e.preventDefault(); }}
           onEscapeKeyDown={(e) => { if (isBusy) e.preventDefault(); }}
         >
-          <DialogHeader>
-            <DialogTitle>{definition.title}</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{definition.title}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {definition.description ?? `Edit ${definition.title}.`}
-            </DialogDescription>
-          </DialogHeader>
-          <CompoundFields
-            settingKey={settingKey}
-            fields={definition.fields}
-            getFieldValue={getFieldValue}
-            updateField={updateField}
-            parentDisabled={isDisabled}
-          />
-          <DialogFooter>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          <div className="px-4 md:px-0">
+            <CompoundFields
+              settingKey={settingKey}
+              fields={definition.fields}
+              getFieldValue={getFieldValue}
+              updateField={updateField}
+              parentDisabled={isDisabled}
+            />
+          </div>
+          <ResponsiveDialogFooter>
             <Button variant="outline" onClick={handleCancel} disabled={isBusy}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isBusy}>
               {isBusy ? "Saving\u2026" : "Save"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }

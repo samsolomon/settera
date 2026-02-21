@@ -10,7 +10,9 @@
       "description": "A complete settings page built with shadcn/ui components. Declare a schema, provide values, and render a full settings UI.",
       "dependencies": [
         "@settera/react",
-        "@settera/schema"
+        "@settera/schema",
+        "date-fns",
+        "react-day-picker"
       ],
       "registryDependencies": [
         "input",
@@ -20,11 +22,14 @@
         "select",
         "checkbox",
         "dialog",
+        "drawer",
         "label",
         "collapsible",
         "sidebar",
         "tooltip",
         "input-group",
+        "popover",
+        "calendar",
         "kbd"
       ],
       "files": [
@@ -58,6 +63,7 @@
         { "path": "src/settera/settera-search.tsx", "type": "registry:component", "target": "components/settera/settera-search.tsx" },
         { "path": "src/settera/settera-sidebar.tsx", "type": "registry:component", "target": "components/settera/settera-sidebar.tsx" },
         { "path": "src/settera/settera-layout.tsx", "type": "registry:component", "target": "components/settera/settera-layout.tsx" },
+        { "path": "src/settera/settera-responsive-dialog.tsx", "type": "registry:component", "target": "components/settera/settera-responsive-dialog.tsx" },
         { "path": "src/settera/settera-confirm-dialog.tsx", "type": "registry:component", "target": "components/settera/settera-confirm-dialog.tsx" }
       ]
     }

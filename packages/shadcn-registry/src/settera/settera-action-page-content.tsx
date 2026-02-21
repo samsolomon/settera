@@ -66,7 +66,7 @@ export function SetteraActionPageContent({
         ))}
       </div>
 
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex flex-col gap-2 md:flex-row md:justify-end">
         <Button
           variant="outline"
           onClick={onBack}
