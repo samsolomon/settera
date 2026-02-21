@@ -21,7 +21,10 @@ export function SetteraSaveIndicator({ saveStatus }: SetteraSaveIndicatorProps) 
 
   if (saveStatus === "saved") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium leading-none text-green-700 dark:bg-green-950 dark:text-green-400">
+      <span
+        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-none"
+        style={{ color: "var(--settera-success-color, #16a34a)" }}
+      >
         <CheckIcon className="size-3" />
         Saved
       </span>
