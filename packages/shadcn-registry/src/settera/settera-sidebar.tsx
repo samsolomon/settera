@@ -50,9 +50,19 @@ export interface SetteraSidebarProps {
 }
 
 interface FlatItem {
-  page: PageDefinition;
+  kind: "page" | "section";
   depth: number;
   parentKey: string | null;
+  page?: PageDefinition;
+  pageKey?: string;
+  sectionKey?: string;
+}
+
+function getFlatItemKey(item: FlatItem): string {
+  if (item.kind === "section") {
+    return `section:${item.pageKey}:${item.sectionKey}`;
+  }
+  return `page:${item.page!.key}`;
 }
 
 export function SetteraSidebar({
@@ -173,6 +183,20 @@ export function SetteraSidebar({
 
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
+    const getVisibleSectionItems = (page: PageDefinition) => {
+      const searchableSections =
+        (page.sections ?? []).filter(
+          (section) =>
+            section.key && section.title && section.title.trim().length > 0,
+        ) ?? [];
+      const matchingSections = matchingSectionsByPage.get(page.key);
+      if (!isSearching || searchableSections.length <= 1 || !matchingSections) {
+        return [];
+      }
+      return searchableSections.filter((section) =>
+        matchingSections.has(section.key),
+      );
+    };
 
     function walk(
       pages: PageDefinition[],
@@ -181,7 +205,7 @@ export function SetteraSidebar({
     ) {
       for (const page of pages) {
         if (isSearching && !matchingPageKeys.has(page.key)) continue;
-        items.push({ page, depth, parentKey });
+        items.push({ kind: "page", page, depth, parentKey });
 
         const flattened = isFlattenedPage(page);
         const hasChildren = !flattened && page.pages && page.pages.length > 0;
@@ -196,6 +220,16 @@ export function SetteraSidebar({
             walk(children, depth + 1, page.key);
           }
         }
+        const visibleSections = getVisibleSectionItems(page);
+        for (const section of visibleSections) {
+          items.push({
+            kind: "section",
+            pageKey: page.key,
+            sectionKey: section.key,
+            depth: depth + 1,
+            parentKey: page.key,
+          });
+        }
       }
     }
 
@@ -205,7 +239,7 @@ export function SetteraSidebar({
     );
     walk(topLevelPages, 0, null);
     return items;
-  }, [schema.pages, visiblePageItems, expandedGroups, isSearching, matchingPageKeys]);
+  }, [schema.pages, visiblePageItems, expandedGroups, isSearching, matchingPageKeys, matchingSectionsByPage]);
 
   const { focusedIndex, setFocusedIndex, getTabIndex, onKeyDown } =
     useRovingTabIndex({
@@ -226,7 +260,15 @@ export function SetteraSidebar({
 
     const item = flatItemsRef.current[focusedIndex];
     if (item) {
+      if (item.kind === "section") {
+        if (!item.pageKey || !item.sectionKey) return;
+        setActivePage(item.pageKey);
+        setActiveSection(item.sectionKey);
+        return;
+      }
+
       const { page } = item;
+      if (!page) return;
       const hasChildren =
         !isFlattenedPage(page) && page.pages && page.pages.length > 0;
       const hasSections = page.sections && page.sections.length > 0;
@@ -236,11 +278,11 @@ export function SetteraSidebar({
       const pageKey = isFlattenedPage(page) ? resolvePageKey(page) : page.key;
       setActivePage(pageKey);
     }
-  }, [focusedIndex, setActivePage]);
+  }, [focusedIndex, setActivePage, setActiveSection]);
 
   const keyToIndex = useMemo(() => {
     const map = new Map<string, number>();
-    flatItems.forEach((item, i) => map.set(item.page.key, i));
+    flatItems.forEach((item, i) => map.set(getFlatItemKey(item), i));
     return map;
   }, [flatItems]);
 
@@ -261,7 +303,30 @@ export function SetteraSidebar({
         return;
       }
 
+      if (item.kind === "section") {
+        if (e.key === "ArrowLeft" && item.parentKey) {
+          e.preventDefault();
+          const parentIndex = keyToIndex.get(`page:${item.parentKey}`);
+          if (parentIndex !== undefined) {
+            setFocusedIndex(parentIndex);
+          }
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          setQuery("");
+          requestFocusContent();
+          return;
+        }
+        onKeyDownRef.current(e);
+        return;
+      }
+
       const { page, parentKey } = item;
+      if (!page) {
+        onKeyDownRef.current(e);
+        return;
+      }
       const hasChildren =
         !isFlattenedPage(page) && page.pages && page.pages.length > 0;
       const isExpanded = hasChildren && expandedGroupsRef.current.has(page.key);
@@ -274,7 +339,7 @@ export function SetteraSidebar({
           e.preventDefault();
           const firstChildKey = page.pages![0]?.key;
           if (firstChildKey) {
-            const childIndex = keyToIndex.get(firstChildKey);
+            const childIndex = keyToIndex.get(`page:${firstChildKey}`);
             if (childIndex !== undefined) {
               setFocusedIndex(childIndex);
             }
@@ -289,7 +354,7 @@ export function SetteraSidebar({
           toggleGroup(page.key);
         } else if (parentKey) {
           e.preventDefault();
-          const parentIndex = keyToIndex.get(parentKey);
+          const parentIndex = keyToIndex.get(`page:${parentKey}`);
           if (parentIndex !== undefined) {
             setFocusedIndex(parentIndex);
           }
@@ -362,7 +427,7 @@ export function SetteraSidebar({
           ? searchableSections.filter((section) => matchingSections.has(section.key))
           : [];
 
-      const flatIndex = keyToIndex.get(page.key) ?? -1;
+      const flatIndex = keyToIndex.get(`page:${page.key}`) ?? -1;
 
       // Compute href for navigable pages (not expand-only parents)
       const isExpandOnly = hasChildren && !hasSections && !flattened;
@@ -437,7 +502,7 @@ export function SetteraSidebar({
                       : child.key;
                     const childIsActive = activePage === childKey;
                     const childFlatIndex =
-                      keyToIndex.get(child.key) ?? -1;
+                      keyToIndex.get(`page:${child.key}`) ?? -1;
                     const childHref = getPageUrl ? getPageUrl(childKey) : undefined;
 
                     return (
@@ -487,6 +552,8 @@ export function SetteraSidebar({
                   })}
                   {visibleSectionItems.map((section) => {
                     const sectionIsActive = isActive && activeSection === section.key;
+                    const sectionFlatIndex =
+                      keyToIndex.get(`section:${page.key}:${section.key}`) ?? -1;
                     return (
                       <SidebarMenuSubItem
                         key={`${page.key}:${section.key}`}
@@ -497,8 +564,10 @@ export function SetteraSidebar({
                           isActive={sectionIsActive}
                         >
                           <button
+                            ref={(el) => setButtonRef(sectionFlatIndex, el)}
                             className="w-full text-left"
                             onClick={() => handleSectionClick(page.key, section.key)}
+                            tabIndex={getTabIndex(sectionFlatIndex)}
                           >
                             {section.title}
                           </button>
@@ -555,6 +624,8 @@ export function SetteraSidebar({
             <SidebarMenuSub role="group">
               {visibleSectionItems.map((section) => {
                 const sectionIsActive = isActive && activeSection === section.key;
+                const sectionFlatIndex =
+                  keyToIndex.get(`section:${page.key}:${section.key}`) ?? -1;
                 return (
                   <SidebarMenuSubItem
                     key={`${page.key}:${section.key}`}
@@ -565,8 +636,10 @@ export function SetteraSidebar({
                       isActive={sectionIsActive}
                     >
                       <button
+                        ref={(el) => setButtonRef(sectionFlatIndex, el)}
                         className="w-full text-left"
                         onClick={() => handleSectionClick(page.key, section.key)}
+                        tabIndex={getTabIndex(sectionFlatIndex)}
                       >
                         {section.title}
                       </button>
