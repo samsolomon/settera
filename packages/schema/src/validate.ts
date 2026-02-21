@@ -379,14 +379,58 @@ function validateSetting(
   if (setting.type === "date" && setting.default !== undefined) {
     const minDate = setting.validation?.minDate;
     const maxDate = setting.validation?.maxDate;
-    if (minDate !== undefined && setting.default < minDate) {
+    const parsedDefault = parseIsoDate(setting.default);
+    const parsedMin = minDate !== undefined ? parseIsoDate(minDate) : null;
+    const parsedMax = maxDate !== undefined ? parseIsoDate(maxDate) : null;
+
+    if (!parsedDefault) {
+      ctx.errors.push({
+        path: `${path}.default`,
+        code: "INVALID_DEFAULT",
+        message: `Default "${setting.default}" is not a valid ISO date (YYYY-MM-DD) for date setting "${setting.key}".`,
+      });
+    }
+
+    if (minDate !== undefined && !parsedMin) {
+      ctx.errors.push({
+        path: `${path}.validation.minDate`,
+        code: "INVALID_DEFAULT",
+        message: `minDate "${minDate}" is not a valid ISO date (YYYY-MM-DD) for date setting "${setting.key}".`,
+      });
+    }
+
+    if (maxDate !== undefined && !parsedMax) {
+      ctx.errors.push({
+        path: `${path}.validation.maxDate`,
+        code: "INVALID_DEFAULT",
+        message: `maxDate "${maxDate}" is not a valid ISO date (YYYY-MM-DD) for date setting "${setting.key}".`,
+      });
+    }
+
+    if (parsedMin && parsedMax && parsedMin.getTime() > parsedMax.getTime()) {
+      ctx.errors.push({
+        path: `${path}.validation`,
+        code: "INVALID_DEFAULT",
+        message: `minDate "${minDate}" must be on or before maxDate "${maxDate}" for date setting "${setting.key}".`,
+      });
+    }
+
+    if (
+      parsedDefault &&
+      parsedMin &&
+      parsedDefault.getTime() < parsedMin.getTime()
+    ) {
       ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
         message: `Default "${setting.default}" is before minDate "${minDate}" for date setting "${setting.key}".`,
       });
     }
-    if (maxDate !== undefined && setting.default > maxDate) {
+    if (
+      parsedDefault &&
+      parsedMax &&
+      parsedDefault.getTime() > parsedMax.getTime()
+    ) {
       ctx.errors.push({
         path: `${path}.default`,
         code: "INVALID_DEFAULT",
@@ -760,4 +804,21 @@ function collectVisibilityRefs(
       }
     }
   }
+}
+
+function parseIsoDate(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [y, m, d] = value.split("-").map((part) => Number(part));
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) {
+    return null;
+  }
+  const parsed = new Date(Date.UTC(y, m - 1, d));
+  if (
+    parsed.getUTCFullYear() !== y ||
+    parsed.getUTCMonth() !== m - 1 ||
+    parsed.getUTCDate() !== d
+  ) {
+    return null;
+  }
+  return parsed;
 }

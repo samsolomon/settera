@@ -244,6 +244,10 @@ describe("validateSettingValue — select", () => {
       ),
     ).toBe("Pick one");
   });
+
+  it("rejects values not present in options", () => {
+    expect(validateSettingValue(selectDef(), "missing")).toBe("Invalid selection");
+  });
 });
 
 // ---- MultiSelect Validation ----
@@ -327,6 +331,12 @@ describe("validateSettingValue — multiselect", () => {
     expect(
       validateSettingValue(multiSelectDef({ required: true }), undefined),
     ).toBe("At least one selection is required");
+  });
+
+  it("rejects selections not present in options", () => {
+    expect(
+      validateSettingValue(multiSelectDef(), ["a", "missing"]),
+    ).toBe("Contains invalid selection");
   });
 });
 
@@ -416,6 +426,12 @@ describe("validateSettingValue — date", () => {
     expect(validateSettingValue(dateDef({ required: true }), undefined)).toBe(
       "This field is required",
     );
+  });
+
+  it("rejects invalid date values", () => {
+    expect(
+      validateSettingValue(dateDef({ minDate: "2025-01-01" }), "2025-02-31"),
+    ).toBe("Invalid date");
   });
 });
 

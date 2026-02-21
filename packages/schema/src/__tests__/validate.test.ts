@@ -813,6 +813,65 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.code === "INVALID_DEFAULT")).toBe(true);
   });
 
+  it("rejects invalid date default format", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.date",
+                  title: "Date",
+                  type: "date",
+                  default: "2025-02-31",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".default"))).toBe(true);
+  });
+
+  it("rejects invalid minDate format", () => {
+    const schema: SetteraSchema = {
+      version: "1.0",
+      pages: [
+        {
+          key: "general",
+          title: "General",
+          sections: [
+            {
+              key: "main",
+              title: "Main",
+              settings: [
+                {
+                  key: "test.date",
+                  title: "Date",
+                  type: "date",
+                  default: "2025-01-01",
+                  validation: { minDate: "2025-13-01" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const errors = validateSchema(schema);
+    expect(errors.some((e) => e.path.endsWith(".validation.minDate"))).toBe(
+      true,
+    );
+  });
+
   // Compound field key uniqueness
   it("rejects compound with duplicate field keys", () => {
     const schema: SetteraSchema = {

@@ -24,9 +24,9 @@ export function validateSettingValue(
     case "number":
       return validateNumber(definition.validation, value);
     case "select":
-      return validateSelect(definition.validation, value);
+      return validateSelect(definition, value);
     case "multiselect":
-      return validateMultiSelect(definition.validation, value);
+      return validateMultiSelect(definition, value);
     case "date":
       return validateDate(definition.validation, value);
     case "repeatable":
@@ -47,8 +47,8 @@ function validateText(
   const str = typeof value === "string" ? value : "";
   const isEmpty = str.length === 0;
 
-  if (validation.required && isEmpty) {
-    return validation.message ?? "This field is required";
+  if (validation?.required && isEmpty) {
+    return validation?.message ?? "This field is required";
   }
 
   // Skip further checks if empty and not required
@@ -89,8 +89,8 @@ function validateNumber(
 
   const isEmpty = value === undefined || value === null || value === "";
 
-  if (validation.required && isEmpty) {
-    return validation.message ?? "This field is required";
+  if (validation?.required && isEmpty) {
+    return validation?.message ?? "This field is required";
   }
 
   // Skip further checks if empty and not required
@@ -127,47 +127,66 @@ function validateNumber(
 }
 
 function validateSelect(
-  validation: SelectSetting["validation"],
+  definition: SelectSetting,
   value: unknown,
 ): string | null {
-  if (!validation) return null;
-
+  const validation = definition.validation;
   const isEmpty = value === undefined || value === null || value === "";
 
-  if (validation.required && isEmpty) {
-    return validation.message ?? "This field is required";
+  if (validation?.required && isEmpty) {
+    return validation?.message ?? "This field is required";
+  }
+
+  if (isEmpty) return null;
+
+  if (typeof value !== "string") {
+    return validation?.message ?? "Invalid selection";
+  }
+
+  const validValues = new Set(definition.options.map((option) => option.value));
+  if (!validValues.has(value)) {
+    return validation?.message ?? "Invalid selection";
   }
 
   return null;
 }
 
 function validateMultiSelect(
-  validation: MultiSelectSetting["validation"],
+  definition: MultiSelectSetting,
   value: unknown,
 ): string | null {
-  if (!validation) return null;
-
+  const validation = definition.validation;
   const arr = Array.isArray(value) ? value : [];
 
-  if (validation.required && arr.length === 0) {
-    return validation.message ?? "At least one selection is required";
+  if (validation?.required && arr.length === 0) {
+    return validation?.message ?? "At least one selection is required";
   }
 
   // Skip further checks if empty and not required
   if (arr.length === 0) return null;
 
-  if (
-    validation.minSelections !== undefined &&
-    arr.length < validation.minSelections
-  ) {
-    return validation.message ?? `Select at least ${validation.minSelections}`;
+  const validValues = new Set(definition.options.map((option) => option.value));
+  const hasInvalidSelection = arr.some(
+    (entry) => typeof entry !== "string" || !validValues.has(entry),
+  );
+  if (hasInvalidSelection) {
+    return validation?.message ?? "Contains invalid selection";
   }
 
+  const minSelections = validation?.minSelections;
   if (
-    validation.maxSelections !== undefined &&
-    arr.length > validation.maxSelections
+    minSelections !== undefined &&
+    arr.length < minSelections
   ) {
-    return validation.message ?? `Select at most ${validation.maxSelections}`;
+    return validation?.message ?? `Select at least ${minSelections}`;
+  }
+
+  const maxSelections = validation?.maxSelections;
+  if (
+    maxSelections !== undefined &&
+    arr.length > maxSelections
+  ) {
+    return validation?.message ?? `Select at most ${maxSelections}`;
   }
 
   return null;
@@ -189,13 +208,23 @@ function validateDate(
   // Skip further checks if empty and not required
   if (isEmpty) return null;
 
-  if (validation.minDate !== undefined && str < validation.minDate) {
+  const parsedValue = parseIsoDate(str);
+  if (!parsedValue) {
+    return validation.message ?? "Invalid date";
+  }
+
+  const parsedMin =
+    validation.minDate !== undefined ? parseIsoDate(validation.minDate) : null;
+  const parsedMax =
+    validation.maxDate !== undefined ? parseIsoDate(validation.maxDate) : null;
+
+  if (parsedMin && parsedValue.getTime() < parsedMin.getTime()) {
     return (
       validation.message ?? `Date must be on or after ${validation.minDate}`
     );
   }
 
-  if (validation.maxDate !== undefined && str > validation.maxDate) {
+  if (parsedMax && parsedValue.getTime() > parsedMax.getTime()) {
     return (
       validation.message ?? `Date must be on or before ${validation.maxDate}`
     );
@@ -253,4 +282,21 @@ function validateRepeatable(
   }
 
   return null;
+}
+
+function parseIsoDate(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [y, m, d] = value.split("-").map((part) => Number(part));
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) {
+    return null;
+  }
+  const parsed = new Date(Date.UTC(y, m - 1, d));
+  if (
+    parsed.getUTCFullYear() !== y ||
+    parsed.getUTCMonth() !== m - 1 ||
+    parsed.getUTCDate() !== d
+  ) {
+    return null;
+  }
+  return parsed;
 }
