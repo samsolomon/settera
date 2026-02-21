@@ -78,7 +78,7 @@ function AppSettings() {
 
 ### Instant-apply
 
-There's no form submit. Each setting change fires `onChange(key, value)` immediately. Toggles and selects apply on click. Text and number inputs apply on blur or Enter.
+There's no form submit. Each setting change fires `onChange(key, value)` immediately. Toggles and selects apply on click. Text and number inputs apply on blur or Enter. For settings that need grouped submission, compound and repeatable types provide scoped Save/Cancel controls.
 
 ### Flat values
 
