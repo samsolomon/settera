@@ -71,7 +71,8 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Styling**: Use **Tailwind classes** for all layout, spacing, and standard styling. Prefer Tailwind utilities over inline styles.
 - **Tokens**: Use `--settera-*` CSS custom properties (via inline `style`) only for values consumers are likely to customize (content max-width, page padding, heading font sizes, section spacing). Standard utility styling that doesn't need consumer override should use Tailwind classes directly.
 - **Primitives**: Import Radix UI from the `radix-ui` monorepo package (not individual `@radix-ui/*` packages). Import shadcn components from `@/components/ui/` — these resolve to the consumer's own shadcn primitives (Button, Dialog, Input, etc.).
-- **Icons**: Uses `lucide-react` by default (configurable via shadcn's `components.json` `iconLibrary` setting).
+- **Icons**: Uses `lucide-react` by default (configurable via shadcn's `components.json` `iconLibrary` setting). Inside `icon-xs` buttons, always put `className="size-4"` on the icon component — the button variant defaults to `size-3` (12px) via a `:not([class*='size-'])` selector, so without an explicit class the icon will be too small.
+- **Known tokens**: `--settera-success-color` (default `#16a34a`) for check/confirmation icons (save indicator, copy feedback, link copy).
 - **No own `node_modules`**: Registry source files live in the consumer's project. They rely on the consumer's dependencies for React, Radix, Tailwind, etc.
 - **React 18 compat**: shadcn generates React 19-style components (no `forwardRef`). When the consumer uses React 18 and passes refs, wrap with `React.forwardRef` (see `dialog.tsx`, `button.tsx` in shadcn-test-app for examples).
 
