@@ -46,6 +46,7 @@
         { "path": "src/settera/settera-text-input.tsx", "type": "registry:component", "target": "components/settera/settera-text-input.tsx" },
         { "path": "src/settera/settera-number-input.tsx", "type": "registry:component", "target": "components/settera/settera-number-input.tsx" },
         { "path": "src/settera/settera-boolean-switch.tsx", "type": "registry:component", "target": "components/settera/settera-boolean-switch.tsx" },
+        { "path": "src/settera/settera-select-utils.ts", "type": "registry:component", "target": "components/settera/settera-select-utils.ts" },
         { "path": "src/settera/settera-select.tsx", "type": "registry:component", "target": "components/settera/settera-select.tsx" },
         { "path": "src/settera/settera-multiselect.tsx", "type": "registry:component", "target": "components/settera/settera-multiselect.tsx" },
         { "path": "src/settera/settera-date-input.tsx", "type": "registry:component", "target": "components/settera/settera-date-input.tsx" },

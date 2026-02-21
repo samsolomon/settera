@@ -10,14 +10,10 @@ import React, {
 import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
 import { CheckIcon, LinkIcon } from "lucide-react";
 import { SetteraNavigationContext } from "./settera-navigation-provider";
-import type { SetteraDeepLinkContextValue } from "./use-settera-layout-url-sync";
+import { SetteraDeepLinkContext } from "./use-settera-layout-url-sync";
+import { SetteraSaveIndicator } from "./settera-save-indicator";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-// Deep link context is provided by SetteraLayout — optional
-import { createContext } from "react";
-export const SetteraDeepLinkContext =
-  createContext<SetteraDeepLinkContextValue | null>(null);
 
 export interface SetteraSettingRowProps {
   settingKey: string;
@@ -26,7 +22,7 @@ export interface SetteraSettingRowProps {
 }
 
 export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSettingRowProps) {
-  const { isVisible, definition, error } =
+  const { isVisible, definition, error, saveStatus } =
     useSetteraSetting(settingKey);
   const navigationCtx = useContext(SetteraNavigationContext);
   const highlightedSettingKey = navigationCtx?.highlightedSettingKey ?? null;
@@ -38,6 +34,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const isHighlighted = highlightedSettingKey === settingKey;
+  const isSaveActive = saveStatus === "saving" || saveStatus === "saved";
 
   const handlePointerDown = useCallback(() => {
     pointerDownRef.current = true;
@@ -78,7 +75,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
 
   const isDangerous = "dangerous" in definition && definition.dangerous;
   const isDisabled = "disabled" in definition && definition.disabled;
-  const showCopyButton = !!(deepLinkCtx && (isHovered || isFocusVisible || copyFeedback));
+  const showCopyButton = !!(deepLinkCtx && !isSaveActive && (isHovered || isFocusVisible || copyFeedback));
 
   return (
     <div
@@ -116,7 +113,8 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
             >
               {definition.title}
             </span>
-            {deepLinkCtx && (
+            {isSaveActive && <SetteraSaveIndicator saveStatus={saveStatus} />}
+            {deepLinkCtx && !isSaveActive && (
               <span className="inline-flex w-6 h-6 shrink-0">
                 {showCopyButton && (
                   <Button
@@ -156,6 +154,11 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
         </div>
         <div className="md:pt-0.5">{children}</div>
       </div>
+      <span aria-live="polite" role="status" className="sr-only">
+        {saveStatus === "saving" && "Saving\u2026"}
+        {saveStatus === "saved" && "Saved"}
+        {saveStatus === "error" && "Save failed"}
+      </span>
     </div>
   );
 }

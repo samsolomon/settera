@@ -100,7 +100,7 @@ function CompoundInline({
       aria-describedby={
         error !== null ? `settera-error-${settingKey}` : undefined
       }
-      className="flex flex-col gap-3 w-full md:w-[200px]"
+      className="flex flex-col gap-3 w-full md:w-[var(--settera-control-width,200px)]"
     >
       <CompoundFields
         settingKey={settingKey}

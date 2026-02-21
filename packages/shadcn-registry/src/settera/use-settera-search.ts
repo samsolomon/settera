@@ -1,10 +1,10 @@
 import { useContext } from "react";
-import { SetteraNavigationContext } from "./settera-navigation-provider";
+import { SetteraSearchContext } from "./settera-navigation-provider";
 
 const EMPTY_SET = new Set<string>();
 
 export function useSetteraSearch() {
-  const ctx = useContext(SetteraNavigationContext);
+  const ctx = useContext(SetteraSearchContext);
 
   if (!ctx) {
     if (process.env.NODE_ENV !== "production") {

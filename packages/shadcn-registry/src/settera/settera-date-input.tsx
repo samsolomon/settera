@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
-import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraDateInputProps {
   settingKey: string;
@@ -61,7 +60,7 @@ export function parseDateInput(text: string): Date | undefined {
 }
 
 export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
-  const { value, setValue, error, definition, validate, saveStatus } =
+  const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
 
   const isDangerous =
@@ -232,11 +231,6 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
               hasError ? `settera-error-${settingKey}` : undefined
             }
           />
-          {(saveStatus === "saving" || saveStatus === "saved") && !isReadOnly && (
-            <InputGroupAddon align="inline-end">
-              <SetteraSaveIndicator saveStatus={saveStatus} />
-            </InputGroupAddon>
-          )}
           <InputGroupAddon align="inline-end">
             {isReadOnly ? (
               <SetteraCopyButton value={inputText} label={definition.title} />
@@ -260,9 +254,13 @@ export function SetteraDateInput({ settingKey }: SetteraDateInputProps) {
       <PopoverContent className="w-auto p-0" align="end">
         <Calendar
           mode="single"
+          captionLayout="dropdown"
+          classNames={{ dropdown_root: "relative rounded-md" }}
           selected={selectedDate}
           onSelect={handleCalendarSelect}
           defaultMonth={selectedDate}
+          startMonth={new Date(1900, 0)}
+          endMonth={new Date(2100, 11)}
           disabled={disabledMatcher}
         />
       </PopoverContent>

@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
-import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraNumberInputProps {
   settingKey: string;
@@ -20,7 +19,7 @@ function displayString(v: unknown): string {
 }
 
 export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
-  const { value, setValue, error, definition, validate, saveStatus } =
+  const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
 
   const committed = displayString(value);
@@ -69,10 +68,8 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
     isDangerous && "text-destructive",
   );
 
-  const showAddon = isReadOnly || saveStatus === "saving" || saveStatus === "saved";
-
   return (
-    <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
+    <InputGroup className={cn("w-full md:w-[var(--settera-control-width,200px)]", sharedClassName)}>
       <InputGroupInput
         type="number"
         {...inputProps}
@@ -85,13 +82,9 @@ export function SetteraNumberInput({ settingKey }: SetteraNumberInputProps) {
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
       />
-      {showAddon && (
+      {isReadOnly && (
         <InputGroupAddon align="inline-end">
-          {isReadOnly ? (
-            <SetteraCopyButton value={committed} label={definition.title} />
-          ) : (
-            <SetteraSaveIndicator saveStatus={saveStatus} />
-          )}
+          <SetteraCopyButton value={committed} label={definition.title} />
         </InputGroupAddon>
       )}
     </InputGroup>

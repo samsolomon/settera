@@ -10,14 +10,13 @@ import {
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { SetteraCopyButton } from "./settera-copy-button";
-import { SetteraSaveIndicator } from "./settera-save-indicator";
 
 export interface SetteraTextInputProps {
   settingKey: string;
 }
 
 export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
-  const { value, setValue, error, definition, validate, saveStatus } =
+  const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
 
   const committed = typeof value === "string" ? value : "";
@@ -32,7 +31,7 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
     [committed, setValue, validate],
   );
 
-  const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
+  const { inputProps } = useBufferedInput(committed, onCommit);
 
   const isDangerous =
     "dangerous" in definition && Boolean(definition.dangerous);
@@ -65,16 +64,14 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
         aria-label={definition.title}
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
-        className={cn("w-full md:w-[200px]", sharedClassName)}
+        className={cn("w-full md:w-[var(--settera-control-width,200px)]", sharedClassName)}
         maxLength={maxLength}
       />
     );
   }
 
-  const showAddon = isReadOnly || saveStatus === "saving" || saveStatus === "saved";
-
   return (
-    <InputGroup className={cn("w-full md:w-[200px]", sharedClassName)}>
+    <InputGroup className={cn("w-full md:w-[var(--settera-control-width,200px)]", sharedClassName)}>
       <InputGroupInput
         type={inputType}
         {...inputProps}
@@ -86,13 +83,9 @@ export function SetteraTextInput({ settingKey }: SetteraTextInputProps) {
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         maxLength={maxLength}
       />
-      {showAddon && (
+      {isReadOnly && (
         <InputGroupAddon align="inline-end">
-          {isReadOnly ? (
-            <SetteraCopyButton value={committed} label={definition.title} />
-          ) : (
-            <SetteraSaveIndicator saveStatus={saveStatus} />
-          )}
+          <SetteraCopyButton value={committed} label={definition.title} />
         </InputGroupAddon>
       )}
     </InputGroup>

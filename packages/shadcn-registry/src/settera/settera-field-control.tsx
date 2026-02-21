@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import type {
   CompoundFieldDefinition,
   SelectSetting,
@@ -40,6 +40,7 @@ import {
   formatISODate,
   parseDateInput,
 } from "./settera-date-input";
+import { useEmptyOptionValue } from "./settera-select-utils";
 
 export interface SetteraFieldControlProps {
   field: CompoundFieldDefinition;
@@ -409,16 +410,18 @@ function FieldControlDate({
       <PopoverContent className="w-auto p-0" align="end">
         <Calendar
           mode="single"
+          captionLayout="dropdown"
+          classNames={{ dropdown_root: "relative rounded-md" }}
           selected={selectedDate}
           onSelect={handleCalendarSelect}
           defaultMonth={selectedDate}
+          startMonth={new Date(1900, 0)}
+          endMonth={new Date(2100, 11)}
         />
       </PopoverContent>
     </Popover>
   );
 }
-
-const EMPTY_OPTION_VALUE_BASE = "__settera_empty_option__";
 
 function FieldControlSelect({
   field,
@@ -441,18 +444,7 @@ function FieldControlSelect({
   const isRequired = field.validation?.required;
   const selectedValue = typeof value === "string" ? value : "";
 
-  const emptyOptionValue = useMemo(() => {
-    if (!options.some((opt) => opt.value === EMPTY_OPTION_VALUE_BASE)) {
-      return EMPTY_OPTION_VALUE_BASE;
-    }
-    let i = 1;
-    while (
-      options.some((opt) => opt.value === `${EMPTY_OPTION_VALUE_BASE}_${i}`)
-    ) {
-      i += 1;
-    }
-    return `${EMPTY_OPTION_VALUE_BASE}_${i}`;
-  }, [options]);
+  const emptyOptionValue = useEmptyOptionValue(options);
 
   const handleValueChange = useCallback(
     (newValue: string) => {

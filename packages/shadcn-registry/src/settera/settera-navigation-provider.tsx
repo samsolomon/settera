@@ -16,15 +16,18 @@ import {
 import type { SubpageState } from "@settera/react";
 import { searchSchema } from "@settera/schema";
 
+export interface SetteraSearchContextValue {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  matchingSettingKeys: Set<string>;
+  matchingPageKeys: Set<string>;
+}
+
 export interface SetteraNavigationContextValue {
   activePage: string;
   setActivePage: (key: string) => void;
   expandedGroups: Set<string>;
   toggleGroup: (key: string) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  matchingSettingKeys: Set<string>;
-  matchingPageKeys: Set<string>;
   highlightedSettingKey: string | null;
   setHighlightedSettingKey: (key: string | null) => void;
   requestFocusContent: () => void;
@@ -33,6 +36,9 @@ export interface SetteraNavigationContextValue {
   openSubpage: (settingKey: string) => void;
   closeSubpage: () => void;
 }
+
+export const SetteraSearchContext =
+  createContext<SetteraSearchContextValue | null>(null);
 
 export const SetteraNavigationContext =
   createContext<SetteraNavigationContextValue | null>(null);
@@ -102,13 +108,17 @@ function SetteraNavigationProviderInner({
     string | null
   >(null);
 
+  // Use a ref so setSearchQuery can call closeSubpage without depending on the nav context
+  const closeSubpageRef = useRef(closeSubpage);
+  closeSubpageRef.current = closeSubpage;
+
   const [searchQuery, setSearchQueryRaw] = useState("");
   const setSearchQuery = useCallback((query: string) => {
     setSearchQueryRaw(query);
     if (query.length > 0) {
-      closeSubpage();
+      closeSubpageRef.current();
     }
-  }, [closeSubpage]);
+  }, []);
 
   const { matchingSettingKeys, matchingPageKeys } = useMemo(() => {
     if (!searchQuery) {
@@ -124,10 +134,6 @@ function SetteraNavigationProviderInner({
       setActivePage,
       expandedGroups,
       toggleGroup,
-      searchQuery,
-      setSearchQuery,
-      matchingSettingKeys,
-      matchingPageKeys,
       highlightedSettingKey,
       setHighlightedSettingKey,
       requestFocusContent,
@@ -141,10 +147,6 @@ function SetteraNavigationProviderInner({
       setActivePage,
       expandedGroups,
       toggleGroup,
-      searchQuery,
-      setSearchQuery,
-      matchingSettingKeys,
-      matchingPageKeys,
       highlightedSettingKey,
       setHighlightedSettingKey,
       requestFocusContent,
@@ -155,9 +157,26 @@ function SetteraNavigationProviderInner({
     ],
   );
 
+  const searchContext: SetteraSearchContextValue = useMemo(
+    () => ({
+      searchQuery,
+      setSearchQuery,
+      matchingSettingKeys,
+      matchingPageKeys,
+    }),
+    [
+      searchQuery,
+      setSearchQuery,
+      matchingSettingKeys,
+      matchingPageKeys,
+    ],
+  );
+
   return (
     <SetteraNavigationContext.Provider value={navigationContext}>
-      {children}
+      <SetteraSearchContext.Provider value={searchContext}>
+        {children}
+      </SetteraSearchContext.Provider>
     </SetteraNavigationContext.Provider>
   );
 }

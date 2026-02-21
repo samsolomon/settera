@@ -87,7 +87,7 @@ function ListTextItem({
         {...inputProps}
         onChange={handleChange}
         disabled={disabled}
-        className="w-[200px]"
+        className="w-full md:w-[var(--settera-control-width,200px)]"
       />
       <Button
         type="button"

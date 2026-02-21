@@ -3,6 +3,7 @@
 import React, { useContext } from "react";
 import { SetteraSchemaContext, parseDescriptionLinks } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
+import { ChevronLeftIcon } from "lucide-react";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { useSetteraSearch } from "./use-settera-search";
 import { SetteraSection } from "./settera-section";
@@ -54,19 +55,7 @@ export function SetteraPage({
           onClick={closeSubpage}
           className="mb-3 -ml-2"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mr-1"
-          >
-            <path d="M10 12L6 8l4-4" />
-          </svg>
+          <ChevronLeftIcon className="size-4 mr-1" />
           {returnPage?.title ?? "Back"}
         </Button>
         <SetteraSubpageContent

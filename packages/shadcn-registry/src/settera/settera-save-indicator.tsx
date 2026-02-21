@@ -11,11 +11,21 @@ export interface SetteraSaveIndicatorProps {
 
 export function SetteraSaveIndicator({ saveStatus }: SetteraSaveIndicatorProps) {
   if (saveStatus === "saving") {
-    return <Spinner className="size-3.5 text-muted-foreground" />;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-none text-muted-foreground">
+        <Spinner className="size-3" />
+        Saving
+      </span>
+    );
   }
 
   if (saveStatus === "saved") {
-    return <CheckIcon className="size-3.5" style={{ color: "var(--settera-success-color, #16a34a)" }} />;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium leading-none text-green-700 dark:bg-green-950 dark:text-green-400">
+        <CheckIcon className="size-3" />
+        Saved
+      </span>
+    );
   }
 
   return null;

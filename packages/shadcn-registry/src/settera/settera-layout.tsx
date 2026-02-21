@@ -16,7 +16,7 @@ import type { SetteraCustomPageProps } from "./settera-page";
 import type { SetteraCustomSettingProps } from "./settera-setting";
 import type { SetteraActionPageProps } from "./settera-subpage-content";
 import { SetteraConfirmDialog } from "./settera-confirm-dialog";
-import { SetteraDeepLinkContext } from "./settera-setting-row";
+import { SetteraDeepLinkContext } from "./use-settera-layout-url-sync";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -251,7 +251,7 @@ function SetteraLayoutInner({
             ref={mainRef}
             tabIndex={-1}
             onKeyDown={handleComposedKeyDown}
-            className="flex-1 overflow-y-auto outline-none bg-background"
+            className="flex-1 min-h-0 overflow-y-auto outline-none bg-background"
             style={{
               padding: isMobile
                 ? "var(--settera-page-padding-mobile, 1rem)"

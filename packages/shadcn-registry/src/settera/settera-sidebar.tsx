@@ -13,6 +13,7 @@ import { useSetteraSearch } from "./use-settera-search";
 import { useRovingTabIndex } from "./use-roving-tab-index";
 import type { PageDefinition, PageItem } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
+import { ChevronDownIcon, ChevronLeftIcon } from "lucide-react";
 import { SetteraSearch } from "./settera-search";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
@@ -349,23 +350,11 @@ export function SetteraSidebar({
                     </span>
                   )}
                   <span className="flex-1 truncate">{page.title}</span>
-                  <svg
+                  <ChevronDownIcon
                     aria-hidden="true"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    className="shrink-0 text-sidebar-accent-foreground/70 transition-transform duration-200"
+                    className="size-4 shrink-0 text-sidebar-accent-foreground/70 transition-transform duration-200"
                     style={{ rotate: isExpanded ? "0deg" : "-90deg" }}
-                  >
-                    <path
-                      d="M4 6l4 4 4-4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  />
                 </button>
               </SidebarMenuButton>
               <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
@@ -452,36 +441,12 @@ export function SetteraSidebar({
           >
             {!backToApp.onClick && backToApp.href ? (
               <a href={backToApp.href}>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-1"
-                >
-                  <path d="M10 12L6 8l4-4" />
-                </svg>
+                <ChevronLeftIcon className="size-4 mr-1" />
                 {backToApp.label ?? "Back to app"}
               </a>
             ) : (
               <>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-1"
-                >
-                  <path d="M10 12L6 8l4-4" />
-                </svg>
+                <ChevronLeftIcon className="size-4 mr-1" />
                 {backToApp.label ?? "Back to app"}
               </>
             )}
