@@ -7,6 +7,7 @@ import { demoSchema } from "../../test-app/src/schema.js";
 import {
   UsersPage,
   ProfilePictureSetting,
+  ThemePickerSetting,
   AdvancedExportPage,
 } from "./custom-renderers.js";
 import { HeadlessView } from "./headless-view.js";
@@ -238,7 +239,7 @@ export function App() {
               }}
               renderIcon={renderIcon}
               customPages={{ usersPage: UsersPage }}
-              customSettings={{ profilePicture: ProfilePictureSetting }}
+              customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}

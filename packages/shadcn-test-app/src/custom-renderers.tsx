@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { useSetteraSetting, useSetteraAction } from "@settera/react";
+import type { CustomSetting } from "@settera/schema";
 import type { SetteraCustomPageProps } from "@/components/settera/settera-page";
 import type { SetteraCustomSettingProps } from "@/components/settera/settera-setting";
 import type { SetteraActionPageProps } from "@/components/settera/settera-subpage-content";
@@ -162,6 +163,50 @@ export function ProfilePictureSetting({
       >
         {imageUrl ? "Remove image" : "Upload image"}
       </Button>
+    </div>
+  );
+}
+
+export function ThemePickerSetting({
+  settingKey,
+}: SetteraCustomSettingProps) {
+  const { value, setValue, definition } = useSetteraSetting(settingKey);
+  const options = (definition as CustomSetting).config?.options as
+    | Array<{ value: string; label: string; color: string }>
+    | undefined;
+
+  if (!options) return null;
+
+  const selected = typeof value === "string" ? value : "";
+
+  return (
+    <div className="flex gap-3 flex-wrap">
+      {options.map((option) => {
+        const isSelected = selected === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setValue(option.value)}
+            className="flex flex-col items-center gap-1.5 bg-transparent border-none p-1 cursor-pointer"
+          >
+            <div
+              className="size-6 rounded-full transition-shadow duration-150"
+              style={{
+                background: option.color,
+                boxShadow: isSelected
+                  ? `0 0 0 2px var(--background, #ffffff), 0 0 0 4px ${option.color}`
+                  : "none",
+              }}
+            />
+            <span
+              className={`text-xs ${isSelected ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+            >
+              {option.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

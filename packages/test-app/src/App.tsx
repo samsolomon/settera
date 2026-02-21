@@ -1212,6 +1212,66 @@ function ProfilePictureSetting({
   );
 }
 
+function ThemePickerSetting({ settingKey }: SetteraCustomSettingProps) {
+  const { value, setValue, definition } = useSetteraSetting(settingKey);
+  const options = (definition as CustomSetting).config?.options as
+    | Array<{ value: string; label: string; color: string }>
+    | undefined;
+
+  if (!options) return null;
+
+  const selected = typeof value === "string" ? value : "";
+
+  return (
+    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+      {options.map((option) => {
+        const isSelected = selected === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setValue(option.value)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+              background: "none",
+              border: "none",
+              padding: "4px",
+              cursor: "pointer",
+            }}
+          >
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: option.color,
+                boxShadow: isSelected
+                  ? `0 0 0 2px var(--settera-card, #ffffff), 0 0 0 4px ${option.color}`
+                  : "none",
+                transition: "box-shadow 0.15s ease",
+              }}
+            />
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: isSelected ? 600 : 400,
+                color: isSelected
+                  ? "var(--settera-title-color, #111827)"
+                  : "var(--settera-description-color, #6b7280)",
+              }}
+            >
+              {option.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPageProps) {
   const { onAction, isLoading } = useSetteraAction(settingKey);
   const [format, setFormat] = useState("json");
@@ -1597,14 +1657,14 @@ export function App() {
                 href: "/",
               }}
               customPages={{ usersPage: UsersPage }}
-              customSettings={{ profilePicture: ProfilePictureSetting }}
+              customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
             />
           )}
           {mode === "headless" && (
             <SetteraNavigation>
               <HeadlessView
-                customSettings={{ profilePicture: ProfilePictureSetting }}
+                customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
               />
             </SetteraNavigation>
           )}

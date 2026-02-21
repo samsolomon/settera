@@ -8,6 +8,9 @@ export const demoSchema: SetteraSchema = {
   },
   pages: [
     {
+      label: "Account",
+      pages: [
+    {
       key: "profile",
       title: "Profile",
       description: "Manage your personal details.",
@@ -188,7 +191,7 @@ export const demoSchema: SetteraSchema = {
       key: "appearance",
       title: "Appearance",
       description: "Customize the look and feel of the app.",
-      icon: "monitor",
+      icon: "paintbrush",
       sections: [
         {
           key: "theme",
@@ -213,20 +216,25 @@ export const demoSchema: SetteraSchema = {
               title: "Theme",
               description:
                 "The primary color used for buttons, links, and highlights.",
-              type: "select",
-              options: [
-                { value: "blue", label: "Blue" },
-                { value: "purple", label: "Purple" },
-                { value: "green", label: "Green" },
-                { value: "rose", label: "Rose" },
-                { value: "orange", label: "Orange" },
-                { value: "neutral", label: "Neutral" },
-              ],
+              type: "custom",
+              renderer: "themePicker",
               default: "blue",
               validation: { required: true },
+              config: {
+                options: [
+                  { value: "blue", label: "Blue", color: "#3b82f6" },
+                  { value: "purple", label: "Purple", color: "#a855f7" },
+                  { value: "green", label: "Green", color: "#22c55e" },
+                  { value: "rose", label: "Rose", color: "#f43f5e" },
+                  { value: "orange", label: "Orange", color: "#f97316" },
+                  { value: "neutral", label: "Neutral", color: "#737373" },
+                ],
+              },
             },
           ],
         },
+      ],
+    },
       ],
     },
     {
