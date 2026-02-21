@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SetteraSchemaContext, useSettera, parseDescriptionLinks } from "@settera/react";
-import { evaluateVisibility } from "@settera/schema";
+import { evaluateVisibility, token } from "@settera/schema";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
+import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 import type { SectionDefinition } from "@settera/schema";
 import { SetteraSetting } from "./SetteraSetting.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
@@ -34,6 +35,30 @@ export function SetteraSection({
   const schemaCtx = useContext(SetteraSchemaContext);
   const { isSearching, matchingSettingKeys } = useSetteraSearch();
   const { values } = useSettera();
+  const deepLinkCtx = useContext(SetteraDeepLinkContext);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isCopyHovered, setIsCopyHovered] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleCopyLink = useCallback(async () => {
+    if (!deepLinkCtx) return;
+    if (!navigator.clipboard?.writeText) return;
+
+    const url = deepLinkCtx.getSectionUrl(pageKey, sectionKey);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyFeedback(true);
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyFeedback(false), 2000);
+    } catch {
+      // Clipboard write failed
+    }
+  }, [deepLinkCtx, pageKey, sectionKey]);
+
+  useEffect(() => {
+    return () => clearTimeout(copyTimeoutRef.current);
+  }, []);
 
   if (!schemaCtx) {
     throw new Error("SetteraSection must be used within a Settera component.");
@@ -98,14 +123,80 @@ export function SetteraSection({
       data-settera-section-key={sectionKey}
       aria-labelledby={sectionTitleId}
       style={{
-        marginTop: "var(--settera-section-margin-top, 24px)",
-        scrollMarginTop: "var(--settera-section-scroll-margin-top, 24px)",
+        marginTop: token("section-margin-top"),
+        scrollMarginTop: token("section-scroll-margin-top"),
       }}
     >
-      <div style={sectionHeadingRowStyle}>
-        <h2 id={sectionTitleId} tabIndex={-1} style={sectionTitleStyle}>
-          {section.title}
-        </h2>
+      <div
+        style={sectionHeadingRowStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <h2 id={sectionTitleId} tabIndex={-1} style={sectionTitleStyle}>
+            {section.title}
+          </h2>
+          {deepLinkCtx && (isHovered || copyFeedback) && (
+            <PrimitiveButton
+              type="button"
+              tabIndex={-1}
+              data-settera-copy-link
+              aria-label="Copy link to section"
+              onClick={handleCopyLink}
+              onMouseEnter={() => setIsCopyHovered(true)}
+              onMouseLeave={() => setIsCopyHovered(false)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "none",
+                background: isCopyHovered
+                  ? token("ghost-hover-bg")
+                  : "transparent",
+                color: isCopyHovered
+                  ? token("ghost-hover-color")
+                  : token("copy-link-color"),
+                cursor: "pointer",
+                width: "24px",
+                height: "24px",
+                borderRadius: token("button-border-radius"),
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
+              {copyFeedback ? (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke={token("save-saved-color")}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 8.5l3.5 3.5L13 4" />
+                </svg>
+              ) : (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6.5 8.5a3 3 0 0 0 4.243 0l2-2a3 3 0 0 0-4.243-4.243l-1 1" />
+                  <path d="M9.5 7.5a3 3 0 0 0-4.243 0l-2 2a3 3 0 0 0 4.243 4.243l1-1" />
+                </svg>
+              )}
+            </PrimitiveButton>
+          )}
+        </div>
         {isCollapsible && (
           <PrimitiveButton
             type="button"
@@ -119,7 +210,7 @@ export function SetteraSection({
               border: "none",
               background: "transparent",
               cursor: "pointer",
-              color: "var(--settera-section-title-color, #111827)",
+              color: token("section-title-color"),
               fontSize: "14px",
               padding: "2px 4px",
             }}
@@ -163,7 +254,7 @@ export function SetteraSection({
                 key={sub.key}
                 role="group"
                 aria-labelledby={`settera-subsection-${sub.key}`}
-                style={{ marginTop: "var(--settera-section-margin-top, 24px)" }}
+                style={{ marginTop: token("section-margin-top") }}
               >
                 <h3
                   id={`settera-subsection-${sub.key}`}
@@ -171,8 +262,7 @@ export function SetteraSection({
                   style={{
                     ...sectionTitleStyle,
                     marginTop: 0,
-                    marginBottom:
-                      "var(--settera-section-title-margin-bottom, 8px)",
+                    marginBottom: token("section-title-margin-bottom"),
                   }}
                 >
                   {sub.title}

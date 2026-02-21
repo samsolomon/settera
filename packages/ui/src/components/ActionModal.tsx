@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { ActionModalConfig } from "@settera/schema";
+import { token } from "@settera/schema";
 import { ActionModalField } from "./ActionModalField.js";
 import { useActionModalDraft } from "@settera/react";
 import { PrimitiveButton, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
@@ -40,8 +41,8 @@ export function ActionModal({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
-            zIndex: "var(--settera-z-overlay, 1000)" as unknown as number,
+            backgroundColor: token("overlay-bg"),
+            zIndex: token("z-overlay") as unknown as number,
           }}
         />
         <Dialog.Content
@@ -77,16 +78,15 @@ export function ActionModal({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
-            borderRadius: "var(--settera-dialog-border-radius, 8px)",
-            padding: "var(--settera-dialog-padding, 16px)",
-            maxWidth: "var(--settera-dialog-max-width, 640px)",
+            backgroundColor: token("dialog-bg"),
+            borderRadius: token("dialog-border-radius"),
+            padding: token("dialog-padding"),
+            maxWidth: token("dialog-max-width"),
             width: "calc(100% - 24px)",
             maxHeight: "calc(100vh - 40px)",
             overflow: "auto",
-            boxShadow:
-              "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
-            zIndex: "var(--settera-z-dialog, 1001)" as unknown as number,
+            boxShadow: token("dialog-shadow"),
+            zIndex: token("z-dialog") as unknown as number,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
@@ -96,7 +96,7 @@ export function ActionModal({
                 fontSize: "18px",
                 fontWeight: 600,
                 lineHeight: 1.3,
-                color: "var(--settera-title-color, var(--settera-foreground, #111827))",
+                color: token("title-color"),
               }}
             >
               {modalConfig.title ?? title}
@@ -106,7 +106,7 @@ export function ActionModal({
                 margin: 0,
                 fontSize: "14px",
                 lineHeight: 1.5,
-                color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+                color: token("description-color"),
               }}
             >
               {modalConfig.description ?? "Review the fields and submit."}
@@ -124,7 +124,7 @@ export function ActionModal({
                   flexDirection: "column",
                   gap: "4px",
                   fontSize: "13px",
-                  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+                  color: token("description-color"),
                 }}
               >
                 {field.title}
@@ -152,12 +152,9 @@ export function ActionModal({
                 type="button"
                 disabled={isLoading}
                 style={{
-                  border:
-                    "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
-                  backgroundColor:
-                    "var(--settera-button-secondary-bg, var(--settera-card, white))",
-                  color:
-                    "var(--settera-button-secondary-color, var(--settera-card-foreground, #374151))",
+                  border: token("button-border"),
+                  backgroundColor: token("button-secondary-bg"),
+                  color: token("button-secondary-color"),
                   cursor: isLoading ? "not-allowed" : "pointer",
                 }}
               >
@@ -170,12 +167,9 @@ export function ActionModal({
               onClick={handleSubmit}
               disabled={isLoading}
               style={{
-                border:
-                  "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
-                backgroundColor:
-                  "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
-                color:
-                  "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
+                border: token("button-border"),
+                backgroundColor: token("button-primary-bg"),
+                color: token("button-primary-color"),
                 cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >

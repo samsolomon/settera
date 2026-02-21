@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useState, useMemo, useCallback, useRef } from "react";
 import { resolvePageKey, flattenPageItems } from "@settera/schema";
 import type { PageItem } from "@settera/schema";
 import { SetteraSchemaContext } from "./context.js";
@@ -36,13 +36,21 @@ export const SetteraNavigationContext =
 
 export interface SetteraNavigationProps {
   children: React.ReactNode;
+  /** Controlled active page key from the consumer's router. When provided, internal state is bypassed. */
+  activePage?: string;
+  /** Called when the user navigates to a different page. Required when `activePage` is controlled. */
+  onPageChange?: (key: string) => void;
 }
 
 /**
  * Provides headless navigation state (active page tracking).
  * Must be nested inside a Settera component (needs schema context).
  */
-export function SetteraNavigation({ children }: SetteraNavigationProps) {
+export function SetteraNavigation({
+  children,
+  activePage: controlledPage,
+  onPageChange,
+}: SetteraNavigationProps) {
   const schemaCtx = useContext(SetteraSchemaContext);
 
   if (!schemaCtx) {
@@ -52,25 +60,44 @@ export function SetteraNavigation({ children }: SetteraNavigationProps) {
   }
 
   const { schema } = schemaCtx;
+  const isControlled = controlledPage !== undefined;
 
-  const [activePage, setActivePageRaw] = useState<string>(() => {
+  const hasWarnedRef = useRef(false);
+  if (process.env.NODE_ENV !== "production") {
+    if (isControlled && !onPageChange && !hasWarnedRef.current) {
+      hasWarnedRef.current = true;
+      console.warn(
+        "SetteraNavigation: `activePage` was provided without `onPageChange`. " +
+        "The active page will not change when the user clicks navigation.",
+      );
+    }
+  }
+
+  const [internalPage, setInternalPage] = useState<string>(() => {
     const firstPage = flattenPageItems(schema.pages)[0];
     return firstPage ? resolvePageKey(firstPage) : "";
   });
 
+  const activePage = isControlled ? controlledPage : internalPage;
+
   const [subpage, setSubpage] = useState<SubpageState | null>(null);
+
+  // Ref for openSubpage to read current page without deps
+  const activePageRef = useRef(activePage);
+  activePageRef.current = activePage;
 
   // When setActivePage is called, auto-close any open subpage
   const setActivePage = useCallback((key: string) => {
     setSubpage(null);
-    setActivePageRaw(key);
-  }, []);
+    if (isControlled) {
+      onPageChange?.(key);
+    } else {
+      setInternalPage(key);
+    }
+  }, [isControlled, onPageChange]);
 
   const openSubpage = useCallback((settingKey: string) => {
-    setActivePageRaw((currentPage) => {
-      setSubpage({ settingKey, returnPage: currentPage });
-      return currentPage;
-    });
+    setSubpage({ settingKey, returnPage: activePageRef.current });
   }, []);
 
   const closeSubpage = useCallback(() => {

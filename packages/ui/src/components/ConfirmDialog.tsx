@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { token } from "@settera/schema";
 import { useSetteraConfirm } from "@settera/react";
 import { PrimitiveButton, PrimitiveInput, SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 
@@ -52,8 +53,8 @@ export function ConfirmDialog() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
-            zIndex: "var(--settera-z-overlay, 1000)" as unknown as number, // CSS var needs cast for React CSSProperties
+            backgroundColor: token("overlay-bg"),
+            zIndex: token("z-overlay") as unknown as number, // CSS var needs cast for React CSSProperties
           }}
         />
         <Dialog.Content
@@ -72,24 +73,23 @@ export function ConfirmDialog() {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "var(--settera-dialog-bg, var(--settera-popover, white))",
-            borderRadius: "var(--settera-dialog-border-radius, 8px)",
-            padding: "var(--settera-dialog-padding, 16px)",
-            maxWidth: "var(--settera-confirm-max-width, 420px)", // Separate from --settera-dialog-max-width (640px) — confirms are narrower
+            backgroundColor: token("dialog-bg"),
+            borderRadius: token("dialog-border-radius"),
+            padding: token("dialog-padding"),
+            maxWidth: token("confirm-max-width"), // Separate from --settera-dialog-max-width (640px) — confirms are narrower
             width: "calc(100% - 24px)",
-            boxShadow:
-              "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
-            zIndex: "var(--settera-z-dialog, 1001)" as unknown as number,
+            boxShadow: token("dialog-shadow"),
+            zIndex: token("z-dialog") as unknown as number,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <Dialog.Title
               style={{
                 margin: 0,
-                fontSize: "var(--settera-dialog-title-font-size, 18px)",
-                fontWeight: "var(--settera-dialog-title-font-weight, 600)",
+                fontSize: token("dialog-title-font-size"),
+                fontWeight: token("dialog-title-font-weight"),
                 lineHeight: 1.3,
-                color: "var(--settera-dialog-title-color, var(--settera-popover-foreground, #111827))",
+                color: token("dialog-title-color"),
               }}
             >
               {title}
@@ -97,8 +97,8 @@ export function ConfirmDialog() {
             <Dialog.Description
               style={{
                 margin: 0,
-                fontSize: "var(--settera-dialog-message-font-size, 14px)",
-                color: "var(--settera-dialog-message-color, var(--settera-muted-foreground, #6b7280))",
+                fontSize: token("dialog-message-font-size"),
+                color: token("dialog-message-color"),
                 lineHeight: 1.5,
               }}
             >
@@ -110,8 +110,8 @@ export function ConfirmDialog() {
               <label
                 style={{
                   display: "block",
-                  fontSize: "var(--settera-dialog-label-font-size, 13px)",
-                  color: "var(--settera-dialog-label-color, var(--settera-muted-foreground, #6b7280))",
+                  fontSize: token("dialog-label-font-size"),
+                  color: token("dialog-label-color"),
                   marginBottom: "4px",
                 }}
               >
@@ -126,9 +126,8 @@ export function ConfirmDialog() {
                   width: "100%",
                   padding: "8px 12px",
                   fontSize: "14px",
-                  border:
-                    "1px solid var(--settera-input-border-color, var(--settera-input, #d1d5db))",
-                  borderRadius: "var(--settera-input-border-radius, 6px)",
+                  border: token("input-border"),
+                  borderRadius: token("input-border-radius"),
                   boxSizing: "border-box",
                 }}
               />
@@ -147,9 +146,9 @@ export function ConfirmDialog() {
               type="button"
               onClick={handleCancel}
               style={{
-                border: "1px solid var(--settera-button-border-color, var(--settera-input, #d1d5db))",
-                backgroundColor: "var(--settera-button-secondary-bg, var(--settera-card, white))",
-                color: "var(--settera-button-secondary-color, var(--settera-card-foreground, #374151))",
+                border: token("button-border"),
+                backgroundColor: token("button-secondary-bg"),
+                color: token("button-secondary-color"),
                 cursor: "pointer",
               }}
             >
@@ -162,16 +161,16 @@ export function ConfirmDialog() {
 
               style={{
                 border: dangerous
-                  ? "1px solid var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
+                  ? `1px solid ${token("button-dangerous-bg")}`
                   : "none",
                 backgroundColor: dangerous
-                  ? "var(--settera-button-dangerous-bg, var(--settera-destructive, #dc2626))"
-                  : "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
+                  ? token("button-dangerous-bg")
+                  : token("button-primary-bg"),
                 color: dangerous
-                  ? "var(--settera-button-dangerous-color, var(--settera-destructive-foreground, white))"
-                  : "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
+                  ? token("button-dangerous-color")
+                  : token("button-primary-color"),
                 cursor: confirmDisabled ? "not-allowed" : "pointer",
-                opacity: confirmDisabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
+                opacity: confirmDisabled ? token("disabled-opacity") : 1,
               }}
             >
               {confirmLabel}

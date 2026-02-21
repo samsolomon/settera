@@ -16,6 +16,12 @@ import type { SetteraNavigationContextValue } from "../contexts/SetteraNavigatio
 
 export interface SetteraNavigationProviderProps {
   children: React.ReactNode;
+  /** Controlled active page key from the consumer's router. */
+  activePage?: string;
+  /** Called when the user navigates to a different page. */
+  onPageChange?: (key: string) => void;
+  /** Returns path for a page key; enables `<a href>` in sidebar and path-based deep links. */
+  getPageUrl?: (pageKey: string) => string;
 }
 
 /**
@@ -27,10 +33,25 @@ export interface SetteraNavigationProviderProps {
  */
 export function SetteraNavigationProvider({
   children,
+  activePage,
+  onPageChange,
+  getPageUrl,
 }: SetteraNavigationProviderProps) {
+  const hasWarnedGetPageUrlRef = useRef(false);
+  if (process.env.NODE_ENV !== "production") {
+    if (getPageUrl && activePage === undefined && !hasWarnedGetPageUrlRef.current) {
+      hasWarnedGetPageUrlRef.current = true;
+      console.warn(
+        "SetteraNavigationProvider: `getPageUrl` was provided without `activePage`. " +
+        "Page-level URL sync will be skipped but navigation is uncontrolled. " +
+        "Provide `activePage` and `onPageChange` for router integration.",
+      );
+    }
+  }
+
   return (
-    <SetteraNavigation>
-      <SetteraNavigationProviderInner>
+    <SetteraNavigation activePage={activePage} onPageChange={onPageChange}>
+      <SetteraNavigationProviderInner getPageUrl={getPageUrl}>
         {children}
       </SetteraNavigationProviderInner>
     </SetteraNavigation>
@@ -39,8 +60,10 @@ export function SetteraNavigationProvider({
 
 function SetteraNavigationProviderInner({
   children,
+  getPageUrl,
 }: {
   children: React.ReactNode;
+  getPageUrl?: (pageKey: string) => string;
 }) {
   const schemaCtx = useContext(SetteraSchemaContext);
   const { activePage, setActivePage: setActivePageRaw, subpage, openSubpage, closeSubpage } = useReactNavigation();
@@ -155,6 +178,7 @@ function SetteraNavigationProviderInner({
       subpage,
       openSubpage,
       closeSubpage,
+      getPageUrl,
     }),
     [
       activePage,
@@ -174,6 +198,7 @@ function SetteraNavigationProviderInner({
       openSubpage,
       closeSubpage,
       setActiveSection,
+      getPageUrl,
     ],
   );
 

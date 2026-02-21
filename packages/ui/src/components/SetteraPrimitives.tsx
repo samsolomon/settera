@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from "react";
+import { token } from "@settera/schema";
 
 /** System font stack used as the concrete fallback for portaled content. */
-export const SETTERA_SYSTEM_FONT =
-  'var(--settera-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)';
+export const SETTERA_SYSTEM_FONT = token("font-family");
 
 type PrimitiveTone = "default" | "destructive";
 
@@ -18,20 +18,20 @@ export interface PrimitiveButtonProps extends React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const inputBaseStyle: React.CSSProperties = {
-  fontSize: "var(--settera-input-font-size, 14px)",
-  padding: "var(--settera-input-padding, 6px 10px)",
-  borderRadius: "var(--settera-input-border-radius, 4px)",
-  width: "var(--settera-input-width, 200px)",
-  backgroundColor: "var(--settera-input-bg, var(--settera-card, white))",
+  fontSize: token("input-font-size"),
+  padding: token("input-padding"),
+  borderRadius: token("input-border-radius"),
+  width: token("input-width"),
+  backgroundColor: token("input-bg"),
   outline: "none",
 };
 
 export const buttonBaseStyle: React.CSSProperties = {
-  fontSize: "var(--settera-button-font-size, 14px)",
-  fontWeight: "var(--settera-button-font-weight, 500)",
-  padding: "var(--settera-button-padding, 6px 16px)",
-  borderRadius: "var(--settera-button-border-radius, 4px)",
-  backgroundColor: "var(--settera-button-bg, var(--settera-card, white))",
+  fontSize: token("button-font-size"),
+  fontWeight: token("button-font-weight"),
+  padding: token("button-padding"),
+  borderRadius: token("button-border-radius"),
+  backgroundColor: token("button-bg"),
   transition: "opacity 200ms",
   outline: "none",
 };
@@ -55,14 +55,14 @@ export const PrimitiveInput = React.forwardRef<
       style={{
         ...inputBaseStyle,
         border: invalid
-          ? "1px solid var(--settera-error-color, var(--settera-destructive, #dc2626))"
-          : "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
+          ? `1px solid ${token("error-color")}`
+          : token("input-border"),
         boxShadow: focusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
+          ? `0 0 0 2px ${token("focus-ring-color")}`
           : "none",
         color: isDestructive
-          ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-          : "var(--settera-input-color, var(--settera-foreground, #111827))",
+          ? token("dangerous-color")
+          : token("input-color"),
         ...style,
       }}
     />
@@ -150,7 +150,7 @@ export const PrimitiveButton = React.forwardRef<
   const showFocusRing = focusVisible || isFocusVisible;
 
   const resolvedOpacity = disabled
-    ? "var(--settera-disabled-opacity, 0.5)"
+    ? token("disabled-opacity")
     : isPressed
       ? 0.7
       : isHovered
@@ -173,17 +173,17 @@ export const PrimitiveButton = React.forwardRef<
       style={{
         ...buttonBaseStyle,
         border: isDestructive
-          ? "1px solid var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-          : "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+          ? `1px solid ${token("dangerous-color")}`
+          : token("button-border"),
         boxShadow: showFocusRing
-          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
+          ? `0 0 0 2px ${token("focus-ring-color")}`
           : "none",
         color: isDestructive
-          ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-          : "var(--settera-button-color, var(--settera-card-foreground, #374151))",
+          ? token("dangerous-color")
+          : token("button-color"),
         backgroundColor: isDestructive
-          ? "var(--settera-button-dangerous-bg, #fef2f2)"
-          : "var(--settera-button-bg, var(--settera-card, white))",
+          ? token("button-dangerous-bg")
+          : token("button-bg"),
         opacity: resolvedOpacity,
         ...style,
       }}
@@ -202,17 +202,16 @@ export interface BackButtonProps {
 const backButtonBaseStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
-  gap: "var(--settera-space-75, 6px)",
+  gap: token("space-75"),
   border: "none",
-  borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-  padding: "var(--settera-space-75, 6px) var(--settera-space-125, 10px)",
-  fontSize: "var(--settera-button-font-size, 14px)",
-  fontWeight: "var(--settera-button-font-weight, 500)",
-  color:
-    "var(--settera-sidebar-back-color, var(--settera-description-color, var(--settera-muted-foreground, #6b7280)))",
+  borderRadius: token("sidebar-item-radius"),
+  padding: `${token("space-75")} ${token("space-125")}`,
+  fontSize: token("button-font-size"),
+  fontWeight: token("button-font-weight"),
+  color: token("sidebar-back-color"),
   fontFamily: "inherit",
   transition: "background-color 120ms ease",
-  marginLeft: "calc(-1 * var(--settera-space-125, 10px))",
+  marginLeft: `calc(-1 * ${token("space-125")})`,
   textDecoration: "none",
   cursor: "pointer",
 };
@@ -226,7 +225,7 @@ const backButtonChevron = (
     fill="none"
     style={{
       flexShrink: 0,
-      color: "var(--settera-sidebar-chevron-color, #9ca3af)",
+      color: token("sidebar-chevron-color"),
     }}
   >
     <path
@@ -243,8 +242,8 @@ export function BackButton({ children, onClick, href }: BackButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const bg = isHovered
-    ? "var(--settera-sidebar-back-hover-bg, var(--settera-ghost-hover-bg, #f4f4f5))"
-    : "var(--settera-sidebar-back-bg, transparent)";
+    ? token("sidebar-back-hover-bg")
+    : token("sidebar-back-bg");
 
   if (href && !onClick) {
     return (

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useSetteraSetting, parseDescriptionLinks } from "@settera/react";
+import { token } from "@settera/schema";
 import { SetteraNavigationContext } from "../contexts/SetteraNavigationContext.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
@@ -86,9 +87,9 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
   const showCopyButton = deepLinkCtx && (isHovered || isFocusVisible);
 
   const boxShadow = isHighlighted
-    ? "0 0 0 2px var(--settera-highlight-color, #f59e0b)"
+    ? `0 0 0 2px ${token("highlight-color")}`
     : isFocusVisible
-      ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
+      ? `0 0 0 2px ${token("focus-ring-color")}`
       : "none";
 
   return (
@@ -105,11 +106,11 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{
-        padding: "var(--settera-row-padding-inline, 0 16px)",
-        opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : "var(--settera-row-opacity, 1)",
+        padding: token("row-padding-inline"),
+        opacity: isDisabled ? token("disabled-opacity") : token("row-opacity"),
         outline: "none",
         boxShadow,
-        borderRadius: "var(--settera-row-focus-radius, 8px)",
+        borderRadius: token("row-focus-radius"),
         transition: isHighlighted ? "box-shadow 300ms ease" : undefined,
       }}
     >
@@ -118,10 +119,10 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          padding: "var(--settera-row-padding-block, 12px 0)",
+          padding: token("row-padding-block"),
           borderBottom: isLast
             ? "none"
-            : "var(--settera-row-border, 1px solid var(--settera-border, #e5e7eb))",
+            : token("row-border"),
         }}
       >
         <div style={{ flex: 1, marginRight: "16px" }}>
@@ -131,11 +132,11 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               alignItems: "center",
               gap: "6px",
               minHeight: "24px",
-              fontSize: "var(--settera-title-font-size, 14px)",
-              fontWeight: "var(--settera-title-font-weight, 500)",
+              fontSize: token("title-font-size"),
+              fontWeight: token("title-font-weight"),
               color: isDangerous
-                ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-                : "var(--settera-title-color, var(--settera-foreground, #111827))",
+                ? token("dangerous-color")
+                : token("title-color"),
             }}
           >
             {definition.title}
@@ -154,15 +155,15 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                   justifyContent: "center",
                   border: "none",
                   background: isCopyHovered
-                    ? "var(--settera-ghost-hover-bg, var(--settera-muted, #f4f4f5))"
+                    ? token("ghost-hover-bg")
                     : "transparent",
                   color: isCopyHovered
-                    ? "var(--settera-ghost-hover-color, var(--settera-foreground, #18181b))"
-                    : "var(--settera-copy-link-color, var(--settera-muted-foreground, #9ca3af))",
+                    ? token("ghost-hover-color")
+                    : token("copy-link-color"),
                   cursor: "pointer",
                   width: "24px",
                   height: "24px",
-                  borderRadius: "var(--settera-button-border-radius, 4px)",
+                  borderRadius: token("button-border-radius"),
                   padding: 0,
                   flexShrink: 0,
                 }}
@@ -173,7 +174,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
                     height="14"
                     viewBox="0 0 16 16"
                     fill="none"
-                    stroke="var(--settera-save-saved-color, #16a34a)"
+                    stroke={token("save-saved-color")}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -203,8 +204,8 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Saving"
                 style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-saving-color, var(--settera-muted-foreground, #6b7280))",
+                  fontSize: token("save-indicator-font-size"),
+                  color: token("save-saving-color"),
                   fontWeight: 400,
                 }}
               >
@@ -215,8 +216,8 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Saved"
                 style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-saved-color, #16a34a)",
+                  fontSize: token("save-indicator-font-size"),
+                  color: token("save-saved-color"),
                   fontWeight: 400,
                 }}
               >
@@ -227,8 +228,8 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               <span
                 aria-label="Save failed"
                 style={{
-                  fontSize: "var(--settera-save-indicator-font-size, 12px)",
-                  color: "var(--settera-save-error-color, var(--settera-destructive, #dc2626))",
+                  fontSize: token("save-indicator-font-size"),
+                  color: token("save-error-color"),
                   fontWeight: 400,
                 }}
               >
@@ -252,8 +253,8 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               role="alert"
               id={`settera-error-${settingKey}`}
               style={{
-                fontSize: "var(--settera-error-font-size, 13px)",
-                color: "var(--settera-error-color, var(--settera-destructive, #dc2626))",
+                fontSize: token("error-font-size"),
+                color: token("error-color"),
                 marginTop: "4px",
               }}
             >

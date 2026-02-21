@@ -20,6 +20,8 @@ export interface SetteraNavigationContextValue {
   subpage: SubpageState | null;
   openSubpage: (settingKey: string) => void;
   closeSubpage: () => void;
+  /** Returns path for a page key; enables `<a href>` in sidebar and path-based deep links. */
+  getPageUrl?: (pageKey: string) => string;
 }
 
 export const SetteraNavigationContext =

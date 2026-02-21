@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import type { ActionPageConfig } from "@settera/schema";
+import { token, type ActionPageConfig } from "@settera/schema";
 import { useSetteraAction, useActionModalDraft, useSaveAndClose, parseDescriptionLinks } from "@settera/react";
 import { ActionModalField } from "./ActionModalField.js";
 import { PrimitiveButton } from "./SetteraPrimitives.js";
@@ -62,9 +62,9 @@ export function ActionPageContent({
     <div>
       <h2
         style={{
-          fontSize: "var(--settera-page-title-font-size, 20px)",
+          fontSize: token("page-title-font-size"),
           fontWeight: 600,
-          color: "var(--settera-page-title-color, var(--settera-foreground, #111827))",
+          color: token("page-title-color"),
           margin: 0,
         }}
       >
@@ -98,7 +98,7 @@ export function ActionPageContent({
               flexDirection: "column",
               gap: "4px",
               fontSize: "13px",
-              color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+              color: token("description-color"),
             }}
           >
             {field.title}
@@ -135,8 +135,8 @@ export function ActionPageContent({
           onClick={handleSubmit}
           disabled={isBusy}
           style={{
-            backgroundColor: "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
-            color: "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
+            backgroundColor: token("button-primary-bg"),
+            color: token("button-primary-color"),
             cursor: isBusy ? "not-allowed" : "pointer",
           }}
         >

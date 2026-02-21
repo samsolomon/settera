@@ -70,6 +70,7 @@ export function SetteraSidebar({
     expandedGroups,
     toggleGroup,
     requestFocusContent,
+    getPageUrl,
   } = useSetteraNavigation();
   const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
   const { setOpenMobile } = useSidebar();
@@ -124,6 +125,17 @@ export function SetteraSidebar({
       setOpenMobile(false);
     },
     [setActivePage, setOpenMobile],
+  );
+
+  const handleChildItemClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const isAnchor = e.currentTarget.tagName === "A";
+      if (isAnchor && (e.metaKey || e.ctrlKey)) return;
+      if (isAnchor) e.preventDefault();
+      const childKey = e.currentTarget.dataset.pageKey;
+      if (childKey) handleChildClick(childKey);
+    },
+    [handleChildClick],
   );
 
   const handleSectionClick = useCallback(
@@ -195,7 +207,7 @@ export function SetteraSidebar({
       itemCount: flatItems.length,
     });
 
-  const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+  const buttonRefs = useRef<Map<number, HTMLElement>>(new Map());
   const menuRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -300,7 +312,7 @@ export function SetteraSidebar({
   );
 
   const setButtonRef = useCallback(
-    (index: number, el: HTMLButtonElement | null) => {
+    (index: number, el: HTMLElement | null) => {
       if (el) {
         buttonRefs.current.set(index, el);
       } else {
@@ -315,6 +327,7 @@ export function SetteraSidebar({
       const flattened = isFlattenedPage(page);
       const hasChildren =
         !flattened && page.pages && page.pages.length > 0;
+      const hasSections = page.sections && page.sections.length > 0;
       const isExpanded = isSearching
         ? hasChildren &&
           page.pages!.some((child) =>
@@ -345,7 +358,38 @@ export function SetteraSidebar({
 
       const flatIndex = keyToIndex.get(page.key) ?? -1;
 
+      // Compute href for navigable pages (not expand-only parents)
+      const isExpandOnly = hasChildren && !hasSections && !flattened;
+      const resolvedPageKey = flattened ? resolvePageKey(page) : page.key;
+      const href = getPageUrl && !isExpandOnly ? getPageUrl(resolvedPageKey) : undefined;
+
+      const handleItemClick = (e: React.MouseEvent) => {
+        // Modifier click on <a> — let browser handle (new tab)
+        if (href && (e.metaKey || e.ctrlKey)) return;
+        if (href) e.preventDefault();
+        handlePageClick(page);
+      };
+
       if (hasChildren) {
+        const parentContent = (
+          <>
+            {page.icon && renderIcon && (
+              <span
+                aria-hidden="true"
+                className="size-4 inline-flex items-center justify-center shrink-0"
+              >
+                {renderIcon(page.icon)}
+              </span>
+            )}
+            <span className="flex-1 truncate">{page.title}</span>
+            <ChevronDownIcon
+              aria-hidden="true"
+              className="size-4 shrink-0 text-sidebar-accent-foreground/70 transition-transform duration-200"
+              style={{ rotate: isExpanded ? "0deg" : "-90deg" }}
+            />
+          </>
+        );
+
         return (
           <Collapsible
             key={page.key}
@@ -357,27 +401,26 @@ export function SetteraSidebar({
                 asChild
                 isActive={isActive}
               >
-                <button
-                  ref={(el) => setButtonRef(flatIndex, el)}
-                  onClick={() => handlePageClick(page)}
-                  aria-current={isActive ? "page" : undefined}
-                  tabIndex={getTabIndex(flatIndex)}
-                >
-                  {page.icon && renderIcon && (
-                    <span
-                      aria-hidden="true"
-                      className="size-4 inline-flex items-center justify-center shrink-0"
-                    >
-                      {renderIcon(page.icon)}
-                    </span>
-                  )}
-                  <span className="flex-1 truncate">{page.title}</span>
-                  <ChevronDownIcon
-                    aria-hidden="true"
-                    className="size-4 shrink-0 text-sidebar-accent-foreground/70 transition-transform duration-200"
-                    style={{ rotate: isExpanded ? "0deg" : "-90deg" }}
-                  />
-                </button>
+                {href ? (
+                  <a
+                    href={href}
+                    ref={(el) => setButtonRef(flatIndex, el)}
+                    onClick={handleItemClick}
+                    aria-current={isActive ? "page" : undefined}
+                    tabIndex={getTabIndex(flatIndex)}
+                  >
+                    {parentContent}
+                  </a>
+                ) : (
+                  <button
+                    ref={(el) => setButtonRef(flatIndex, el)}
+                    onClick={handleItemClick}
+                    aria-current={isActive ? "page" : undefined}
+                    tabIndex={getTabIndex(flatIndex)}
+                  >
+                    {parentContent}
+                  </button>
+                )}
               </SidebarMenuButton>
               <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                 <SidebarMenuSub role="group">
@@ -389,6 +432,7 @@ export function SetteraSidebar({
                     const childIsActive = activePage === childKey;
                     const childFlatIndex =
                       keyToIndex.get(child.key) ?? -1;
+                    const childHref = getPageUrl ? getPageUrl(childKey) : undefined;
 
                     return (
                       <SidebarMenuSubItem
@@ -399,21 +443,38 @@ export function SetteraSidebar({
                           asChild
                           isActive={childIsActive}
                         >
-                          <button
-                            className="w-full text-left"
-                            ref={(el) =>
-                              setButtonRef(childFlatIndex, el)
-                            }
-                            onClick={() =>
-                              handleChildClick(childKey)
-                            }
-                            aria-current={
-                              childIsActive ? "page" : undefined
-                            }
-                            tabIndex={getTabIndex(childFlatIndex)}
-                          >
-                            {child.title}
-                          </button>
+                          {childHref ? (
+                            <a
+                              href={childHref}
+                              className="w-full text-left"
+                              data-page-key={childKey}
+                              ref={(el) =>
+                                setButtonRef(childFlatIndex, el)
+                              }
+                              onClick={handleChildItemClick}
+                              aria-current={
+                                childIsActive ? "page" : undefined
+                              }
+                              tabIndex={getTabIndex(childFlatIndex)}
+                            >
+                              {child.title}
+                            </a>
+                          ) : (
+                            <button
+                              className="w-full text-left"
+                              data-page-key={childKey}
+                              ref={(el) =>
+                                setButtonRef(childFlatIndex, el)
+                              }
+                              onClick={handleChildItemClick}
+                              aria-current={
+                                childIsActive ? "page" : undefined
+                              }
+                              tabIndex={getTabIndex(childFlatIndex)}
+                            >
+                              {child.title}
+                            </button>
+                          )}
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     );
@@ -446,25 +507,43 @@ export function SetteraSidebar({
         );
       }
 
+      const leafContent = (
+        <>
+          {page.icon && renderIcon && (
+            <span
+              aria-hidden="true"
+              className="size-4 inline-flex items-center justify-center shrink-0"
+            >
+              {renderIcon(page.icon)}
+            </span>
+          )}
+          {page.title}
+        </>
+      );
+
       return (
         <SidebarMenuItem key={page.key} role="treeitem">
           <SidebarMenuButton asChild isActive={isActive}>
-            <button
-              ref={(el) => setButtonRef(flatIndex, el)}
-              onClick={() => handlePageClick(page)}
-              aria-current={isActive ? "page" : undefined}
-              tabIndex={getTabIndex(flatIndex)}
-            >
-              {page.icon && renderIcon && (
-                <span
-                  aria-hidden="true"
-                  className="size-4 inline-flex items-center justify-center shrink-0"
-                >
-                  {renderIcon(page.icon)}
-                </span>
-              )}
-              {page.title}
-            </button>
+            {href ? (
+              <a
+                href={href}
+                ref={(el) => setButtonRef(flatIndex, el)}
+                onClick={handleItemClick}
+                aria-current={isActive ? "page" : undefined}
+                tabIndex={getTabIndex(flatIndex)}
+              >
+                {leafContent}
+              </a>
+            ) : (
+              <button
+                ref={(el) => setButtonRef(flatIndex, el)}
+                onClick={handleItemClick}
+                aria-current={isActive ? "page" : undefined}
+                tabIndex={getTabIndex(flatIndex)}
+              >
+                {leafContent}
+              </button>
+            )}
           </SidebarMenuButton>
           {visibleSectionItems.length > 0 && (
             <SidebarMenuSub role="group">

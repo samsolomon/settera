@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useSetteraSetting, useFocusVisible } from "@settera/react";
+import { token } from "@settera/schema";
 
 export interface BooleanSwitchProps {
   settingKey: string;
@@ -28,9 +29,9 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
 
   const trackColor = checked
     ? isDangerous
-      ? "var(--settera-switch-dangerous-color, var(--settera-destructive, #dc2626))"
-      : "var(--settera-switch-active-color, var(--settera-primary, #2563eb))"
-    : "var(--settera-switch-inactive-color, var(--settera-input, #d1d5db))";
+      ? token("switch-dangerous-color")
+      : token("switch-active-color")
+    : token("switch-inactive-color");
 
   return (
     <Switch.Root
@@ -44,17 +45,17 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         position: "relative",
         display: "inline-flex",
         alignItems: "center",
-        width: "var(--settera-switch-width, 44px)",
-        height: "var(--settera-switch-height, 24px)",
-        borderRadius: "var(--settera-switch-border-radius, 12px)",
+        width: token("switch-width"),
+        height: token("switch-height"),
+        borderRadius: token("switch-border-radius"),
         backgroundColor: trackColor,
-        border: "var(--settera-switch-border, 1px solid transparent)",
+        border: token("switch-border"),
         cursor: "pointer",
         padding: 0,
         transition: "background-color 200ms",
         outline: "none",
         boxShadow: isFocusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
+          ? `0 0 0 2px ${token("focus-ring-color")}`
           : "none",
       }}
     >
@@ -62,13 +63,13 @@ export function BooleanSwitch({ settingKey }: BooleanSwitchProps) {
         data-slot="switch-thumb"
         style={{
           display: "block",
-          width: "var(--settera-switch-thumb-size, 20px)",
-          height: "var(--settera-switch-thumb-size, 20px)",
+          width: token("switch-thumb-size"),
+          height: token("switch-thumb-size"),
           borderRadius: "50%",
-          backgroundColor: "var(--settera-switch-thumb-color, white)",
+          backgroundColor: token("switch-thumb-color"),
           transition: "transform 200ms",
           transform: checked ? "translateX(22px)" : "translateX(2px)",
-          boxShadow: "var(--settera-switch-thumb-shadow, 0 1px 3px rgba(0,0,0,0.2))",
+          boxShadow: token("switch-thumb-shadow"),
         }}
       />
     </Switch.Root>

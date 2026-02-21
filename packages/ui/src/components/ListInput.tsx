@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { useSetteraSetting, useBufferedInput, isObjectRecord } from "@settera/react";
-import type { RepeatableFieldDefinition } from "@settera/schema";
+import { token, type RepeatableFieldDefinition } from "@settera/schema";
 import {
   PrimitiveButton,
   PrimitiveInput,
@@ -108,7 +108,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled || isFirst ? "not-allowed" : "pointer",
-          opacity: disabled || isFirst ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+          opacity: disabled || isFirst ? token("disabled-opacity") : undefined,
         }}
       >
         Up
@@ -122,7 +122,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled || isLast ? "not-allowed" : "pointer",
-          opacity: disabled || isLast ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+          opacity: disabled || isLast ? token("disabled-opacity") : undefined,
         }}
       >
         Down
@@ -136,7 +136,7 @@ function ListTextItem({
         style={{
           ...smallActionButtonStyle,
           cursor: disabled ? "not-allowed" : "pointer",
-          opacity: disabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+          opacity: disabled ? token("disabled-opacity") : undefined,
         }}
       >
         Remove
@@ -320,8 +320,8 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
         aria-invalid={hasError}
         aria-describedby={hasError ? `settera-error-${settingKey}` : undefined}
         style={{
-          fontSize: "var(--settera-description-font-size, 13px)",
-          color: "var(--settera-description-color, #6b7280)",
+          fontSize: token("description-font-size"),
+          color: token("description-color"),
           fontStyle: "italic",
         }}
       >
@@ -391,7 +391,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 alignSelf: "flex-start",
                 ...smallActionButtonStyle,
                 cursor: isDisabled || index === 0 ? "not-allowed" : "pointer",
-                opacity: isDisabled || index === 0 ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+                opacity: isDisabled || index === 0 ? token("disabled-opacity") : undefined,
               }}
             >
               Up
@@ -410,7 +410,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                     ? "not-allowed"
                     : "pointer",
                 opacity:
-                  isDisabled || index === compoundItems.length - 1 ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+                  isDisabled || index === compoundItems.length - 1 ? token("disabled-opacity") : undefined,
               }}
             >
               Down
@@ -425,7 +425,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
                 alignSelf: "flex-start",
                 ...smallActionButtonStyle,
                 cursor: isDisabled ? "not-allowed" : "pointer",
-                opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+                opacity: isDisabled ? token("disabled-opacity") : undefined,
               }}
             >
               Remove
@@ -442,7 +442,7 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
           alignSelf: "flex-start",
           padding: "4px 10px",
           cursor: isDisabled || isAtMax ? "not-allowed" : "pointer",
-          opacity: isDisabled || isAtMax ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+          opacity: isDisabled || isAtMax ? token("disabled-opacity") : undefined,
         }}
       >
         Add item
@@ -453,6 +453,6 @@ export function RepeatableInput({ settingKey }: RepeatableInputProps) {
 
 const repeatableInputStyle: React.CSSProperties = {
   ...inputBaseStyle,
-  border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
-  width: "var(--settera-input-width, 200px)",
+  border: token("input-border"),
+  width: token("input-width"),
 };

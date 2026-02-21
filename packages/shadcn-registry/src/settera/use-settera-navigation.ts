@@ -29,6 +29,7 @@ export function useSetteraNavigation() {
       subpage: null as SubpageState | null,
       openSubpage: NOOP as (settingKey: string) => void,
       closeSubpage: NOOP,
+      getPageUrl: undefined,
     };
   }
 

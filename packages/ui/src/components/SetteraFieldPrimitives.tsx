@@ -1,29 +1,30 @@
 import React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import { token } from "@settera/schema";
 import { inputBaseStyle } from "./SetteraPrimitives.js";
 
 export const fieldShellStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "var(--settera-space-50, 4px)",
-  fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+  gap: token("space-50"),
+  fontSize: token("description-font-size"),
+  color: token("description-color"),
 };
 
 export const sectionPanelStyle: React.CSSProperties = {
-  border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
-  borderRadius: "var(--settera-card-border-radius, 8px)",
-  backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
-  padding: "var(--settera-space-100, 8px)",
+  border: token("card-border"),
+  borderRadius: token("card-border-radius"),
+  backgroundColor: token("card-bg"),
+  padding: token("space-100"),
   display: "flex",
   flexDirection: "column",
-  gap: "var(--settera-space-100, 8px)",
+  gap: token("space-100"),
 };
 
 export const cardShellStyle: React.CSSProperties = {
-  border: "var(--settera-card-border, 1px solid var(--settera-border, #e5e7eb))",
-  borderRadius: "var(--settera-card-border-radius, 8px)",
-  backgroundColor: "var(--settera-card-bg, var(--settera-card, white))",
+  border: token("card-border"),
+  borderRadius: token("card-border-radius"),
+  backgroundColor: token("card-bg"),
   overflow: "hidden",
 };
 
@@ -32,51 +33,51 @@ export const sectionHeadingRowStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   gap: "8px",
-  marginBottom: "var(--settera-section-title-margin-bottom, 8px)",
+  marginBottom: token("section-title-margin-bottom"),
 };
 
 export const sectionTitleStyle: React.CSSProperties = {
-  fontSize: "var(--settera-section-title-font-size, 16px)",
-  fontWeight: "var(--settera-section-title-font-weight, 600)",
-  color: "var(--settera-section-title-color, var(--settera-foreground, #111827))",
+  fontSize: token("section-title-font-size"),
+  fontWeight: token("section-title-font-weight"),
+  color: token("section-title-color"),
   margin: 0,
 };
 
 export const descriptionTextStyle: React.CSSProperties = {
-  fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+  fontSize: token("description-font-size"),
+  color: token("description-color"),
 };
 
 export const mutedMessageStyle: React.CSSProperties = {
-  fontSize: "var(--settera-description-font-size, 13px)",
-  color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+  fontSize: token("description-font-size"),
+  color: token("description-color"),
   fontStyle: "italic",
 };
 
 export const stackGapStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "var(--settera-space-100, 8px)",
+  gap: token("space-100"),
 };
 
 export const inlineRowStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "var(--settera-space-100, 8px)",
+  gap: token("space-100"),
 };
 
 export const smallCheckboxStyle: React.CSSProperties = {
-  width: "var(--settera-checkbox-size, 16px)",
-  height: "var(--settera-checkbox-size, 16px)",
+  width: token("checkbox-size"),
+  height: token("checkbox-size"),
 };
 
 export const smallActionButtonStyle: React.CSSProperties = {
-  fontSize: "var(--settera-button-font-size, 13px)",
-  padding: "var(--settera-space-50, 4px) var(--settera-space-100, 8px)",
-  borderRadius: "var(--settera-button-border-radius, 4px)",
-  border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
-  backgroundColor: "var(--settera-button-bg, var(--settera-card, white))",
-  color: "var(--settera-button-color, var(--settera-card-foreground, #374151))",
+  fontSize: token("button-font-size"),
+  padding: `${token("space-50")} ${token("space-100")}`,
+  borderRadius: token("button-border-radius"),
+  border: token("button-border"),
+  backgroundColor: token("button-bg"),
+  color: token("button-color"),
 };
 
 export interface SelectOptionLike {
@@ -110,10 +111,10 @@ export function PrimitiveSelectControl({
       onChange={(e) => onChange(e.target.value)}
       style={{
         ...inputBaseStyle,
-        border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
+        border: token("input-border"),
         outline: "none",
         boxShadow: focusVisible
-          ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
+          ? `0 0 0 2px ${token("focus-ring-color")}`
           : "none",
         ...style,
       }}
@@ -156,16 +157,16 @@ export function PrimitiveCheckboxControl({
         alignItems: "center",
         justifyContent: "center",
         border: checked
-          ? "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
-          : "var(--settera-checkbox-border, 1px solid var(--settera-input, #d1d5db))",
+          ? token("checkbox-checked-border")
+          : token("checkbox-border"),
         backgroundColor: checked
-          ? "var(--settera-checkbox-checked-bg, #18181b)"
-          : "var(--settera-checkbox-bg, var(--settera-card, #ffffff))",
-        borderRadius: "var(--settera-checkbox-border-radius, 4px)",
-        boxShadow: "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
+          ? token("checkbox-checked-bg")
+          : token("checkbox-bg"),
+        borderRadius: token("checkbox-border-radius"),
+        boxShadow: token("checkbox-shadow"),
         outline: "none",
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
+        opacity: disabled ? token("disabled-opacity") : 1,
         transition: "box-shadow 120ms, background-color 120ms, border-color 120ms",
         ...style,
       }}
@@ -175,7 +176,7 @@ export function PrimitiveCheckboxControl({
         style={{
           display: "grid",
           placeContent: "center",
-          color: "var(--settera-checkbox-indicator-color, #ffffff)",
+          color: token("checkbox-indicator-color"),
         }}
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -215,7 +216,7 @@ export function PrimitiveCheckboxList({
         return (
           <label
             key={option.value}
-            style={{ display: "inline-flex", alignItems: "center", gap: "var(--settera-space-100, 8px)" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: token("space-100") }}
           >
             <PrimitiveCheckboxControl
               aria-label={getAriaLabel?.(option.label)}

@@ -1,7 +1,7 @@
 import React, { useMemo, useContext, useRef, useId, useCallback, useEffect } from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
-import { flattenPageItems } from "@settera/schema";
+import { flattenPageItems, token } from "@settera/schema";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
@@ -38,6 +38,12 @@ export interface SetteraLayoutProps {
   >;
   customActionPages?: Record<string, React.ComponentType<SetteraActionPageProps>>;
   activeSettingQueryParam?: string;
+  /** Controlled active page key from the consumer's router. */
+  activePage?: string;
+  /** Called when the user navigates to a different page (controlled mode). */
+  onPageChange?: (key: string) => void;
+  /** Returns path for a page key; enables `<a href>` in sidebar and path-based deep links. */
+  getPageUrl?: (pageKey: string) => string;
 }
 
 interface BreadcrumbItem {
@@ -71,7 +77,11 @@ function findPagePathByKey(
  */
 export function SetteraLayout(props: SetteraLayoutProps) {
   return (
-    <SetteraNavigationProvider>
+    <SetteraNavigationProvider
+      activePage={props.activePage}
+      onPageChange={props.onPageChange}
+      getPageUrl={props.getPageUrl}
+    >
       <SetteraLayoutInner {...props} />
     </SetteraNavigationProvider>
   );
@@ -108,6 +118,7 @@ function SetteraLayoutInner({
     subpage,
     openSubpage,
     closeSubpage,
+    getPageUrl,
   } = useSetteraNavigation();
 
   const clearSearch = useCallback(() => setQuery(""), [setQuery]);
@@ -157,6 +168,7 @@ function SetteraLayoutInner({
     setPendingScrollKey,
     subpage,
     openSubpage,
+    getPageUrl,
   });
 
   const resolvedMobileTitle =
@@ -193,18 +205,30 @@ function SetteraLayoutInner({
       return;
     }
 
-    const section = main.querySelector(
-      `[data-settera-page-key="${escapeSelectorValue(activePage)}"][data-settera-section-key="${escapeSelectorValue(activeSection)}"]`,
-    );
-    if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
-      return;
+    const selector = `[data-settera-page-key="${escapeSelectorValue(activePage)}"][data-settera-section-key="${escapeSelectorValue(activeSection)}"]`;
+
+    const scrollToSection = () => {
+      const section = main.querySelector(selector);
+      if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
+        return false;
+      }
+      (section as HTMLElement).scrollIntoView({
+        behavior: prefersReducedMotion ? "instant" : "smooth",
+        block: "start",
+      });
+      previousPageRef.current = activePage;
+      previousSectionRef.current = activeSection;
+      return true;
+    };
+
+    // The section element may not exist yet if the page changed in the same
+    // render cycle.  Try immediately, then retry after the browser paints.
+    if (!scrollToSection()) {
+      const raf = requestAnimationFrame(() => {
+        scrollToSection();
+      });
+      return () => cancelAnimationFrame(raf);
     }
-    (section as HTMLElement).scrollIntoView({
-      behavior: prefersReducedMotion ? "instant" : "smooth",
-      block: "start",
-    });
-    previousPageRef.current = activePage;
-    previousSectionRef.current = activeSection;
   }, [activePage, activeSection, subpage, mainRef, prefersReducedMotion, escapeSelectorValue]);
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
@@ -221,16 +245,16 @@ function SetteraLayoutInner({
       style={{
         flex: 1,
         padding: isMobile
-          ? "var(--settera-page-padding-mobile, 16px)"
-          : "var(--settera-page-padding, 24px 32px)",
-        backgroundColor: "var(--settera-page-bg, var(--settera-background, #f9fafb))",
+          ? token("page-padding-mobile")
+          : token("page-padding"),
+        backgroundColor: token("page-bg"),
         overflowY: "auto",
         outline: "none",
       }}
     >
       <div
         style={{
-          maxWidth: "var(--settera-content-max-width, 640px)",
+          maxWidth: token("content-max-width"),
           marginInline: "auto",
         }}
       >
@@ -285,11 +309,10 @@ function SetteraLayoutInner({
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              minHeight: "var(--settera-mobile-topbar-height, 52px)",
+              minHeight: token("mobile-topbar-height"),
               padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
-              borderBottom:
-                "var(--settera-mobile-topbar-border, 1px solid var(--settera-border, #e5e7eb))",
-              backgroundColor: "var(--settera-mobile-topbar-bg, var(--settera-background, #f9fafb))",
+              borderBottom: token("mobile-topbar-border"),
+              backgroundColor: token("mobile-topbar-bg"),
             }}
           >
             <button
@@ -306,9 +329,9 @@ function SetteraLayoutInner({
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "8px",
-                border: "var(--settera-mobile-menu-border, none)",
-                backgroundColor: "var(--settera-mobile-menu-bg, transparent)",
-                color: "var(--settera-mobile-menu-color, var(--settera-foreground, #111827))",
+                border: token("mobile-menu-border"),
+                backgroundColor: token("mobile-menu-bg"),
+                color: token("mobile-menu-color"),
                 cursor: "pointer",
                 flexShrink: 0,
               }}
@@ -331,7 +354,7 @@ function SetteraLayoutInner({
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    color: "var(--settera-breadcrumb-muted, var(--settera-muted-foreground, #6b7280))",
+                    color: token("breadcrumb-muted"),
                     minWidth: 0,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -365,8 +388,7 @@ function SetteraLayoutInner({
                               aria-current="page"
                               style={{
                                 fontSize: "13px",
-                                color:
-                                  "var(--settera-breadcrumb-current, var(--settera-foreground, #111827))",
+                                color: token("breadcrumb-current"),
                                 fontWeight: 600,
                               }}
                             >
@@ -408,8 +430,7 @@ function SetteraLayoutInner({
               style={{
                 position: "fixed",
                 inset: 0,
-                backgroundColor:
-                  "var(--settera-mobile-overlay-bg, rgba(17, 24, 39, 0.45))",
+                backgroundColor: token("mobile-overlay-bg"),
                 opacity: overlayIsVisible ? 1 : 0,
                 transition: overlayTransition,
                 pointerEvents: overlayIsVisible ? "auto" : "none",
@@ -430,15 +451,14 @@ function SetteraLayoutInner({
                 left: 0,
                 top: 0,
                 bottom: 0,
-                width: "var(--settera-mobile-drawer-width, min(85vw, 320px))",
+                width: token("mobile-drawer-width"),
                 maxWidth: "100%",
                 zIndex: 21,
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "var(--settera-mobile-drawer-bg, var(--settera-background, #f3f4f6))",
-                borderRight:
-                  "var(--settera-mobile-drawer-border, 1px solid var(--settera-input, #d1d5db))",
-                boxShadow: "var(--settera-mobile-drawer-shadow, 0 16px 40px rgba(0, 0, 0, 0.18))",
+                backgroundColor: token("mobile-drawer-bg"),
+                borderRight: token("mobile-drawer-border"),
+                boxShadow: token("mobile-drawer-shadow"),
                 overflow: "hidden",
                 transform: overlayIsVisible
                   ? "translateX(0)"

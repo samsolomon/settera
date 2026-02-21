@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { SetteraSchemaContext, parseDescriptionLinks } from "@settera/react";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
-import type { PageDefinition } from "@settera/schema";
+import { token, type PageDefinition } from "@settera/schema";
 import { SetteraSection } from "./SetteraSection.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import {
@@ -103,9 +103,9 @@ export function SetteraPage({
     <div>
       <h1
         style={{
-          fontSize: "var(--settera-page-title-font-size, 20px)",
+          fontSize: token("page-title-font-size"),
           fontWeight: 600,
-          color: "var(--settera-page-title-color, var(--settera-foreground, #111827))",
+          color: token("page-title-color"),
           margin: 0,
         }}
       >

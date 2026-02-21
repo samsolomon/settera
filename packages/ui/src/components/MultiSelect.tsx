@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { useSetteraSetting } from "@settera/react";
+import { token } from "@settera/schema";
 
 export interface MultiSelectProps {
   settingKey: string;
@@ -86,7 +87,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "var(--settera-multiselect-gap, 6px)",
+        gap: token("multiselect-gap"),
       }}
     >
       {options.map((opt, index) => {
@@ -101,11 +102,11 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "var(--settera-checkbox-gap, 8px)",
-              fontSize: "var(--settera-input-font-size, 14px)",
+              gap: token("checkbox-gap"),
+              fontSize: token("input-font-size"),
               color: isDangerous
-                ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-                : "var(--settera-input-color, var(--settera-foreground, #111827))",
+                ? token("dangerous-color")
+                : token("input-color"),
               cursor: "pointer",
             }}
           >
@@ -123,29 +124,29 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
               onKeyDown={handleCheckboxKeyDown}
               aria-label={opt.label}
               style={{
-                width: "var(--settera-checkbox-size, 16px)",
-                height: "var(--settera-checkbox-size, 16px)",
+                width: token("checkbox-size"),
+                height: token("checkbox-size"),
                 flexShrink: 0,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 border: isChecked
                   ? isDangerous
-                    ? "1px solid var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-                    : "var(--settera-checkbox-checked-border, 1px solid var(--settera-checkbox-checked-bg, #18181b))"
-                  : "var(--settera-checkbox-border, 1px solid var(--settera-input, #d1d5db))",
+                    ? `1px solid ${token("dangerous-color")}`
+                    : token("checkbox-checked-border")
+                  : token("checkbox-border"),
                 backgroundColor: isChecked
                   ? isDangerous
-                    ? "var(--settera-dangerous-color, var(--settera-destructive, #dc2626))"
-                    : "var(--settera-checkbox-checked-bg, #18181b)"
-                  : "var(--settera-checkbox-bg, var(--settera-card, #ffffff))",
+                    ? token("dangerous-color")
+                    : token("checkbox-checked-bg")
+                  : token("checkbox-bg"),
                 outline: "none",
                 boxShadow: isFocused
-                  ? "0 0 0 2px var(--settera-focus-ring-color, var(--settera-ring, #93c5fd))"
-                  : "var(--settera-checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05))",
-                borderRadius: "var(--settera-checkbox-border-radius, 4px)",
+                  ? `0 0 0 2px ${token("focus-ring-color")}`
+                  : token("checkbox-shadow"),
+                borderRadius: token("checkbox-border-radius"),
                 cursor: isDisabled ? "not-allowed" : "pointer",
-                opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : 1,
+                opacity: isDisabled ? token("disabled-opacity") : 1,
                 transition: "box-shadow 120ms, background-color 120ms, border-color 120ms",
               }}
             >
@@ -155,7 +156,7 @@ export function MultiSelect({ settingKey }: MultiSelectProps) {
                 style={{
                   display: "grid",
                   placeContent: "center",
-                  color: "var(--settera-checkbox-indicator-color, #ffffff)",
+                  color: token("checkbox-indicator-color"),
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

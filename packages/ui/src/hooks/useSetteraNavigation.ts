@@ -34,5 +34,6 @@ export function useSetteraNavigation() {
     subpage: ctx.subpage,
     openSubpage: ctx.openSubpage,
     closeSubpage: ctx.closeSubpage,
+    getPageUrl: ctx.getPageUrl,
   };
 }

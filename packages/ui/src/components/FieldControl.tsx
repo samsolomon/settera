@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from "react";
-import type {
-  CompoundFieldDefinition,
-  SelectSetting,
-  MultiSelectSetting,
-  TextSetting,
+import {
+  token,
+  type CompoundFieldDefinition,
+  type SelectSetting,
+  type MultiSelectSetting,
+  type TextSetting,
 } from "@settera/schema";
 import { useBufferedInput } from "@settera/react";
 import {
@@ -20,8 +21,8 @@ import {
 
 export const fieldControlInputStyle: React.CSSProperties = {
   ...inputBaseStyle,
-  border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
-  width: "var(--settera-input-width, 200px)",
+  border: token("input-border"),
+  width: token("input-width"),
 };
 
 export interface FieldControlProps {

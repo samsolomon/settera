@@ -142,9 +142,108 @@ const {
 | --- | --- | --- |
 | `activePage` | `string` | Key of the active page |
 | `setActivePage` | `(key: string) => void` | Navigate to a page (auto-closes subpages) |
-| `pages` | `PageDefinition[]` | Pages array from the schema |
+| `pages` | `PageItem[]` | Pages from the schema (see note below) |
 | `subpage` | `SubpageState \| null` | Active subpage, or null |
 | `openSubpage` | `(settingKey: string) => void` | Open a subpage for a compound setting |
 | `closeSubpage` | `() => void` | Close the active subpage |
 
+`PageItem` is `PageDefinition | PageGroup`. A `PageGroup` is `{ label: string; pages: PageDefinition[] }` — see [Page groups](schema.md#page-groups) in the schema reference.
+
 The UI packages (`@settera/ui` and `@settera/shadcn-registry`) provide their own `SetteraNavigationProvider` that composes on top of `SetteraNavigation`, adding search, expanded groups, and setting highlight. If you're building a custom UI, use `SetteraNavigation` directly.
+
+## SetteraLayout
+
+The prebuilt layout component. Renders a sidebar, page content area, and mobile navigation. Nest it inside `Settera` and `SetteraNavigation`:
+
+```tsx
+<Settera schema={schema} values={values} onChange={handleChange}>
+  <SetteraNavigation>
+    <SetteraLayout
+      renderIcon={(name) => <MyIcon name={name} />}
+      mobileTitle="Settings"
+      backToApp={{ label: "Back to app", href: "/" }}
+      syncActivePageWithUrl
+    />
+  </SetteraNavigation>
+</Settera>
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `renderIcon` | `(iconName: string) => ReactNode` | Render function for page icons in the sidebar |
+| `mobileBreakpoint` | `number` | Viewport width below which layout switches to mobile mode (default: `768`) |
+| `showBreadcrumbs` | `boolean` | Show breadcrumb navigation on mobile |
+| `mobileTitle` | `string` | Title shown in the mobile top bar |
+| `backToApp` | `SetteraBackToAppConfig` | Back-to-app link in the sidebar |
+| `syncActivePageWithUrl` | `boolean` | Sync active page with URL query params |
+| `activePageQueryParam` | `string` | Query param name for active page (default: `"page"`) |
+| `activeSectionQueryParam` | `string` | Query param name for active section |
+| `activeSettingQueryParam` | `string` | Query param name for highlighted setting |
+| `customPages` | `Record<string, ComponentType<SetteraCustomPageProps>>` | Custom page renderers keyed by `renderer` string |
+| `customSettings` | `Record<string, ComponentType<SetteraCustomSettingProps>>` | Custom setting renderers keyed by `renderer` string |
+| `customActionPages` | `Record<string, ComponentType<SetteraActionPageProps>>` | Custom action page renderers keyed by `renderer` string |
+| `activePage` | `string` | Controlled active page key (for router integration) |
+| `onPageChange` | `(key: string) => void` | Called when the user navigates to a different page (required with `activePage`) |
+| `getPageUrl` | `(pageKey: string) => string` | Returns path for a page key; enables `<a href>` links in the sidebar |
+| `children` | `ReactNode` | Optional children rendered below the settings content |
+
+### Router integration
+
+Use `activePage`, `onPageChange`, and `getPageUrl` together for framework router integration:
+
+```tsx
+// Next.js App Router example
+function SettingsPage({ params }: { params: { page: string } }) {
+  const router = useRouter();
+
+  return (
+    <SetteraLayout
+      activePage={params.page}
+      onPageChange={(key) => router.push(`/settings/${key}`)}
+      getPageUrl={(key) => `/settings/${key}`}
+    />
+  );
+}
+```
+
+When `getPageUrl` is provided, sidebar links render as `<a href>` elements instead of buttons, enabling standard browser navigation (cmd-click, right-click menu, etc.).
+
+### SetteraBackToAppConfig
+
+```typescript
+interface SetteraBackToAppConfig {
+  label?: string;    // Link text (e.g. "Back to app")
+  href?: string;     // URL to navigate to
+  onClick?: () => void;  // Click handler (use instead of href for SPA navigation)
+}
+```
+
+### Custom component prop types
+
+**SetteraCustomPageProps** — passed to components registered in `customPages`:
+
+```typescript
+interface SetteraCustomPageProps {
+  page: PageDefinition;  // The page definition from the schema
+  pageKey: string;       // The page's key
+}
+```
+
+**SetteraCustomSettingProps** — passed to components registered in `customSettings`:
+
+```typescript
+interface SetteraCustomSettingProps {
+  settingKey: string;        // The setting's key
+  definition: CustomSetting; // The setting definition from the schema
+}
+```
+
+**SetteraActionPageProps** — passed to components registered in `customActionPages`:
+
+```typescript
+interface SetteraActionPageProps {
+  settingKey: string;         // The setting's key
+  definition: ActionSetting;  // The action definition from the schema
+  onBack: () => void;         // Close the action page and return to settings
+}
+```

@@ -50,6 +50,12 @@ export interface SetteraLayoutProps {
   activeSettingQueryParam?: string;
   hideFooterHints?: boolean;
   labels?: SetteraLabels;
+  /** Controlled active page key from the consumer's router. */
+  activePage?: string;
+  /** Called when the user navigates to a different page (controlled mode). */
+  onPageChange?: (key: string) => void;
+  /** Returns path for a page key; enables `<a href>` in sidebar and path-based deep links. */
+  getPageUrl?: (pageKey: string) => string;
 }
 
 interface BreadcrumbItem {
@@ -92,7 +98,11 @@ function usePrefersReducedMotion(): boolean {
 
 export function SetteraLayout(props: SetteraLayoutProps) {
   return (
-    <SetteraNavigationProvider>
+    <SetteraNavigationProvider
+      activePage={props.activePage}
+      onPageChange={props.onPageChange}
+      getPageUrl={props.getPageUrl}
+    >
       <SidebarProvider
         className="h-svh overflow-hidden"
         style={
@@ -139,6 +149,7 @@ function SetteraLayoutInner({
     subpage,
     openSubpage,
     closeSubpage,
+    getPageUrl,
   } = useSetteraNavigation();
 
   const { isMobile } = useSidebar();
@@ -180,6 +191,7 @@ function SetteraLayoutInner({
     setPendingScrollKey,
     subpage,
     openSubpage,
+    getPageUrl,
   });
 
   const resolvedMobileTitle =
@@ -191,6 +203,8 @@ function SetteraLayoutInner({
     }
     return value.replace(/["\\]/g, "\\$&");
   }, []);
+  const previousPageRef = useRef(activePage);
+  const previousSectionRef = useRef<string | null>(activeSection);
 
   useEffect(() => {
     if (subpage) return;
@@ -198,27 +212,50 @@ function SetteraLayoutInner({
     if (!main) return;
 
     if (!activeSection) {
-      if (typeof main.scrollTo === "function") {
-        main.scrollTo({
-          top: 0,
-          behavior: prefersReducedMotion ? "instant" : "smooth",
-        });
-      } else {
-        main.scrollTop = 0;
+      // Only force top-scroll when a section on this same page was just cleared,
+      // not on initial mount (where URL sync may be about to set a section).
+      const didClearSectionOnSamePage =
+        previousPageRef.current === activePage &&
+        previousSectionRef.current !== null;
+      if (didClearSectionOnSamePage) {
+        if (typeof main.scrollTo === "function") {
+          main.scrollTo({
+            top: 0,
+            behavior: prefersReducedMotion ? "instant" : "smooth",
+          });
+        } else {
+          main.scrollTop = 0;
+        }
       }
+      previousPageRef.current = activePage;
+      previousSectionRef.current = activeSection;
       return;
     }
 
-    const section = main.querySelector(
-      `[data-settera-page-key="${escapeSelectorValue(activePage)}"][data-settera-section-key="${escapeSelectorValue(activeSection)}"]`,
-    );
-    if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
-      return;
+    const selector = `[data-settera-page-key="${escapeSelectorValue(activePage)}"][data-settera-section-key="${escapeSelectorValue(activeSection)}"]`;
+
+    const scrollToSection = () => {
+      const section = main.querySelector(selector);
+      if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
+        return false;
+      }
+      (section as HTMLElement).scrollIntoView({
+        behavior: prefersReducedMotion ? "instant" : "smooth",
+        block: "start",
+      });
+      previousPageRef.current = activePage;
+      previousSectionRef.current = activeSection;
+      return true;
+    };
+
+    // The section element may not exist yet if the page changed in the same
+    // render cycle.  Try immediately, then retry after the browser paints.
+    if (!scrollToSection()) {
+      const raf = requestAnimationFrame(() => {
+        scrollToSection();
+      });
+      return () => cancelAnimationFrame(raf);
     }
-    (section as HTMLElement).scrollIntoView({
-      behavior: prefersReducedMotion ? "instant" : "smooth",
-      block: "start",
-    });
   }, [activePage, activeSection, subpage, mainRef, prefersReducedMotion, escapeSelectorValue]);
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {

@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { token } from "@settera/schema";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { PrimitiveButton, PrimitiveInput } from "./SetteraPrimitives.js";
 
@@ -14,14 +15,14 @@ const kbdStyle: React.CSSProperties = {
   minWidth: "20px",
   pointerEvents: "none",
   userSelect: "none",
-  fontSize: "var(--settera-kbd-font-size, 12px)",
+  fontSize: token("kbd-font-size"),
   fontFamily: "inherit",
   fontWeight: 500,
   lineHeight: 1,
-  color: "var(--settera-kbd-color, var(--settera-muted-foreground, #9ca3af))",
-  backgroundColor: "var(--settera-kbd-bg, var(--settera-muted, #f4f4f5))",
+  color: token("kbd-color"),
+  backgroundColor: token("kbd-bg"),
   border: "none",
-  borderRadius: "var(--settera-kbd-border-radius, 4px)",
+  borderRadius: token("kbd-border-radius"),
   padding: "0 4px",
 };
 
@@ -57,7 +58,7 @@ export function SetteraSearch() {
   return (
     <div
       style={{
-        margin: "var(--settera-search-margin, 0 0 4px 0)",
+        margin: token("search-margin"),
         position: "relative",
       }}
     >
@@ -74,15 +75,12 @@ export function SetteraSearch() {
         focusVisible={isFocused}
         style={{
           width: "100%",
-          padding: "var(--settera-search-input-padding, 8px 10px)",
-          border:
-            "var(--settera-search-border, 1px solid var(--settera-input, #e4e4e7))",
-          borderRadius: "var(--settera-search-border-radius, 8px)",
-          fontSize: "var(--settera-search-font-size, 13px)",
-          backgroundColor:
-            "var(--settera-search-bg, var(--settera-sidebar-input-bg, transparent))",
-          color:
-            "var(--settera-search-color, var(--settera-sidebar-foreground, #3f3f46))",
+          padding: token("search-input-padding"),
+          border: token("search-border"),
+          borderRadius: token("search-border-radius"),
+          fontSize: token("search-font-size"),
+          backgroundColor: token("search-bg"),
+          color: token("search-color"),
           fontFamily: "inherit",
           boxSizing: "border-box",
         }}
@@ -110,8 +108,7 @@ export function SetteraSearch() {
             minHeight: "18px",
             border: "none",
             backgroundColor: "transparent",
-            color:
-              "var(--settera-search-placeholder-color, var(--settera-sidebar-muted-foreground, #9ca3af))",
+            color: token("search-placeholder-color"),
           }}
         >
           ×

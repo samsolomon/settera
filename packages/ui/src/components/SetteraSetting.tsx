@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { SetteraSchemaContext, SetteraSettingErrorBoundary } from "@settera/react";
-import type { CustomSetting } from "@settera/schema";
+import { token, type CustomSetting } from "@settera/schema";
 import { SettingRow } from "./SettingRow.js";
 import { BooleanSwitch } from "./BooleanSwitch.js";
 import { TextInput } from "./TextInput.js";
@@ -91,8 +91,8 @@ export function SetteraSetting({
         <span
           data-testid={`missing-custom-setting-${settingKey}`}
           style={{
-            fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+            fontSize: token("description-font-size"),
+            color: token("description-color"),
             fontStyle: "italic",
           }}
         >
@@ -109,8 +109,8 @@ export function SetteraSetting({
         <span
           data-testid={`unsupported-${settingKey}`}
           style={{
-            fontSize: "var(--settera-description-font-size, 13px)",
-            color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+            fontSize: token("description-font-size"),
+            color: token("description-color"),
             fontStyle: "italic",
           }}
         >
@@ -129,8 +129,8 @@ export function SetteraSetting({
           <SettingRow settingKey={settingKey} isLast={isLast}>
             <span
               style={{
-                fontSize: "var(--settera-description-font-size, 13px)",
-                color: "var(--settera-error-color, #dc2626)",
+                fontSize: token("description-font-size"),
+                color: token("error-color"),
                 fontStyle: "italic",
               }}
             >

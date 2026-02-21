@@ -11,7 +11,7 @@ import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
 import { useRovingTabIndex } from "@settera/react";
 import type { PageDefinition, PageItem } from "@settera/schema";
-import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
+import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems, token } from "@settera/schema";
 import { SetteraSearch } from "./SetteraSearch.js";
 import { BackButton } from "./SetteraPrimitives.js";
 
@@ -63,6 +63,7 @@ export function SetteraSidebar({
     expandedGroups,
     toggleGroup,
     requestFocusContent,
+    getPageUrl,
   } = useSetteraNavigation();
   const { isSearching, matchingPageKeys, matchingSectionsByPage } = useSetteraSearch();
 
@@ -230,8 +231,8 @@ export function SetteraSidebar({
       itemCount: flatItems.length,
     });
 
-  // Ref map for button elements (keyed by flat index)
-  const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+  // Ref map for interactive elements (keyed by flat index)
+  const buttonRefs = useRef<Map<number, HTMLElement>>(new Map());
 
   const navRef = useRef<HTMLElement>(null);
 
@@ -382,9 +383,9 @@ export function SetteraSidebar({
     [toggleGroup, keyToIndex, setFocusedIndex, requestFocusContent],
   );
 
-  // Ref callback factory for storing button refs
+  // Ref callback factory for storing element refs
   const setButtonRef = useCallback(
-    (index: number, el: HTMLButtonElement | null) => {
+    (index: number, el: HTMLElement | null) => {
       if (el) {
         buttonRefs.current.set(index, el);
       } else {
@@ -402,23 +403,21 @@ export function SetteraSidebar({
       data-settera-nav
       onKeyDown={handleNavKeyDown}
       style={{
-        width: "var(--settera-sidebar-width, 280px)",
-        backgroundColor:
-          "var(--settera-sidebar-bg, var(--settera-sidebar-background, var(--settera-background, #fafafa)))",
-        borderRight:
-          "var(--settera-sidebar-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
-        fontSize: "var(--settera-sidebar-font-size, 14px)",
-        padding: "var(--settera-sidebar-padding, 12px)",
+        width: token("sidebar-width"),
+        backgroundColor: token("sidebar-bg"),
+        borderRight: token("sidebar-border"),
+        fontSize: token("sidebar-font-size"),
+        padding: token("sidebar-padding"),
         overflowY: "auto",
         display: "flex",
         flexDirection: "column",
-        gap: "var(--settera-sidebar-gap, 10px)",
+        gap: token("sidebar-gap"),
       }}
     >
       {backToApp && (
         <div
           style={{
-            marginBottom: "var(--settera-sidebar-back-margin-bottom, 0px)",
+            marginBottom: token("sidebar-back-margin-bottom"),
           }}
         >
           <BackButton
@@ -442,16 +441,15 @@ export function SetteraSidebar({
                   fontSize: "11px",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
-                  color:
-                    "var(--settera-sidebar-group-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
+                  color: token("sidebar-group-color"),
                   fontWeight: 600,
                   padding: "2px 8px",
-                  marginTop: idx === 0 ? undefined : "var(--settera-sidebar-group-spacing, 12px)",
+                  marginTop: idx === 0 ? undefined : token("sidebar-group-spacing"),
                 }}
               >
                 {item.label}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--settera-sidebar-item-list-gap, 2px)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: token("sidebar-item-list-gap") }}>
                 {item.pages.map((page) => (
                   <SidebarItem
                     key={page.key}
@@ -470,6 +468,7 @@ export function SetteraSidebar({
                     keyToIndex={keyToIndex}
                     getTabIndex={getTabIndex}
                     setButtonRef={setButtonRef}
+                    getPageUrl={getPageUrl}
                   />
                 ))}
               </div>
@@ -495,6 +494,7 @@ export function SetteraSidebar({
             keyToIndex={keyToIndex}
             getTabIndex={getTabIndex}
             setButtonRef={setButtonRef}
+            getPageUrl={getPageUrl}
           />
         );
       })}
@@ -510,9 +510,8 @@ const hintBarStyle: React.CSSProperties = {
   alignItems: "center",
   gap: "12px",
   padding: "8px 8px 4px",
-  fontSize: "var(--settera-kbd-font-size, 11px)",
-  color:
-    "var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #9ca3af))",
+  fontSize: token("kbd-font-size"),
+  color: token("sidebar-muted-foreground"),
 };
 
 const hintKbdStyle: React.CSSProperties = {
@@ -520,17 +519,14 @@ const hintKbdStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minWidth: "16px",
-  backgroundColor:
-    "var(--settera-kbd-bg, var(--settera-sidebar-accent, rgba(0, 0, 0, 0.05)))",
-  border:
-    "var(--settera-kbd-border, 1px solid var(--settera-sidebar-border-color, rgba(0, 0, 0, 0.08)))",
+  backgroundColor: token("kbd-bg"),
+  border: token("kbd-border"),
   borderRadius: "4px",
   padding: "1px 4px",
   fontSize: "inherit",
   fontFamily: "inherit",
   lineHeight: 1,
-  color:
-    "var(--settera-kbd-color, var(--settera-sidebar-muted-foreground, #9ca3af))",
+  color: token("kbd-color"),
 };
 
 function SidebarFooterHints() {
@@ -570,7 +566,8 @@ interface SidebarItemProps {
   onSectionClick: (pageKey: string, sectionKey: string) => void;
   keyToIndex: Map<string, number>;
   getTabIndex: (index: number) => 0 | -1;
-  setButtonRef: (index: number, el: HTMLButtonElement | null) => void;
+  setButtonRef: (index: number, el: HTMLElement | null) => void;
+  getPageUrl?: (pageKey: string) => string;
 }
 
 function SidebarItem({
@@ -589,6 +586,7 @@ function SidebarItem({
   keyToIndex,
   getTabIndex,
   setButtonRef,
+  getPageUrl,
 }: SidebarItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const flattened = isFlattenedPage(page);
@@ -596,6 +594,7 @@ function SidebarItem({
     ? activePage === resolvePageKey(page)
     : activePage === page.key;
   const hasChildren = !flattened && page.pages && page.pages.length > 0;
+  const hasSections = page.sections && page.sections.length > 0;
   // Auto-expand parents with matching children during search
   const isExpanded = isSearching
     ? hasChildren &&
@@ -622,101 +621,133 @@ function SidebarItem({
   // O(1) lookup via the key→index map instead of O(n) findIndex
   const flatIndex = keyToIndex.get(`page:${page.key}`) ?? -1;
 
+  // Compute href for navigable pages (not expand-only parents)
+  const isExpandOnly = hasChildren && !hasSections && !flattened;
+  const resolvedPageKey = flattened ? resolvePageKey(page) : page.key;
+  const href = getPageUrl && !isExpandOnly ? getPageUrl(resolvedPageKey) : undefined;
+
+  const handleItemClick = (e: React.MouseEvent) => {
+    // Modifier click on <a> — let browser handle (new tab)
+    if (href && (e.metaKey || e.ctrlKey)) return;
+    if (href) e.preventDefault();
+    if (depth === 0) {
+      onPageClick(page);
+    } else {
+      onChildClick(resolvedPageKey);
+    }
+  };
+
+  const itemStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: token("sidebar-item-gap"),
+    width: "100%",
+    minHeight: token("sidebar-item-height"),
+    padding: token("sidebar-item-padding"),
+    paddingLeft: `${paddingLeft}px`,
+    border: "none",
+    borderRadius: token("sidebar-item-radius"),
+    background: isActive
+      ? token("sidebar-active-bg")
+      : isHovered
+        ? token("sidebar-hover-bg")
+        : "transparent",
+    color: isActive
+      ? token("sidebar-active-color")
+      : token("sidebar-item-color"),
+    fontWeight: 500,
+    fontSize: "inherit",
+    textAlign: "left",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "background-color 120ms ease, color 120ms ease",
+    textDecoration: "none",
+  };
+
+  const itemContent = (
+    <>
+      {depth === 0 && page.icon && renderIcon && (
+        <span
+          aria-hidden="true"
+          style={{
+            width: "16px",
+            height: "16px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: token("sidebar-icon-color"),
+            flexShrink: 0,
+          }}
+        >
+          {renderIcon(page.icon)}
+        </span>
+      )}
+      {page.title}
+      {hasChildren && (
+        <svg
+          aria-hidden="true"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          style={{
+            marginLeft: "auto",
+            flexShrink: 0,
+            color: token("sidebar-chevron-color"),
+            transition: "transform 120ms ease",
+            transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+          }}
+        >
+          <path
+            d="M6 4l4 4-4 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </>
+  );
+
   return (
     <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined}>
-      <button
-        ref={(el) => setButtonRef(flatIndex, el)}
-        onClick={() =>
-          depth === 0
-            ? onPageClick(page)
-            : onChildClick(
-                isFlattenedPage(page) ? resolvePageKey(page) : page.key,
-              )
-        }
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        aria-current={isActive ? "page" : undefined}
-        tabIndex={getTabIndex(flatIndex)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--settera-sidebar-item-gap, 8px)",
-          width: "100%",
-          minHeight: "var(--settera-sidebar-item-height, 34px)",
-          padding: `var(--settera-sidebar-item-padding, 6px 8px)`,
-          paddingLeft: `${paddingLeft}px`,
-          border: "none",
-          borderRadius: "var(--settera-sidebar-item-radius, 8px)",
-          background: isActive
-            ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
-            : isHovered
-              ? "var(--settera-sidebar-hover-bg, var(--settera-sidebar-accent-hover, #f4f4f5))"
-              : "transparent",
-          color: isActive
-            ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, var(--settera-foreground, #18181b)))"
-            : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, var(--settera-foreground, #3f3f46)))",
-          fontWeight: 500,
-          fontSize: "inherit",
-          textAlign: "left",
-          cursor: "pointer",
-          fontFamily: "inherit",
-          transition: "background-color 120ms ease, color 120ms ease",
-        }}
-      >
-        {depth === 0 && page.icon && renderIcon && (
-          <span
-            aria-hidden="true"
-            style={{
-              width: "16px",
-              height: "16px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color:
-                "var(--settera-sidebar-icon-color, var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a)))",
-              flexShrink: 0,
-            }}
-          >
-            {renderIcon(page.icon)}
-          </span>
-        )}
-        {page.title}
-        {hasChildren && (
-          <svg
-            aria-hidden="true"
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            style={{
-              marginLeft: "auto",
-              flexShrink: 0,
-              color: "var(--settera-sidebar-chevron-color, #9ca3af)",
-              transition: "transform 120ms ease",
-              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
-            }}
-          >
-            <path
-              d="M6 4l4 4-4 4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
+      {href ? (
+        <a
+          href={href}
+          ref={(el) => setButtonRef(flatIndex, el)}
+          onClick={handleItemClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          aria-current={isActive ? "page" : undefined}
+          tabIndex={getTabIndex(flatIndex)}
+          style={itemStyle}
+        >
+          {itemContent}
+        </a>
+      ) : (
+        <button
+          ref={(el) => setButtonRef(flatIndex, el)}
+          onClick={handleItemClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          aria-current={isActive ? "page" : undefined}
+          tabIndex={getTabIndex(flatIndex)}
+          style={itemStyle}
+        >
+          {itemContent}
+        </button>
+      )}
       {hasChildren && isExpanded && (
         <div
           role="group"
           style={{
-            marginLeft: "var(--settera-sidebar-sub-margin, 16px)",
-            paddingLeft: "var(--settera-sidebar-sub-padding, 8px)",
-            borderLeft:
-              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
+            marginLeft: token("sidebar-sub-margin"),
+            paddingLeft: token("sidebar-sub-padding"),
+            borderLeft: token("sidebar-sub-border"),
             display: "flex",
             flexDirection: "column",
-            gap: "var(--settera-sidebar-sub-gap, 1px)",
+            gap: token("sidebar-sub-gap"),
             paddingTop: "2px",
             paddingBottom: "2px",
           }}
@@ -739,6 +770,7 @@ function SidebarItem({
               keyToIndex={keyToIndex}
               getTabIndex={getTabIndex}
               setButtonRef={setButtonRef}
+              getPageUrl={getPageUrl}
             />
           ))}
         </div>
@@ -748,13 +780,12 @@ function SidebarItem({
           role="group"
           aria-label={`${page.title} matching sections`}
           style={{
-            marginLeft: "var(--settera-sidebar-sub-margin, 16px)",
-            paddingLeft: "var(--settera-sidebar-sub-padding, 8px)",
-            borderLeft:
-              "var(--settera-sidebar-sub-border, 1px solid var(--settera-sidebar-border-color, var(--settera-border, #e4e4e7)))",
+            marginLeft: token("sidebar-sub-margin"),
+            paddingLeft: token("sidebar-sub-padding"),
+            borderLeft: token("sidebar-sub-border"),
             display: "flex",
             flexDirection: "column",
-            gap: "var(--settera-sidebar-sub-gap, 1px)",
+            gap: token("sidebar-sub-gap"),
             paddingTop: "2px",
             paddingBottom: "2px",
           }}
@@ -774,16 +805,16 @@ function SidebarItem({
                   display: "flex",
                   alignItems: "center",
                   width: "100%",
-                  minHeight: "var(--settera-sidebar-item-height, 34px)",
-                  padding: `var(--settera-sidebar-item-padding, 6px 8px)`,
+                  minHeight: token("sidebar-item-height"),
+                  padding: token("sidebar-item-padding"),
                   border: "none",
-                  borderRadius: "var(--settera-sidebar-item-radius, 8px)",
+                  borderRadius: token("sidebar-item-radius"),
                   background: sectionIsActive
-                    ? "var(--settera-sidebar-active-bg, var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5)))"
+                    ? token("sidebar-active-bg")
                     : "transparent",
                   color: sectionIsActive
-                    ? "var(--settera-sidebar-active-color, var(--settera-sidebar-accent-foreground, var(--settera-foreground, #18181b)))"
-                    : "var(--settera-sidebar-item-color, var(--settera-sidebar-foreground, var(--settera-foreground, #3f3f46)))",
+                    ? token("sidebar-active-color")
+                    : token("sidebar-item-color"),
                   fontWeight: sectionIsActive ? 600 : 500,
                   fontSize: "inherit",
                   textAlign: "left",

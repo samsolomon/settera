@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useSetteraSetting, useCompoundDraft, useSaveAndClose } from "@settera/react";
-import type { CompoundFieldDefinition } from "@settera/schema";
+import { token, type CompoundFieldDefinition } from "@settera/schema";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import {
   PrimitiveButton,
@@ -98,7 +98,7 @@ function CompoundInline({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "var(--settera-compound-gap, 10px)",
+        gap: token("compound-gap"),
       }}
     >
       <CompoundFields
@@ -187,7 +187,7 @@ function CompoundModal({
       style={{ display: "flex", alignItems: "center", gap: "12px" }}
     >
       {valueSummary && (
-        <span style={{ fontSize: "14px", color: "var(--settera-muted-foreground, #6b7280)" }}>
+        <span style={{ fontSize: "14px", color: token("muted-foreground") }}>
           {valueSummary}
         </span>
       )}
@@ -198,7 +198,7 @@ function CompoundModal({
             disabled={isDisabled}
             style={{
               cursor: isDisabled ? "not-allowed" : "pointer",
-              opacity: isDisabled ? "var(--settera-disabled-opacity, 0.5)" : undefined,
+              opacity: isDisabled ? token("disabled-opacity") : undefined,
             }}
           >
             {definition.buttonLabel ?? `Edit ${definition.title}`}
@@ -209,9 +209,8 @@ function CompoundModal({
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor:
-                "var(--settera-overlay-bg, rgba(0, 0, 0, 0.5))",
-              zIndex: "var(--settera-z-overlay, 1000)" as unknown as number,
+              backgroundColor: token("overlay-bg"),
+              zIndex: token("z-overlay") as unknown as number,
             }}
           />
           <Dialog.Content
@@ -223,15 +222,13 @@ function CompoundModal({
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              backgroundColor:
-                "var(--settera-dialog-bg, var(--settera-popover, white))",
-              borderRadius: "var(--settera-dialog-border-radius, 8px)",
-              padding: "var(--settera-dialog-padding, 16px)",
-              maxWidth: "var(--settera-dialog-max-width, 640px)",
+              backgroundColor: token("dialog-bg"),
+              borderRadius: token("dialog-border-radius"),
+              padding: token("dialog-padding"),
+              maxWidth: token("dialog-max-width"),
               width: "calc(100% - 24px)",
-              boxShadow:
-                "var(--settera-dialog-shadow, 0 20px 60px rgba(0, 0, 0, 0.15))",
-              zIndex: "var(--settera-z-dialog, 1001)" as unknown as number,
+              boxShadow: token("dialog-shadow"),
+              zIndex: token("z-dialog") as unknown as number,
             }}
           >
             <Dialog.Title
@@ -239,8 +236,7 @@ function CompoundModal({
                 margin: "0 0 12px 0",
                 fontSize: "16px",
                 fontWeight: 600,
-                color:
-                  "var(--settera-title-color, var(--settera-foreground, #111827))",
+                color: token("title-color"),
               }}
             >
               {definition.title}
@@ -249,8 +245,7 @@ function CompoundModal({
               style={{
                 margin: "0 0 12px 0",
                 fontSize: "13px",
-                color:
-                  "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+                color: token("description-color"),
               }}
             >
               {definition.description ?? `Edit ${definition.title}.`}
@@ -285,10 +280,8 @@ function CompoundModal({
                 onClick={handleSave}
                 disabled={isBusy}
                 style={{
-                  backgroundColor:
-                    "var(--settera-button-primary-bg, var(--settera-primary, #2563eb))",
-                  color:
-                    "var(--settera-button-primary-color, var(--settera-primary-foreground, white))",
+                  backgroundColor: token("button-primary-bg"),
+                  color: token("button-primary-color"),
                   cursor: isBusy ? "not-allowed" : "pointer",
                 }}
               >

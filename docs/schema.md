@@ -46,6 +46,85 @@ const schema: SetteraSchema = {
 };
 ```
 
+### Meta
+
+The optional `meta` object provides application-level metadata:
+
+```typescript
+meta?: {
+  title?: string;        // Application-level title (e.g. "Settings")
+  description?: string;  // Application-level description
+}
+```
+
+### Page properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `key` | `string` | Unique page identifier |
+| `title` | `string` | Sidebar display title |
+| `description` | `string?` | Displayed below the page title in the content area |
+| `icon` | `string?` | Icon identifier (rendered via `SetteraLayout.renderIcon`) |
+| `sections` | `SectionDefinition[]?` | Content sections |
+| `pages` | `PageDefinition[]?` | Nested child pages (sub-items in sidebar) |
+| `mode` | `"settings" \| "custom"?` | `"custom"` for app-provided page renderers (default: `"settings"`) |
+| `renderer` | `string?` | Required when `mode` is `"custom"`; references a key in `customPages` |
+
+### Page groups
+
+The top-level `pages` array accepts both flat pages and labeled groups. The type is `PageItem[]`, where `PageItem = PageDefinition | PageGroup`.
+
+```typescript
+interface PageGroup {
+  label: string;           // Group heading in the sidebar
+  pages: PageDefinition[]; // Pages within this group
+}
+```
+
+Mix flat pages and groups in the same schema:
+
+```typescript
+const schema: SetteraSchema = {
+  version: "1.0",
+  pages: [
+    { key: "general", title: "General", icon: "settings", sections: [/* ... */] },
+    {
+      label: "Workspace",
+      pages: [
+        { key: "members", title: "Members", icon: "users", sections: [/* ... */] },
+        { key: "billing", title: "Billing", icon: "credit-card", sections: [/* ... */] },
+      ],
+    },
+    { key: "advanced", title: "Advanced", icon: "code", sections: [/* ... */] },
+  ],
+};
+```
+
+Groups render as labeled sections in the sidebar. Nested child `pages` within a page definition appear as indented sub-items under their parent, separate from top-level groups.
+
+### Section properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `key` | `string` | Unique key within the page |
+| `title` | `string` | Section heading |
+| `description` | `string?` | Optional description below heading |
+| `collapsible` | `boolean?` | Whether the section can be collapsed |
+| `defaultCollapsed` | `boolean?` | Start collapsed (requires `collapsible`) |
+| `visibleWhen` | `VisibilityRule \| VisibilityRule[]?` | Conditional visibility |
+| `settings` | `SettingDefinition[]?` | Settings in this section |
+| `subsections` | `SubsectionDefinition[]?` | Nested subsections (one level deep) |
+
+### Subsection properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `key` | `string` | Unique key within the section |
+| `title` | `string` | Subsection heading |
+| `description` | `string?` | Optional description |
+| `visibleWhen` | `VisibilityRule \| VisibilityRule[]?` | Conditional visibility |
+| `settings` | `SettingDefinition[]` | Settings in this subsection |
+
 ## Setting Types
 
 | Type | Description | Apply behavior |
@@ -79,7 +158,11 @@ Every setting type supports these properties:
 }
 ```
 
-Text, number, and date settings also support `readonly?: boolean`, which shows the value but prevents editing (the user can still select and copy text).
+Text, number, and date settings also support:
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `readonly` | `boolean?` | Shows the value but prevents editing (the user can still select and copy text) |
 
 ### ConfirmConfig
 
@@ -388,6 +471,19 @@ A multi-field group with scoped Save/Cancel. Groups related fields into a single
 ```
 
 The stored value is a `Record<string, unknown>` keyed by field keys. Field keys must not contain dots. Fields support text, number, select, multiselect, date, and boolean types.
+
+### Button label
+
+Modal and page compounds show a trigger button. Override the default label with `buttonLabel`:
+
+```typescript
+{
+  type: "compound",
+  displayStyle: "modal",
+  buttonLabel: "Configure contact",  // default: "Edit {title}" for modal, "Open {title}" for page
+  // ...
+}
+```
 
 ### Cross-field validation
 

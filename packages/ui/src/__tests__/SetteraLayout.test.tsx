@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, act, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settera } from "@settera/react";
 import { SetteraLayout } from "../components/SetteraLayout.js";
+import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 import type { SetteraCustomPageProps } from "../components/SetteraPage.js";
 import type { SetteraCustomSettingProps } from "../components/SetteraSetting.js";
 import type { SetteraSchema } from "@settera/schema";
@@ -128,6 +129,9 @@ function renderLayout(
       href?: string;
       onClick?: () => void;
     };
+    activePage?: string;
+    onPageChange?: (key: string) => void;
+    getPageUrl?: (pageKey: string) => string;
   } = {},
   customSchema: SetteraSchema = schema,
 ) {
@@ -452,6 +456,70 @@ describe("SetteraLayout", () => {
       const params = new URL(window.location.href).searchParams;
       expect(params.get("setteraPage")).toBe("general");
       expect(params.get("section")).toBeNull();
+    });
+  });
+
+  describe("controlled navigation with getPageUrl", () => {
+    const getPageUrl = (key: string) => `/settings/${key}`;
+
+    // Helper component that reads deep link context and displays URLs
+    function DeepLinkProbe() {
+      const ctx = useContext(SetteraDeepLinkContext);
+      if (!ctx) return <div data-testid="probe">no-context</div>;
+      return (
+        <div data-testid="probe">
+          <span data-testid="setting-url">
+            {ctx.getSettingUrl("autoSave")}
+          </span>
+          <span data-testid="section-url">
+            {ctx.getSectionUrl("general", "behavior")}
+          </span>
+        </div>
+      );
+    }
+
+    it("renders controlled page content based on activePage prop", () => {
+      renderLayout({
+        activePage: "advanced",
+        onPageChange: () => {},
+        getPageUrl,
+      });
+      expect(screen.getByText("Experimental")).toBeDefined();
+      expect(screen.getByText("Debug Mode")).toBeDefined();
+    });
+
+    it("builds path-based setting URLs when getPageUrl is provided", () => {
+      renderLayout({
+        activePage: "general",
+        onPageChange: () => {},
+        getPageUrl,
+        children: <DeepLinkProbe />,
+      });
+      const settingUrl = screen.getByTestId("setting-url").textContent!;
+      // Should use getPageUrl base path, not query-param based
+      expect(settingUrl).toBe("/settings/general?setting=autoSave");
+    });
+
+    it("builds path-based section URLs when getPageUrl is provided", () => {
+      renderLayout({
+        activePage: "general",
+        onPageChange: () => {},
+        getPageUrl,
+        children: <DeepLinkProbe />,
+      });
+      const sectionUrl = screen.getByTestId("section-url").textContent!;
+      expect(sectionUrl).toBe("/settings/general?section=behavior");
+    });
+
+    it("does not sync page to URL query params when getPageUrl is provided", () => {
+      renderLayout({
+        activePage: "advanced",
+        onPageChange: () => {},
+        getPageUrl,
+      });
+      const params = new URL(window.location.href).searchParams;
+      // Page should NOT be in query params — consumer handles routing
+      expect(params.get("setteraPage")).toBeNull();
     });
   });
 });

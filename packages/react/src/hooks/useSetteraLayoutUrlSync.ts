@@ -37,6 +37,9 @@ export interface UseSetteraLayoutUrlSyncOptions {
   setPendingScrollKey: (key: string | null) => void;
   subpage: SubpageState | null;
   openSubpage: (settingKey: string) => void;
+  /** When provided, page navigation is consumer-controlled (router integration).
+   *  Page-level URL sync is skipped; deep link URLs use this as the base path. */
+  getPageUrl?: (pageKey: string) => string;
 }
 
 const SUBPAGE_QUERY_PARAM = "subpage";
@@ -56,6 +59,7 @@ export function useSetteraLayoutUrlSync({
   setPendingScrollKey,
   subpage,
   openSubpage,
+  getPageUrl,
 }: UseSetteraLayoutUrlSyncOptions) {
   const didInitUrlSyncRef = useRef(false);
   const initialSettingKeyRef = useRef<string | null | undefined>(undefined);
@@ -83,18 +87,23 @@ export function useSetteraLayoutUrlSync({
     if (!didInitUrlSyncRef.current) return;
 
     const url = new URL(window.location.href);
-    const fromUrl = url.searchParams.get(activePageQueryParam);
-    const sectionFromUrl = url.searchParams.get(activeSectionQueryParam);
     let changed = false;
-    const pageChanged = fromUrl !== activePage;
+    let pageChanged = false;
 
-    if (pageChanged) {
-      url.searchParams.set(activePageQueryParam, activePage);
-      // Clear stale setting param when page changes via navigation
-      url.searchParams.delete(activeSettingQueryParam);
-      changed = true;
+    // Only sync page to URL query params when not in controlled mode
+    if (!getPageUrl) {
+      const fromUrl = url.searchParams.get(activePageQueryParam);
+      pageChanged = fromUrl !== activePage;
+
+      if (pageChanged) {
+        url.searchParams.set(activePageQueryParam, activePage);
+        // Clear stale setting param when page changes via navigation
+        url.searchParams.delete(activeSettingQueryParam);
+        changed = true;
+      }
     }
 
+    const sectionFromUrl = url.searchParams.get(activeSectionQueryParam);
     if (activeSection) {
       if (sectionFromUrl !== activeSection) {
         url.searchParams.set(activeSectionQueryParam, activeSection);
@@ -121,6 +130,7 @@ export function useSetteraLayoutUrlSync({
     activeSettingQueryParam,
     syncActivePageWithUrl,
     validPageKeys,
+    getPageUrl,
   ]);
 
   useEffect(() => {
@@ -129,11 +139,16 @@ export function useSetteraLayoutUrlSync({
 
     const readFromUrl = () => {
       const url = new URL(window.location.href);
-      const pageKey = url.searchParams.get(activePageQueryParam);
-      const sectionKey = url.searchParams.get(activeSectionQueryParam);
-      if (pageKey && validPageKeys.has(pageKey) && pageKey !== activePage) {
-        setActivePage(pageKey);
+
+      // Only read page from URL query params when not in controlled mode
+      if (!getPageUrl) {
+        const pageKey = url.searchParams.get(activePageQueryParam);
+        if (pageKey && validPageKeys.has(pageKey) && pageKey !== activePage) {
+          setActivePage(pageKey);
+        }
       }
+
+      const sectionKey = url.searchParams.get(activeSectionQueryParam);
       if (sectionKey !== activeSection) {
         setActiveSection(sectionKey);
       }
@@ -152,6 +167,7 @@ export function useSetteraLayoutUrlSync({
     setActiveSection,
     syncActivePageWithUrl,
     validPageKeys,
+    getPageUrl,
   ]);
 
   // Read setting param from URL on mount and popstate.
@@ -267,11 +283,18 @@ export function useSetteraLayoutUrlSync({
       if (!syncActivePageWithUrl) return null;
       return {
         getSettingUrl: (settingKey: string) => {
-          const url = new URL(window.location.href);
-          // Look up the setting's page
           const flat = schemaCtx?.flatSettings.find(
             (f) => f.definition.key === settingKey,
           );
+
+          if (getPageUrl) {
+            const basePath = flat ? getPageUrl(flat.pageKey) : window.location.pathname;
+            const params = new URLSearchParams();
+            params.set(activeSettingQueryParam, settingKey);
+            return `${basePath}?${params.toString()}`;
+          }
+
+          const url = new URL(window.location.href);
           if (flat) {
             url.searchParams.set(activePageQueryParam, flat.pageKey);
           }
@@ -279,6 +302,13 @@ export function useSetteraLayoutUrlSync({
           return url.toString();
         },
         getSectionUrl: (pageKey: string, sectionKey: string) => {
+          if (getPageUrl) {
+            const basePath = getPageUrl(pageKey);
+            const params = new URLSearchParams();
+            params.set(activeSectionQueryParam, sectionKey);
+            return `${basePath}?${params.toString()}`;
+          }
+
           const url = new URL(window.location.href);
           url.searchParams.set(activePageQueryParam, pageKey);
           url.searchParams.set(activeSectionQueryParam, sectionKey);
@@ -292,6 +322,7 @@ export function useSetteraLayoutUrlSync({
       activePageQueryParam,
       activeSectionQueryParam,
       activeSettingQueryParam,
+      getPageUrl,
     ]);
 
   return {
