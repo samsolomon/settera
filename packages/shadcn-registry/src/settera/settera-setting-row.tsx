@@ -101,11 +101,11 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
     >
       <div
         className={cn(
-          "flex justify-between items-start py-3",
+          "flex flex-col gap-2 py-3 md:flex-row md:justify-between md:items-start md:gap-0",
           !isLast && "border-b",
         )}
       >
-        <div className="flex-1 mr-4">
+        <div className="flex-1 md:mr-4">
           <div className="flex items-center gap-1.5 min-h-[24px]">
             <span
               className={cn(
@@ -179,12 +179,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
               {parseDescriptionLinks(definition.description)}
             </div>
           )}
-          {"helpText" in definition && definition.helpText && (
-            <div className="mt-1 text-xs text-muted-foreground/70">
-              {"ⓘ "}
-              {parseDescriptionLinks(definition.helpText)}
-            </div>
-          )}
+
           {error && (
             <div
               role="alert"
@@ -195,7 +190,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
             </div>
           )}
         </div>
-        <div className="pt-0.5">{children}</div>
+        <div className="md:pt-0.5">{children}</div>
       </div>
     </div>
   );

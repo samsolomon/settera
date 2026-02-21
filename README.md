@@ -101,7 +101,6 @@ Every setting type supports these properties:
   key: string;           // Globally unique identifier (e.g. "general.autoSave")
   title: string;         // Display label
   description?: string;  // Shown below the title
-  helpText?: string;     // Expandable help block below the description
   dangerous?: boolean;   // Renders the title in a warning style
   disabled?: boolean;    // Prevents interaction, grays out the control
   badge?: string;        // Short label displayed next to the setting title
@@ -122,7 +121,6 @@ A toggle switch. Changes apply instantly.
   key: "general.autoSave",
   title: "Auto Save",
   description: "Automatically save changes when you leave a field.",
-  helpText: "Changes are saved to local storage automatically.",
   type: "boolean",
   default: true,
 }

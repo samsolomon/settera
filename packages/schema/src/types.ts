@@ -127,7 +127,6 @@ export interface BaseSettingFields {
   key: string;
   title: string;
   description?: string;
-  helpText?: string;
   dangerous?: boolean;
   disabled?: boolean;
   badge?: string;

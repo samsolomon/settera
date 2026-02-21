@@ -246,18 +246,7 @@ export function SettingRow({ settingKey, isLast, children }: SettingRowProps) {
               {parseDescriptionLinks(definition.description)}
             </div>
           )}
-          {"helpText" in definition && definition.helpText && (
-            <div
-              style={{
-                fontSize: "var(--settera-help-font-size, 12px)",
-                color: "var(--settera-help-color, var(--settera-muted-foreground, #9ca3af))",
-                marginTop: "4px",
-              }}
-            >
-              {"ⓘ "}
-              {parseDescriptionLinks(definition.helpText)}
-            </div>
-          )}
+
           {error && (
             <div
               role="alert"
