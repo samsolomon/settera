@@ -93,3 +93,4 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - React 18+ (peer dep allows 18 or 19)
 - **Dev-only code**: Use `process.env.NODE_ENV !== "production"` directly — not `globalThis` indirection — so bundlers can tree-shake. Ambient types are declared in `packages/react/src/env.d.ts` and `packages/ui/src/env.d.ts`.
 - **Sentence case**: All user-facing labels (page titles, section titles, setting titles) use sentence case — capitalize only the first word and proper nouns.
+- **Keep CLAUDE.md in sync**: When changing public API surfaces — exported types, callback signatures, theme tokens (`--settera-*`), store behavior, or navigation architecture — update the relevant section of this file to match.
