@@ -15,6 +15,7 @@ import type { PageDefinition, PageItem } from "@settera/schema";
 import { isFlattenedPage, resolvePageKey, isPageGroup, flattenPageItems } from "@settera/schema";
 import { SetteraSearch } from "./settera-search";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import {
   Collapsible,
   CollapsibleContent,
@@ -526,21 +527,15 @@ export function SetteraSidebar({
             className="flex items-center gap-3 px-2 text-[11px] text-muted-foreground"
           >
             <span className="inline-flex items-center gap-1">
-              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
-                /
-              </kbd>
+              <Kbd>/</Kbd>
               Search
             </span>
             <span className="inline-flex items-center gap-1">
-              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
-                ↑↓
-              </kbd>
+              <Kbd>↑↓</Kbd>
               Navigate
             </span>
             <span className="inline-flex items-center gap-1">
-              <kbd className="inline-flex items-center justify-center min-w-[16px] rounded bg-muted border border-border px-1 text-[11px] leading-none">
-                Esc
-              </kbd>
+              <Kbd>Esc</Kbd>
               Back
             </span>
           </div>
