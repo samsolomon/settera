@@ -237,7 +237,7 @@ function FieldControlText({
             size="icon-xs"
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="text-muted-foreground shadow-none"
+            className="cursor-pointer text-muted-foreground shadow-none hover:bg-foreground/5"
           >
             {showPassword ? (
               <EyeOffIcon className="size-4" />

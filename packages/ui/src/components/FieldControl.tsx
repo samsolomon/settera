@@ -153,6 +153,11 @@ export function FieldControl({
 
 // --- Internal leaf components ---
 
+const eyeIconPath =
+  "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z";
+const eyeOffIconPath =
+  "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94 M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19 M1 1l22 22";
+
 function FieldControlText({
   field,
   value,
@@ -186,6 +191,87 @@ function FieldControlText({
   );
 
   const { inputProps, isFocused } = useBufferedInput(committed, onCommit);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isPassword = field.inputType === "password";
+
+  if (isPassword) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          border: inputStyle.border,
+          borderRadius: inputStyle.borderRadius ?? token("input-border-radius"),
+          backgroundColor: inputStyle.backgroundColor ?? token("input-bg"),
+          width: inputStyle.width,
+          boxShadow: showFocusRing && isFocused
+            ? `0 0 0 2px ${token("focus-ring-color")}`
+            : "none",
+        }}
+      >
+        <PrimitiveInput
+          id={fieldId}
+          aria-label={ariaLabel}
+          type={showPassword ? "text" : "password"}
+          {...inputProps}
+          disabled={disabled}
+          readOnly={readOnly}
+          focusVisible={false}
+          style={{
+            ...inputStyle,
+            border: "none",
+            borderRadius: 0,
+            boxShadow: "none",
+            width: "100%",
+            backgroundColor: "transparent",
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 28,
+            height: 28,
+            border: "none",
+            borderRadius: token("input-border-radius"),
+            background: isHovered
+              ? token("sidebar-item-hover-bg")
+              : "transparent",
+            cursor: "pointer",
+            marginRight: 4,
+            color: token("description-color"),
+            flexShrink: 0,
+            transition: "background-color 120ms ease",
+          }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            {showPassword ? (
+              <path d={eyeOffIconPath} />
+            ) : (
+              <path d={eyeIconPath} />
+            )}
+          </svg>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <PrimitiveInput

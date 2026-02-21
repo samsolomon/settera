@@ -105,6 +105,26 @@ export const demoSchema: SetteraSchema = {
           ],
         },
         {
+          key: "locale",
+          title: "Locale",
+          settings: [
+            {
+              key: "profile.language",
+              title: "Language",
+              description: "Choose the display language for the settings UI.",
+              type: "select",
+              options: [
+                { value: "en", label: "English" },
+                { value: "es", label: "Español" },
+                { value: "fr", label: "Français" },
+                { value: "de", label: "Deutsch" },
+                { value: "ja", label: "日本語" },
+              ],
+              default: "en",
+            },
+          ],
+        },
+        {
           key: "time",
           title: "Time preferences",
           description: "Manage your time preferences.",
