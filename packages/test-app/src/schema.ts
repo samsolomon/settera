@@ -209,8 +209,8 @@ export const demoSchema: SetteraSchema = {
               validation: { required: true },
             },
             {
-              key: "appearance.accentColor",
-              title: "Accent color",
+              key: "appearance.theme",
+              title: "Theme",
               description:
                 "The primary color used for buttons, links, and highlights.",
               type: "select",
@@ -223,6 +223,7 @@ export const demoSchema: SetteraSchema = {
                 { value: "neutral", label: "Neutral" },
               ],
               default: "blue",
+              validation: { required: true },
             },
           ],
         },
