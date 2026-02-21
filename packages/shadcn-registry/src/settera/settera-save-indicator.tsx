@@ -15,7 +15,7 @@ export function SetteraSaveIndicator({ saveStatus }: SetteraSaveIndicatorProps) 
   }
 
   if (saveStatus === "saved") {
-    return <CheckIcon className="size-3.5 text-green-600" />;
+    return <CheckIcon className="size-3.5" style={{ color: "var(--settera-success-color, #16a34a)" }} />;
   }
 
   return null;

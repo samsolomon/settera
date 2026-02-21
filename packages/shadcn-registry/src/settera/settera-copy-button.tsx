@@ -29,7 +29,11 @@ export function SetteraCopyButton({ value, label }: SetteraCopyButtonProps) {
       aria-label={`Copy ${label ?? "value"}`}
       className="text-muted-foreground shadow-none"
     >
-      {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+      {copied ? (
+        <CheckIcon className="size-4" style={{ color: "var(--settera-success-color, #16a34a)" }} />
+      ) : (
+        <CopyIcon className="size-4" />
+      )}
     </Button>
   );
 }

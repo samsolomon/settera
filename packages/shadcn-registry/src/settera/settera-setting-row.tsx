@@ -129,7 +129,7 @@ export function SetteraSettingRow({ settingKey, isLast, children }: SetteraSetti
                     onClick={handleCopyLink}
                   >
                 {copyFeedback ? (
-                  <CheckIcon className="size-4 text-green-600" />
+                  <CheckIcon className="size-4" style={{ color: "var(--settera-success-color, #16a34a)" }} />
                 ) : (
                   <LinkIcon className="size-4" />
                 )}
