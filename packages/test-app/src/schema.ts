@@ -456,6 +456,14 @@ export const demoSchema: SetteraSchema = {
           ],
         },
         {
+          key: "users",
+          title: "Users",
+          description: "Manage team members who can access this workspace.",
+          icon: "users",
+          mode: "custom",
+          renderer: "usersPage",
+        },
+        {
           key: "security",
           title: "Security",
           icon: "shield",
@@ -1062,14 +1070,6 @@ export const demoSchema: SetteraSchema = {
           ],
         },
       ],
-    },
-    {
-      key: "users",
-      title: "Users",
-      description: "Manage team members who can access this workspace.",
-      icon: "users",
-      mode: "custom",
-      renderer: "usersPage",
     },
   ],
 };
