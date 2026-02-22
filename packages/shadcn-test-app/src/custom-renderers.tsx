@@ -4,8 +4,8 @@ import type { CustomSetting } from "@settera/schema";
 import type { SetteraCustomPageProps } from "@/components/settera/settera-page";
 import type { SetteraCustomSettingProps } from "@/components/settera/settera-setting";
 import type { SetteraActionPageProps } from "@/components/settera/settera-subpage-content";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { UsersTable } from "@/components/users-table/users-table";
 import {
   Select,
   SelectContent,
@@ -31,95 +31,10 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 
-const demoUsers = [
-  {
-    initials: "AU",
-    name: "Admin User",
-    email: "admin@feedback-notes.com",
-    role: "Admin",
-    created: "Feb 13, 2026",
-  },
-  {
-    initials: "JT",
-    name: "Jake Torres",
-    email: "jake@feedback-notes.com",
-    role: "Member",
-    created: "Feb 13, 2026",
-  },
-  {
-    initials: "MC",
-    name: "Maria Chen",
-    email: "maria@feedback-notes.com",
-    role: "Member",
-    created: "Feb 13, 2026",
-  },
-  {
-    initials: "RU",
-    name: "Review User",
-    email: "reviewer@feedback-notes.com",
-    role: "Member",
-    created: "Feb 13, 2026",
-  },
-  {
-    initials: "SS",
-    name: "Sam Solomon",
-    email: "sam@feedback-notes.com",
-    role: "Admin",
-    created: "Feb 13, 2026",
-  },
-];
-
-export function UsersPage({ page }: SetteraCustomPageProps) {
+export function UsersPage(_props: SetteraCustomPageProps) {
   return (
     <section className="mt-4">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2.5">
-          <Input
-            aria-label="Search users"
-            placeholder="Search users..."
-            className="min-w-[220px]"
-          />
-          <Select defaultValue="all">
-            <SelectTrigger aria-label="Filter role" className="w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All roles</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button variant="outline">+ Add user</Button>
-      </div>
-
-      <div
-        aria-label={`${page.title} table`}
-        className="border rounded-xl bg-card overflow-hidden"
-      >
-        {demoUsers.map((user, index) => (
-          <div
-            key={user.email}
-            className={`grid grid-cols-[64px_1fr_140px_140px_40px] items-center gap-2 px-4 py-3 ${
-              index > 0 ? "border-t" : ""
-            }`}
-          >
-            <span className="text-muted-foreground text-sm">
-              {user.initials}
-            </span>
-            <div>
-              <div className="text-[15px] font-medium">{user.name}</div>
-              <div className="text-sm text-muted-foreground">{user.email}</div>
-            </div>
-            <span className="text-sm">{user.role}</span>
-            <span className="text-sm text-muted-foreground">
-              {user.created}
-            </span>
-            <span className="text-right text-muted-foreground">...</span>
-          </div>
-        ))}
-      </div>
+      <UsersTable />
     </section>
   );
 }
