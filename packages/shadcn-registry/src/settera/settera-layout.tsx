@@ -197,6 +197,8 @@ function SetteraLayoutInner({
   const resolvedMobileTitle =
     mobileTitle ?? schemaCtx?.schema.meta?.title ?? "Settings";
 
+  const activePageDef = schemaCtx?.getPageByKey(activePage);
+
   const escapeSelectorValue = useCallback((value: string) => {
     if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
       return CSS.escape(value);
@@ -349,7 +351,9 @@ function SetteraLayoutInner({
             >
               <div
                 style={{
-                  maxWidth: "var(--settera-content-max-width, 640px)",
+                  maxWidth: activePageDef?.mode === "custom"
+                    ? undefined
+                    : "var(--settera-content-max-width, 640px)",
                   marginInline: "auto",
                 }}
               >
