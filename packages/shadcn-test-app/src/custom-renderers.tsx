@@ -337,24 +337,31 @@ export function WorkspaceUrlSetting({
               Choose a URL slug for your workspace.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
-            <InputGroup>
-              <InputGroupAddon>
-                <InputGroupText>https://appname.com/</InputGroupText>
-              </InputGroupAddon>
-              <InputGroupInput
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="my-workspace"
-              />
-            </InputGroup>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>Save</Button>
-          </DialogFooter>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave();
+            }}
+          >
+            <div className="py-2">
+              <InputGroup>
+                <InputGroupAddon>
+                  <InputGroupText>https://appname.com/</InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="my-workspace"
+                />
+              </InputGroup>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
