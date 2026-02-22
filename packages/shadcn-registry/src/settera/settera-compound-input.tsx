@@ -221,7 +221,7 @@ function CompoundModal({
                 parentDisabled={isDisabled}
               />
             </div>
-            <ResponsiveDialogFooter>
+            <ResponsiveDialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={handleCancel} disabled={isBusy}>
                 {labels.cancel}
               </Button>

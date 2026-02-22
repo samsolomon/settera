@@ -97,7 +97,7 @@ export function SetteraActionModal({
           </div>
         )}
 
-        <ResponsiveDialogFooter>
+        <ResponsiveDialogFooter className="pt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
