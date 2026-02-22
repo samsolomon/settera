@@ -417,6 +417,18 @@ export const demoSchema: SetteraSchema = {
                   type: "custom",
                   renderer: "workspaceUrl",
                 },
+                {
+                  key: "workspace.importOptions",
+                  title: "Import options",
+                  description: "Choose how data is imported into your workspace.",
+                  type: "multiselect",
+                  options: [
+                    { value: "manual", label: "Manual" },
+                    { value: "csv", label: "CSV upload" },
+                    { value: "crm", label: "CRM import" },
+                  ],
+                  default: ["manual"],
+                },
               ],
             },
             {
