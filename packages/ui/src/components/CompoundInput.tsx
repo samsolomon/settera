@@ -252,44 +252,50 @@ function CompoundModal({
             >
               {definition.description ?? `${labels.edit} ${definition.title}.`}
             </Dialog.Description>
-            <CompoundFields
-              settingKey={settingKey}
-              fields={definition.fields}
-              getFieldValue={getFieldValue}
-              updateField={updateField}
-              parentDisabled={isDisabled}
-            />
-            <div
-              style={{
-                marginTop: "12px",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "8px",
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!isBusy) handleSave();
               }}
             >
-              <PrimitiveButton
-                type="button"
-                onClick={handleCancel}
-                disabled={isBusy}
+              <CompoundFields
+                settingKey={settingKey}
+                fields={definition.fields}
+                getFieldValue={getFieldValue}
+                updateField={updateField}
+                parentDisabled={isDisabled}
+              />
+              <div
                 style={{
-                  cursor: isBusy ? "not-allowed" : "pointer",
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "8px",
                 }}
               >
-                {labels.cancel}
-              </PrimitiveButton>
-              <PrimitiveButton
-                type="button"
-                onClick={handleSave}
-                disabled={isBusy}
-                style={{
-                  backgroundColor: token("button-primary-bg"),
-                  color: token("button-primary-color"),
-                  cursor: isBusy ? "not-allowed" : "pointer",
-                }}
-              >
-                {isBusy ? labels.saving : labels.save}
-              </PrimitiveButton>
-            </div>
+                <PrimitiveButton
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isBusy}
+                  style={{
+                    cursor: isBusy ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {labels.cancel}
+                </PrimitiveButton>
+                <PrimitiveButton
+                  type="submit"
+                  disabled={isBusy}
+                  style={{
+                    backgroundColor: token("button-primary-bg"),
+                    color: token("button-primary-color"),
+                    cursor: isBusy ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {isBusy ? labels.saving : labels.save}
+                </PrimitiveButton>
+              </div>
+            </form>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

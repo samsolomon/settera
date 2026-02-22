@@ -206,23 +206,30 @@ function CompoundModal({
               {definition.description ?? `Edit ${definition.title}.`}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
-          <div className="px-4 md:px-0">
-            <CompoundFields
-              settingKey={settingKey}
-              fields={definition.fields}
-              getFieldValue={getFieldValue}
-              updateField={updateField}
-              parentDisabled={isDisabled}
-            />
-          </div>
-          <ResponsiveDialogFooter>
-            <Button variant="outline" onClick={handleCancel} disabled={isBusy}>
-              {labels.cancel}
-            </Button>
-            <Button onClick={handleSave} disabled={isBusy}>
-              {isBusy ? labels.saving : labels.save}
-            </Button>
-          </ResponsiveDialogFooter>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!isBusy) handleSave();
+            }}
+          >
+            <div className="px-4 md:px-0">
+              <CompoundFields
+                settingKey={settingKey}
+                fields={definition.fields}
+                getFieldValue={getFieldValue}
+                updateField={updateField}
+                parentDisabled={isDisabled}
+              />
+            </div>
+            <ResponsiveDialogFooter>
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={isBusy}>
+                {labels.cancel}
+              </Button>
+              <Button type="submit" disabled={isBusy}>
+                {isBusy ? labels.saving : labels.save}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
         </ResponsiveDialogContent>
       </ResponsiveDialog>
     </div>
