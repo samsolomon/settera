@@ -701,13 +701,7 @@ function validateActionTypeConfig(
         code: "MISSING_REQUIRED_FIELD",
         message: `Action "${label}" with actionType "modal" must define modal config.`,
       });
-    } else if (!modal.fields || modal.fields.length === 0) {
-      ctx.errors.push({
-        path: `${path}.modal.fields`,
-        code: "MISSING_REQUIRED_FIELD",
-        message: `Action "${label}" modal must define at least one field.`,
-      });
-    } else {
+    } else if (modal.fields && modal.fields.length > 0) {
       const modalFieldKeys = new Set<string>();
       for (let i = 0; i < modal.fields.length; i++) {
         validateSetting(

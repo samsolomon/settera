@@ -474,7 +474,7 @@ describe("validateSchema", () => {
     expect(errors.some((e) => e.path.endsWith(".modal"))).toBe(true);
   });
 
-  it("rejects modal action with empty fields", () => {
+  it("accepts modal action with empty fields (confirm-only modal)", () => {
     const schema: SetteraSchema = {
       version: "1.0",
       pages: [
@@ -503,7 +503,7 @@ describe("validateSchema", () => {
       ],
     };
     const errors = validateSchema(schema);
-    expect(errors.some((e) => e.path.endsWith(".modal.fields"))).toBe(true);
+    expect(errors).toHaveLength(0);
   });
 
   // Duplicate option values

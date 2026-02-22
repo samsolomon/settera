@@ -21,6 +21,7 @@ export interface SetteraActionModalProps {
   title: string;
   isOpen: boolean;
   isLoading: boolean;
+  dangerous?: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: Record<string, unknown>) => void;
 }
@@ -30,13 +31,15 @@ export function SetteraActionModal({
   title,
   isOpen,
   isLoading,
+  dangerous,
   onOpenChange,
   onSubmit,
 }: SetteraActionModalProps) {
   const labels = useSetteraLabels();
   const contentRef = useRef<HTMLDivElement>(null);
+  const fields = modalConfig.fields ?? [];
   const { draftValues, setField } = useActionModalDraft(
-    modalConfig.fields,
+    fields,
     modalConfig.initialValues,
     isOpen,
   );
@@ -77,20 +80,22 @@ export function SetteraActionModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="flex flex-col gap-3 px-4 md:px-0">
-          {modalConfig.fields.map((field) => (
-            <div key={field.key} className="flex flex-col gap-1.5">
-              <Label>{field.title}</Label>
-              <SetteraActionModalField
-                field={field}
-                value={draftValues[field.key]}
-                onChange={(nextFieldValue) =>
-                  setField(field.key, nextFieldValue)
-                }
-              />
-            </div>
-          ))}
-        </div>
+        {fields.length > 0 && (
+          <div className="flex flex-col gap-3 px-4 md:px-0">
+            {fields.map((field) => (
+              <div key={field.key} className="flex flex-col gap-1.5">
+                <Label>{field.title}</Label>
+                <SetteraActionModalField
+                  field={field}
+                  value={draftValues[field.key]}
+                  onChange={(nextFieldValue) =>
+                    setField(field.key, nextFieldValue)
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         <ResponsiveDialogFooter>
           <Button
@@ -100,7 +105,7 @@ export function SetteraActionModal({
           >
             {modalConfig.cancelLabel ?? labels.cancel}
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button variant={dangerous ? "destructive" : "default"} onClick={handleSubmit} disabled={isLoading}>
             {isLoading ? labels.loading : (modalConfig.submitLabel ?? labels.submit)}
           </Button>
         </ResponsiveDialogFooter>

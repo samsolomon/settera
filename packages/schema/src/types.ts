@@ -262,7 +262,7 @@ export interface ActionModalConfig {
   description?: string;
   submitLabel?: string;
   cancelLabel?: string;
-  fields: ModalActionFieldSetting[];
+  fields?: ModalActionFieldSetting[];
   initialValues?: Record<string, unknown>;
 }
 

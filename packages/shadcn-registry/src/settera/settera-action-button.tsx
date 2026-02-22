@@ -153,6 +153,7 @@ function ActionButtonSingle({
           title={title}
           isOpen={isModalOpen}
           isLoading={isLoading}
+          dangerous={isDangerous}
           onOpenChange={(open) => {
             setIsModalOpen(open);
             if (!open) {

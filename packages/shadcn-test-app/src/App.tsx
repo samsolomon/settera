@@ -139,6 +139,10 @@ export function App() {
         return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
           console.info("[shadcn-test-app] Account deleted (just kidding).");
         });
+      case "workspace.delete":
+        return new Promise<void>((r) => setTimeout(r, 2000)).then(() => {
+          console.info("[shadcn-test-app] Workspace deleted (just kidding).");
+        });
       case "actions.importData": {
         const importConfig =
           typeof payload === "object" && payload !== null

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useContext } from "react";
-import { SetteraSchemaContext, SetteraSettingErrorBoundary } from "@settera/react";
+import { SetteraSchemaContext, SetteraSettingErrorBoundary, useSetteraAction, parseDescriptionLinks } from "@settera/react";
 import type { CustomSetting } from "@settera/schema";
 import { SetteraSettingRow } from "./settera-setting-row";
+import { cn } from "@/lib/utils";
 import { SetteraBooleanSwitch } from "./settera-boolean-switch";
 import { SetteraTextInput } from "./settera-text-input";
 import { SetteraNumberInput } from "./settera-number-input";
@@ -72,11 +73,7 @@ export function SetteraSetting({
       control = <SetteraRepeatableInput settingKey={settingKey} />;
       break;
     case "action":
-      if (definition.actions) {
-        control = <SetteraActionButton settingKey={settingKey} />;
-        break;
-      }
-      return <SetteraActionButton settingKey={settingKey} />;
+      return <SetteraActionRow settingKey={settingKey} isLast={isLast} />;
     case "custom": {
       const CustomSettingComponent = customSettings?.[definition.renderer];
       control = CustomSettingComponent ? (
@@ -126,5 +123,44 @@ export function SetteraSetting({
         {control}
       </SetteraSettingRow>
     </SetteraSettingErrorBoundary>
+  );
+}
+
+function SetteraActionRow({ settingKey, isLast }: { settingKey: string; isLast?: boolean }) {
+  const { definition, isVisible } = useSetteraAction(settingKey);
+  const isDangerous = Boolean(definition.dangerous);
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={cn("outline-none rounded-lg px-4", definition.disabled && "opacity-50")}
+    >
+      <div
+        className={cn(
+          "flex flex-col gap-2 py-3 md:flex-row md:justify-between md:items-center md:gap-0",
+          !isLast && "border-b",
+        )}
+      >
+        <div className="flex-1 md:mr-4">
+          <span
+            className={cn(
+              "text-sm font-medium leading-6",
+              isDangerous && "text-destructive",
+            )}
+          >
+            {definition.title}
+          </span>
+          {definition.description && (
+            <div className="mt-0.5 text-sm text-muted-foreground">
+              {parseDescriptionLinks(definition.description)}
+            </div>
+          )}
+        </div>
+        <div>
+          <SetteraActionButton settingKey={settingKey} />
+        </div>
+      </div>
+    </div>
   );
 }

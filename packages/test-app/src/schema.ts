@@ -419,6 +419,28 @@ export const demoSchema: SetteraSchema = {
                 },
               ],
             },
+            {
+              key: "workspaceDanger",
+              title: "Danger zone",
+              settings: [
+                {
+                  key: "workspace.delete",
+                  title: "Delete workspace",
+                  description:
+                    "Once deleted, your workspace cannot be recovered.",
+                  type: "action",
+                  buttonLabel: "Delete workspace",
+                  actionType: "modal",
+                  dangerous: true,
+                  modal: {
+                    title: "Delete workspace?",
+                    description:
+                      "This will permanently delete your workspace and all its data. This action cannot be undone.",
+                    submitLabel: "Delete workspace",
+                  },
+                },
+              ],
+            },
           ],
         },
         {

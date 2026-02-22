@@ -26,8 +26,9 @@ export function ActionModal({
 }: ActionModalProps) {
   const labels = useSetteraLabels();
   const contentRef = useRef<HTMLDivElement>(null);
+  const fields = modalConfig.fields ?? [];
   const { draftValues, setField } = useActionModalDraft(
-    modalConfig.fields,
+    fields,
     modalConfig.initialValues,
     isOpen,
   );
@@ -115,31 +116,33 @@ export function ActionModal({
             </Dialog.Description>
           </div>
 
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-          >
-            {modalConfig.fields.map((field) => (
-              <label
-                key={field.key}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  fontSize: "13px",
-                  color: token("description-color"),
-                }}
-              >
-                {field.title}
-                <ActionModalField
-                  field={field}
-                  value={draftValues[field.key]}
-                  onChange={(nextFieldValue) =>
-                    setField(field.key, nextFieldValue)
-                  }
-                />
-              </label>
-            ))}
-          </div>
+          {fields.length > 0 && (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              {fields.map((field) => (
+                <label
+                  key={field.key}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                    fontSize: "13px",
+                    color: token("description-color"),
+                  }}
+                >
+                  {field.title}
+                  <ActionModalField
+                    field={field}
+                    value={draftValues[field.key]}
+                    onChange={(nextFieldValue) =>
+                      setField(field.key, nextFieldValue)
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          )}
 
           <div
             style={{
