@@ -36,6 +36,11 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { demoSchema } from "./schema.js";
+import {
+  DemoToolbarModeSelect,
+  DemoToolbarThemeToggle,
+  DemoToolbarVersion,
+} from "./demo-toolbar.js";
 import * as localeEn from "./locales/en.js";
 import * as localeEs from "./locales/es.js";
 
@@ -52,7 +57,10 @@ const LOCALES: Record<string, LocaleBundle> = {
   es: localeEs,
 };
 
-const ICON_MAP: Record<string, React.ComponentType<{ size?: string | number }>> = {
+const ICON_MAP: Record<
+  string,
+  React.ComponentType<{ size?: string | number }>
+> = {
   user: User,
   paintbrush: Paintbrush,
   shield: Shield,
@@ -75,7 +83,6 @@ const DEMO_MODE_OPTIONS: Array<{ key: DemoMode; label: string }> = [
   { key: "headless", label: "Headless" },
   { key: "ui", label: "UI" },
 ];
-
 
 function readModeFromUrl(): DemoMode {
   if (typeof window === "undefined") return "ui";
@@ -489,7 +496,7 @@ function HeadlessActionButton({
   const openModal = () => {
     if (!isModal || definition.type !== "action" || !definition.modal) return;
     const defaults: Record<string, unknown> = {};
-    for (const field of definition.modal.fields) {
+    for (const field of definition.modal.fields ?? []) {
       if ("default" in field && field.default !== undefined) {
         defaults[field.key] = field.default;
       }
@@ -542,7 +549,7 @@ function HeadlessActionButton({
             marginBottom: "12px",
           }}
         >
-          {modal.fields.map((field) => (
+          {(modal.fields ?? []).map((field) => (
             <label
               key={field.key}
               style={{
@@ -1185,9 +1192,7 @@ function UsersPage({ page }: SetteraCustomPageProps) {
   );
 }
 
-function ProfilePictureSetting({
-  settingKey,
-}: SetteraCustomSettingProps) {
+function ProfilePictureSetting({ settingKey }: SetteraCustomSettingProps) {
   const { value, setValue } = useSetteraSetting(settingKey);
   const imageUrl = typeof value === "string" ? value : "";
   const initials = imageUrl ? "" : "B";
@@ -1199,7 +1204,9 @@ function ProfilePictureSetting({
           width: "64px",
           height: "64px",
           borderRadius: "50%",
-          background: imageUrl ? `url(${imageUrl}) center/cover` : "var(--settera-primary, #2563eb)",
+          background: imageUrl
+            ? `url(${imageUrl}) center/cover`
+            : "var(--settera-primary, #2563eb)",
           color: "#ffffff",
           display: "flex",
           alignItems: "center",
@@ -1298,7 +1305,11 @@ function ThemePickerSetting({ settingKey }: SetteraCustomSettingProps) {
   );
 }
 
-function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPageProps) {
+function AdvancedExportPage({
+  settingKey,
+  definition,
+  onBack,
+}: SetteraActionPageProps) {
   const { onAction, isLoading } = useSetteraAction(settingKey);
   const [format, setFormat] = useState("json");
   const [includeAttachments, setIncludeAttachments] = useState(false);
@@ -1326,14 +1337,22 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
       <p
         style={{
           fontSize: "14px",
-          color: "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
+          color:
+            "var(--settera-description-color, var(--settera-muted-foreground, #6b7280))",
           margin: 0,
         }}
       >
-        This is a custom-rendered action page for &ldquo;{definition.title}&rdquo;.
-        It demonstrates the <code>page.renderer</code> pattern.
+        This is a custom-rendered action page for &ldquo;{definition.title}
+        &rdquo;. It demonstrates the <code>page.renderer</code> pattern.
       </p>
-      <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "14px" }}>
+      <label
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+          fontSize: "14px",
+        }}
+      >
         Export Format
         <select
           value={format}
@@ -1342,7 +1361,8 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
             fontSize: "14px",
             padding: "8px 10px",
             borderRadius: "8px",
-            border: "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
+            border:
+              "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
             maxWidth: "200px",
           }}
         >
@@ -1351,7 +1371,14 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
           <option value="xml">XML</option>
         </select>
       </label>
-      <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "14px",
+        }}
+      >
         <input
           type="checkbox"
           checked={includeAttachments}
@@ -1368,9 +1395,11 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
             setIsSubmitting(true);
           }}
           style={{
-            border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+            border:
+              "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
             borderRadius: "8px",
-            background: "var(--settera-button-primary-bg, var(--settera-foreground, #111827))",
+            background:
+              "var(--settera-button-primary-bg, var(--settera-foreground, #111827))",
             color: "var(--settera-button-primary-color, #ffffff)",
             padding: "8px 16px",
             fontSize: "14px",
@@ -1384,10 +1413,13 @@ function AdvancedExportPage({ settingKey, definition, onBack }: SetteraActionPag
           onClick={onBack}
           disabled={isLoading}
           style={{
-            border: "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
+            border:
+              "var(--settera-button-border, 1px solid var(--settera-input, #d1d5db))",
             borderRadius: "8px",
-            background: "var(--settera-button-secondary-bg, var(--settera-card, #ffffff))",
-            color: "var(--settera-button-secondary-color, var(--settera-foreground, #374151))",
+            background:
+              "var(--settera-button-secondary-bg, var(--settera-card, #ffffff))",
+            color:
+              "var(--settera-button-secondary-color, var(--settera-foreground, #374151))",
             padding: "8px 16px",
             fontSize: "14px",
             cursor: isLoading ? "not-allowed" : "pointer",
@@ -1407,7 +1439,10 @@ export function App() {
     "profile.email": { address: "bob@example.com" },
   });
 
-  const language = typeof values["profile.language"] === "string" ? values["profile.language"] : "en";
+  const language =
+    typeof values["profile.language"] === "string"
+      ? values["profile.language"]
+      : "en";
   const locale = useMemo(() => LOCALES[language] ?? LOCALES.en, [language]);
   const activeSchema = locale.schema;
   const activeLabels = locale.labels;
@@ -1522,7 +1557,10 @@ export function App() {
   const handleValidate = useCallback((key: string, value: unknown) => {
     switch (key) {
       case "profile.email": {
-        const emailObj = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+        const emailObj =
+          typeof value === "object" && value !== null
+            ? (value as Record<string, unknown>)
+            : {};
         return new Promise<string | null>((r) => setTimeout(r, 500)).then(
           () => {
             if (emailObj.address === "taken@example.com") {
@@ -1567,6 +1605,51 @@ export function App() {
     return () => media.removeEventListener("change", handleChange);
   }, []);
 
+  const isUiMode = mode === "ui";
+  const toolbarDividerStyle: React.CSSProperties = {
+    opacity: 0.4,
+    fontSize: "inherit",
+  };
+  const toggleTheme = () =>
+    setColorMode((current) => (current === "dark" ? "light" : "dark"));
+  const toolbarStart = isUiMode ? (
+    <>
+      <DemoToolbarVersion version={SCHEMA_VERSION} />
+      <span aria-hidden="true" style={toolbarDividerStyle}>
+        |
+      </span>
+      <DemoToolbarModeSelect
+        aria-label="Demo layer"
+        mode={mode}
+        options={DEMO_MODE_OPTIONS}
+        onModeChange={(next) => setMode(next as DemoMode)}
+        style={{
+          border: "none",
+          background: "transparent",
+          fontSize: "inherit",
+          color: "inherit",
+          padding: 0,
+          cursor: "pointer",
+        }}
+      />
+    </>
+  ) : undefined;
+  const toolbarEnd = isUiMode ? (
+    <DemoToolbarThemeToggle
+      isDarkMode={colorMode === "dark"}
+      onToggle={toggleTheme}
+      style={{
+        border: "none",
+        background: "transparent",
+        color: "inherit",
+        padding: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        cursor: "pointer",
+      }}
+    />
+  ) : undefined;
+
   return (
     <div
       style={{
@@ -1576,97 +1659,98 @@ export function App() {
         flexDirection: "column",
       }}
     >
-      <header
-        style={{
-          padding: "12px 24px",
-          borderBottom:
-            colorMode === "dark" ? "1px solid #27272a" : "1px solid #e5e7eb",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-          background: colorMode === "dark" ? "#09090b" : "#ffffff",
-          color: colorMode === "dark" ? "#f4f4f5" : "#111827",
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: "18px", fontWeight: 600, margin: 0 }}>
-            Settera Demo
-          </h1>
-          <p
-            style={{
-              fontSize: "12px",
-              color: colorMode === "dark" ? "#a1a1aa" : "#9ca3af",
-              margin: "2px 0 0",
-            }}
-          >
-            Schema v{SCHEMA_VERSION}
-          </p>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div
-            role="tablist"
-            aria-label="Demo layer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              border:
-                colorMode === "dark"
-                  ? "1px solid #3f3f46"
-                  : "1px solid #cbd5e1",
-              borderRadius: "10px",
-              background: colorMode === "dark" ? "#18181b" : "#f8fafc",
-              padding: "2px",
-            }}
-          >
-            {DEMO_MODE_OPTIONS.map((option) => {
-              const isActive = mode === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setMode(option.key)}
-                  style={{
-                    border: "none",
-                    borderRadius: "8px",
-                    background:
-                      isActive && colorMode === "dark"
-                        ? "#27272a"
-                        : isActive
-                          ? "#ffffff"
-                          : "transparent",
-                    boxShadow: isActive
-                      ? colorMode === "dark"
-                        ? "none"
-                        : "0 1px 2px rgba(15, 23, 42, 0.12)"
-                      : "none",
-                    padding: "6px 10px",
-                    fontSize: "12px",
-                    fontWeight: isActive ? 600 : 500,
-                    color:
-                      isActive && colorMode === "dark"
-                        ? "#fafafa"
-                        : isActive
-                          ? "#111827"
-                          : colorMode === "dark"
-                            ? "#a1a1aa"
-                            : "#475569",
-                    cursor: "pointer",
-                  }}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+      {!isUiMode && (
+        <header
+          style={{
+            padding: "12px 24px",
+            borderBottom:
+              colorMode === "dark" ? "1px solid #27272a" : "1px solid #e5e7eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            background: colorMode === "dark" ? "#09090b" : "#ffffff",
+            color: colorMode === "dark" ? "#f4f4f5" : "#111827",
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: "18px", fontWeight: 600, margin: 0 }}>
+              Settera Demo
+            </h1>
+            <p
+              style={{
+                fontSize: "12px",
+                color: colorMode === "dark" ? "#a1a1aa" : "#9ca3af",
+                margin: "2px 0 0",
+              }}
+            >
+              Schema v{SCHEMA_VERSION}
+            </p>
           </div>
 
-        </div>
-      </header>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              role="tablist"
+              aria-label="Demo layer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                border:
+                  colorMode === "dark"
+                    ? "1px solid #3f3f46"
+                    : "1px solid #cbd5e1",
+                borderRadius: "10px",
+                background: colorMode === "dark" ? "#18181b" : "#f8fafc",
+                padding: "2px",
+              }}
+            >
+              {DEMO_MODE_OPTIONS.map((option) => {
+                const isActive = mode === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setMode(option.key)}
+                    style={{
+                      border: "none",
+                      borderRadius: "8px",
+                      background:
+                        isActive && colorMode === "dark"
+                          ? "#27272a"
+                          : isActive
+                            ? "#ffffff"
+                            : "transparent",
+                      boxShadow: isActive
+                        ? colorMode === "dark"
+                          ? "none"
+                          : "0 1px 2px rgba(15, 23, 42, 0.12)"
+                        : "none",
+                      padding: "6px 10px",
+                      fontSize: "12px",
+                      fontWeight: isActive ? 600 : 500,
+                      color:
+                        isActive && colorMode === "dark"
+                          ? "#fafafa"
+                          : isActive
+                            ? "#111827"
+                            : colorMode === "dark"
+                              ? "#a1a1aa"
+                              : "#475569",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </header>
+      )}
       <div style={{ flex: 1, overflow: "hidden" }}>
         <Settera
           schema={activeSchema}
@@ -1684,14 +1768,23 @@ export function App() {
                 href: "/",
               }}
               customPages={{ usersPage: UsersPage }}
-              customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
+              customSettings={{
+                profilePicture: ProfilePictureSetting,
+                themePicker: ThemePickerSetting,
+              }}
               customActionPages={{ advancedExportPage: AdvancedExportPage }}
+              toolbarStart={toolbarStart}
+              toolbarEnd={toolbarEnd}
+              toolbarAriaLabel="Demo toolbar"
             />
           )}
           {mode === "headless" && (
             <SetteraNavigation>
               <HeadlessView
-                customSettings={{ profilePicture: ProfilePictureSetting, themePicker: ThemePickerSetting }}
+                customSettings={{
+                  profilePicture: ProfilePictureSetting,
+                  themePicker: ThemePickerSetting,
+                }}
               />
             </SetteraNavigation>
           )}

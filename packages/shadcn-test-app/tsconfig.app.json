@@ -12,5 +12,10 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "../shadcn-registry/src", "../test-app/src/schema.ts"]
+  "include": [
+    "src",
+    "../shadcn-registry/src",
+    "../test-app/src/schema.ts",
+    "../test-app/src/demo-toolbar.tsx"
+  ]
 }

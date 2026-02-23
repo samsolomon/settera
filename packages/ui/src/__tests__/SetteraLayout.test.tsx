@@ -132,6 +132,9 @@ function renderLayout(
     activePage?: string;
     onPageChange?: (key: string) => void;
     getPageUrl?: (pageKey: string) => string;
+    toolbarStart?: React.ReactNode;
+    toolbarEnd?: React.ReactNode;
+    toolbarAriaLabel?: string;
   } = {},
   customSchema: SetteraSchema = schema,
 ) {
@@ -169,6 +172,19 @@ describe("SetteraLayout", () => {
     renderLayout();
     expect(screen.getByRole("tree")).toBeDefined();
     expect(screen.getByRole("main")).toBeDefined();
+  });
+
+  it("renders toolbar region when toolbar props are provided", () => {
+    renderLayout({
+      toolbarStart: <span data-testid="demo-start">Demo</span>,
+      toolbarEnd: <button type="button">Toggle</button>,
+      toolbarAriaLabel: "Demo toolbar",
+    });
+    const toolbar = screen.getByRole("region", { name: "Demo toolbar" });
+    expect(within(toolbar).getByTestId("demo-start")).toBeDefined();
+    expect(
+      within(toolbar).getByRole("button", { name: "Toggle" }),
+    ).toBeDefined();
   });
 
   it("renders first page content by default", () => {
@@ -468,9 +484,7 @@ describe("SetteraLayout", () => {
       if (!ctx) return <div data-testid="probe">no-context</div>;
       return (
         <div data-testid="probe">
-          <span data-testid="setting-url">
-            {ctx.getSettingUrl("autoSave")}
-          </span>
+          <span data-testid="setting-url">{ctx.getSettingUrl("autoSave")}</span>
           <span data-testid="section-url">
             {ctx.getSectionUrl("general", "behavior")}
           </span>

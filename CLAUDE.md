@@ -46,11 +46,13 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 ## Architecture
 
 ### Schema (`@settera/schema`)
+
 - **Types**: `SettingDefinition` is a discriminated union on `type` — text, number, boolean, select, multiselect, date, compound, repeatable, action, custom.
 - **Validation**: `validateSchema()` returns an array of errors. Called at provider mount (console warning, not thrown).
 - **Traversal**: `flattenSettings()` walks pages/sections/subsections into a flat list. `getSettingByKey()` does O(n) lookup. `buildSettingIndex()` builds an O(1) Map used by the react layer.
 
 ### React (`@settera/react`)
+
 - **Unified component** (`Settera`): Provides both schema context and values context. Holds the `SetteraValuesStore` which manages values, save tracking, errors, confirm dialogs, and action loading.
 - **Store pipeline**: `store.setValue(key, value)` runs the full pipeline — disabled/readonly guards, sync validation, confirm interception, then `onChange`. Direct store calls and hook calls go through the same path.
 - **Save flow**: `onChange(key, value)` is instant-apply. If it returns a Promise, state tracks `idle → saving → saved → idle` (2s auto-reset). Race-safe via generation counter per key.
@@ -60,13 +62,16 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd. Shared `useVisibility` hook used by setting, action, and section hooks.
 
 ### UI (`@settera/ui`)
+
 - All components use **inline styles** exclusively — no CSS files or modules.
 - Hover/focus states use React state (`onMouseEnter`/`onMouseLeave`, `onFocus`/`onBlur`) with inline styles.
 - Uses Radix UI primitives for select, switch, checkbox, and dialog.
 - **Theming**: Components reference `--settera-*` CSS custom properties with light-mode fallback values (e.g. `color: "var(--settera-title-color, #111827)"`). Consumers set tokens on a parent element to theme — no dark mode built in, just token overrides. All color, spacing, and sizing values should use tokens; never hardcode colors without a `var()` wrapper.
 - **Shared primitives**: `SetteraPrimitives.tsx` exports `PrimitiveInput`/`PrimitiveButton` (base slot components with token-aware styles). `SetteraFieldPrimitives.tsx` exports shared style objects (`cardShellStyle`, `sectionTitleStyle`, `descriptionTextStyle`, etc.).
+- **Layout toolbar**: `SetteraLayout` can render a thin chrome row via `toolbarStart`/`toolbarEnd` props. Styles come from `--settera-toolbar-*` tokens (`height`, `padding`, `gap`, `bg`, `border`, `color`, `font-size`).
 
 ### shadcn Registry (`@settera/shadcn-registry`)
+
 - Distributed via shadcn registry, not npm — consumers install components into their own codebase.
 - **Styling**: Use **Tailwind classes** for all layout, spacing, and standard styling. Prefer Tailwind utilities over inline styles.
 - **Tokens**: Use `--settera-*` CSS custom properties (via inline `style`) only for values consumers are likely to customize (content max-width, page padding, heading font sizes, section spacing). Standard utility styling that doesn't need consumer override should use Tailwind classes directly.

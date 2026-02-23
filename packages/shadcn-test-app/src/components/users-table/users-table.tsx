@@ -1,5 +1,7 @@
+import { Plus } from "lucide-react";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { Button } from "@/components/ui/button";
 import { useDataTable } from "@/hooks/use-data-table";
 import { demoUsers } from "@/data/users";
 import { userColumns } from "./users-table-columns";
@@ -23,7 +25,16 @@ export function UsersTable() {
 
   return (
     <DataTable table={table}>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table}>
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => console.info("[shadcn-test-app] Create person")}
+        >
+          <Plus className="size-4" />
+          Create person
+        </Button>
+      </DataTableToolbar>
     </DataTable>
   );
 }

@@ -1,21 +1,39 @@
-import React, { useMemo, useContext, useRef, useId, useCallback, useEffect } from "react";
+import React, {
+  useMemo,
+  useContext,
+  useRef,
+  useId,
+  useCallback,
+  useEffect,
+} from "react";
 import { SetteraSchemaContext } from "@settera/react";
 import type { PageDefinition } from "@settera/schema";
 import { flattenPageItems, token } from "@settera/schema";
 import { SetteraNavigationProvider } from "../providers/SetteraNavigationProvider.js";
 import { useSetteraNavigation } from "../hooks/useSetteraNavigation.js";
 import { useSetteraSearch } from "../hooks/useSetteraSearch.js";
-import { useSetteraLayoutMainKeys, useSetteraLayoutHighlight, useSetteraLayoutUrlSync } from "@settera/react";
+import {
+  useSetteraLayoutMainKeys,
+  useSetteraLayoutHighlight,
+  useSetteraLayoutUrlSync,
+} from "@settera/react";
 import { useSetteraLayoutMobileShell } from "../hooks/useSetteraLayoutMobileShell.js";
 import { SetteraSidebar } from "./SetteraSidebar.js";
 import { SetteraPage } from "./SetteraPage.js";
-import type { SetteraCustomPageProps, SetteraActionPageProps } from "./SetteraPage.js";
+import type {
+  SetteraCustomPageProps,
+  SetteraActionPageProps,
+} from "./SetteraPage.js";
 import type { SetteraCustomSettingProps } from "./SetteraSetting.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SETTERA_SYSTEM_FONT } from "./SetteraPrimitives.js";
 import { SetteraDeepLinkContext } from "../contexts/SetteraDeepLinkContext.js";
 import type { SetteraLabels } from "../contexts/SetteraLabelsContext.js";
-import { SetteraLabelsContext, mergeLabels, useSetteraLabels } from "../contexts/SetteraLabelsContext.js";
+import {
+  SetteraLabelsContext,
+  mergeLabels,
+  useSetteraLabels,
+} from "../contexts/SetteraLabelsContext.js";
 
 export interface SetteraBackToAppConfig {
   label?: string;
@@ -38,8 +56,17 @@ export interface SetteraLayoutProps {
     string,
     React.ComponentType<SetteraCustomSettingProps>
   >;
-  customActionPages?: Record<string, React.ComponentType<SetteraActionPageProps>>;
+  customActionPages?: Record<
+    string,
+    React.ComponentType<SetteraActionPageProps>
+  >;
   activeSettingQueryParam?: string;
+  /** Optional thin toolbar rendered above the layout (desktop + mobile). */
+  toolbarStart?: React.ReactNode;
+  /** Optional toolbar content aligned to the far edge (desktop + mobile). */
+  toolbarEnd?: React.ReactNode;
+  /** Accessible label for the toolbar region. Defaults to "Settings toolbar". */
+  toolbarAriaLabel?: string;
   /** Controlled active page key from the consumer's router. */
   activePage?: string;
   /** Called when the user navigates to a different page (controlled mode). */
@@ -80,7 +107,10 @@ function findPagePathByKey(
  * without extra setup.
  */
 export function SetteraLayout(props: SetteraLayoutProps) {
-  const resolvedLabels = useMemo(() => mergeLabels(props.labels), [props.labels]);
+  const resolvedLabels = useMemo(
+    () => mergeLabels(props.labels),
+    [props.labels],
+  );
 
   return (
     <SetteraLabelsContext.Provider value={resolvedLabels}>
@@ -109,6 +139,9 @@ function SetteraLayoutInner({
   customSettings,
   customActionPages,
   activeSettingQueryParam = "setting",
+  toolbarStart,
+  toolbarEnd,
+  toolbarAriaLabel = "Settings toolbar",
 }: SetteraLayoutProps) {
   const labels = useSetteraLabels();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -204,7 +237,10 @@ function SetteraLayoutInner({
         previousSectionRef.current !== null;
       if (didClearSectionOnSamePage) {
         if (typeof main.scrollTo === "function") {
-          main.scrollTo({ top: 0, behavior: prefersReducedMotion ? "instant" : "smooth" });
+          main.scrollTo({
+            top: 0,
+            behavior: prefersReducedMotion ? "instant" : "smooth",
+          });
         } else {
           main.scrollTop = 0;
         }
@@ -218,7 +254,10 @@ function SetteraLayoutInner({
 
     const scrollToSection = () => {
       const section = main.querySelector(selector);
-      if (!section || typeof (section as HTMLElement).scrollIntoView !== "function") {
+      if (
+        !section ||
+        typeof (section as HTMLElement).scrollIntoView !== "function"
+      ) {
         return false;
       }
       (section as HTMLElement).scrollIntoView({
@@ -238,13 +277,64 @@ function SetteraLayoutInner({
       });
       return () => cancelAnimationFrame(raf);
     }
-  }, [activePage, activeSection, subpage, mainRef, prefersReducedMotion, escapeSelectorValue]);
+  }, [
+    activePage,
+    activeSection,
+    subpage,
+    mainRef,
+    prefersReducedMotion,
+    escapeSelectorValue,
+  ]);
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     if (!schemaCtx) return [];
-    const path = findPagePathByKey(flattenPageItems(schemaCtx.schema.pages), activePage) ?? [];
+    const path =
+      findPagePathByKey(flattenPageItems(schemaCtx.schema.pages), activePage) ??
+      [];
     return path.map((page) => ({ key: page.key, title: page.title }));
   }, [schemaCtx, activePage]);
+
+  const hasToolbar = Boolean(toolbarStart || toolbarEnd);
+  const toolbarContent = hasToolbar ? (
+    <header
+      role="region"
+      aria-label={toolbarAriaLabel}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        minHeight: token("toolbar-height"),
+        padding: token("toolbar-padding"),
+        borderBottom: token("toolbar-border"),
+        backgroundColor: token("toolbar-bg"),
+        color: token("toolbar-color"),
+        fontSize: token("toolbar-font-size"),
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: token("toolbar-gap"),
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
+        {toolbarStart}
+      </div>
+      {toolbarEnd && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: token("toolbar-gap"),
+          }}
+        >
+          {toolbarEnd}
+        </div>
+      )}
+    </header>
+  ) : null;
 
   const content = (
     <main
@@ -296,209 +386,221 @@ function SetteraLayoutInner({
   return (
     <SetteraDeepLinkContext.Provider value={deepLinkContextValue}>
       <div
-        ref={containerRef}
         style={{
           display: "flex",
-          flexDirection: isMobile ? "column" : "row",
+          flexDirection: "column",
           height: "100%",
-          position: "relative",
           fontFamily: SETTERA_SYSTEM_FONT,
+          position: "relative",
         }}
       >
-        {!isMobile && (
-          <SetteraSidebar renderIcon={renderIcon} backToApp={backToApp} />
-        )}
+        {toolbarContent}
 
-        {isMobile && (
-          <header
-            style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 5,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              minHeight: token("mobile-topbar-height"),
-              padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
-              borderBottom: token("mobile-topbar-border"),
-              backgroundColor: token("mobile-topbar-bg"),
-            }}
-          >
-            <button
-              ref={menuButtonRef}
-              type="button"
-              aria-label={labels.openNavigation}
-              aria-expanded={isMobileNavOpen}
-              aria-controls={mobileDrawerId}
-              onClick={openMobileNav}
+        <div
+          ref={containerRef}
+          style={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            flex: 1,
+            position: "relative",
+            minHeight: 0,
+          }}
+        >
+          {!isMobile && (
+            <SetteraSidebar renderIcon={renderIcon} backToApp={backToApp} />
+          )}
+
+          {isMobile && (
+            <header
               style={{
-                width: "36px",
-                height: "36px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                border: token("mobile-menu-border"),
-                backgroundColor: token("mobile-menu-bg"),
-                color: token("mobile-menu-color"),
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              <span
-                aria-hidden="true"
-                style={{ fontSize: "18px", lineHeight: 1 }}
-              >
-                ≡
-              </span>
-            </button>
-
-            {showBreadcrumbs && (
-              <nav aria-label="Breadcrumb" style={{ minWidth: 0, flex: 1 }}>
-                <ol
-                  style={{
-                    listStyle: "none",
-                    margin: 0,
-                    padding: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    color: token("breadcrumb-muted"),
-                    minWidth: 0,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                  }}
-                >
-                  <li
-                    style={{
-                      fontSize: "13px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {resolvedMobileTitle}
-                  </li>
-                  {breadcrumbItems.map((crumb, index) => {
-                    const isLast = index === breadcrumbItems.length - 1;
-                    return (
-                      <React.Fragment key={crumb.key}>
-                        <li aria-hidden="true" style={{ color: "inherit" }}>
-                          /
-                        </li>
-                        <li
-                          style={{
-                            minWidth: 0,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {isLast ? (
-                            <span
-                              aria-current="page"
-                              style={{
-                                fontSize: "13px",
-                                color: token("breadcrumb-current"),
-                                fontWeight: 600,
-                              }}
-                            >
-                              {crumb.title}
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setActivePage(crumb.key)}
-                              style={{
-                                border: "none",
-                                background: "transparent",
-                                padding: 0,
-                                fontSize: "13px",
-                                color: "inherit",
-                                cursor: "pointer",
-                              }}
-                            >
-                              {crumb.title}
-                            </button>
-                          )}
-                        </li>
-                      </React.Fragment>
-                    );
-                  })}
-                </ol>
-              </nav>
-            )}
-          </header>
-        )}
-
-        {content}
-
-        {isMobile && (
-          <>
-            <div
-              role="presentation"
-              onClick={overlayIsVisible ? closeMobileNav : undefined}
-              style={{
-                position: "fixed",
-                inset: 0,
-                backgroundColor: token("mobile-overlay-bg"),
-                opacity: overlayIsVisible ? 1 : 0,
-                transition: overlayTransition,
-                pointerEvents: overlayIsVisible ? "auto" : "none",
-                zIndex: 20,
-              }}
-            />
-            <div
-              id={mobileDrawerId}
-              ref={mobileDrawerRef}
-              role="dialog"
-              aria-modal="true"
-              aria-hidden={!overlayIsVisible}
-              aria-label="Settings navigation"
-              tabIndex={-1}
-              onKeyDown={handleDrawerKeyDown}
-              style={{
-                position: "fixed",
-                left: 0,
+                position: "sticky",
                 top: 0,
-                bottom: 0,
-                width: token("mobile-drawer-width"),
-                maxWidth: "100%",
-                zIndex: 21,
+                zIndex: 5,
                 display: "flex",
-                flexDirection: "column",
-                backgroundColor: token("mobile-drawer-bg"),
-                borderRight: token("mobile-drawer-border"),
-                boxShadow: token("mobile-drawer-shadow"),
-                overflow: "hidden",
-                transform: overlayIsVisible
-                  ? "translateX(0)"
-                  : "translateX(-100%)",
-                transition: drawerTransition,
-                pointerEvents: overlayIsVisible ? "auto" : "none",
+                alignItems: "center",
+                gap: "8px",
+                minHeight: token("mobile-topbar-height"),
+                padding: "calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px",
+                borderBottom: token("mobile-topbar-border"),
+                backgroundColor: token("mobile-topbar-bg"),
               }}
             >
-              <div
+              <button
+                ref={menuButtonRef}
+                type="button"
+                aria-label={labels.openNavigation}
+                aria-expanded={isMobileNavOpen}
+                aria-controls={mobileDrawerId}
+                onClick={openMobileNav}
                 style={{
-                  display: "flex",
-                  height: "100%",
-                  minHeight: 0,
-                  overflow: "hidden",
-                  paddingBottom: "env(safe-area-inset-bottom, 0px)",
-                  ...({
-                    "--settera-sidebar-width": "100%",
-                  } as React.CSSProperties),
+                  width: "36px",
+                  height: "36px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "8px",
+                  border: token("mobile-menu-border"),
+                  backgroundColor: token("mobile-menu-bg"),
+                  color: token("mobile-menu-color"),
+                  cursor: "pointer",
+                  flexShrink: 0,
                 }}
               >
-                <SetteraSidebar
-                  renderIcon={renderIcon}
-                  onNavigate={closeMobileNav}
-                  backToApp={mobileBackToApp}
-                />
-              </div>
-            </div>
-          </>
-        )}
+                <span
+                  aria-hidden="true"
+                  style={{ fontSize: "18px", lineHeight: 1 }}
+                >
+                  ≡
+                </span>
+              </button>
 
-        <ConfirmDialog />
+              {showBreadcrumbs && (
+                <nav aria-label="Breadcrumb" style={{ minWidth: 0, flex: 1 }}>
+                  <ol
+                    style={{
+                      listStyle: "none",
+                      margin: 0,
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      color: token("breadcrumb-muted"),
+                      minWidth: 0,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <li
+                      style={{
+                        fontSize: "13px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {resolvedMobileTitle}
+                    </li>
+                    {breadcrumbItems.map((crumb, index) => {
+                      const isLast = index === breadcrumbItems.length - 1;
+                      return (
+                        <React.Fragment key={crumb.key}>
+                          <li aria-hidden="true" style={{ color: "inherit" }}>
+                            /
+                          </li>
+                          <li
+                            style={{
+                              minWidth: 0,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {isLast ? (
+                              <span
+                                aria-current="page"
+                                style={{
+                                  fontSize: "13px",
+                                  color: token("breadcrumb-current"),
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {crumb.title}
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setActivePage(crumb.key)}
+                                style={{
+                                  border: "none",
+                                  background: "transparent",
+                                  padding: 0,
+                                  fontSize: "13px",
+                                  color: "inherit",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {crumb.title}
+                              </button>
+                            )}
+                          </li>
+                        </React.Fragment>
+                      );
+                    })}
+                  </ol>
+                </nav>
+              )}
+            </header>
+          )}
+
+          {content}
+
+          {isMobile && (
+            <>
+              <div
+                role="presentation"
+                onClick={overlayIsVisible ? closeMobileNav : undefined}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  backgroundColor: token("mobile-overlay-bg"),
+                  opacity: overlayIsVisible ? 1 : 0,
+                  transition: overlayTransition,
+                  pointerEvents: overlayIsVisible ? "auto" : "none",
+                  zIndex: 20,
+                }}
+              />
+              <div
+                id={mobileDrawerId}
+                ref={mobileDrawerRef}
+                role="dialog"
+                aria-modal="true"
+                aria-hidden={!overlayIsVisible}
+                aria-label="Settings navigation"
+                tabIndex={-1}
+                onKeyDown={handleDrawerKeyDown}
+                style={{
+                  position: "fixed",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: token("mobile-drawer-width"),
+                  maxWidth: "100%",
+                  zIndex: 21,
+                  display: "flex",
+                  flexDirection: "column",
+                  backgroundColor: token("mobile-drawer-bg"),
+                  borderRight: token("mobile-drawer-border"),
+                  boxShadow: token("mobile-drawer-shadow"),
+                  overflow: "hidden",
+                  transform: overlayIsVisible
+                    ? "translateX(0)"
+                    : "translateX(-100%)",
+                  transition: drawerTransition,
+                  pointerEvents: overlayIsVisible ? "auto" : "none",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    height: "100%",
+                    minHeight: 0,
+                    overflow: "hidden",
+                    paddingBottom: "env(safe-area-inset-bottom, 0px)",
+                    ...({
+                      "--settera-sidebar-width": "100%",
+                    } as React.CSSProperties),
+                  }}
+                >
+                  <SetteraSidebar
+                    renderIcon={renderIcon}
+                    onNavigate={closeMobileNav}
+                    backToApp={mobileBackToApp}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          <ConfirmDialog />
+        </div>
       </div>
     </SetteraDeepLinkContext.Provider>
   );

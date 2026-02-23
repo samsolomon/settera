@@ -5,6 +5,11 @@ import { SetteraLayout as ShadcnSetteraLayout } from "@/components/settera/sette
 import { SetteraLayout as UiSetteraLayout } from "@settera/ui";
 import { demoSchema } from "../../test-app/src/schema.js";
 import {
+  DemoToolbarModeSelect,
+  DemoToolbarThemeToggle,
+  DemoToolbarVersion,
+} from "../../test-app/src/demo-toolbar.js";
+import {
   UsersPage,
   ConnectedAccountsPage,
   ProfilePictureSetting,
@@ -97,6 +102,8 @@ export function App() {
     media.addEventListener("change", handleChange);
     return () => media.removeEventListener("change", handleChange);
   }, []);
+
+  const toggleDark = () => setIsDark((value) => !value);
 
   // Sync mode to URL
   useEffect(() => {
@@ -215,55 +222,21 @@ export function App() {
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
       <div className="flex items-center gap-2 px-3 h-6 border-b bg-muted/50 text-[11px] text-muted-foreground shrink-0 select-none">
-        <span>Settera v{SCHEMA_VERSION}</span>
+        <DemoToolbarVersion version={SCHEMA_VERSION} />
         <span className="text-border">|</span>
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value as DemoMode)}
+        <DemoToolbarModeSelect
+          aria-label="Demo layer"
+          mode={mode}
+          options={MODES}
+          onModeChange={(next) => setMode(next as DemoMode)}
           className="bg-transparent border-none text-[11px] text-muted-foreground cursor-pointer outline-none"
-        >
-          {MODES.map((m) => (
-            <option key={m.key} value={m.key}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        />
         <span className="text-border">|</span>
-        <button
-          type="button"
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          onClick={() => setIsDark((d) => !d)}
+        <DemoToolbarThemeToggle
+          isDarkMode={isDark}
+          onToggle={toggleDark}
           className="inline-flex items-center justify-center cursor-pointer bg-transparent border-none p-0 text-muted-foreground hover:text-foreground"
-        >
-          {isDark ? (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="8" cy="8" r="3" />
-              <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
-            </svg>
-          ) : (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
-            </svg>
-          )}
-        </button>
+        />
       </div>
 
       <div className="flex-1 overflow-hidden">

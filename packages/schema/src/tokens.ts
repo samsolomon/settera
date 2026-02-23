@@ -20,20 +20,20 @@
 
 export const UI_TOKENS: Record<string, string> = {
   // ── Core semantic colors ──────────────────────────────────────────────
-  "foreground": "#111827",
-  "background": "#f9fafb",
-  "card": "white",
+  foreground: "#111827",
+  background: "#f9fafb",
+  card: "white",
   "card-foreground": "#374151",
-  "border": "#e5e7eb",
-  "input": "#d1d5db",
-  "muted": "#f4f4f5",
+  border: "#e5e7eb",
+  input: "#d1d5db",
+  muted: "#f4f4f5",
   "muted-foreground": "#6b7280",
-  "primary": "#2563eb",
+  primary: "#2563eb",
   "primary-foreground": "white",
-  "destructive": "#dc2626",
+  destructive: "#dc2626",
   "destructive-foreground": "white",
-  "ring": "#93c5fd",
-  "popover": "white",
+  ring: "#93c5fd",
+  popover: "white",
   "popover-foreground": "#111827",
   "success-color": "#16a34a",
 
@@ -49,6 +49,13 @@ export const UI_TOKENS: Record<string, string> = {
   "page-padding-mobile": "1rem",
   "mobile-topbar-height": "3.25rem",
   "mobile-drawer-width": "min(85vw, 320px)",
+  "toolbar-height": "1.75rem",
+  "toolbar-padding": "0 0.75rem",
+  "toolbar-gap": "0.375rem",
+  "toolbar-bg": "var(--settera-muted, #f4f4f5)",
+  "toolbar-border": "1px solid var(--settera-border, #e5e7eb)",
+  "toolbar-color": "var(--settera-muted-foreground, #6b7280)",
+  "toolbar-font-size": "0.6875rem",
 
   // ── Z-index ───────────────────────────────────────────────────────────
   "z-overlay": "1000",
@@ -164,8 +171,7 @@ export const UI_TOKENS: Record<string, string> = {
     "var(--settera-sidebar-accent, var(--settera-muted, #f4f4f5))",
   "sidebar-active-color":
     "var(--settera-sidebar-accent-foreground, var(--settera-foreground, #18181b))",
-  "sidebar-hover-bg":
-    "var(--settera-sidebar-accent-hover, #f4f4f5)",
+  "sidebar-hover-bg": "var(--settera-sidebar-accent-hover, #f4f4f5)",
   "sidebar-icon-color":
     "var(--settera-sidebar-muted-foreground, var(--settera-muted-foreground, #71717a))",
   "sidebar-group-color":
@@ -187,7 +193,8 @@ export const UI_TOKENS: Record<string, string> = {
   // ── Search ────────────────────────────────────────────────────────────
   "search-bg": "var(--settera-sidebar-input-bg, transparent)",
   "search-color": "var(--settera-sidebar-foreground, #3f3f46)",
-  "search-placeholder-color": "var(--settera-sidebar-muted-foreground, #9ca3af)",
+  "search-placeholder-color":
+    "var(--settera-sidebar-muted-foreground, #9ca3af)",
   "search-font-size": "0.8125rem",
   "search-border": "1px solid var(--settera-input, #d1d5db)",
   "search-border-radius": "0.5rem",
@@ -204,14 +211,11 @@ export const UI_TOKENS: Record<string, string> = {
 
   // ── Select ────────────────────────────────────────────────────────────
   "select-min-width": "10rem",
-  "select-trigger-bg":
-    "var(--settera-input-bg, var(--settera-card, white))",
-  "select-content-bg":
-    "var(--settera-input-bg, var(--settera-card, white))",
+  "select-trigger-bg": "var(--settera-input-bg, var(--settera-card, white))",
+  "select-content-bg": "var(--settera-input-bg, var(--settera-card, white))",
   "select-content-border":
     "var(--settera-input-border, 1px solid var(--settera-input, #d1d5db))",
-  "select-content-radius":
-    "var(--settera-input-border-radius, 0.25rem)",
+  "select-content-radius": "var(--settera-input-border-radius, 0.25rem)",
   "select-content-shadow": "0 12px 28px rgba(0, 0, 0, 0.12)",
   "select-item-highlight-bg": "var(--settera-muted, #f4f4f5)",
   "select-item-radius": "0.25rem",
