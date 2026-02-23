@@ -345,7 +345,7 @@ function HeadlessActionButton({
   const openModal = () => {
     if (!isModal || definition.type !== "action" || !definition.modal) return;
     const defaults: Record<string, unknown> = {};
-    for (const field of definition.modal.fields) {
+    for (const field of definition.modal.fields ?? []) {
       if ("default" in field && field.default !== undefined) {
         defaults[field.key] = field.default;
       }
@@ -377,7 +377,7 @@ function HeadlessActionButton({
           </div>
         )}
         <div className="flex flex-col gap-2.5 mb-3">
-          {modal.fields.map((field) => (
+          {(modal.fields ?? []).map((field) => (
             <label key={field.key} className="flex flex-col gap-1 text-[13px]">
               <span className="font-medium">{field.title}</span>
               <HeadlessModalField
