@@ -60,13 +60,24 @@ const MODES: Array<{ key: DemoMode; label: string }> = [
 function readModeFromUrl(): DemoMode {
   if (typeof window === "undefined") return "shadcn";
   const mode = new URL(window.location.href).searchParams.get(MODE_QUERY_PARAM);
-  if (mode === "schema" || mode === "headless" || mode === "ui" || mode === "shadcn") return mode;
+  if (
+    mode === "schema" ||
+    mode === "headless" ||
+    mode === "ui" ||
+    mode === "shadcn"
+  )
+    return mode;
   return "shadcn";
+}
+
+function readSystemDarkMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
 export function App() {
   const [mode, setMode] = useState<DemoMode>(readModeFromUrl);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState<boolean>(readSystemDarkMode);
   const [values, setValues] = useState<Record<string, unknown>>({
     "profile.email": { address: "bob@example.com" },
   });
@@ -74,6 +85,18 @@ export function App() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDark(event.matches);
+    };
+
+    setIsDark(media.matches);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
 
   // Sync mode to URL
   useEffect(() => {
@@ -171,7 +194,10 @@ export function App() {
   const handleValidate = useCallback((key: string, value: unknown) => {
     switch (key) {
       case "profile.email": {
-        const emailObj = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+        const emailObj =
+          typeof value === "object" && value !== null
+            ? (value as Record<string, unknown>)
+            : {};
         return new Promise<string | null>((r) => setTimeout(r, 500)).then(
           () => {
             if (emailObj.address === "taken@example.com") {
@@ -197,7 +223,9 @@ export function App() {
           className="bg-transparent border-none text-[11px] text-muted-foreground cursor-pointer outline-none"
         >
           {MODES.map((m) => (
-            <option key={m.key} value={m.key}>{m.label}</option>
+            <option key={m.key} value={m.key}>
+              {m.label}
+            </option>
           ))}
         </select>
         <span className="text-border">|</span>
@@ -208,12 +236,30 @@ export function App() {
           className="inline-flex items-center justify-center cursor-pointer bg-transparent border-none p-0 text-muted-foreground hover:text-foreground"
         >
           {isDark ? (
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="8" cy="8" r="3" />
               <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
             </svg>
           ) : (
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
             </svg>
           )}
@@ -251,7 +297,10 @@ export function App() {
                 href: "/",
               }}
               renderIcon={renderIcon}
-              customPages={{ usersPage: UsersPage, connectedAccountsPage: ConnectedAccountsPage }}
+              customPages={{
+                usersPage: UsersPage,
+                connectedAccountsPage: ConnectedAccountsPage,
+              }}
               customSettings={{
                 profilePicture: ProfilePictureSetting,
                 themePicker: ThemePickerSetting,
