@@ -213,58 +213,75 @@ export function App() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground">
-      <div className="flex items-center gap-2 px-3 h-6 border-b bg-muted/50 text-[11px] text-muted-foreground shrink-0 select-none">
-        <span>Settera v{SCHEMA_VERSION}</span>
-        <span className="text-border">|</span>
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value as DemoMode)}
-          className="bg-transparent border-none text-[11px] text-muted-foreground cursor-pointer outline-none"
-        >
-          {MODES.map((m) => (
-            <option key={m.key} value={m.key}>
-              {m.label}
-            </option>
-          ))}
-        </select>
-        <span className="text-border">|</span>
-        <button
-          type="button"
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          onClick={() => setIsDark((d) => !d)}
-          className="inline-flex items-center justify-center cursor-pointer bg-transparent border-none p-0 text-muted-foreground hover:text-foreground"
-        >
-          {isDark ? (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:flex-nowrap">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold leading-none">Settera Demo</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Schema v{SCHEMA_VERSION}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center rounded-full border bg-background/90 p-1 text-xs font-medium text-muted-foreground shadow-sm">
+              {MODES.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => setMode(m.key)}
+                  className={`inline-flex items-center rounded-full px-3 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                    mode === m.key
+                      ? "bg-foreground text-background shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-pressed={mode === m.key}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              aria-label={
+                isDark ? "Switch to light mode" : "Switch to dark mode"
+              }
+              onClick={() => setIsDark((d) => !d)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <circle cx="8" cy="8" r="3" />
-              <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
-            </svg>
-          ) : (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
-            </svg>
-          )}
-        </button>
-      </div>
+              {isDark ? (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="8" cy="8" r="3" />
+                  <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7" />
+                </svg>
+              ) : (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4 4 0 0 0 6 6z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
 
       <div className="flex-1 overflow-hidden">
         <Settera
