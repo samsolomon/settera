@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { useSetteraSetting, useCompoundDraft, useSaveAndClose } from "@settera/react";
+import {
+  useSetteraSetting,
+  useCompoundDraft,
+  useSaveAndClose,
+} from "@settera/react";
 import type { CompoundFieldDefinition } from "@settera/schema";
 import { useSetteraNavigation } from "./use-settera-navigation";
 import { SetteraFieldControl } from "./settera-field-control";
@@ -22,7 +26,9 @@ export interface SetteraCompoundInputProps {
   settingKey: string;
 }
 
-export function SetteraCompoundInput({ settingKey }: SetteraCompoundInputProps) {
+export function SetteraCompoundInput({
+  settingKey,
+}: SetteraCompoundInputProps) {
   const { value, setValue, error, definition, validate } =
     useSetteraSetting(settingKey);
 
@@ -190,15 +196,23 @@ function CompoundModal({
       {valueSummary && (
         <span className="text-sm text-muted-foreground">{valueSummary}</span>
       )}
-      <ResponsiveDialog open={isModalOpen} onOpenChange={handleOpenChange} preventDismiss={isBusy}>
+      <ResponsiveDialog
+        open={isModalOpen}
+        onOpenChange={handleOpenChange}
+        preventDismiss={isBusy}
+      >
         <ResponsiveDialogTrigger asChild>
           <Button variant="outline" disabled={isDisabled}>
             {definition.buttonLabel ?? `${labels.edit} ${definition.title}`}
           </Button>
         </ResponsiveDialogTrigger>
         <ResponsiveDialogContent
-          onInteractOutside={(e) => { if (isBusy) e.preventDefault(); }}
-          onEscapeKeyDown={(e) => { if (isBusy) e.preventDefault(); }}
+          onInteractOutside={(e) => {
+            if (isBusy) e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            if (isBusy) e.preventDefault();
+          }}
         >
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>{definition.title}</ResponsiveDialogTitle>
@@ -222,7 +236,12 @@ function CompoundModal({
               />
             </div>
             <ResponsiveDialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={handleCancel} disabled={isBusy}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isBusy}
+              >
                 {labels.cancel}
               </Button>
               <Button type="submit" disabled={isBusy}>
@@ -272,7 +291,8 @@ function summarizeCompoundValue(
   value: unknown,
   fields: CompoundFieldDefinition[],
 ): string {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return "";
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    return "";
   const obj = value as Record<string, unknown>;
   const parts: string[] = [];
   for (const field of fields) {
