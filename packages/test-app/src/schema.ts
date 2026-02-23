@@ -10,376 +10,496 @@ export const demoSchema: SetteraSchema = {
     {
       label: "Account",
       pages: [
-    {
-      key: "profile",
-      title: "Profile",
-      description: "Manage your personal details.",
-      icon: "user",
-      sections: [
         {
-          key: "details",
-          title: "Personal information",
-          description:
-            "Changes to your profile will apply to all of your workspaces.",
-          settings: [
+          key: "profile",
+          title: "Profile",
+          description: "Manage your personal details.",
+          icon: "user",
+          sections: [
             {
-              key: "profile.avatar",
-              title: "Profile picture",
+              key: "details",
+              title: "Personal information",
               description:
-                "We only support PNGs, JPEGs and GIFs under 10MB.",
-              type: "custom",
-              renderer: "profilePicture",
-            },
-            {
-              key: "profile.firstName",
-              title: "First name",
-              type: "text",
-              placeholder: "Enter your first name",
-              validation: {
-                required: true,
-                maxLength: 50,
-              },
-            },
-            {
-              key: "profile.lastName",
-              title: "Last name",
-              type: "text",
-              placeholder: "Enter your last name",
-              validation: {
-                required: true,
-                maxLength: 50,
-              },
-            },
-            {
-              key: "profile.email",
-              title: "Email address",
-              type: "compound",
-              displayStyle: "modal",
-              buttonLabel: "Edit",
-              fields: [
+                "Changes to your profile will apply to all of your workspaces.",
+              settings: [
                 {
-                  key: "address",
+                  key: "profile.avatar",
+                  title: "Profile picture",
+                  description:
+                    "We only support PNGs, JPEGs and GIFs under 10MB.",
+                  type: "custom",
+                  renderer: "profilePicture",
+                },
+                {
+                  key: "profile.firstName",
+                  title: "First name",
+                  type: "text",
+                  placeholder: "Enter your first name",
+                  validation: {
+                    required: true,
+                    maxLength: 50,
+                  },
+                },
+                {
+                  key: "profile.lastName",
+                  title: "Last name",
+                  type: "text",
+                  placeholder: "Enter your last name",
+                  validation: {
+                    required: true,
+                    maxLength: 50,
+                  },
+                },
+                {
+                  key: "profile.email",
                   title: "Email address",
-                  type: "text",
-                  inputType: "email",
-                  placeholder: "you@example.com",
-                  validation: { required: true },
+                  type: "compound",
+                  displayStyle: "modal",
+                  buttonLabel: "Edit",
+                  fields: [
+                    {
+                      key: "address",
+                      title: "Email address",
+                      type: "text",
+                      inputType: "email",
+                      placeholder: "you@example.com",
+                      validation: { required: true },
+                    },
+                  ],
                 },
               ],
             },
-          ],
-        },
-        {
-          key: "password",
-          title: "Password",
-          description: "Update your login credentials",
-          settings: [
             {
-              key: "profile.password",
+              key: "password",
               title: "Password",
-              description: "Must be at least 8 characters.",
-              type: "compound",
-              displayStyle: "modal",
-              buttonLabel: "Change password",
-              fields: [
+              description: "Update your login credentials",
+              settings: [
                 {
-                  key: "currentPassword",
-                  title: "Current password",
-                  type: "text",
-                  inputType: "password",
+                  key: "profile.password",
+                  title: "Password",
+                  description: "Must be at least 8 characters.",
+                  type: "compound",
+                  displayStyle: "modal",
+                  buttonLabel: "Change password",
+                  fields: [
+                    {
+                      key: "currentPassword",
+                      title: "Current password",
+                      type: "text",
+                      inputType: "password",
+                      validation: { required: true },
+                    },
+                    {
+                      key: "newPassword",
+                      title: "New password",
+                      type: "text",
+                      inputType: "password",
+                      validation: { required: true, minLength: 8 },
+                    },
+                    {
+                      key: "confirmPassword",
+                      title: "Confirm new password",
+                      type: "text",
+                      inputType: "password",
+                      validation: { required: true, minLength: 8 },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              key: "locale",
+              title: "Locale",
+              settings: [
+                {
+                  key: "profile.language",
+                  title: "Language",
+                  description:
+                    "Choose the display language for the settings UI.",
+                  type: "select",
+                  options: [
+                    { value: "en", label: "English" },
+                    { value: "es", label: "Español" },
+                    { value: "fr", label: "Français" },
+                    { value: "de", label: "Deutsch" },
+                    { value: "ja", label: "日本語" },
+                  ],
+                  default: "en",
+                },
+              ],
+            },
+            {
+              key: "time",
+              title: "Time preferences",
+              description: "Manage your time preferences.",
+              settings: [
+                {
+                  key: "profile.timezone",
+                  title: "Timezone",
+                  type: "select",
+                  searchable: true,
+                  options: [
+                    {
+                      value: "America/New_York",
+                      label: "Eastern Time (New York)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Chicago",
+                      label: "Central Time (Chicago)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Denver",
+                      label: "Mountain Time (Denver)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Los_Angeles",
+                      label: "Pacific Time (Los Angeles)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Anchorage",
+                      label: "Alaska Time (Anchorage)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "Pacific/Honolulu",
+                      label: "Hawaii Time (Honolulu)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Phoenix",
+                      label: "Arizona Time (Phoenix)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Toronto",
+                      label: "Eastern Time (Toronto)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Vancouver",
+                      label: "Pacific Time (Vancouver)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Sao_Paulo",
+                      label: "Brasilia Time (São Paulo)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Mexico_City",
+                      label: "Central Time (Mexico City)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "America/Buenos_Aires",
+                      label: "Argentina Time (Buenos Aires)",
+                      group: "Americas",
+                    },
+                    {
+                      value: "Europe/London",
+                      label: "GMT (London)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Berlin",
+                      label: "CET (Berlin)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Paris",
+                      label: "CET (Paris)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Amsterdam",
+                      label: "CET (Amsterdam)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Madrid",
+                      label: "CET (Madrid)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Rome",
+                      label: "CET (Rome)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Moscow",
+                      label: "MSK (Moscow)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Europe/Istanbul",
+                      label: "TRT (Istanbul)",
+                      group: "Europe",
+                    },
+                    {
+                      value: "Asia/Tokyo",
+                      label: "JST (Tokyo)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Shanghai",
+                      label: "CST (Shanghai)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Kolkata",
+                      label: "IST (Kolkata)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Dubai",
+                      label: "GST (Dubai)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Singapore",
+                      label: "SGT (Singapore)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Seoul",
+                      label: "KST (Seoul)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Asia/Hong_Kong",
+                      label: "HKT (Hong Kong)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Australia/Sydney",
+                      label: "AEST (Sydney)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Australia/Melbourne",
+                      label: "AEST (Melbourne)",
+                      group: "Asia & Pacific",
+                    },
+                    {
+                      value: "Pacific/Auckland",
+                      label: "NZST (Auckland)",
+                      group: "Asia & Pacific",
+                    },
+                    { value: "UTC", label: "UTC" },
+                  ],
+                  default: "America/New_York",
+                },
+                {
+                  key: "profile.startWeekOn",
+                  title: "Start week on",
+                  type: "select",
+                  options: [
+                    { value: "sunday", label: "Sunday" },
+                    { value: "monday", label: "Monday" },
+                    { value: "saturday", label: "Saturday" },
+                  ],
+                  default: "monday",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          key: "appearance",
+          title: "Appearance",
+          description: "Customize the look and feel of the app.",
+          icon: "paintbrush",
+          sections: [
+            {
+              key: "theme",
+              title: "Theme",
+              settings: [
+                {
+                  key: "appearance.colorMode",
+                  title: "Color mode",
+                  description:
+                    "Choose between light and dark mode, or follow your system preference.",
+                  type: "select",
+                  options: [
+                    { value: "light", label: "Light" },
+                    { value: "dark", label: "Dark" },
+                    { value: "system", label: "System" },
+                  ],
+                  default: "system",
                   validation: { required: true },
                 },
                 {
-                  key: "newPassword",
-                  title: "New password",
-                  type: "text",
-                  inputType: "password",
-                  validation: { required: true, minLength: 8 },
+                  key: "appearance.theme",
+                  title: "Theme",
+                  description:
+                    "The primary color used for buttons, links, and highlights.",
+                  type: "custom",
+                  renderer: "themePicker",
+                  default: "blue",
+                  validation: { required: true },
+                  config: {
+                    options: [
+                      { value: "blue", label: "Blue", color: "#3b82f6" },
+                      { value: "purple", label: "Purple", color: "#a855f7" },
+                      { value: "green", label: "Green", color: "#22c55e" },
+                      { value: "rose", label: "Rose", color: "#f43f5e" },
+                      { value: "orange", label: "Orange", color: "#f97316" },
+                      { value: "neutral", label: "Neutral", color: "#737373" },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              key: "typography",
+              title: "Typography",
+              settings: [
+                {
+                  key: "appearance.typeface",
+                  title: "Typeface",
+                  description: "The font family used throughout the interface.",
+                  type: "select",
+                  options: [
+                    { value: "system", label: "System default" },
+                    { value: "inter", label: "Inter" },
+                    { value: "geist", label: "Geist" },
+                    { value: "roboto", label: "Roboto" },
+                    { value: "georgia", label: "Georgia" },
+                    { value: "mono", label: "Monospace" },
+                  ],
+                  default: "system",
                 },
                 {
-                  key: "confirmPassword",
-                  title: "Confirm new password",
-                  type: "text",
-                  inputType: "password",
-                  validation: { required: true, minLength: 8 },
+                  key: "appearance.fontSize",
+                  title: "Font size",
+                  description: "Base font size for the interface.",
+                  type: "select",
+                  options: [
+                    { value: "xs", label: "Extra small" },
+                    { value: "small", label: "Small" },
+                    { value: "medium", label: "Medium" },
+                    { value: "large", label: "Large" },
+                    { value: "xl", label: "Extra large" },
+                  ],
+                  default: "medium",
+                  validation: { required: true },
                 },
               ],
             },
           ],
         },
         {
-          key: "locale",
-          title: "Locale",
-          settings: [
+          key: "notifications",
+          title: "Notifications",
+          description:
+            "Customize your notification settings to stay informed without being overwhelmed.",
+          icon: "bell",
+          sections: [
             {
-              key: "profile.language",
-              title: "Language",
-              description: "Choose the display language for the settings UI.",
-              type: "select",
-              options: [
-                { value: "en", label: "English" },
-                { value: "es", label: "Español" },
-                { value: "fr", label: "Français" },
-                { value: "de", label: "Deutsch" },
-                { value: "ja", label: "日本語" },
+              key: "digest",
+              title: "Daily digest",
+              settings: [
+                {
+                  key: "notifications.dailyDigest",
+                  title: "Enable daily digest",
+                  description:
+                    "Includes tasks overdue and due today. Sent every morning if any tasks are due or overdue.",
+                  type: "boolean",
+                  default: false,
+                },
               ],
-              default: "en",
+            },
+            {
+              key: "collaboration",
+              title: "Collaboration notifications",
+              settings: [
+                {
+                  key: "notifications.mentions",
+                  title: "Mentions",
+                  description:
+                    "Notify me when someone cites me with an @mention in notes or comments.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+                {
+                  key: "notifications.replies",
+                  title: "Replies",
+                  description: "Notify me when someone replies to my comments.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+                {
+                  key: "notifications.emailGrants",
+                  title: "Email grants",
+                  description:
+                    "Notify me of email access requested or when my requests are accepted or denied.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+                {
+                  key: "notifications.taskAssignments",
+                  title: "Task assignments",
+                  description: "Notify me when I'm assigned a task.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+                {
+                  key: "notifications.sharedResources",
+                  title: "Shared resources",
+                  description:
+                    "Notify me when someone shares a resource, such as an email, with me.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+                {
+                  key: "notifications.sequenceDelegated",
+                  title: "Sequence delegated sender invites",
+                  description:
+                    "Notify me when someone invites me to be a sequence delegated sender.",
+                  type: "multiselect",
+                  options: [
+                    { value: "email", label: "Email" },
+                    { value: "desktop", label: "Desktop" },
+                  ],
+                  default: ["desktop"],
+                },
+              ],
             },
           ],
         },
         {
-          key: "time",
-          title: "Time preferences",
-          description: "Manage your time preferences.",
-          settings: [
-            {
-              key: "profile.timezone",
-              title: "Timezone",
-              type: "select",
-              searchable: true,
-              options: [
-                { value: "America/New_York", label: "Eastern Time (New York)", group: "Americas" },
-                { value: "America/Chicago", label: "Central Time (Chicago)", group: "Americas" },
-                { value: "America/Denver", label: "Mountain Time (Denver)", group: "Americas" },
-                { value: "America/Los_Angeles", label: "Pacific Time (Los Angeles)", group: "Americas" },
-                { value: "America/Anchorage", label: "Alaska Time (Anchorage)", group: "Americas" },
-                { value: "Pacific/Honolulu", label: "Hawaii Time (Honolulu)", group: "Americas" },
-                { value: "America/Phoenix", label: "Arizona Time (Phoenix)", group: "Americas" },
-                { value: "America/Toronto", label: "Eastern Time (Toronto)", group: "Americas" },
-                { value: "America/Vancouver", label: "Pacific Time (Vancouver)", group: "Americas" },
-                { value: "America/Sao_Paulo", label: "Brasilia Time (São Paulo)", group: "Americas" },
-                { value: "America/Mexico_City", label: "Central Time (Mexico City)", group: "Americas" },
-                { value: "America/Buenos_Aires", label: "Argentina Time (Buenos Aires)", group: "Americas" },
-                { value: "Europe/London", label: "GMT (London)", group: "Europe" },
-                { value: "Europe/Berlin", label: "CET (Berlin)", group: "Europe" },
-                { value: "Europe/Paris", label: "CET (Paris)", group: "Europe" },
-                { value: "Europe/Amsterdam", label: "CET (Amsterdam)", group: "Europe" },
-                { value: "Europe/Madrid", label: "CET (Madrid)", group: "Europe" },
-                { value: "Europe/Rome", label: "CET (Rome)", group: "Europe" },
-                { value: "Europe/Moscow", label: "MSK (Moscow)", group: "Europe" },
-                { value: "Europe/Istanbul", label: "TRT (Istanbul)", group: "Europe" },
-                { value: "Asia/Tokyo", label: "JST (Tokyo)", group: "Asia & Pacific" },
-                { value: "Asia/Shanghai", label: "CST (Shanghai)", group: "Asia & Pacific" },
-                { value: "Asia/Kolkata", label: "IST (Kolkata)", group: "Asia & Pacific" },
-                { value: "Asia/Dubai", label: "GST (Dubai)", group: "Asia & Pacific" },
-                { value: "Asia/Singapore", label: "SGT (Singapore)", group: "Asia & Pacific" },
-                { value: "Asia/Seoul", label: "KST (Seoul)", group: "Asia & Pacific" },
-                { value: "Asia/Hong_Kong", label: "HKT (Hong Kong)", group: "Asia & Pacific" },
-                { value: "Australia/Sydney", label: "AEST (Sydney)", group: "Asia & Pacific" },
-                { value: "Australia/Melbourne", label: "AEST (Melbourne)", group: "Asia & Pacific" },
-                { value: "Pacific/Auckland", label: "NZST (Auckland)", group: "Asia & Pacific" },
-                { value: "UTC", label: "UTC" },
-              ],
-              default: "America/New_York",
-            },
-            {
-              key: "profile.startWeekOn",
-              title: "Start week on",
-              type: "select",
-              options: [
-                { value: "sunday", label: "Sunday" },
-                { value: "monday", label: "Monday" },
-                { value: "saturday", label: "Saturday" },
-              ],
-              default: "monday",
-            },
-          ],
+          key: "connectedAccounts",
+          title: "Connected accounts",
+          description:
+            "Connect your user accounts to sync attribution of your actions between apps.",
+          icon: "link",
+          mode: "custom",
+          renderer: "connectedAccountsPage",
         },
-      ],
-    },
-    {
-      key: "appearance",
-      title: "Appearance",
-      description: "Customize the look and feel of the app.",
-      icon: "paintbrush",
-      sections: [
-        {
-          key: "theme",
-          title: "Theme",
-          settings: [
-            {
-              key: "appearance.colorMode",
-              title: "Color mode",
-              description:
-                "Choose between light and dark mode, or follow your system preference.",
-              type: "select",
-              options: [
-                { value: "light", label: "Light" },
-                { value: "dark", label: "Dark" },
-                { value: "system", label: "System" },
-              ],
-              default: "system",
-              validation: { required: true },
-            },
-            {
-              key: "appearance.theme",
-              title: "Theme",
-              description:
-                "The primary color used for buttons, links, and highlights.",
-              type: "custom",
-              renderer: "themePicker",
-              default: "blue",
-              validation: { required: true },
-              config: {
-                options: [
-                  { value: "blue", label: "Blue", color: "#3b82f6" },
-                  { value: "purple", label: "Purple", color: "#a855f7" },
-                  { value: "green", label: "Green", color: "#22c55e" },
-                  { value: "rose", label: "Rose", color: "#f43f5e" },
-                  { value: "orange", label: "Orange", color: "#f97316" },
-                  { value: "neutral", label: "Neutral", color: "#737373" },
-                ],
-              },
-            },
-          ],
-        },
-        {
-          key: "typography",
-          title: "Typography",
-          settings: [
-            {
-              key: "appearance.typeface",
-              title: "Typeface",
-              description: "The font family used throughout the interface.",
-              type: "select",
-              options: [
-                { value: "system", label: "System default" },
-                { value: "inter", label: "Inter" },
-                { value: "geist", label: "Geist" },
-                { value: "roboto", label: "Roboto" },
-                { value: "georgia", label: "Georgia" },
-                { value: "mono", label: "Monospace" },
-              ],
-              default: "system",
-            },
-            {
-              key: "appearance.fontSize",
-              title: "Font size",
-              description: "Base font size for the interface.",
-              type: "select",
-              options: [
-                { value: "xs", label: "Extra small" },
-                { value: "small", label: "Small" },
-                { value: "medium", label: "Medium" },
-                { value: "large", label: "Large" },
-                { value: "xl", label: "Extra large" },
-              ],
-              default: "medium",
-              validation: { required: true },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: "notifications",
-      title: "Notifications",
-      description:
-        "Customize your notification settings to stay informed without being overwhelmed.",
-      icon: "bell",
-      sections: [
-        {
-          key: "digest",
-          title: "Daily digest",
-          settings: [
-            {
-              key: "notifications.dailyDigest",
-              title: "Enable daily digest",
-              description:
-                "Includes tasks overdue and due today. Sent every morning if any tasks are due or overdue.",
-              type: "boolean",
-              default: false,
-            },
-          ],
-        },
-        {
-          key: "collaboration",
-          title: "Collaboration notifications",
-          settings: [
-            {
-              key: "notifications.mentions",
-              title: "Mentions",
-              description:
-                "Notify me when someone cites me with an @mention in notes or comments.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-            {
-              key: "notifications.replies",
-              title: "Replies",
-              description:
-                "Notify me when someone replies to my comments.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-            {
-              key: "notifications.emailGrants",
-              title: "Email grants",
-              description:
-                "Notify me of email access requested or when my requests are accepted or denied.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-            {
-              key: "notifications.taskAssignments",
-              title: "Task assignments",
-              description:
-                "Notify me when I'm assigned a task.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-            {
-              key: "notifications.sharedResources",
-              title: "Shared resources",
-              description:
-                "Notify me when someone shares a resource, such as an email, with me.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-            {
-              key: "notifications.sequenceDelegated",
-              title: "Sequence delegated sender invites",
-              description:
-                "Notify me when someone invites me to be a sequence delegated sender.",
-              type: "multiselect",
-              options: [
-                { value: "email", label: "Email" },
-                { value: "desktop", label: "Desktop" },
-              ],
-              default: ["desktop"],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: "connectedAccounts",
-      title: "Connected accounts",
-      description: "Connect your user accounts to sync attribution of your actions between apps.",
-      icon: "link",
-      mode: "custom",
-      renderer: "connectedAccountsPage",
-    },
       ],
     },
     {
@@ -420,7 +540,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "workspace.importOptions",
                   title: "Import options",
-                  description: "Choose how data is imported into your workspace.",
+                  description:
+                    "Choose how data is imported into your workspace.",
                   type: "multiselect",
                   options: [
                     { value: "manual", label: "Manual" },
@@ -486,9 +607,21 @@ export const demoSchema: SetteraSchema = {
                   type: "select",
                   placeholder: "Choose a provider…",
                   options: [
-                    { value: "okta", label: "Okta", description: "Enterprise SSO with SAML 2.0" },
-                    { value: "auth0", label: "Auth0", description: "Flexible identity platform" },
-                    { value: "azure", label: "Azure AD", description: "Microsoft Entra ID" },
+                    {
+                      value: "okta",
+                      label: "Okta",
+                      description: "Enterprise SSO with SAML 2.0",
+                    },
+                    {
+                      value: "auth0",
+                      label: "Auth0",
+                      description: "Flexible identity platform",
+                    },
+                    {
+                      value: "azure",
+                      label: "Azure AD",
+                      description: "Microsoft Entra ID",
+                    },
                   ],
                   visibleWhen: {
                     setting: "security.ssoEnabled",
@@ -498,7 +631,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "security.mfa",
                   title: "Require MFA",
-                  description: "Require multi-factor authentication for all users.",
+                  description:
+                    "Require multi-factor authentication for all users.",
                   type: "boolean",
                   default: false,
                   visibleWhen: {
@@ -536,7 +670,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "advanced.experimental",
                   title: "Enable experimental features",
-                  description: "Turn on features that are still in development.",
+                  description:
+                    "Turn on features that are still in development.",
                   type: "boolean",
                   default: false,
                   dangerous: true,
@@ -823,7 +958,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "branding.tagline",
                   title: "Tagline",
-                  description: "A short brand statement shown on the login page.",
+                  description:
+                    "A short brand statement shown on the login page.",
                   type: "text",
                   inputType: "textarea",
                   rows: 2,
@@ -845,13 +981,15 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "branding.logoUrl",
                   title: "Logo URL",
-                  description: "URL to your organization logo (SVG or PNG recommended).",
+                  description:
+                    "URL to your organization logo (SVG or PNG recommended).",
                   type: "text",
                   inputType: "url",
                   placeholder: "https://example.com/logo.svg",
                   validation: {
                     pattern: "^https?://",
-                    message: "Must be a valid URL starting with http:// or https://",
+                    message:
+                      "Must be a valid URL starting with http:// or https://",
                   },
                 },
               ],
@@ -874,10 +1012,29 @@ export const demoSchema: SetteraSchema = {
                   type: "select",
                   placeholder: "Select a plan…",
                   options: [
-                    { value: "free", label: "Free", description: "Up to 3 users, basic features" },
-                    { value: "starter", label: "Starter", description: "Up to 10 users, core features", group: "Paid" },
-                    { value: "pro", label: "Pro", description: "Unlimited users, advanced features", group: "Paid" },
-                    { value: "enterprise", label: "Enterprise", description: "Custom limits, SSO, audit logs", group: "Paid" },
+                    {
+                      value: "free",
+                      label: "Free",
+                      description: "Up to 3 users, basic features",
+                    },
+                    {
+                      value: "starter",
+                      label: "Starter",
+                      description: "Up to 10 users, core features",
+                      group: "Paid",
+                    },
+                    {
+                      value: "pro",
+                      label: "Pro",
+                      description: "Unlimited users, advanced features",
+                      group: "Paid",
+                    },
+                    {
+                      value: "enterprise",
+                      label: "Enterprise",
+                      description: "Custom limits, SSO, audit logs",
+                      group: "Paid",
+                    },
                   ],
                   default: "free",
                 },
@@ -963,7 +1120,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "billing.apiRateLimit",
                   title: "API rate limit",
-                  description: "Maximum API requests per minute. Shown when API access is enabled and seats exceed 5.",
+                  description:
+                    "Maximum API requests per minute. Shown when API access is enabled and seats exceed 5.",
                   type: "number",
                   default: 60,
                   validation: {
@@ -1021,7 +1179,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "billing.usageThreshold",
                   title: "Usage alert threshold",
-                  description: "Get notified when usage exceeds this percentage.",
+                  description:
+                    "Get notified when usage exceeds this percentage.",
                   type: "number",
                   default: 80,
                   displayHint: "slider",
@@ -1036,7 +1195,8 @@ export const demoSchema: SetteraSchema = {
                 {
                   key: "billing-overages",
                   title: "Overage settings",
-                  description: "Configure what happens when you exceed your plan limits.",
+                  description:
+                    "Configure what happens when you exceed your plan limits.",
                   visibleWhen: {
                     setting: "billing.usageThreshold",
                     lessThan: 100,
@@ -1045,7 +1205,8 @@ export const demoSchema: SetteraSchema = {
                     {
                       key: "billing.overageAction",
                       title: "Overage action",
-                      description: "What to do when usage exceeds the threshold.",
+                      description:
+                        "What to do when usage exceeds the threshold.",
                       type: "select",
                       options: [
                         { value: "notify", label: "Notify only" },
@@ -1057,11 +1218,13 @@ export const demoSchema: SetteraSchema = {
                     {
                       key: "billing.overageEmail",
                       title: "Overage notification email",
-                      description: "Override the billing contact for overage alerts. Leave empty to use the account email.",
+                      description:
+                        "Override the billing contact for overage alerts. Leave empty to use the account email.",
                       type: "text",
                       inputType: "email",
                       placeholder: "billing@yourcompany.com",
-                      deprecated: "Use Billing Alert Channels instead. This field will be removed in a future version.",
+                      deprecated:
+                        "Use Billing Alert Channels instead. This field will be removed in a future version.",
                     },
                   ],
                 },
