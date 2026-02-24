@@ -57,7 +57,7 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Store pipeline**: `store.setValue(key, value)` runs the full pipeline — disabled/readonly guards, sync validation, confirm interception, then `onChange`. Direct store calls and hook calls go through the same path.
 - **Save flow**: `onChange(key, value)` is instant-apply. If it returns a Promise, state tracks `idle → saving → saved → idle` (2s auto-reset). Race-safe via generation counter per key.
 - **Validation**: Sync validation runs in `store.setValue` on every change (`validateSettingValue`). Async validators (`onValidate`) run via `store.validate` on blur.
-- **Navigation** (`SetteraNavigation`): Headless provider that manages `activePage` state and exposes `pages` from schema. `useSetteraNavigation()` returns `{ activePage, setActivePage, pages }`. The UI layer's `SetteraNavigationProvider` composes on top, adding search, expanded groups, and highlight.
+- **Navigation** (`SetteraNavigation`): Headless provider that manages `activePage` state and exposes `pages` from schema. `useSetteraNavigation()` returns `{ activePage, setActivePage, pages }`. The UI layer's `SetteraNavigationProvider` composes on top, adding search, expanded groups, and highlight. In shadcn, nav and search state are split into separate contexts (`SetteraNavigationContext` and `SetteraSearchContext`) to avoid re-rendering nav-only consumers on every search keystroke — use `useSetteraNavigation()` for nav state, `useSetteraSearch()` for search state.
 - **Callback signatures**: All callbacks use single-function form — `onChange(key, value)`, `onAction(key, payload?)`, `onValidate(key, value)`. No Record-based dispatch.
 - **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd. Shared `useVisibility` hook used by setting, action, and section hooks.
 
@@ -67,7 +67,7 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - Hover/focus states use React state (`onMouseEnter`/`onMouseLeave`, `onFocus`/`onBlur`) with inline styles.
 - Uses Radix UI primitives for select, switch, checkbox, and dialog.
 - **Theming**: Components reference `--settera-*` CSS custom properties with light-mode fallback values (e.g. `color: "var(--settera-title-color, #111827)"`). Consumers set tokens on a parent element to theme — no dark mode built in, just token overrides. All color, spacing, and sizing values should use tokens; never hardcode colors without a `var()` wrapper.
-- **Shared primitives**: `SetteraPrimitives.tsx` exports `PrimitiveInput`/`PrimitiveButton` (base slot components with token-aware styles). `SetteraFieldPrimitives.tsx` exports shared style objects (`cardShellStyle`, `sectionTitleStyle`, `descriptionTextStyle`, etc.).
+- **Shared primitives**: Base slot components (`PrimitiveInput`/`PrimitiveButton`) and shared style objects (`cardShellStyle`, `sectionTitleStyle`, etc.) live in dedicated primitive files — check there before duplicating styles.
 - **Layout toolbar**: `SetteraLayout` can render a thin chrome row via `toolbarStart`/`toolbarEnd` props. Styles come from `--settera-toolbar-*` tokens (`height`, `padding`, `gap`, `bg`, `border`, `color`, `font-size`).
 
 ### shadcn Registry (`@settera/shadcn-registry`)
@@ -78,7 +78,6 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Primitives**: Import Radix UI from the `radix-ui` monorepo package (not individual `@radix-ui/*` packages). Import shadcn components from `@/components/ui/` — these resolve to the consumer's own shadcn primitives (Button, Dialog, Input, etc.).
 - **Icons**: Uses `lucide-react` by default (configurable via shadcn's `components.json` `iconLibrary` setting). Inside `icon-xs` buttons, always put `className="size-4"` on the icon component — the button variant defaults to `size-3` (12px) via a `:not([class*='size-'])` selector, so without an explicit class the icon will be too small.
 - **Known tokens**: `--settera-success-color` (default `#16a34a`) for check/confirmation icons (save indicator, copy feedback, link copy). `--settera-control-width` (default `200px`) sets the desktop width of all input/select controls — applied via `w-full md:w-[var(--settera-control-width,200px)]`.
-- **Navigation contexts**: `SetteraNavigationProvider` wraps two separate contexts — `SetteraNavigationContext` (activePage, subpage, expandedGroups, highlight, focus) and `SetteraSearchContext` (searchQuery, matchingSettingKeys, matchingPageKeys). Use `useSetteraNavigation()` for nav state, `useSetteraSearch()` for search state. Split to avoid re-rendering nav-only consumers on every search keystroke.
 - **Searchable selects**: `SelectSetting` supports `searchable?: boolean` — a rendering hint that UI layers may use to render a combobox with typeahead filtering. In the shadcn registry, `settera-select.tsx` delegates to `settera-searchable-select.tsx` (Popover + native input + filtered list, zero extra dependencies). `settera-field-control.tsx` uses `FieldControlSearchableSelect` for compound fields. Label keys: `searchSelectPlaceholder` (default `"Search…"`), `noResults` (default `"No results"`).
 - **Shared utilities**: `settera-select-utils.ts` exports `EMPTY_OPTION_VALUE_BASE` and `useEmptyOptionValue()` — used by both `settera-select.tsx`, `settera-searchable-select.tsx`, and `settera-field-control.tsx` for select empty-option sentinel logic.
 - **No own `node_modules`**: Registry source files live in the consumer's project. They rely on the consumer's dependencies for React, Radix, Tailwind, etc.
@@ -86,13 +85,8 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 
 ### Localization
 
-Both UI packages support localization of all chrome strings (save indicators, button labels, search placeholders, etc.) via a labels system.
+Both UI packages support localization of all chrome strings (save indicators, button labels, search placeholders, etc.) via a `labels` system — `SetteraLabels` interface with all-optional fields, English defaults, merged via `mergeLabels()`.
 
-- **`SetteraLabels` interface**: All optional string fields — consumers override only what they need, defaults are English.
-- **`mergeLabels(overrides?)`**: Merges partial overrides into `DEFAULT_LABELS`. Returns `Required<SetteraLabels>`.
-- **`useSetteraLabels()`**: Hook to read resolved labels from context.
-- **`SetteraLabelsContext`**: React context provided by `SetteraLayout` (UI package) or the shadcn layout.
-- **`labels` prop**: `SetteraLayout` accepts an optional `labels?: SetteraLabels` prop that wraps children in `SetteraLabelsContext.Provider`.
 - **Template strings**: `typeToConfirm` uses `{text}` as a placeholder (e.g. `"Type {text} to confirm"`) — components split on `{text}` to insert the bolded value.
 - **Schema strings**: Page titles, section titles, setting titles/descriptions, option labels, and validation messages live in the schema. To localize, pass a translated schema — no framework support needed.
 - **Parity**: Both `packages/ui` and `packages/shadcn-registry` share the same label keys. New keys added to one should be added to both.
