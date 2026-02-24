@@ -146,9 +146,8 @@ describe("integration: full pipeline", () => {
     });
 
     // onChange should not be called for the invalid short value
-    const nameChanges = onChange.mock.calls.filter(([key]: [string]) => key === "name");
-    // The last effective call (if any) should not be "Ab"
-    const hasInvalidCall = nameChanges.some(([, val]: [string, unknown]) => val === "Ab");
+    const nameChanges = onChange.mock.calls.filter((call) => call[0] === "name");
+    const hasInvalidCall = nameChanges.some((call) => call[1] === "Ab");
     expect(hasInvalidCall).toBe(false);
   });
 
@@ -249,8 +248,8 @@ describe("integration: full pipeline", () => {
     });
 
     // onChange should not be called with the invalid value
-    const fontChanges = onChange.mock.calls.filter(([key]: [string]) => key === "fontSize");
-    const hasInvalidCall = fontChanges.some(([, val]: [string, unknown]) => val === 3);
+    const fontChanges = onChange.mock.calls.filter((call) => call[0] === "fontSize");
+    const hasInvalidCall = fontChanges.some((call) => call[1] === 3);
     expect(hasInvalidCall).toBe(false);
   });
 });

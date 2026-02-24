@@ -16,7 +16,7 @@ export function SetteraActionButton({ settingKey }: SetteraActionButtonProps) {
   const { definition, onAction, isLoading, items } = useSetteraAction(settingKey);
 
   // Multi-button form
-  if (definition.actions && items.length > 0) {
+  if (definition.actions) {
     return (
       <div className="flex gap-2">
         {items.map((itemResult) => (
@@ -39,13 +39,13 @@ export function SetteraActionButton({ settingKey }: SetteraActionButtonProps) {
     );
   }
 
-  // Single-button form (existing behavior)
+  // Single-button form — TypeScript narrows to SingleButtonActionSetting
   return (
     <ActionButtonSingle
       itemKey={settingKey}
-      buttonLabel={definition.buttonLabel ?? "Action"}
+      buttonLabel={definition.buttonLabel}
       ariaLabel={definition.title}
-      actionType={definition.actionType ?? "callback"}
+      actionType={definition.actionType}
       dangerous={definition.dangerous}
       disabled={definition.disabled}
       modal={definition.modal}

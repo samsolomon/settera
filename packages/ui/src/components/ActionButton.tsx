@@ -18,7 +18,7 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
   const { definition, onAction, isLoading, items } = useSetteraAction(settingKey);
 
   // Multi-button form
-  if (definition.actions && items.length > 0) {
+  if (definition.actions) {
     return (
       <div style={{ display: "flex", gap: "8px" }}>
         {items.map((itemResult) => (
@@ -41,13 +41,13 @@ export function ActionButton({ settingKey }: ActionButtonProps) {
     );
   }
 
-  // Single-button form
+  // Single-button form — TypeScript narrows to SingleButtonActionSetting
   return (
     <ActionButtonSingle
       itemKey={settingKey}
-      buttonLabel={definition.buttonLabel ?? "Action"}
+      buttonLabel={definition.buttonLabel}
       ariaLabel={definition.title}
-      actionType={definition.actionType ?? "callback"}
+      actionType={definition.actionType}
       dangerous={definition.dangerous}
       disabled={definition.disabled}
       modal={definition.modal}

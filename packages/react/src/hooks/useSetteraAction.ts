@@ -2,7 +2,12 @@ import { useContext, useCallback, useMemo } from "react";
 import { SetteraSchemaContext, SetteraValuesContext } from "../context.js";
 import { useStoreSelector, useStoreSlice } from "./useStoreSelector.js";
 import { useVisibility } from "./useVisibility.js";
-import type { ActionSetting, ActionItem } from "@settera/schema";
+import type {
+  ActionSetting,
+  SingleButtonActionSetting,
+  MultiButtonActionSetting,
+  ActionItem,
+} from "@settera/schema";
 
 export interface UseSetteraActionItemResult {
   /** The action item definition */
@@ -13,18 +18,36 @@ export interface UseSetteraActionItemResult {
   isLoading: boolean;
 }
 
-export interface UseSetteraActionResult {
-  /** The setting definition from the schema */
-  definition: ActionSetting;
+interface UseSetteraActionResultBase {
   /** Whether this setting is currently visible */
   isVisible: boolean;
   /** The action handler for single-button form. No-ops if no handler is registered for this key. */
   onAction: (payload?: unknown) => void;
   /** True while an async onAction handler is in-flight (single-button form) */
   isLoading: boolean;
-  /** Per-item results for multi-button form. Empty array for single-button form. */
+}
+
+interface UseSetteraSingleButtonResult extends UseSetteraActionResultBase {
+  /** The setting definition from the schema (narrowed to single-button form) */
+  definition: SingleButtonActionSetting;
+  /** True for single-button actions, false for multi-button. Use to narrow `definition`. */
+  isSingleButton: true;
+  /** Empty array for single-button form. */
+  items: [];
+}
+
+interface UseSetteraMultiButtonResult extends UseSetteraActionResultBase {
+  /** The setting definition from the schema (narrowed to multi-button form) */
+  definition: MultiButtonActionSetting;
+  /** True for single-button actions, false for multi-button. Use to narrow `definition`. */
+  isSingleButton: false;
+  /** Per-item results for multi-button form. */
   items: UseSetteraActionItemResult[];
 }
+
+export type UseSetteraActionResult =
+  | UseSetteraSingleButtonResult
+  | UseSetteraMultiButtonResult;
 
 /**
  * Access and invoke an action-type setting by key.
@@ -94,11 +117,23 @@ export function useSetteraAction(key: string): UseSetteraActionResult {
     }));
   }, [actionItems, itemCallbacks, itemLoadingSlice]);
 
+  if (definition.actions) {
+    return {
+      definition,
+      isSingleButton: false as const,
+      isVisible,
+      onAction,
+      isLoading,
+      items,
+    };
+  }
+
   return {
     definition,
+    isSingleButton: true as const,
     isVisible,
     onAction,
     isLoading,
-    items,
+    items: [] as [],
   };
 }

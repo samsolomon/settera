@@ -137,7 +137,16 @@ export interface BaseSettingFields {
 /** Fields shared by all value-bearing settings (extends base with confirm). */
 export interface BaseValueSettingFields extends BaseSettingFields {
   confirm?: ConfirmConfig;
-  /** Override the global validation mode for this setting. */
+  /**
+   * Override the global validation mode for this setting.
+   *
+   * - `"valid-only"` — block onChange until the value passes validation (default)
+   * - `"eager-save"` — call onChange immediately, even if validation fails
+   *
+   * @example
+   * // Allow saving partially-typed numbers while other settings stay strict
+   * { key: "budget", type: "number", validation: { min: 0 }, validationMode: "eager-save" }
+   */
   validationMode?: "valid-only" | "eager-save";
 }
 
