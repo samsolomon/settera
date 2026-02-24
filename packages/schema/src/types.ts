@@ -137,6 +137,8 @@ export interface BaseSettingFields {
 /** Fields shared by all value-bearing settings (extends base with confirm). */
 export interface BaseValueSettingFields extends BaseSettingFields {
   confirm?: ConfirmConfig;
+  /** Override the global validation mode for this setting. */
+  validationMode?: "valid-only" | "eager-save";
 }
 
 // ---- Individual Setting Types ----
@@ -289,16 +291,25 @@ export interface ActionItem {
   page?: ActionPageConfig;
 }
 
-export interface ActionSetting extends BaseSettingFields {
+export interface SingleButtonActionSetting extends BaseSettingFields {
   type: "action";
-  // Single-button form (existing):
-  buttonLabel?: string;
-  actionType?: "modal" | "callback" | "page";
+  buttonLabel: string;
+  actionType: "modal" | "callback" | "page";
   modal?: ActionModalConfig;
   page?: ActionPageConfig;
-  // Multi-button form:
-  actions?: ActionItem[];
+  actions?: never;
 }
+
+export interface MultiButtonActionSetting extends BaseSettingFields {
+  type: "action";
+  buttonLabel?: never;
+  actionType?: never;
+  modal?: never;
+  page?: never;
+  actions: ActionItem[];
+}
+
+export type ActionSetting = SingleButtonActionSetting | MultiButtonActionSetting;
 
 export type ModalActionFieldSetting =
   | TextSetting

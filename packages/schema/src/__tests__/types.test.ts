@@ -12,6 +12,8 @@ import type {
   RepeatableSetting,
   RepeatableFieldDefinition,
   ActionSetting,
+  SingleButtonActionSetting,
+  MultiButtonActionSetting,
   ModalActionFieldSetting,
   CustomSetting,
   ValueSetting,
@@ -101,6 +103,33 @@ describe("SettingDefinition discriminated union", () => {
     expectTypeOf<BooleanSetting["validation"]>().toEqualTypeOf<
       never | undefined
     >();
+  });
+});
+
+describe("ActionSetting discriminated union", () => {
+  it("SingleButtonActionSetting requires buttonLabel and actionType", () => {
+    expectTypeOf<SingleButtonActionSetting["buttonLabel"]>().toEqualTypeOf<string>();
+    expectTypeOf<SingleButtonActionSetting["actionType"]>().toEqualTypeOf<"modal" | "callback" | "page">();
+  });
+
+  it("SingleButtonActionSetting disallows actions", () => {
+    expectTypeOf<SingleButtonActionSetting["actions"]>().toEqualTypeOf<never | undefined>();
+  });
+
+  it("MultiButtonActionSetting requires actions", () => {
+    expectTypeOf<MultiButtonActionSetting["actions"]>().toEqualTypeOf<
+      import("../types.js").ActionItem[]
+    >();
+  });
+
+  it("MultiButtonActionSetting disallows buttonLabel and actionType", () => {
+    expectTypeOf<MultiButtonActionSetting["buttonLabel"]>().toEqualTypeOf<never | undefined>();
+    expectTypeOf<MultiButtonActionSetting["actionType"]>().toEqualTypeOf<never | undefined>();
+  });
+
+  it("ActionSetting is the union of both", () => {
+    expectTypeOf<SingleButtonActionSetting>().toMatchTypeOf<ActionSetting>();
+    expectTypeOf<MultiButtonActionSetting>().toMatchTypeOf<ActionSetting>();
   });
 });
 

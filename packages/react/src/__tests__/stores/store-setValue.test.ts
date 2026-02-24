@@ -233,3 +233,47 @@ describe("store.validate", () => {
     expect(error).toBeNull();
   });
 });
+
+describe("per-setting validationMode", () => {
+  it("per-setting eager-save overrides global valid-only", () => {
+    const { store, onChange } = makeStore([
+      {
+        key: "age",
+        title: "Age",
+        type: "number",
+        validation: { min: 0, max: 120 },
+        validationMode: "eager-save",
+      },
+    ]);
+    // Global is valid-only (default), but this setting overrides to eager-save
+    store.setValue("age", 200);
+    expect(onChange).toHaveBeenCalledWith("age", 200);
+    expect(store.getState().errors["age"]).toBeTruthy();
+  });
+
+  it("per-setting valid-only overrides global eager-save", () => {
+    const { store, onChange } = makeStore([
+      {
+        key: "age",
+        title: "Age",
+        type: "number",
+        validation: { min: 0, max: 120 },
+        validationMode: "valid-only",
+      },
+    ]);
+    store.setValidationMode("eager-save");
+    store.setValue("age", 200);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(store.getState().errors["age"]).toBeTruthy();
+  });
+
+  it("falls back to global mode when per-setting is undefined", () => {
+    const { store, onChange } = makeStore([
+      { key: "age", title: "Age", type: "number", validation: { min: 0, max: 120 } },
+    ]);
+    // Global is valid-only (default)
+    store.setValue("age", 200);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(store.getState().errors["age"]).toBeTruthy();
+  });
+});

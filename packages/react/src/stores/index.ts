@@ -138,7 +138,8 @@ export class SetteraValuesStore {
 
     const syncError = validateSettingValue(definition, value);
     this._errors.setError(key, syncError);
-    if (syncError && this._validationMode === "valid-only") {
+    const effectiveMode = valueDefinition.validationMode ?? this._validationMode;
+    if (syncError && effectiveMode === "valid-only") {
       return;
     }
 

@@ -4,12 +4,15 @@ import type {
   PageItem,
   SectionDefinition,
   SettingDefinition,
-  ActionSetting,
+  ActionItem,
+  ActionModalConfig,
+  ActionPageConfig,
   SchemaValidationError,
   VisibilityCondition,
   VisibilityRule,
 } from "./types.js";
 import { isPageGroup } from "./traversal.js";
+import { parseIsoDate } from "./date-utils.js";
 
 interface ValidationContext {
   errors: SchemaValidationError[];
@@ -453,7 +456,7 @@ function validateSetting(
   }
 
   if (setting.type === "action") {
-    validateActionSetting(setting, path, ctx);
+    validateActionSetting(setting as unknown as ActionSettingInput, path, ctx);
   }
 
   if (setting.type === "compound") {
@@ -556,8 +559,25 @@ function validateSetting(
 
 // ---- Action validation helpers ----
 
+/**
+ * Loose input type for validation — allows all fields so we can detect
+ * invalid combos (both single + multi present) that the strict union prevents.
+ */
+interface ActionSettingInput {
+  key: string;
+  title: string;
+  type: "action";
+  buttonLabel?: string;
+  actionType?: "modal" | "callback" | "page";
+  modal?: ActionModalConfig;
+  page?: ActionPageConfig;
+  actions?: ActionItem[];
+  dangerous?: boolean;
+  disabled?: boolean;
+}
+
 function validateActionSetting(
-  setting: ActionSetting,
+  setting: ActionSettingInput,
   path: string,
   ctx: ValidationContext,
 ): void {
@@ -688,8 +708,8 @@ function validateActionSetting(
 
 function validateActionTypeConfig(
   actionType: "modal" | "callback" | "page",
-  modal: ActionSetting["modal"],
-  page: ActionSetting["page"],
+  modal: ActionModalConfig | undefined,
+  page: ActionPageConfig | undefined,
   path: string,
   label: string,
   ctx: ValidationContext,
@@ -800,19 +820,3 @@ function collectVisibilityRefs(
   }
 }
 
-function parseIsoDate(value: string): Date | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const [y, m, d] = value.split("-").map((part) => Number(part));
-  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) {
-    return null;
-  }
-  const parsed = new Date(Date.UTC(y, m - 1, d));
-  if (
-    parsed.getUTCFullYear() !== y ||
-    parsed.getUTCMonth() !== m - 1 ||
-    parsed.getUTCDate() !== d
-  ) {
-    return null;
-  }
-  return parsed;
-}

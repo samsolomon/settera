@@ -23,6 +23,8 @@ export type {
   RepeatableSetting,
   RepeatableFieldDefinition,
   ActionSetting,
+  SingleButtonActionSetting,
+  MultiButtonActionSetting,
   ActionItem,
   ActionModalConfig,
   ActionPageConfig,

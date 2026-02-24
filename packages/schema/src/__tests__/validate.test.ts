@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { validateSchema } from "../validate.js";
 import { referenceSchema } from "./fixtures/reference-schema.js";
-import type { SetteraSchema } from "../types.js";
+import type { SetteraSchema, SettingDefinition } from "../types.js";
 
 function makeMinimalSchema(overrides?: Partial<SetteraSchema>): SetteraSchema {
   return {
@@ -2335,7 +2335,7 @@ describe("validateSchema", () => {
                   actions: [
                     { key: "login", buttonLabel: "Log in", actionType: "callback" },
                   ],
-                },
+                } as unknown as SettingDefinition,
               ],
             },
           ],
@@ -2363,7 +2363,7 @@ describe("validateSchema", () => {
                   key: "account",
                   title: "Your Account",
                   type: "action",
-                },
+                } as unknown as SettingDefinition,
               ],
             },
           ],

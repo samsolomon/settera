@@ -21,6 +21,7 @@ Dependency graph: `schema → react → ui / shadcn-registry`
 pnpm install              # Install all dependencies
 pnpm build                # Build all packages (turbo, respects dependency order)
 pnpm test                 # Run all tests
+pnpm test:coverage        # Run tests with v8 coverage (text + lcov)
 pnpm test:watch           # Run tests in watch mode
 pnpm dev                  # Start test-app dev server (ui)
 pnpm dev:shadcn           # Start shadcn-test-app dev server
@@ -47,7 +48,7 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 
 ### Schema (`@settera/schema`)
 
-- **Types**: `SettingDefinition` is a discriminated union on `type` — text, number, boolean, select, multiselect, date, compound, repeatable, action, custom.
+- **Types**: `SettingDefinition` is a discriminated union on `type` — text, number, boolean, select, multiselect, date, compound, repeatable, action, custom. `ActionSetting` is itself a union of `SingleButtonActionSetting` (requires `buttonLabel`/`actionType`, disallows `actions`) and `MultiButtonActionSetting` (requires `actions`, disallows `buttonLabel`/`actionType`) using `?: never` mutual exclusion.
 - **Validation**: `validateSchema()` returns an array of errors. Called at provider mount (console warning, not thrown).
 - **Traversal**: `flattenSettings()` walks pages/sections/subsections into a flat list. `getSettingByKey()` does O(n) lookup. `buildSettingIndex()` builds an O(1) Map used by the react layer.
 
@@ -56,7 +57,7 @@ pnpm --filter @settera/schema build  # Required before react/UI tests
 - **Unified component** (`Settera`): Provides both schema context and values context. Holds the `SetteraValuesStore` which manages values, save tracking, errors, confirm dialogs, and action loading.
 - **Store pipeline**: `store.setValue(key, value)` runs the full pipeline — disabled/readonly guards, sync validation, confirm interception, then `onChange`. Direct store calls and hook calls go through the same path.
 - **Save flow**: `onChange(key, value)` is instant-apply. If it returns a Promise, state tracks `idle → saving → saved → idle` (2s auto-reset). Race-safe via generation counter per key.
-- **Validation**: Sync validation runs in `store.setValue` on every change (`validateSettingValue`). Async validators (`onValidate`) run via `store.validate` on blur.
+- **Validation**: Sync validation runs in `store.setValue` on every change (`validateSettingValue`). Async validators (`onValidate`) run via `store.validate` on blur. Per-setting `validationMode` (on `BaseValueSettingFields`) overrides the global `SetteraProps.validationMode` — set `"eager-save"` or `"valid-only"` on individual settings to override the provider-level default.
 - **Navigation** (`SetteraNavigation`): Headless provider that manages `activePage` state and exposes `pages` from schema. `useSetteraNavigation()` returns `{ activePage, setActivePage, pages }`. The UI layer's `SetteraNavigationProvider` composes on top, adding search, expanded groups, and highlight. In shadcn, nav and search state are split into separate contexts (`SetteraNavigationContext` and `SetteraSearchContext`) to avoid re-rendering nav-only consumers on every search keystroke — use `useSetteraNavigation()` for nav state, `useSetteraSearch()` for search state.
 - **Callback signatures**: All callbacks use single-function form — `onChange(key, value)`, `onAction(key, payload?)`, `onValidate(key, value)`. No Record-based dispatch.
 - **Visibility**: `evaluateVisibility()` resolves `visibleWhen` conditions against current values. Conditions in an array are AND'd. Shared `useVisibility` hook used by setting, action, and section hooks.
